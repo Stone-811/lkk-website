@@ -64,13 +64,12 @@ const pressOutlets = [
             </div>
 
             <h1 class="font-serif text-4xl lg:text-6xl font-black text-white leading-tight mb-5">
-              40歲後<br />
-              肌肉每年<span class="text-orange">流失1%</span><br />
-              我們讓你練回來
+              <span class="text-orange">健康</span>是練出來的
             </h1>
 
             <p class="text-white/65 text-lg font-light leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
-              教練團隊皆經系統化課程培訓考核，深耕中高齡與特殊族群訓練知識，為您量身打造安全有效的肌力訓練課程。
+              60分鐘專屬體驗，10,000位學員的共同選擇<br />
+              安心啟動你的肌力人生
             </p>
 
             <div class="flex flex-wrap gap-3 justify-center lg:justify-start">
