@@ -3,16 +3,15 @@ const navigation = [
   { name: '首頁', href: '/' },
   { name: '服務方案', href: '/services' },
   { name: '團隊介紹', href: '/team-intro' },
-  { name: '門店資訊', href: '/locations' },
+  { name: '分店資訊', href: '/locations' },
   { name: '預約體驗', href: '/booking' },
-  { name: '合作加盟', href: '/franchise' },
 ]
 
 const stores = [
   { name: '南京店', phone: '(02) 2507-4196', href: '/locations/nanjing' },
   { name: '松江店', phone: '(02) 2537-1055', href: '/locations/songjiang' },
-  { name: '西門店', phone: '(02) 2370-3245', href: '/locations/ximending' },
-  { name: '新店七張店', phone: '(02) 8914-6428', href: '/locations/xindian' },
+  { name: '西分店', phone: '(02) 2370-3245', href: '/locations/ximending' },
+  { name: '七張店', phone: '(02) 8914-6428', href: '/locations/xindian' },
 ]
 
 const currentYear = new Date().getFullYear()
@@ -28,7 +27,7 @@ const currentYear = new Date().getFullYear()
             <span class="text-xl sm:text-2xl font-bold text-orange font-serif">練健康</span>
           </NuxtLink>
           <p class="text-cream-200 text-sm mb-4">
-            練健康物理治療所
+            練健康中高齡訓練中心
           </p>
           <div class="flex flex-wrap gap-3">
             <!-- Facebook -->
@@ -109,7 +108,7 @@ const currentYear = new Date().getFullYear()
 
         <!-- Stores -->
         <div>
-          <h3 class="font-medium mb-3 sm:mb-4 font-serif text-sm sm:text-base">門店資訊</h3>
+          <h3 class="font-medium mb-3 sm:mb-4 font-serif text-sm sm:text-base">分店資訊</h3>
           <ul class="space-y-2 sm:space-y-3">
             <li v-for="store in stores" :key="store.name">
               <NuxtLink
@@ -148,7 +147,7 @@ const currentYear = new Date().getFullYear()
 
       <div class="border-t border-navy-600 mt-6 sm:mt-8 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
         <p class="text-cream-300 text-xs sm:text-sm text-center sm:text-left">
-          &copy; {{ currentYear }} 練健康物理治療所. All rights reserved.
+          &copy; {{ currentYear }} 練健康中高齡訓練中心. All rights reserved.
         </p>
         <div class="flex gap-4 sm:gap-6 text-xs sm:text-sm">
           <NuxtLink to="/privacy" class="text-cream-300 hover:text-white transition-colors">

@@ -4,7 +4,7 @@ definePageMeta({
 })
 
 useHead({
-  title: '門店管理｜練健康後台',
+  title: '分店管理｜練健康後台',
 })
 
 interface Store {
@@ -59,8 +59,8 @@ async function deleteStore(store: Store) {
     <!-- Page Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">門店管理</h1>
-        <p class="text-gray-500 mt-1">管理所有門店資訊</p>
+        <h1 class="text-2xl font-bold text-gray-900">分店管理</h1>
+        <p class="text-gray-500 mt-1">管理所有分店資訊</p>
       </div>
       <NuxtLink
         to="/admin/stores/new"
@@ -69,7 +69,7 @@ async function deleteStore(store: Store) {
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
-        新增門店
+        新增分店
       </NuxtLink>
     </div>
 
@@ -89,7 +89,7 @@ async function deleteStore(store: Store) {
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">門店名稱</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">分店名稱</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">地區</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">電話</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">教練數</th>
@@ -100,7 +100,7 @@ async function deleteStore(store: Store) {
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-if="stores.length === 0">
               <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                目前沒有門店資料
+                目前沒有分店資料
               </td>
             </tr>
             <tr v-for="store in stores" :key="store.id" class="hover:bg-gray-50">

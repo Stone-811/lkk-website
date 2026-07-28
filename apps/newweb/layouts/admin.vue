@@ -8,7 +8,7 @@ const menuItems = [
   { name: '儀表板', path: '/admin', icon: 'dashboard' },
   { name: '客戶預約', path: '/admin/leads', icon: 'calendar', badge: true },
   { name: '合作表單', path: '/admin/cooperation', icon: 'briefcase' },
-  { name: '門店管理', path: '/admin/stores', icon: 'store' },
+  { name: '分店管理', path: '/admin/stores', icon: 'store' },
   { name: '教練管理', path: '/admin/coaches', icon: 'people' },
   { name: '講師管理', path: '/admin/lecturers', icon: 'school' },
   { name: 'LKK4 成績', path: '/admin/lkk4-records', icon: 'chart' },

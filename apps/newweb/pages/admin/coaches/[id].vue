@@ -291,7 +291,7 @@ async function handlePhotoUpload(event: Event) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1">
-              所屬門店 <span class="text-red-500">*</span>
+              所屬分店 <span class="text-red-500">*</span>
             </label>
             <select
               :value="formData.storeId"
@@ -299,7 +299,7 @@ async function handlePhotoUpload(event: Event) {
               class="w-full border border-gray-300 rounded-lg px-3 py-2"
               required
             >
-              <option value="">請選擇門店</option>
+              <option value="">請選擇分店</option>
               <option v-for="opt in storeOptions" :key="opt.value" :value="opt.value">
                 {{ opt.label }}
               </option>

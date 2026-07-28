@@ -3,7 +3,7 @@ const steps = [
   {
     step: 1,
     title: '填寫預約表單',
-    description: '姓名、電話、選擇門店\n30 秒完成',
+    description: '姓名、電話、選擇分店\n30 秒完成',
   },
   {
     step: 2,

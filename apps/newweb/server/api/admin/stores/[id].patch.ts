@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   if (!id) {
     throw createError({
       statusCode: 400,
-      statusMessage: '請提供門店 ID',
+      statusMessage: '請提供分店 ID',
     });
   }
 
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     if (!storeDoc.exists) {
       throw createError({
         statusCode: 404,
-        statusMessage: '門店不存在',
+        statusMessage: '分店不存在',
       });
     }
 
@@ -79,7 +79,7 @@ export default defineEventHandler(async (event) => {
     console.error('Error updating store:', error);
     throw createError({
       statusCode: 500,
-      statusMessage: '更新門店失敗',
+      statusMessage: '更新分店失敗',
     });
   }
 });

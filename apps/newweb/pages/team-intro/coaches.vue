@@ -180,7 +180,7 @@ function setActiveStore(storeSlug: string | null) {
                 : 'bg-cream-200 text-ink hover:bg-cream-300'
             ]"
           >
-            全部門店
+            全部分店
           </button>
           <button
             v-for="store in stores"
@@ -240,7 +240,7 @@ function setActiveStore(storeSlug: string | null) {
               <div class="flex-1">
                 <div class="flex items-center gap-3 mb-1">
                   <h2 class="font-serif text-2xl lg:text-3xl font-bold text-navy">
-                    {{ group.store?.name || '其他門店' }}
+                    {{ group.store?.name || '其他分店' }}
                   </h2>
                   <span class="px-3 py-1 bg-orange/10 text-orange text-sm font-medium rounded-full">
                     {{ group.coaches.length }} 位教練
@@ -251,7 +251,7 @@ function setActiveStore(storeSlug: string | null) {
                   :to="`/locations/${group.store.slug}`"
                   class="text-sm text-ink/50 hover:text-orange transition-colors inline-flex items-center gap-1"
                 >
-                  查看門店資訊
+                  查看分店資訊
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>

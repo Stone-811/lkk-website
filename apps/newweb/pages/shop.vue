@@ -223,7 +223,7 @@ const openModal = (name: string) => {
           <h3 class="font-serif text-xl font-black text-navy mb-3">{{ modalProduct }} - 洽詢</h3>
           <p class="text-ink/60 text-sm leading-relaxed mb-6">
             本網頁為「練健康商城」之一頁式視覺與商品展示示意設計，目前暫不開放直接線上購物。<br /><br />
-            <strong class="text-navy">若您對此商品有訂購或體驗需求，歡迎前往或致電練健康各大實體門店，由您的專屬教練或現場人員為您提供預購與諮詢服務！</strong>
+            <strong class="text-navy">若您對此商品有訂購或體驗需求，歡迎前往或致電練健康各大實體分店，由您的專屬教練或現場人員為您提供預購與諮詢服務！</strong>
           </p>
           <button @click="showModal = false" class="bg-orange text-white font-medium px-6 py-2.5 rounded shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
             我知道了

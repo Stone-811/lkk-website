@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
   if (!id) {
     throw createError({
       statusCode: 400,
-      statusMessage: '請提供門店 ID',
+      statusMessage: '請提供分店 ID',
     });
   }
 
@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
     if (!storeDoc.exists) {
       throw createError({
         statusCode: 404,
-        statusMessage: '門店不存在',
+        statusMessage: '分店不存在',
       });
     }
 
@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
     if (!coachesSnapshot.empty) {
       throw createError({
         statusCode: 400,
-        statusMessage: '無法刪除：此門店下仍有教練',
+        statusMessage: '無法刪除：此分店下仍有教練',
       });
     }
 
@@ -64,7 +64,7 @@ export default defineEventHandler(async (event) => {
     console.error('Error deleting store:', error);
     throw createError({
       statusCode: 500,
-      statusMessage: '刪除門店失敗',
+      statusMessage: '刪除分店失敗',
     });
   }
 });

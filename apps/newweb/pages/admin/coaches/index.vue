@@ -204,7 +204,7 @@ async function moveCoach(coach: Coach, direction: 'up' | 'down') {
           v-model="filterStore"
           class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
         >
-          <option value="">所有門店</option>
+          <option value="">所有分店</option>
           <option v-for="opt in storeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
         </select>
 
@@ -262,7 +262,7 @@ async function moveCoach(coach: Coach, direction: 'up' | 'down') {
               class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3 cursor-pointer hover:bg-gray-100"
             >
               <div class="flex items-center gap-1">
-                門店
+                分店
                 <svg v-if="sortBy === 'store'" class="w-3 h-3" :class="sortDir === 'desc' ? 'rotate-180' : ''" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                 </svg>

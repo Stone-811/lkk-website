@@ -168,7 +168,7 @@ export async function sendLeadNotification(data: LeadNotificationData) {
   if (data.storeName) {
     content += `
       <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">選擇門店</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">選擇分店</td>
         <td style="padding: 10px; border-bottom: 1px solid #ddd;">${data.storeName}</td>
       </tr>`
   }
@@ -385,7 +385,7 @@ const formConfirmationConfig: Record<string, {
     title: '預約確認',
     greeting: '感謝您預約練健康的體驗課程！',
     message: '我們已收到您的預約申請，將盡快與您聯繫確認時間。',
-    closing: '如有任何問題，歡迎直接回覆此信或致電門店。<br>我們期待與您見面！',
+    closing: '如有任何問題，歡迎直接回覆此信或致電分店。<br>我們期待與您見面！',
   },
   cooperation: {
     subject: '【練健康】感謝您的合作洽詢',
@@ -489,7 +489,7 @@ export async function sendBookingConfirmation(data: {
   paymentMethod?: string
 }) {
   const details = [
-    { label: '預約門店', value: data.storeName },
+    { label: '預約分店', value: data.storeName },
     { label: '方便聯繫時段', value: data.preferredTime.join('、') },
   ]
 

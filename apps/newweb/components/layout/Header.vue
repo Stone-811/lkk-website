@@ -1,12 +1,12 @@
 <script setup lang="ts">
 const route = useRoute()
 
-// 門店資料
+// 分店資料
 const stores = [
   { id: 'nanjing', name: '南京店' },
   { id: 'songjiang', name: '松江店' },
-  { id: 'ximending', name: '西門店' },
-  { id: 'xindian', name: '新店七張店' },
+  { id: 'ximending', name: '西分店' },
+  { id: 'xindian', name: '七張店' },
 ]
 
 // 團隊介紹子選單
@@ -57,17 +57,6 @@ const closeMobileMenu = () => {
 
         <!-- Desktop Navigation -->
         <div class="hidden lg:flex items-center gap-6 xl:gap-8">
-          <!-- 首頁 -->
-          <NuxtLink
-            to="/"
-            :class="[
-              'text-sm xl:text-base transition-colors',
-              isActive('/') ? 'text-orange font-medium' : 'text-cream-100 hover:text-orange'
-            ]"
-          >
-            首頁
-          </NuxtLink>
-
           <!-- 服務方案 -->
           <NuxtLink
             to="/services"
@@ -116,7 +105,7 @@ const closeMobileMenu = () => {
             </div>
           </div>
 
-          <!-- 門店資訊 - 下拉選單 -->
+          <!-- 分店資訊 - 下拉選單 -->
           <div
             class="relative group"
             @mouseenter="openDropdown = 'locations'"
@@ -128,7 +117,7 @@ const closeMobileMenu = () => {
                 isActive('/locations') ? 'text-orange font-medium' : 'text-cream-100 hover:text-orange'
               ]"
             >
-              門店資訊
+              分店資訊
               <svg
                 :class="['w-4 h-4 transition-transform', openDropdown === 'locations' ? 'rotate-180' : '']"
                 fill="none"
@@ -145,7 +134,7 @@ const closeMobileMenu = () => {
                   class="block px-4 py-2 text-sm text-navy-700 hover:bg-cream-100 hover:text-orange transition-colors font-medium"
                   @click="openDropdown = null"
                 >
-                  全部門店
+                  全部分店
                 </NuxtLink>
                 <div class="border-t border-cream-200 my-1" />
                 <NuxtLink
@@ -160,17 +149,6 @@ const closeMobileMenu = () => {
               </div>
             </div>
           </div>
-
-          <!-- 練健康學院 -->
-          <NuxtLink
-            to="/lkk-academy"
-            :class="[
-              'text-sm xl:text-base transition-colors',
-              isActive('/lkk-academy') ? 'text-orange font-medium' : 'text-cream-100 hover:text-orange'
-            ]"
-          >
-            練健康學院
-          </NuxtLink>
 
           <!-- 知識分享 -->
           <a
@@ -252,15 +230,6 @@ const closeMobileMenu = () => {
       <!-- Mobile Menu -->
       <div v-if="mobileMenuOpen" class="lg:hidden py-4 border-t border-navy-600 max-h-[70vh] overflow-y-auto">
         <div class="flex flex-col gap-1">
-          <!-- 首頁 -->
-          <NuxtLink
-            to="/"
-            :class="['py-3 px-2 rounded', isActive('/') ? 'text-orange font-medium bg-navy-600/50' : 'text-cream-100']"
-            @click="closeMobileMenu"
-          >
-            首頁
-          </NuxtLink>
-
           <!-- 服務方案 -->
           <NuxtLink
             to="/services"
@@ -302,7 +271,7 @@ const closeMobileMenu = () => {
             </div>
           </div>
 
-          <!-- 門店資訊 - 手機版下拉 -->
+          <!-- 分店資訊 - 手機版下拉 -->
           <div>
             <button
               :class="[
@@ -311,7 +280,7 @@ const closeMobileMenu = () => {
               ]"
               @click="toggleMobileDropdown('locations')"
             >
-              門店資訊
+              分店資訊
               <svg
                 :class="['w-4 h-4 transition-transform', mobileOpenDropdown === 'locations' ? 'rotate-180' : '']"
                 fill="none"
@@ -327,7 +296,7 @@ const closeMobileMenu = () => {
                 class="block py-2 px-3 text-sm text-cream-200 hover:text-orange rounded font-medium"
                 @click="closeMobileMenu"
               >
-                全部門店
+                全部分店
               </NuxtLink>
               <NuxtLink
                 v-for="store in stores"
@@ -340,15 +309,6 @@ const closeMobileMenu = () => {
               </NuxtLink>
             </div>
           </div>
-
-          <!-- 練健康學院 -->
-          <NuxtLink
-            to="/lkk-academy"
-            :class="['py-3 px-2 rounded', isActive('/lkk-academy') ? 'text-orange font-medium bg-navy-600/50' : 'text-cream-100']"
-            @click="closeMobileMenu"
-          >
-            練健康學院
-          </NuxtLink>
 
           <!-- 知識分享 -->
           <a

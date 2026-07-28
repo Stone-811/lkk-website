@@ -1,5 +1,5 @@
 /**
- * 門店預設資料
+ * 分店預設資料
  * 用於後台編輯時自動帶入、前端顯示時補充缺失資料
  */
 
@@ -99,21 +99,21 @@ const storeDefaults: Record<string, StoreDefaultData> = {
 
 export function useStoreDefaults() {
   /**
-   * 取得門店預設資料
+   * 取得分店預設資料
    */
   function getStoreDefaults(slug: string): StoreDefaultData | undefined {
     return storeDefaults[slug]
   }
 
   /**
-   * 取得所有門店預設資料
+   * 取得所有分店預設資料
    */
   function getAllStoreDefaults(): Record<string, StoreDefaultData> {
     return storeDefaults
   }
 
   /**
-   * 合併門店資料與預設資料（預設資料只在欄位為空時使用）
+   * 合併分店資料與預設資料（預設資料只在欄位為空時使用）
    */
   function mergeWithDefaults<T extends Record<string, any>>(storeData: T, slug: string): T {
     const defaults = storeDefaults[slug]

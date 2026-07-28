@@ -77,7 +77,7 @@ const statCards = computed(() => [
 
 // Secondary stats
 const secondaryStats = computed(() => [
-  { label: '門店數', value: stats.value.storeCount.toString(), href: '/admin/stores' },
+  { label: '分店數', value: stats.value.storeCount.toString(), href: '/admin/stores' },
   { label: '教練數', value: stats.value.coachCount.toString(), href: '/admin/coaches' },
   { label: '本月加盟洽詢', value: stats.value.thisMonthFranchises.toString(), href: '/admin/leads?type=franchise' },
   { label: '總名單數', value: stats.value.totalLeads.toString(), href: '/admin/leads' },
@@ -87,8 +87,8 @@ const secondaryStats = computed(() => [
 // Quick actions
 const quickActions = [
   {
-    name: '新增門店',
-    desc: '建立新的門店資料',
+    name: '新增分店',
+    desc: '建立新的分店資料',
     href: '/admin/stores/new',
     iconBg: 'bg-navy-700/10',
     iconColor: 'text-navy-700',
@@ -179,7 +179,7 @@ const quickActions = [
                 <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">姓名</th>
                 <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">電話</th>
                 <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">類型</th>
-                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">門店</th>
+                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">分店</th>
                 <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">狀態</th>
                 <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">建立時間</th>
               </tr>

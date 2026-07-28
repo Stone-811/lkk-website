@@ -165,7 +165,7 @@ async function handleSaveNote() {
 }
 
 function handleExport() {
-  const headers = ['姓名', '電話', 'Email', '門店', '狀態', '性別', '出生年月', '運動目的', '偏好時段', '付款方式', '來源', '備註', '建立時間']
+  const headers = ['姓名', '電話', 'Email', '分店', '狀態', '性別', '出生年月', '運動目的', '偏好時段', '付款方式', '來源', '備註', '建立時間']
   const rows = filteredLeads.value.map(lead => {
     // 處理運動目的
     let exerciseGoalsText = ''
@@ -254,7 +254,7 @@ function handleExport() {
           v-model="selectedStore"
           class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
         >
-          <option value="all">所有門店</option>
+          <option value="all">所有分店</option>
           <option v-for="store in stores" :key="store.id" :value="store.id">{{ store.name }}</option>
         </select>
 
@@ -309,7 +309,7 @@ function handleExport() {
               class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3 cursor-pointer hover:bg-gray-100"
             >
               <div class="flex items-center gap-1">
-                門店
+                分店
                 <svg v-if="sortBy === 'store'" class="w-3 h-3" :class="sortDir === 'desc' ? 'rotate-180' : ''" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                 </svg>
@@ -413,7 +413,7 @@ function handleExport() {
               <p class="font-medium">{{ selectedLead.email }}</p>
             </div>
             <div>
-              <p class="text-sm text-gray-500">門店</p>
+              <p class="text-sm text-gray-500">分店</p>
               <p class="font-medium">{{ selectedLead.storeName || '-' }}</p>
             </div>
             <div>

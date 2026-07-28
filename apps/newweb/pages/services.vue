@@ -84,7 +84,7 @@ const comparisonData = [
   { item: '小班人數', personal: '1 人（純個人）', group: '4-8 人', online: '自主學習' },
   { item: '適合特殊族群', personal: '✓ 最適合', group: '部分課程', online: '—' },
   { item: '時間彈性', personal: '依約定排課', group: '依固定時段', online: '✓ 完全彈性' },
-  { item: '需要到門店', personal: '✓', group: '✓', online: '不需要' },
+  { item: '需要到分店', personal: '✓', group: '✓', online: '不需要' },
   { item: '開始方式', personal: '預約體驗課', group: '預約體驗課', online: '線上報名' },
 ]
 
@@ -454,7 +454,7 @@ const personalFeatures = [
               線上課程
             </h2>
             <p class="text-ink-600 text-lg mb-6 leading-relaxed">
-              不方便到門店，或是想在家自主訓練？線上課程讓你在任何地點、任何時間，跟著練健康的教練動起來。
+              不方便到分店，或是想在家自主訓練？線上課程讓你在任何地點、任何時間，跟著練健康的教練動起來。
             </p>
             <p class="text-orange font-semibold mb-6">
               sat.cool 線上平台

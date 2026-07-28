@@ -11,8 +11,8 @@ useHead({
 const stores = ref([
   { id: 'nanjing', name: '南京店', address: '台北市中山區南京東路三段 29 號 B1', phone: '(02) 2507-4196' },
   { id: 'songjiang', name: '松江店', address: '台北市中山區松江路 122 號 B1', phone: '(02) 2537-1055' },
-  { id: 'ximending', name: '西門店', address: '台北市中正區寶慶路 39 號', phone: '(02) 2370-3245' },
-  { id: 'xindian', name: '新店七張店', address: '新北市新店區北新路二段 252 號 B1-2', phone: '(02) 8914-6428' },
+  { id: 'ximending', name: '西分店', address: '台北市中正區寶慶路 39 號', phone: '(02) 2370-3245' },
+  { id: 'xindian', name: '七張店', address: '新北市新店區北新路二段 252 號 B1-2', phone: '(02) 8914-6428' },
 ])
 
 const faqs = [
@@ -61,7 +61,7 @@ const sourceOptions = [
   'YouTube',
   'Podcast',
   '朋友推薦',
-  '路過門店',
+  '路過分店',
   '醫療院所轉介',
   '其他',
 ]
@@ -211,7 +211,7 @@ const validateForm = () => {
   if (!formData.hasMedicalCondition) newErrors.hasMedicalCondition = '請選擇健康狀況'
 
   // 預約資訊驗證
-  if (!formData.storeId) newErrors.storeId = '請選擇門店'
+  if (!formData.storeId) newErrors.storeId = '請選擇分店'
   if (formData.preferredTimes.length === 0) newErrors.preferredTimes = '請至少選擇一個時段'
   if (!formData.paymentMethod) newErrors.paymentMethod = '請選擇付款方式'
 
@@ -647,10 +647,10 @@ const handleSubmit = async () => {
                     預約資訊
                   </h2>
 
-                  <!-- 選擇門店 -->
+                  <!-- 選擇分店 -->
                   <div id="storeId">
                     <label class="block text-sm font-medium mb-2 text-navy-700">
-                      選擇門店 <span class="text-red-500">*</span>
+                      選擇分店 <span class="text-red-500">*</span>
                     </label>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <button

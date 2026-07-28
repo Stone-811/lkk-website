@@ -39,14 +39,14 @@ const { data: storeResponse, error: storeError } = await useFetch<{
 if (storeError.value || !storeResponse.value?.success) {
   throw createError({
     statusCode: 404,
-    statusMessage: '找不到此門店'
+    statusMessage: '找不到此分店'
   })
 }
 
 const store = computed(() => storeResponse.value?.data)
 const coaches = computed(() => store.value?.coaches || [])
 
-// 門店硬編碼資料（用於補充 API 沒有的資料，如電話格式、交通資訊等）
+// 分店硬編碼資料（用於補充 API 沒有的資料，如電話格式、交通資訊等）
 const storeExtraData: Record<string, any> = {
   'xindian': {
     phoneRaw: '+886289146428',
@@ -191,7 +191,7 @@ useHead({
   ]
 })
 
-// 門店照片
+// 分店照片
 const photos = computed(() => {
   const galleryImages = store.value?.galleryImages || []
   if (galleryImages.length > 0) {
@@ -234,7 +234,7 @@ const photos = computed(() => {
           <nav class="flex items-center gap-1.5 text-xs text-white/35 mb-5">
             <NuxtLink to="/" class="hover:text-white/70 transition-colors">練健康</NuxtLink>
             <span class="text-white/20">›</span>
-            <NuxtLink to="/locations" class="hover:text-white/70 transition-colors">門店地點</NuxtLink>
+            <NuxtLink to="/locations" class="hover:text-white/70 transition-colors">分店地點</NuxtLink>
             <span class="text-white/20">›</span>
             <span>{{ store.name }}</span>
           </nav>
@@ -410,7 +410,7 @@ const photos = computed(() => {
       <div class="container mx-auto px-4">
         <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
           <span class="w-5 h-0.5 bg-orange" />
-          門店環境
+          分店環境
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">
           來之前<span class="text-orange">先看看</span>

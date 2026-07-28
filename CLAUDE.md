@@ -11,7 +11,7 @@
 
 **newweb（Nuxt）即將成為主站**，使用 Firebase App Hosting 部署。
 
-目標是用較低維運成本完成階段性網站改版，並讓業主可透過後台自行管理新官網頁面的照片、文案、CTA、連結、門店、教練與表單名單。
+目標是用較低維運成本完成階段性網站改版，並讓業主可透過後台自行管理新官網頁面的照片、文案、CTA、連結、分店、教練與表單名單。
 
 **核心特點：統一網域 `l-kk.tw`**
 - 新官網頁面由 Nuxt（或 Next.js）處理
@@ -57,7 +57,7 @@ GoDaddy DNS
         ├─ Next.js 自行處理                              │
         │   ├─ /                    → 首頁              │
         │   ├─ /booking             → 預約體驗          │
-        │   ├─ /locations           → 門店總覽          │
+        │   ├─ /locations           → 分店總覽          │
         │   ├─ /team-intro          → 團隊介紹          │
         │   ├─ /team-intro/coaches  → 全體教練          │
         │   ├─ /lkk-lecturer        → 練健康授權講師    │
@@ -103,7 +103,7 @@ GoDaddy DNS
 |---|---|---|
 | `l-kk.tw` | Next.js | 新官網主站 |
 | `l-kk.tw/booking` | Next.js | 預約體驗 |
-| `l-kk.tw/locations` | Next.js | 門店總覽 |
+| `l-kk.tw/locations` | Next.js | 分店總覽 |
 | `l-kk.tw/team-intro` | Next.js | 團隊介紹（經營團隊） |
 | `l-kk.tw/team-intro/coaches` | Next.js | 全體教練 |
 | `l-kk.tw/lkk-lecturer` | Next.js | 練健康授權講師 |
@@ -308,7 +308,7 @@ lkk-website/                    # 根目錄（Monorepo）
 │       │   ├── [locale]/       # 多語系頁面
 │       │   │   ├── page.tsx              # 首頁
 │       │   │   ├── booking/page.tsx      # 預約體驗
-│       │   │   ├── locations/page.tsx    # 門店總覽
+│       │   │   ├── locations/page.tsx    # 分店總覽
 │       │   │   ├── team-intro/           # 團隊介紹
 │       │   │   │   ├── page.tsx          # 經營團隊
 │       │   │   │   └── coaches/page.tsx  # 全體教練
@@ -325,7 +325,7 @@ lkk-website/                    # 根目錄（Monorepo）
 │       │   ├── admin/          # CMS 後台
 │       │   │   ├── login/page.tsx
 │       │   │   ├── dashboard/page.tsx
-│       │   │   ├── stores/page.tsx       # 門店管理（含照片）
+│       │   │   ├── stores/page.tsx       # 分店管理（含照片）
 │       │   │   ├── coaches/page.tsx      # 教練管理
 │       │   │   ├── lecturers/page.tsx    # 講師管理
 │       │   │   ├── lkk4-records/page.tsx # LKK4 成績管理
@@ -358,8 +358,8 @@ lkk-website/                    # 根目錄（Monorepo）
 │       │   ├── lkk-academy.vue         # 練健康學院
 │       │   ├── cooperation.vue         # 合作洽詢
 │       │   ├── locations/
-│       │   │   ├── index.vue           # 門店總覽
-│       │   │   └── [store].vue         # 門店詳情
+│       │   │   ├── index.vue           # 分店總覽
+│       │   │   └── [store].vue         # 分店詳情
 │       │   ├── team-intro/
 │       │   │   ├── index.vue           # 經營團隊
 │       │   │   └── coaches.vue         # 全體教練
@@ -384,8 +384,8 @@ lkk-website/                    # 根目錄（Monorepo）
 | 首頁 | ✅ | Hero、服務、案例、FAQ、CTA |
 | 預約體驗 | ✅ | 表單含年齡偵測、運動目的多選 |
 | 服務方案 | ✅ | 一對一/團課/線上，比較表 |
-| 門店總覽 | ✅ | 4 間門店、stats bar、cases section |
-| 門店詳情 | ✅ | 交通、教練、環境照、CTA |
+| 分店總覽 | ✅ | 4 間分店、stats bar、cases section |
+| 分店詳情 | ✅ | 交通、教練、環境照、CTA |
 | 加盟說明 | ✅ | 市場數據、申請表單 |
 | LKK4 賽事 | ✅ | 賽事介紹、報名導流 |
 | 成績查詢 | ✅ | 年度/姓名查詢 |
@@ -501,7 +501,7 @@ server/
 │   └── public/
 │       ├── coaches.get.ts         # 取得教練列表
 │       ├── faqs.get.ts            # 取得 FAQ
-│       ├── stores.get.ts          # 取得門店列表
+│       ├── stores.get.ts          # 取得分店列表
 │       └── lkk4-records.get.ts    # 取得 LKK4 成績
 │
 └── utils/
@@ -521,7 +521,7 @@ server/
 
 | 表單類型 | 通知內容 |
 |---------|---------|
-| booking | 姓名、電話、Email、門店、性別、出生年月、LINE ID、代填者資訊、健康狀況、方便時段、付款方式、得知管道 |
+| booking | 姓名、電話、Email、分店、性別、出生年月、LINE ID、代填者資訊、健康狀況、方便時段、付款方式、得知管道 |
 | cooperation | 姓名、電話、Email、公司、洽詢類型、LINE ID、公司規模、預算區間、留言 |
 | franchise | 姓名、電話、Email、公司、目標區域、合作類型、留言 |
 
@@ -580,10 +580,10 @@ Nuxt 版的手機版預約按鈕位於：
 
 **彈窗內容：**
 - 教練照片（96x96px 圓角方塊）
-- 姓名、職稱、所屬門店
+- 姓名、職稱、所屬分店
 - 專長標籤（最多顯示 3 個）
 - 詳細資訊：簡介、專業認證、學歷背景、經歷
-- CTA 按鈕：預約體驗（帶門店參數）
+- CTA 按鈕：預約體驗（帶分店參數）
 
 **Z-index 層級：**
 - 彈窗：`z-[60]`（高於手機固定按鈕 `z-50`）
@@ -918,8 +918,8 @@ DELETE /api/admin/lkk4-records/import
 
 | 頁面 | 路徑 | 內容 |
 |------|------|------|
-| 預約體驗 | `/booking` | 預約表單、門店選擇、FAQ、門店通知 |
-| 門店 | `/locations` | 門店總覽、門店資訊、交通、照片、教練連結 |
+| 預約體驗 | `/booking` | 預約表單、分店選擇、FAQ、分店通知 |
+| 分店 | `/locations` | 分店總覽、分店資訊、交通、照片、教練連結 |
 | 首頁 | `/` | Hero、數據條（DataStrip）、曾受報導（PressStrip）、服務內容、案例導流、FAQ、CTA、Footer |
 
 ### Phase 2：次高優先（預估 30 天）
@@ -955,7 +955,7 @@ DELETE /api/admin/lkk4-records/import
 
 **booking（預約體驗）**
 - name, phone, email, gender, age, goal
-- storeId（門店）, preferredTime（偏好時段）
+- storeId（分店）, preferredTime（偏好時段）
 - source, message
 
 **cooperation（合作洽詢）**
@@ -1119,7 +1119,7 @@ export async function sendNewTypeConfirmation(data: { name: string; email: strin
 | `form_submit` | 表單送出成功 | `form_type`, `store_id` |
 | `click_cta` | 點擊 CTA 按鈕 | `button_text`, `destination` |
 | `click_phone` | 點擊電話連結 | `store_name` |
-| `view_store` | 檢視門店詳情 | `store_name`, `store_id` |
+| `view_store` | 檢視分店詳情 | `store_name`, `store_id` |
 | `view_coach` | 檢視教練頁面 | `coach_name` |
 
 ### 實作方式
@@ -1149,7 +1149,7 @@ import Script from 'next/script';
 1. **預約表單送出** - 主要轉換目標
 2. **加盟表單送出** - 商業開發轉換
 3. **合作洽詢送出** - B2B 轉換
-4. **門店電話點擊** - 微轉換
+4. **分店電話點擊** - 微轉換
 
 ---
 
@@ -1172,7 +1172,7 @@ import Script from 'next/script';
 
 - 新官網首頁
 - 預約體驗頁
-- 門店頁
+- 分店頁
 - 加盟頁
 - LKK4 頁
 - 合作洽詢頁
@@ -1372,7 +1372,7 @@ npx firebase-tools deploy --only firestore:indexes --project lkk-website-dev
 
 - Banner 圖片
 - 教練照片
-- 門店照片
+- 分店照片
 - 表單附件
 
 ### WordPress (Cloudways)
@@ -1436,7 +1436,7 @@ npx firebase-tools deploy --only firestore:indexes --project lkk-website-dev
 以下頁面載入時間較長，需要特別關注：
 
 - `/team-intro/coaches` (全體教練)
-- `/locations` (門店資訊)
+- `/locations` (分店資訊)
 
 ### 載入較久的原因分析
 
@@ -1457,7 +1457,7 @@ npx firebase-tools deploy --only firestore:indexes --project lkk-website-dev
 **coaches.get.ts 執行流程**：
 1. 連接 Firestore (getDb())
 2. 查詢 coaches collection (where isActive == true)
-3. 批次查詢 stores collection (取得門店名稱)
+3. 批次查詢 stores collection (取得分店名稱)
 4. 組合資料並回傳
 
 即使已優化為批次查詢，仍需 2-3 次 Firestore 往返。
@@ -1554,9 +1554,9 @@ runConfig:
 | `apps/newweb/apphosting.yaml` | Firebase App Hosting 設定 |
 | `apps/newweb/server/utils/firebase.ts` | Firebase 初始化邏輯 |
 | `apps/newweb/server/api/public/coaches.get.ts` | 教練 API 端點 |
-| `apps/newweb/server/api/public/stores.get.ts` | 門店 API 端點 |
+| `apps/newweb/server/api/public/stores.get.ts` | 分店 API 端點 |
 | `apps/newweb/pages/team-intro/coaches.vue` | 教練頁面元件 |
-| `apps/newweb/pages/locations/index.vue` | 門店頁面元件 |
+| `apps/newweb/pages/locations/index.vue` | 分店頁面元件 |
 
 ### 效能監控指標目標
 
@@ -1574,7 +1574,7 @@ runConfig:
 ### 前台
 
 - [ ] RWD 正常（桌機、平板、手機）
-- [ ] 首頁、預約、門店、加盟、合作、LKK4、商品導購頁正常
+- [ ] 首頁、預約、分店、加盟、合作、LKK4、商品導購頁正常
 - [ ] CTA 連結正確
 - [ ] 多語切換正常
 
@@ -1588,7 +1588,7 @@ runConfig:
 ### CMS
 
 - [ ] `/admin/*` 可登入（Firebase Auth）
-- [ ] 可管理首頁內容、門店、教練、FAQ、CTA
+- [ ] 可管理首頁內容、分店、教練、FAQ、CTA
 - [ ] 可查詢表單名單
 - [ ] 可更新名單狀態與備註
 - [ ] 可匯出 CSV

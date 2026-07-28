@@ -25,7 +25,7 @@ export const fallbackStores: Store[] = [
   {
     id: 'xindian',
     slug: 'xindian',
-    name: '新店七張店',
+    name: '七張店',
     city: '新北市',
     district: '新店區',
     address: '北新路二段 252 號 B1-2',
@@ -68,7 +68,7 @@ export const fallbackCoaches: Record<string, Coach[]> = {
       roleTitle: '店主管・物理治療師・教練',
       photo: '/images/coaches/xindian/li-zheyu.jpg',
       education: ['國立陽明交通大學物理治療暨輔助科技學系'],
-      experiences: ['新店七張店 店主管', '練健康教練培訓講師', '羅東博愛醫院 物理治療師'],
+      experiences: ['七張店 店主管', '練健康教練培訓講師', '羅東博愛醫院 物理治療師'],
       certifications: ['物理治療師證照', 'ACE-CPT 美國運動協會私人教練', 'SFMA 動作篩檢認證', 'FMS 功能性動作篩檢認證', 'DNS A Course', 'RPR Level 1'],
       specialties: ['動作優化訓練', '骨骼肌肉系統傷害後訓練', '中高齡肌力訓練'],
     },

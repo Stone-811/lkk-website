@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     const store = docToObject<StoreDoc>(storeDoc)
 
     if (!store) {
-      throw createError({ statusCode: 404, message: '找不到此門店' })
+      throw createError({ statusCode: 404, message: '找不到此分店' })
     }
 
     return { success: true, data: store }

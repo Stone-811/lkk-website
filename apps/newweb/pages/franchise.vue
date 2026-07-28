@@ -23,7 +23,7 @@ const marketPoints = [
 
 const timingCards = [
   { num: '01', title: '市場空窗正在關閉', body: '高齡化帶來的商業機會已有更多人意識到，但能真正落地執行、有完整方法論的品牌仍然極少。先進場的品牌將取得定位優勢，後進者需要付出更高的市場教育成本。' },
-  { num: '02', title: '練健康的體系已經成熟', body: '七年的實戰經驗、四間門店的營運模式、完整的教練培訓體系、以及六屆 LKK4 建立的品牌知名度——這些都已就位。你不是在投資一個概念，而是一個已被市場驗證的系統。' },
+  { num: '02', title: '練健康的體系已經成熟', body: '七年的實戰經驗、四間分店的營運模式、完整的教練培訓體系、以及六屆 LKK4 建立的品牌知名度——這些都已就位。你不是在投資一個概念，而是一個已被市場驗證的系統。' },
   { num: '03', title: '我們正在選擇性擴張', body: '我們不以規模為優先，而是選擇真正理解這個市場、有資源把事情做好的夥伴。現在是加入討論的合適時機，我們希望和有意思的人一起把這件事做大。' },
 ]
 
@@ -46,7 +46,7 @@ const differentiators = [
 ]
 
 const lkk4Points = [
-  { iconType: 'marketing', title: '賽事即行銷，無需另外投放廣告', desc: '每年一屆的 LKK4 產生大量媒體曝光、社群擴散和口碑，這些流量自然流入門店，降低加盟夥伴的行銷成本' },
+  { iconType: 'marketing', title: '賽事即行銷，無需另外投放廣告', desc: '每年一屆的 LKK4 產生大量媒體曝光、社群擴散和口碑，這些流量自然流入分店，降低加盟夥伴的行銷成本' },
   { iconType: 'globe', title: '亞洲擴張的贊助吸引力', desc: 'LKK4 進入新市場後，對保健品、保險、金融品牌的贊助吸引力，是一般健身中心無法比擬的附加資產' },
   { iconType: 'growth', title: '參賽者即最高黏著度學員', desc: '參加過 LKK4 的學員，流失率遠低於一般學員。賽事讓訓練有了目標，目標讓人留下來' },
   { iconType: 'shield', title: '模仿者已出現，但六年的積累無法複製', desc: '市面上已有品牌開始模仿練健康的方向，甚至出現類似賽事。但六屆的歷史、媒體認知、學員社群，是時間積累出來的護城河' },
@@ -493,7 +493,7 @@ const handleSubmit = async () => {
                   class="w-full px-4 py-2.5 border border-navy/20 rounded focus:ring-2 focus:ring-navy focus:border-navy outline-none text-sm bg-white"
                 >
                   <option value="">請選擇</option>
-                  <option value="實體加盟門店">實體加盟門店</option>
+                  <option value="實體加盟分店">實體加盟分店</option>
                   <option value="區域代理">區域代理／主加盟</option>
                   <option value="教練認證授權">教練認證授權</option>
                   <option value="LKK4賽事授權">LKK4 賽事授權</option>

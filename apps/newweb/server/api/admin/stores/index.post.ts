@@ -94,7 +94,7 @@ export default defineEventHandler(async (event) => {
     console.error('Error creating store:', error);
     throw createError({
       statusCode: 500,
-      statusMessage: '建立門店失敗',
+      statusMessage: '建立分店失敗',
     });
   }
 });

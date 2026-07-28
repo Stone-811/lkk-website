@@ -13,7 +13,7 @@ const heroStats = [
   {
     icon: 'location',
     num: '4 間',
-    label: '門店｜台北・新北',
+    label: '分店｜台北・新北',
   },
   {
     icon: 'badge',
@@ -70,7 +70,7 @@ const pressOutlets = [
             </h1>
 
             <p class="text-white/65 text-lg font-light leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
-              由物理治療師、呼吸治療師與專業教練組成，以運動醫學為基礎，為中高齡與特殊族群量身打造安全有效的肌力訓練課程。
+              教練團隊皆經系統化課程培訓考核，深耕中高齡與特殊族群訓練知識，為您量身打造安全有效的肌力訓練課程。
             </p>
 
             <div class="flex flex-wrap gap-3 justify-center lg:justify-start">

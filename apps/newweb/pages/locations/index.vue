@@ -1,6 +1,6 @@
 <script setup lang="ts">
 useHead({
-  title: '門店地點｜練健康 LKK Wellness',
+  title: '分店地點｜練健康 LKK Wellness',
   meta: [
     {
       name: 'description',
@@ -9,11 +9,11 @@ useHead({
   ]
 })
 
-// 門店資料
+// 分店資料
 const stores = [
   {
     id: 'xindian',
-    name: '新店七張店',
+    name: '七張店',
     district: '新北市新店區',
     address: '新北市新店區北新路二段 252 號 B1-2',
     phone: '(02) 8914-6428',
@@ -43,7 +43,7 @@ const stores = [
   },
   {
     id: 'ximending',
-    name: '西門店',
+    name: '西分店',
     district: '台北市中正區',
     address: '台北市中正區寶慶路 39 號',
     phone: '(02) 2370-3245',
@@ -54,7 +54,7 @@ const stores = [
 ]
 
 const stats = [
-  { num: '4', label: '間門店' },
+  { num: '4', label: '間分店' },
   { num: '1,000+', label: '服務學員' },
   { num: '7 年', label: '深耕中高齡' },
   { num: '100%', label: '鄰近捷運' },
@@ -64,12 +64,12 @@ const reasons = [
   {
     iconType: 'medical',
     title: '物理治療師背景',
-    desc: '每間門店都有物理治療師或運動科學專業教練，安全是最高原則。',
+    desc: '每間分店都有物理治療師或運動科學專業教練，安全是最高原則。',
   },
   {
     iconType: 'transit',
     title: '捷運三分鐘可達',
-    desc: '所有門店都在捷運站步行範圍內，不管刮風下雨都能輕鬆抵達。',
+    desc: '所有分店都在捷運站步行範圍內，不管刮風下雨都能輕鬆抵達。',
   },
   {
     iconType: 'senior',
@@ -102,7 +102,7 @@ const reasons = [
       <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 text-center">
         <div class="inline-flex items-center gap-2 bg-orange/20 border border-orange/40 text-orange text-sm font-medium px-4 py-1.5 rounded-full mb-5">
           <span class="w-2 h-2 bg-orange rounded-full" />
-          全台 {{ stores.length }} 間門店
+          全台 {{ stores.length }} 間分店
         </div>
 
         <h1 class="font-serif text-4xl lg:text-5xl font-black text-white leading-tight mb-4">
@@ -110,7 +110,7 @@ const reasons = [
         </h1>
 
         <p class="text-white/60 text-lg font-light leading-relaxed mb-8 max-w-xl mx-auto">
-          每間門店都鄰近捷運站，由物理治療師背景教練帶領，專為中高齡及特殊族群打造的訓練環境。
+          每間分店都鄰近捷運站，由物理治療師背景教練帶領，專為中高齡及特殊族群打造的訓練環境。
         </p>
 
         <div class="flex items-center justify-center gap-2 text-sm text-white/40">
@@ -251,10 +251,10 @@ const reasons = [
         <div class="text-center mb-10">
           <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
             <span class="w-5 h-0.5 bg-orange" />
-            全台門店
+            全台分店
           </div>
           <h2 class="font-serif text-2xl lg:text-3xl font-black text-white">
-            其他<span class="text-orange">門店據點</span>
+            其他<span class="text-orange">分店據點</span>
           </h2>
         </div>
 
@@ -341,7 +341,7 @@ const reasons = [
     <section class="bg-orange py-16 lg:py-20 text-center">
       <div class="container mx-auto px-4">
         <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">
-          找到離你最近的門店了嗎？
+          找到離你最近的分店了嗎？
         </h2>
         <p class="text-white/80 mb-8 max-w-md mx-auto">
           立即預約免費體驗，由我們的專業教練帶領你開始第一步。

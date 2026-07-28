@@ -13,10 +13,10 @@ const storeId = computed(() => route.params.id as string)
 const isNew = computed(() => storeId.value === 'new')
 
 useHead({
-  title: computed(() => isNew.value ? '新增門店｜練健康後台' : '編輯門店｜練健康後台'),
+  title: computed(() => isNew.value ? '新增分店｜練健康後台' : '編輯分店｜練健康後台'),
 })
 
-// 門店環境照片分類定義
+// 分店環境照片分類定義
 const imageCategories = [
   { key: 'env1', label: '環境照片 1', description: '主訓練區' },
   { key: 'env2', label: '環境照片 2', description: '一對一訓練空間' },
@@ -236,7 +236,7 @@ onMounted(async () => {
     }
   } catch (error: any) {
     console.error('Failed to fetch store:', error)
-    alert('載入門店資料失敗')
+    alert('載入分店資料失敗')
     router.push('/admin/stores')
   } finally {
     loading.value = false
@@ -279,7 +279,7 @@ function validateForm(): boolean {
   const newErrors: Record<string, string> = {}
 
   if (!formData.value.name.trim()) {
-    newErrors.name = '請輸入門店名稱'
+    newErrors.name = '請輸入分店名稱'
   }
 
   if (!formData.value.slug.trim()) {
@@ -407,7 +407,7 @@ function removeImage(key: string) {
         </svg>
       </NuxtLink>
       <div>
-        <h1 class="text-2xl font-bold">{{ isNew ? '新增門店' : '編輯門店' }}</h1>
+        <h1 class="text-2xl font-bold">{{ isNew ? '新增分店' : '編輯分店' }}</h1>
         <p v-if="!isNew && formData.name" class="text-gray-500 text-sm mt-1">編輯「{{ formData.name }}」的資料</p>
       </div>
     </div>
@@ -426,7 +426,7 @@ function removeImage(key: string) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1">
-              門店名稱 <span class="text-red-500">*</span>
+              分店名稱 <span class="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -680,7 +680,7 @@ function removeImage(key: string) {
       <!-- Images -->
       <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
         <div>
-          <h2 class="font-bold text-lg border-b pb-2">門店照片</h2>
+          <h2 class="font-bold text-lg border-b pb-2">分店照片</h2>
           <p class="text-sm text-gray-500 mt-2">
             請依照各區域上傳對應的照片（支援 JPG、PNG、WebP、GIF，最大 5MB）
           </p>
