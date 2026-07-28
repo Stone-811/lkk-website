@@ -3,12 +3,12 @@ const steps = [
   {
     step: 1,
     title: '填寫預約表單',
-    description: '姓名、電話、選擇分店\n30 秒完成',
+    description: '約 1~2 分鐘完成\n提供必要資訊',
   },
   {
     step: 2,
     title: '教練主動聯繫',
-    description: '1 個工作天內\n電話或 LINE 聯絡',
+    description: '2~3天內\n我們會打電話給您安排時間',
   },
   {
     step: 3,
@@ -17,8 +17,8 @@ const steps = [
   },
   {
     step: 4,
-    title: '客製課表訓練',
-    description: '物理治療師背景教練\n設計專屬課程',
+    title: '客製化訓練建議',
+    description: '專業教練依評估結果\n設計專屬課程',
   },
 ]
 </script>

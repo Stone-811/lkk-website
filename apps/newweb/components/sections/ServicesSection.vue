@@ -3,7 +3,7 @@ const services = [
   {
     id: 'senior',
     title: '中高齡肌力訓練',
-    description: '40歲後肌肉、骨質流失速度增加。透過科學訓練，讓你找回身體動作能力，生活健康自主又有尊嚴。',
+    description: '40歲後肌肉、骨質流失速度增加，透過訓練讓您找回屬於您的身體動作能力。',
     tags: ['肌少症預防', '骨質強化', '平衡訓練', '一對一教練'],
     badge: '最受歡迎',
     image: '/images/services/senior.jpg',
@@ -11,8 +11,8 @@ const services = [
   {
     id: 'special',
     title: '特殊族群訓練',
-    description: '中風、癌症、手術後、糖尿病、骨質疏鬆族群之專業訓練介入，由物理治療師督導，讓身體在最安全的方式下恢復。',
-    tags: ['中風復健', '術後訓練', '慢性病管理', '物理治療師督導'],
+    description: '中風、癌症、手術後、糖尿病、骨質疏鬆族群之專業訓練介入，讓您在最安全且有效的方式下，讓身體恢復到原有水準。',
+    tags: ['中風復健', '術後訓練', '慢性病管理', '專業教練把關'],
     badge: '醫療背景',
     image: '/images/services/special.png',
   },
@@ -39,7 +39,7 @@ const services = [
         找到<span class="text-orange">適合你</span>的訓練方式
       </h2>
       <p class="text-ink/60 leading-relaxed mb-10 max-w-xl">
-        以運動醫學知識為核心，每位學員都有獨立的評估與客製化課表。
+        以運動醫學知識為核心，提供您專業客製化肌力訓練課程，讓您生活健康自主又活得有尊嚴。
       </p>
 
       <!-- Services grid -->
