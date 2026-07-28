@@ -4,7 +4,7 @@ import { computed, onMounted } from 'vue'
 useHead({
   title: '預約體驗 | 練健康',
   meta: [
-    { name: 'description', content: '預約練健康首次體驗課程。50 歲以上完全免費，一般首次體驗 $500。由物理治療師背景教練帶領，安全有效。' }
+    { name: 'description', content: '預約練健康首次體驗課程。50 歲以上完全免費，一般首次體驗 $500。由專業教練帶領，安全有效。' }
   ]
 })
 
