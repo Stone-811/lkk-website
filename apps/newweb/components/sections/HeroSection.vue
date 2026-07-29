@@ -32,7 +32,7 @@ const pressOutlets = [
       </div>
 
       <div class="container mx-auto px-4 relative z-10 py-12 lg:py-16">
-        <div class="grid lg:grid-cols-[1fr_400px] gap-12 items-center">
+        <div class="grid lg:grid-cols-[1fr_460px] gap-12 items-center">
           <!-- Left content -->
           <div class="text-center lg:text-left">
             <!-- Eyebrow -->
@@ -73,37 +73,37 @@ const pressOutlets = [
           </div>
 
           <!-- Right - Stats Card -->
-          <aside class="hidden lg:block bg-white/[0.06] backdrop-blur-md border border-white/12 rounded-3xl p-7">
+          <aside class="hidden lg:block bg-white/[0.06] backdrop-blur-md border border-white/12 rounded-3xl p-8">
             <!-- Title -->
-            <h2 class="text-center text-white font-serif text-xl font-bold mb-5">
+            <h2 class="text-center text-white font-serif text-2xl font-bold mb-6">
               用心服務超過 <span class="text-orange">10,000+</span> 學員
             </h2>
 
             <!-- Main Stats - 2 cards -->
-            <div class="grid grid-cols-2 gap-3 mb-4">
-              <div class="bg-white rounded-2xl p-4 text-center">
-                <div class="text-sm text-navy-700/60 font-medium mb-1">平均年齡</div>
-                <div class="font-serif text-3xl font-black text-orange">62.9<span class="text-xl">歲</span></div>
+            <div class="grid grid-cols-2 gap-4 mb-5">
+              <div class="bg-white rounded-2xl p-5 text-center">
+                <div class="text-sm text-navy-700/60 font-medium mb-1.5">平均年齡</div>
+                <div class="font-serif text-4xl font-black text-orange">62.9<span class="text-2xl">歲</span></div>
               </div>
-              <div class="bg-white rounded-2xl p-4 text-center">
-                <div class="text-sm text-navy-700/60 font-medium mb-1">最年長學員</div>
-                <div class="font-serif text-3xl font-black text-orange">97<span class="text-xl">歲</span></div>
+              <div class="bg-white rounded-2xl p-5 text-center">
+                <div class="text-sm text-navy-700/60 font-medium mb-1.5">最年長學員</div>
+                <div class="font-serif text-4xl font-black text-orange">97<span class="text-2xl">歲</span></div>
               </div>
             </div>
 
             <!-- Secondary Stats - 3 pills -->
-            <div class="grid grid-cols-3 gap-2">
-              <div class="bg-white/90 rounded-xl px-3 py-2.5 text-center">
-                <div class="text-[10px] text-navy-700/60 font-medium leading-tight mb-0.5">關節與骨科疾病</div>
-                <div class="font-serif text-lg font-black text-orange leading-none">1,161<span class="text-xs text-navy-700/50">位</span></div>
+            <div class="grid grid-cols-3 gap-3">
+              <div class="bg-white/90 rounded-xl px-3 py-3 text-center">
+                <div class="text-xs text-navy-700/60 font-medium leading-tight mb-1">關節與骨科疾病</div>
+                <div class="font-serif text-xl font-black text-orange leading-none">1,161<span class="text-sm text-navy-700/50">位</span></div>
               </div>
-              <div class="bg-white/90 rounded-xl px-3 py-2.5 text-center">
-                <div class="text-[10px] text-navy-700/60 font-medium leading-tight mb-0.5">代謝與心血管疾病</div>
-                <div class="font-serif text-lg font-black text-orange leading-none">678<span class="text-xs text-navy-700/50">位</span></div>
+              <div class="bg-white/90 rounded-xl px-3 py-3 text-center">
+                <div class="text-xs text-navy-700/60 font-medium leading-tight mb-1">代謝與心血管疾病</div>
+                <div class="font-serif text-xl font-black text-orange leading-none">678<span class="text-sm text-navy-700/50">位</span></div>
               </div>
-              <div class="bg-white/90 rounded-xl px-3 py-2.5 text-center">
-                <div class="text-[10px] text-navy-700/60 font-medium leading-tight mb-0.5">手術後康復訓練</div>
-                <div class="font-serif text-lg font-black text-orange leading-none">389<span class="text-xs text-navy-700/50">位</span></div>
+              <div class="bg-white/90 rounded-xl px-3 py-3 text-center">
+                <div class="text-xs text-navy-700/60 font-medium leading-tight mb-1">手術後康復訓練</div>
+                <div class="font-serif text-xl font-black text-orange leading-none">389<span class="text-sm text-navy-700/50">位</span></div>
               </div>
             </div>
           </aside>
