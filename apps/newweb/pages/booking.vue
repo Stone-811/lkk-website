@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 
 useHead({
   title: '預約體驗 | 練健康',
@@ -150,6 +150,14 @@ const userAge = computed(() => {
 })
 
 const isFreeEligible = computed(() => userAge.value !== null && userAge.value >= 50)
+
+// Watch birthDate changes to auto-clear invalid payment method
+watch(() => formData.birthDate, () => {
+  // If user is under 50 and had selected "50歲以上免費", clear the selection
+  if (!isFreeEligible.value && formData.paymentMethod === '50歲以上免費') {
+    formData.paymentMethod = ''
+  }
+})
 
 // Toggle preferred time selection
 const togglePreferredTime = (time: string) => {
@@ -774,8 +782,10 @@ const handleSubmit = async () => {
                     <label class="block text-sm font-medium mb-2 text-navy-700">
                       付款方式 <span class="text-red-500">*</span>
                     </label>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div :class="isFreeEligible ? 'grid grid-cols-2 gap-3' : ''">
+                      <!-- 50歲以上免費選項 - 只在符合資格時顯示 -->
                       <button
+                        v-if="isFreeEligible"
                         type="button"
                         :class="[
                           'p-4 rounded-lg border text-left transition-all',
@@ -795,10 +805,11 @@ const handleSubmit = async () => {
                           </div>
                         </div>
                       </button>
+                      <!-- 臨櫃付款選項 -->
                       <button
                         type="button"
                         :class="[
-                          'p-4 rounded-lg border text-left transition-all',
+                          'p-4 rounded-lg border text-left transition-all w-full',
                           formData.paymentMethod === '臨櫃付款'
                             ? 'border-orange bg-orange/10 ring-2 ring-orange'
                             : 'border-cream-200 hover:border-orange/50'
