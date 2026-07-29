@@ -890,7 +890,13 @@ const handleSubmit = async () => {
 
             <!-- FAQ Card (doubt-section style) -->
             <div class="mt-6 mb-6">
-              <div class="text-[0.82rem] font-bold tracking-widest uppercase text-navy-700/50 mb-3">你可能在想</div>
+              <div class="flex items-center gap-2 text-[0.82rem] font-bold tracking-widest text-orange mb-2">
+                <span class="w-4 h-0.5 bg-orange"></span>
+                你可能在想
+              </div>
+              <h3 class="font-serif text-xl font-black text-navy-700 mb-4">
+                先回答你<span class="text-orange">最常問的問題</span>
+              </h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div v-for="faq in faqs" :key="faq.q" class="bg-white rounded-[14px] p-5 border border-cream-200 shadow-sm">
                   <div class="text-[0.92rem] font-bold text-navy-700 mb-1">{{ faq.q }}</div>
