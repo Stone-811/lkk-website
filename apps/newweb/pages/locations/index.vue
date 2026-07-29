@@ -43,7 +43,7 @@ const stores = [
   },
   {
     id: 'ximending',
-    name: '西分店',
+    name: '西門店',
     district: '台北市中正區',
     address: '台北市中正區寶慶路 39 號',
     phone: '(02) 2370-3245',

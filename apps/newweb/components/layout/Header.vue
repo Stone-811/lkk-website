@@ -5,7 +5,7 @@ const route = useRoute()
 const stores = [
   { id: 'nanjing', name: '南京店' },
   { id: 'songjiang', name: '松江店' },
-  { id: 'ximending', name: '西分店' },
+  { id: 'ximending', name: '西門店' },
   { id: 'xindian', name: '七張店' },
 ]
 

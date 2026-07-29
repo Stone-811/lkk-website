@@ -10,7 +10,7 @@ const navigation = [
 const stores = [
   { name: '南京店', phone: '(02) 2507-4196', href: '/locations/nanjing' },
   { name: '松江店', phone: '(02) 2537-1055', href: '/locations/songjiang' },
-  { name: '西分店', phone: '(02) 2370-3245', href: '/locations/ximending' },
+  { name: '西門店', phone: '(02) 2370-3245', href: '/locations/ximending' },
   { name: '七張店', phone: '(02) 8914-6428', href: '/locations/xindian' },
 ]
 

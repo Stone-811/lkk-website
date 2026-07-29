@@ -11,7 +11,7 @@ useHead({
 const stores = ref([
   { id: 'nanjing', name: '南京店', address: '台北市中山區南京東路三段 29 號 B1', phone: '(02) 2507-4196' },
   { id: 'songjiang', name: '松江店', address: '台北市中山區松江路 122 號 B1', phone: '(02) 2537-1055' },
-  { id: 'ximending', name: '西分店', address: '台北市中正區寶慶路 39 號', phone: '(02) 2370-3245' },
+  { id: 'ximending', name: '西門店', address: '台北市中正區寶慶路 39 號', phone: '(02) 2370-3245' },
   { id: 'xindian', name: '七張店', address: '新北市新店區北新路二段 252 號 B1-2', phone: '(02) 8914-6428' },
 ])
 
@@ -44,25 +44,23 @@ const whatYouGet = [
 
 // 方便聯繫時段選項（多選）
 const contactTimeOptions = [
+  '平日10:00-17:00',
+  '平日18:00-21:00',
+  '假日10:00-17:00',
+  '假日18:00-21:00',
   '不限',
-  '平日白天 (10:00-17:00)',
-  '平日晚上 (18:00-21:00)',
-  '假日白天',
-  '假日晚上',
   '其他',
 ]
 
 // 從哪裡得知選項（多選）
 const sourceOptions = [
-  'Google 搜尋',
-  'Facebook',
-  'Instagram',
-  'LINE',
-  'YouTube',
-  'Podcast',
-  '朋友推薦',
-  '路過分店',
-  '醫療院所轉介',
+  '練健康官網',
+  '練健康FB',
+  '練健康IG',
+  '練健康YT',
+  '練健康官方LINE',
+  '練健康THREADS',
+  '傳單',
   '其他',
 ]
 
@@ -111,6 +109,7 @@ const formData = reactive({
   exerciseGoalOther: '',
   paymentMethod: '',
   message: '',
+  agreeToTerms: false,
 })
 
 const isSubmitting = ref(false)
@@ -214,6 +213,7 @@ const validateForm = () => {
   if (!formData.storeId) newErrors.storeId = '請選擇分店'
   if (formData.preferredTimes.length === 0) newErrors.preferredTimes = '請至少選擇一個時段'
   if (!formData.paymentMethod) newErrors.paymentMethod = '請選擇付款方式'
+  if (!formData.agreeToTerms) newErrors.agreeToTerms = '請勾選同意事項'
 
   errors.value = newErrors
   return Object.keys(newErrors).length === 0
@@ -601,7 +601,7 @@ const handleSubmit = async () => {
                       v-model="formData.medicalConditionNote"
                       rows="2"
                       class="w-full px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange"
-                      placeholder="例如：膝蓋退化、心臟手術等"
+                      placeholder="身體若有任何狀況，都請稍作描述喔！若無則填寫：無"
                     />
                   </div>
                 </div>
@@ -636,7 +636,6 @@ const handleSubmit = async () => {
                       >
                         <div class="font-semibold text-navy-700 text-sm sm:text-base">{{ store.name }}</div>
                         <div class="text-xs sm:text-sm text-ink/60 mt-0.5">{{ store.address }}</div>
-                        <div class="text-xs sm:text-sm text-navy-700 mt-0.5">{{ store.phone }}</div>
                       </button>
                     </div>
                     <p v-if="errors.storeId" class="text-red-500 text-sm mt-2">{{ errors.storeId }}</p>
@@ -823,29 +822,57 @@ const handleSubmit = async () => {
                   <!-- 備註 -->
                   <div>
                     <label class="block text-sm font-medium mb-2 text-navy-700">
-                      想說什麼或想問什麼 <span class="text-ink-500 font-normal">（選填）</span>
+                      備註 <span class="text-ink-500 font-normal">（若是要一對二的體驗課程，請提供親友姓名、年齡及簡述身體狀況）</span>
                     </label>
                     <textarea
                       v-model="formData.message"
                       rows="3"
                       class="w-full px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange"
-                      placeholder="有任何問題或特殊需求，請在此告訴我們"
+                      placeholder="例如：王小明／65歲／2023年5月右膝韌帶斷裂手術，希望可以改善重心前傾、走路不穩，增加走路穩定度"
                     />
                   </div>
+                </div>
+
+                <!-- 同意事項 -->
+                <div class="mt-6 p-4 bg-cream-50 rounded-lg border border-cream-200">
+                  <div class="text-sm text-navy-700 font-medium mb-3">參加練健康相關課程，了解並願遵守下列事項：</div>
+                  <div class="text-xs text-ink/70 space-y-2 max-h-48 overflow-y-auto pr-2">
+                    <p>一、本人若有心臟病、高血壓、癲癇症、具傳染性皮膚病及足以影響運動訓練等病症，或於五年內有重大傷病開刀或住院超過3周以上之病史，將主動告知。</p>
+                    <p>二、本人在課程期間除教練指導的使用範圍，不會自行使用以外之場地及各項設備器材，並遵守教練指示及場地使用規範。</p>
+                    <p>三、本人了解訓練本身具有發生自己或他人事故或傷害危險，願充分負擔此一危險，並盡力防杜該危險或事故傷害之發生。</p>
+                    <p>四、本人同意練健康於所有課程中進行拍照及錄影，並同意肖像權及所有權均屬於練健康。</p>
+                    <p>五、置物櫃僅提供置物服務，若有貴重物品及財物將自行保管。</p>
+                    <p>六、自備換洗衣物、毛巾及飲用水。</p>
+                    <p>七、課程期間，需穿著輕便運動合身之服裝。</p>
+                    <p>八、身上不可有金屬扣環或拉鍊或其他硬物，上課前會檢查並修剪指甲。</p>
+                    <p>九、本人願遵練健康教練之所有指示，並願就課程期間所生之自身或他人健康、安全意外事件負責；倘於訓練過程本人有不符訓練常規之舉措，經教練制止後未即刻改善者，練健康得要求本人離場並取消上課權利，本人絕無異議。</p>
+                  </div>
+                  <label class="flex items-center gap-2 mt-4 cursor-pointer">
+                    <input
+                      v-model="formData.agreeToTerms"
+                      type="checkbox"
+                      class="w-5 h-5 rounded border-cream-300 text-orange focus:ring-orange"
+                    />
+                    <span class="text-sm font-medium text-navy-700">我已詳閱並同意以上事項 <span class="text-red-500">*</span></span>
+                  </label>
+                  <p v-if="errors.agreeToTerms" class="text-red-500 text-sm mt-1">{{ errors.agreeToTerms }}</p>
                 </div>
 
                 <!-- Submit Button -->
                 <div class="mt-8 pt-6 border-t border-cream-200">
                   <button
                     type="button"
-                    :disabled="isSubmitting"
+                    :disabled="isSubmitting || !formData.agreeToTerms"
                     class="w-full btn btn-primary py-4 text-lg disabled:opacity-50"
                     @click="handleSubmit"
                   >
                     {{ isSubmitting ? '送出中...' : '送出預約' }}
                   </button>
-                  <p class="text-sm text-ink-500 text-center mt-4">
-                    送出後，我們將於 1 個工作天內與您聯繫確認體驗時間。
+                  <p class="text-xs text-ink/60 text-center mt-4 leading-relaxed">
+                    送出即表示同意我們以電話或 LINE 與您聯繫安排體驗課，個人資料僅用於此目的。
+                  </p>
+                  <p class="text-xs text-ink/60 text-center mt-2 leading-relaxed">
+                    送出後請稍候，頁面將導向加入 LINE 官方帳號，加入後即可收到最新通知；同時我們也會寄送 Email 通知您報名成功。
                   </p>
                 </div>
               </div>
