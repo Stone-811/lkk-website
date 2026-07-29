@@ -313,7 +313,6 @@ const handleSubmit = async () => {
           <div>
             <!-- Free badge -->
             <div class="inline-flex items-center gap-2 bg-orange/20 border border-orange/40 text-orange text-sm font-medium px-4 py-1.5 rounded-full mb-5">
-              <span class="w-2 h-2 bg-orange rounded-full" />
               50歲以下，體驗課$500元
             </div>
 
@@ -889,32 +888,31 @@ const handleSubmit = async () => {
               </div>
             </div>
 
-            <!-- FAQ Card -->
-            <div class="mt-6 bg-navy-700/5 border border-navy-700/10 rounded-xl p-4">
-              <div class="text-xs font-bold tracking-widest uppercase text-navy-700/50 mb-3">你可能在想</div>
-              <div class="space-y-2">
-                <div v-for="faq in faqs" :key="faq.q" class="bg-white rounded-lg p-3">
-                  <div class="text-sm font-semibold text-navy-700 mb-1">{{ faq.q }}</div>
-                  <div class="text-xs text-ink/60 leading-relaxed">{{ faq.a }}</div>
+            <!-- FAQ Card (doubt-section style) -->
+            <div class="mt-6 mb-6">
+              <div class="grid grid-cols-1 gap-3">
+                <div v-for="faq in faqs" :key="faq.q" class="bg-white rounded-[14px] p-5 shadow-sm">
+                  <div class="text-[0.92rem] font-bold text-navy-700 mb-1">{{ faq.q }}</div>
+                  <div class="text-[0.88rem] text-ink/60 leading-relaxed">{{ faq.a }}</div>
                 </div>
               </div>
             </div>
 
-            <!-- Cases Card -->
-            <div class="mt-4 bg-navy-700/5 border border-navy-700/10 rounded-xl p-4">
-              <div class="text-xs font-bold tracking-widest uppercase text-navy-700/50 mb-3">他們也是這樣開始的</div>
-              <div class="space-y-2">
-                <div v-for="c in cases" :key="c.name" class="flex gap-3 items-center bg-white rounded-lg p-3">
-                  <div class="w-9 h-9 rounded-full bg-orange/20 flex items-center justify-center text-orange font-bold text-sm flex-shrink-0">
+            <!-- Cases Card (cases-teaser style) -->
+            <div class="bg-white rounded-[20px] p-6 shadow-sm">
+              <div class="text-[0.82rem] font-bold tracking-widest uppercase text-navy-700/50 mb-4">他們也是這樣開始的</div>
+              <div class="flex flex-col gap-3">
+                <div v-for="c in cases" :key="c.name" class="flex gap-3 items-center">
+                  <div class="w-10 h-10 rounded-full bg-orange/20 flex items-center justify-center text-orange font-bold text-sm flex-shrink-0">
                     {{ c.name.charAt(0) }}
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="text-sm font-semibold text-navy-700">{{ c.name }}・{{ c.info }}</div>
-                    <div class="text-xs text-ink/60 italic line-clamp-2">「{{ c.quote }}」</div>
+                    <div class="text-[0.88rem] font-semibold text-navy-800">{{ c.name }}・{{ c.info }}</div>
+                    <div class="text-[0.88rem] text-ink/60 italic line-clamp-2">「{{ c.quote }}」</div>
                   </div>
                 </div>
               </div>
-              <a href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/" class="block text-center text-xs text-navy-700/50 hover:text-navy-700 mt-3 pt-3 border-t border-navy-700/10">
+              <a href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/" class="block text-center text-xs text-navy-700/50 hover:text-navy-700 mt-4 pt-4 border-t border-navy-700/10">
                 看更多學員故事 &rarr;
               </a>
             </div>
