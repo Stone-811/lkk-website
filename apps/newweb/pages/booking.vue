@@ -890,8 +890,9 @@ const handleSubmit = async () => {
 
             <!-- FAQ Card (doubt-section style) -->
             <div class="mt-6 mb-6">
-              <div class="grid grid-cols-1 gap-3">
-                <div v-for="faq in faqs" :key="faq.q" class="bg-white rounded-[14px] p-5 shadow-sm">
+              <div class="text-[0.82rem] font-bold tracking-widest uppercase text-navy-700/50 mb-3">你可能在想</div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div v-for="faq in faqs" :key="faq.q" class="bg-white rounded-[14px] p-5 border border-cream-200 shadow-sm">
                   <div class="text-[0.92rem] font-bold text-navy-700 mb-1">{{ faq.q }}</div>
                   <div class="text-[0.88rem] text-ink/60 leading-relaxed">{{ faq.a }}</div>
                 </div>
