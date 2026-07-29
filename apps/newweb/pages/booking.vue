@@ -308,26 +308,26 @@ const handleSubmit = async () => {
       </div>
 
       <div class="container mx-auto px-4 relative z-10">
-        <div class="grid xl:grid-cols-[1fr_720px] lg:grid-cols-[1fr_560px] gap-8 items-center py-16 lg:py-20">
-          <!-- Left content -->
+        <div class="max-w-2xl mx-auto text-center py-16 lg:py-20">
+          <!-- Hero content -->
           <div>
             <!-- Free badge -->
             <div class="inline-flex items-center gap-2 bg-orange/20 border border-orange/40 text-orange text-sm font-medium px-4 py-1.5 rounded-full mb-5">
               <span class="w-2 h-2 bg-orange rounded-full" />
-              50歲以上 · 首次體驗完全免費
+              50歲以下，體驗課$500元
             </div>
 
             <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-3 sm:mb-4">
-              第一堂課<br />
-              <span class="text-orange">我們來了解你</span>
+              50 歲以上<br />
+              <span class="text-orange">體驗課完全免費</span>
             </h1>
 
-            <p class="text-white/60 text-base sm:text-lg font-light leading-relaxed mb-5 sm:mb-6 max-w-lg">
-              不論年齡、運動經驗、身體狀況——體驗課的目的是讓我們了解你，而不是評判你。由物理治療師背景教練帶領，安全有效。
+            <p class="text-white/60 text-base sm:text-lg font-light leading-relaxed mb-5 sm:mb-6 max-w-lg mx-auto">
+              不論年齡、運動經驗、身體狀況——體驗課的目的是讓我們了解您，而不是評判您。由醫療相關、運動科學等專業背景教練帶領，安全有效。
             </p>
 
             <!-- What you get -->
-            <div class="space-y-2 mb-6">
+            <div class="inline-flex flex-col items-start space-y-2 mb-6 text-left">
               <div v-for="item in whatYouGet" :key="item" class="flex items-start gap-3 text-white/70 text-sm">
                 <div class="w-5 h-5 rounded-full bg-orange/20 border border-orange/40 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span class="text-orange text-xs">&#10003;</span>
@@ -336,50 +336,20 @@ const handleSubmit = async () => {
               </div>
             </div>
 
-            <a href="#form" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-              立即填寫預約 &rarr;
-            </a>
+            <div class="mb-4">
+              <a href="#form" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
+                立即填寫預約 &rarr;
+              </a>
+            </div>
 
-            <div class="flex items-start sm:items-center gap-2 mt-4 text-xs sm:text-sm text-white/40">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5 sm:mt-0">
+            <div class="flex items-center justify-center gap-2 text-xs sm:text-sm text-white/40">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
               <span><strong class="text-orange-300">50歲以上免費</strong>・一般首次 $500・無隱藏費用・不強迫買課</span>
             </div>
           </div>
 
-          <!-- Right - FAQ & Cases Cards -->
-          <aside class="flex flex-col lg:flex-row gap-4 lg:gap-5">
-            <!-- FAQ Card -->
-            <div class="flex-1 bg-white/[0.07] backdrop-blur-sm border border-white/10 rounded-xl lg:rounded-2xl p-4 lg:p-5">
-              <div class="text-xs font-bold tracking-widest uppercase text-white/30 mb-2 lg:mb-3">你可能在想</div>
-              <div class="space-y-2 lg:space-y-2.5">
-                <div v-for="(faq, index) in faqs" :key="faq.q" :class="['bg-white/[0.05] rounded-lg p-2.5 lg:p-3', index > 1 ? 'hidden lg:block' : '']">
-                  <div class="text-sm font-semibold text-white mb-0.5 lg:mb-1">{{ faq.q }}</div>
-                  <div class="text-xs text-white/50 leading-relaxed">{{ faq.a }}</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Cases Card -->
-            <div class="flex-1 bg-white/[0.07] backdrop-blur-sm border border-white/10 rounded-xl lg:rounded-2xl p-4 lg:p-5">
-              <div class="text-xs font-bold tracking-widest uppercase text-white/30 mb-2 lg:mb-3">他們也是這樣開始的</div>
-              <div class="space-y-2 lg:space-y-2.5">
-                <div v-for="(c, index) in cases" :key="c.name" :class="['flex gap-2.5 lg:gap-3 items-center bg-white/[0.05] rounded-lg p-2.5 lg:p-3', index > 1 ? 'hidden lg:flex' : '']">
-                  <div class="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-orange/30 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                    {{ c.name.charAt(0) }}
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="text-sm font-semibold text-white">{{ c.name }}・{{ c.info }}</div>
-                    <div class="text-xs text-white/50 italic line-clamp-2">「{{ c.quote }}」</div>
-                  </div>
-                </div>
-              </div>
-              <a href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/" class="block text-center text-xs text-white/50 hover:text-white mt-2.5 lg:mt-3 pt-2.5 lg:pt-3 border-t border-white/10">
-                看更多學員故事 &rarr;
-              </a>
-            </div>
-          </aside>
         </div>
       </div>
     </section>
@@ -917,6 +887,36 @@ const handleSubmit = async () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- FAQ Card -->
+            <div class="mt-6 bg-navy-700/5 border border-navy-700/10 rounded-xl p-4">
+              <div class="text-xs font-bold tracking-widest uppercase text-navy-700/50 mb-3">你可能在想</div>
+              <div class="space-y-2">
+                <div v-for="faq in faqs" :key="faq.q" class="bg-white rounded-lg p-3">
+                  <div class="text-sm font-semibold text-navy-700 mb-1">{{ faq.q }}</div>
+                  <div class="text-xs text-ink/60 leading-relaxed">{{ faq.a }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cases Card -->
+            <div class="mt-4 bg-navy-700/5 border border-navy-700/10 rounded-xl p-4">
+              <div class="text-xs font-bold tracking-widest uppercase text-navy-700/50 mb-3">他們也是這樣開始的</div>
+              <div class="space-y-2">
+                <div v-for="c in cases" :key="c.name" class="flex gap-3 items-center bg-white rounded-lg p-3">
+                  <div class="w-9 h-9 rounded-full bg-orange/20 flex items-center justify-center text-orange font-bold text-sm flex-shrink-0">
+                    {{ c.name.charAt(0) }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-semibold text-navy-700">{{ c.name }}・{{ c.info }}</div>
+                    <div class="text-xs text-ink/60 italic line-clamp-2">「{{ c.quote }}」</div>
+                  </div>
+                </div>
+              </div>
+              <a href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/" class="block text-center text-xs text-navy-700/50 hover:text-navy-700 mt-3 pt-3 border-t border-navy-700/10">
+                看更多學員故事 &rarr;
+              </a>
             </div>
           </div>
         </div>
