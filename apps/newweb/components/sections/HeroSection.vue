@@ -1,27 +1,4 @@
 <script setup lang="ts">
-const heroStats = [
-  {
-    icon: 'dumbbell',
-    num: '1,000+',
-    label: '服務學員人次',
-  },
-  {
-    icon: 'building',
-    num: 'PT 背景',
-    label: '物理治療師・呼吸治療師主導',
-  },
-  {
-    icon: 'location',
-    num: '4 間',
-    label: '分店｜台北・新北',
-  },
-  {
-    icon: 'badge',
-    num: '6 屆',
-    label: 'LKK4 中高齡年度競技賽事',
-  },
-]
-
 const dataStats = [
   { num: '1%', text: ['40歲後每年流失的肌肉量', '不訓練，就是被動老化'] },
   { num: '50+', text: ['歲以上首次體驗完全免費', '零門檻開始第一堂課'] },
@@ -97,35 +74,36 @@ const pressOutlets = [
 
           <!-- Right - Stats Card -->
           <aside class="hidden lg:block bg-white/[0.06] backdrop-blur-md border border-white/12 rounded-3xl p-7">
-            <div class="space-y-0">
-              <div
-                v-for="(stat, index) in heroStats"
-                :key="stat.num"
-                :class="['flex items-center gap-4 py-4', index < heroStats.length - 1 ? 'border-b border-white/[0.08]' : '']"
-              >
-                <div class="w-11 h-11 rounded-lg bg-orange/20 flex items-center justify-center flex-shrink-0">
-                  <!-- Dumbbell icon -->
-                  <svg v-if="stat.icon === 'dumbbell'" class="w-5 h-5 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h4v12H4zM16 8h4v12h-4zM2 12h20M12 4v4" />
-                  </svg>
-                  <!-- Building icon -->
-                  <svg v-else-if="stat.icon === 'building'" class="w-5 h-5 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                  <!-- Location icon -->
-                  <svg v-else-if="stat.icon === 'location'" class="w-5 h-5 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <!-- Badge icon -->
-                  <svg v-else-if="stat.icon === 'badge'" class="w-5 h-5 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
-                </div>
-                <div>
-                  <div class="font-serif text-xl font-black text-white leading-none">{{ stat.num }}</div>
-                  <div class="text-xs text-white/50 mt-0.5">{{ stat.label }}</div>
-                </div>
+            <!-- Title -->
+            <h2 class="text-center text-white font-serif text-xl font-bold mb-5">
+              用心服務超過 <span class="text-orange">10,000+</span> 學員
+            </h2>
+
+            <!-- Main Stats - 2 cards -->
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="bg-white rounded-2xl p-4 text-center">
+                <div class="text-sm text-navy-700/60 font-medium mb-1">平均年齡</div>
+                <div class="font-serif text-3xl font-black text-orange">62.9<span class="text-xl">歲</span></div>
+              </div>
+              <div class="bg-white rounded-2xl p-4 text-center">
+                <div class="text-sm text-navy-700/60 font-medium mb-1">最年長學員</div>
+                <div class="font-serif text-3xl font-black text-orange">97<span class="text-xl">歲</span></div>
+              </div>
+            </div>
+
+            <!-- Secondary Stats - 3 pills -->
+            <div class="grid grid-cols-3 gap-2">
+              <div class="bg-white/90 rounded-xl px-3 py-2.5 text-center">
+                <div class="text-[10px] text-navy-700/60 font-medium leading-tight mb-0.5">關節與骨科疾病</div>
+                <div class="font-serif text-lg font-black text-orange leading-none">1,161<span class="text-xs text-navy-700/50">位</span></div>
+              </div>
+              <div class="bg-white/90 rounded-xl px-3 py-2.5 text-center">
+                <div class="text-[10px] text-navy-700/60 font-medium leading-tight mb-0.5">代謝與心血管疾病</div>
+                <div class="font-serif text-lg font-black text-orange leading-none">678<span class="text-xs text-navy-700/50">位</span></div>
+              </div>
+              <div class="bg-white/90 rounded-xl px-3 py-2.5 text-center">
+                <div class="text-[10px] text-navy-700/60 font-medium leading-tight mb-0.5">手術後康復訓練</div>
+                <div class="font-serif text-lg font-black text-orange leading-none">389<span class="text-xs text-navy-700/50">位</span></div>
               </div>
             </div>
           </aside>
