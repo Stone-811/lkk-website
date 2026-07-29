@@ -29,10 +29,10 @@ const cases = [
 ]
 
 const steps = [
-  { title: '填寫預約表單', desc: '約 1~2 分鐘完成，只填必要資訊' },
-  { title: '教練主動電話聯繫', desc: '1 個工作天內，我們會打電話給您安排時間' },
+  { title: '填寫預約表單', desc: '約 1~2 分鐘完成，提供必要資訊' },
+  { title: '教練主動電話聯繫', desc: '2~3天內，我們會打電話給您安排時間' },
   { title: '到店體驗課（60–75 分鐘）', desc: '身體評估 + 基礎動作訓練 + 教練諮詢', badges: ['50歲以上 免費', '一般首次 $500'] },
-  { title: '課後說明 + 你自己決定', desc: '教練說明適合的後續課程選項，沒有壓力' },
+  { title: '客製化訓練建議', desc: '教練提供最適合您的訓練規劃' },
 ]
 
 const whatYouGet = [
@@ -375,7 +375,7 @@ const handleSubmit = async () => {
                 </svg>
               </div>
               <h2 class="text-2xl font-bold mb-4 text-navy-700 font-serif">預約成功！</h2>
-              <p class="text-ink-600 mb-8">我們將於 1 個工作天內與您聯繫確認體驗時間。</p>
+              <p class="text-ink-600 mb-8">我們將於2~3天內與您聯繫，確認體驗課時間。</p>
               <NuxtLink to="/" class="btn btn-primary">
                 返回首頁
               </NuxtLink>
