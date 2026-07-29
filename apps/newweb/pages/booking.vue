@@ -15,12 +15,39 @@ const stores = ref([
   { id: 'xindian', name: '七張店', address: '新北市新店區北新路二段 252 號 B1-2', phone: '(02) 8914-6428' },
 ])
 
-const faqs = [
-  { q: '我年紀這麼大，可以練嗎？', a: '練健康 70% 的學員都是中高齡族群，90 歲阿嬤都在這裡練硬舉。' },
-  { q: '我從來沒運動過？', a: '沒運動習慣的人反而容易進步，教練會從最基礎教起。' },
-  { q: '有慢性病可以來嗎？', a: '可以。由物理治療師督導，會先評估再設計適合的課表。' },
-  { q: '一定要買課嗎？', a: '不強迫。體驗課的目的是讓雙方了解彼此，你自己決定。' },
+// FAQ 分類資料
+const faqCategories = [
+  {
+    title: '個人相關',
+    faqs: [
+      { id: 'p1', q: '什麼樣的年紀適合來練健康訓練？', a: '練健康 70% 的學員都是中高齡族群，我們的教練都有經過專業培訓。但訓練不分年齡，我們也有20~30歲的學員，大家一起練健康！' },
+      { id: 'p2', q: '我從來沒運動過，可以來嗎？', a: '沒有運動習慣的人反而容易進步。教練會從最基礎的動作教起，不會有比較或評判。有任何的訓練目標（增肌、術後肌力恢復或是改善腰痠背痛等等），都可以在體驗課中告訴教練喔！' },
+      { id: 'p3', q: '有慢性病或有重大傷病可以訓練嗎？', a: '可以。我們有完整的篩檢評估流程，會詳細提供您訓練或轉介的建議。請在備註欄詳細描述，方便教練更了解您的狀況。' },
+    ],
+  },
+  {
+    title: '課程相關',
+    faqs: [
+      { id: 'c1', q: '體驗完之後一定要買課嗎？', a: '我們不強迫推銷。體驗課的目的是讓雙方了解彼此，教練會說明適合的選項，歡迎您考慮衡量後再決定。' },
+      { id: 'c2', q: '上體驗課需要準備什麼？', a: '穿著舒適、好活動的服裝前來即可。' },
+      { id: 'c3', q: '可以預約明天嗎？', a: '請至少提前 2–3 天預約，讓教練有時間為您安排合適的檢測與備課，量身打造合適的課表。' },
+    ],
+  },
+  {
+    title: '費用相關',
+    faqs: [
+      { id: 'f1', q: '體驗課費用？', a: '50歲以上免費體驗；未滿50歲酌收 $500 檢測與體驗費用。若為一對二且皆未滿50歲，兩位皆需收取 $500。' },
+      { id: 'f2', q: '體驗課如何付款？', a: '體驗結束後至櫃台臨櫃繳費即可。' },
+      { id: 'f3', q: '正式課程的費用？', a: '從 $600/堂的團體課，到 $2,460/堂的私人教練課程都有。體驗課中教練會了解您的狀況並給予客製化建議，購課越多優惠越多。' },
+    ],
+  },
 ]
+
+// FAQ 折疊狀態
+const openFaqId = ref<string | null>(null)
+const toggleFaq = (id: string) => {
+  openFaqId.value = openFaqId.value === id ? null : id
+}
 
 const cases = [
   { name: '林阿嬤', info: '70歲・膝關節退化', quote: '以前膝蓋痛到走不了路，現在可以自己爬山、帶孫子去公園。' },
@@ -926,7 +953,7 @@ const handleSubmit = async () => {
               </div>
             </div>
 
-            <!-- FAQ Card (doubt-section style) -->
+            <!-- FAQ Accordion -->
             <div class="mt-6 mb-6">
               <div class="flex items-center gap-2 text-[0.82rem] font-bold tracking-widest text-orange mb-2">
                 <span class="w-4 h-0.5 bg-orange"></span>
@@ -935,10 +962,41 @@ const handleSubmit = async () => {
               <h3 class="font-serif text-xl font-black text-navy-700 mb-4">
                 先回答你<span class="text-orange">最常問的問題</span>
               </h3>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div v-for="faq in faqs" :key="faq.q" class="bg-white rounded-[14px] p-5 border border-cream-200 shadow-sm">
-                  <div class="text-[0.92rem] font-bold text-navy-700 mb-1">{{ faq.q }}</div>
-                  <div class="text-[0.88rem] text-ink/60 leading-relaxed">{{ faq.a }}</div>
+              <div class="space-y-4">
+                <div v-for="category in faqCategories" :key="category.title">
+                  <div class="text-sm font-bold text-navy-700/60 mb-2">{{ category.title }}</div>
+                  <div class="bg-white rounded-xl border border-cream-200 overflow-hidden">
+                    <div
+                      v-for="(faq, idx) in category.faqs"
+                      :key="faq.id"
+                      :class="idx !== category.faqs.length - 1 ? 'border-b border-cream-200' : ''"
+                    >
+                      <button
+                        type="button"
+                        class="w-full px-4 py-3 text-left flex items-center justify-between gap-3"
+                        :aria-expanded="openFaqId === faq.id"
+                        @click="toggleFaq(faq.id)"
+                      >
+                        <span class="text-[0.9rem] font-medium text-navy-700">{{ faq.q }}</span>
+                        <span
+                          :class="[
+                            'w-5 h-5 rounded-full border border-navy-700/15 flex items-center justify-center flex-shrink-0 transition-colors text-sm',
+                            openFaqId === faq.id ? 'bg-navy-700 border-navy-700 text-white' : 'text-navy-700'
+                          ]"
+                        >
+                          {{ openFaqId === faq.id ? '−' : '+' }}
+                        </span>
+                      </button>
+                      <div
+                        :class="[
+                          'overflow-hidden transition-all duration-300',
+                          openFaqId === faq.id ? 'max-h-40 pb-3 px-4' : 'max-h-0'
+                        ]"
+                      >
+                        <p class="text-[0.85rem] text-ink/60 leading-relaxed">{{ faq.a }}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
