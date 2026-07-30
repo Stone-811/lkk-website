@@ -12,16 +12,15 @@ scripts:
   runCommand: node .output/server/index.mjs
 
 env:
-  # Site URL
+  # Site URL (production domain)
   - variable: NUXT_PUBLIC_SITE_URL
-    value: https://l-kk.tw
+    value: https://lkkwellness.com
 
-  # Firebase (migrated to lkkdev)
+  # Firebase — PRODUCTION project (this is the `production` branch; dev stays on main=lkkdev)
   - variable: FIREBASE_PROJECT_ID
-    value: lkkdev
-  # lkkdev's default bucket uses the newer .firebasestorage.app domain
+    value: lkkprod
   - variable: FIREBASE_STORAGE_BUCKET
-    value: lkkdev.firebasestorage.app
+    value: lkkprod.firebasestorage.app
 
   # SMTP Configuration (same as Next.js web app)
   - variable: SMTP_HOST
