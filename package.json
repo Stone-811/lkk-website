@@ -2,22 +2,32 @@
   "name": "lkk-website",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "packageManager": "npm@10.9.2",
-  "workspaces": [
-    "apps/*"
-  ],
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "build:newweb": "cd apps/newweb && npm install && npx nuxt build",
-    "start": "turbo run start",
-    "lint": "turbo run lint"
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@nuxtjs/google-fonts": "^3.2.0",
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "@vite-pwa/nuxt": "^1.1.1",
+    "bcryptjs": "^3.0.3",
+    "firebase-admin": "^14.2.0",
+    "jose": "^6.2.3",
+    "nodemailer": "^9.0.3",
+    "nuxt": "^3.17.0",
+    "unstorage": "^1.15.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.5.0"
+  },
   "devDependencies": {
-    "dotenv": "^17.4.2",
-    "firebase-tools": "^15.19.0",
-    "turbo": "^2.0.0"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/nodemailer": "^8.0.1",
+    "typescript": "^5.8.0"
   },
   "engines": {
     "node": ">=18.0.0"

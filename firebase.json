@@ -2,7 +2,7 @@
   "apphosting": [
     {
       "backendId": "newweb",
-      "rootDir": "./apps/newweb",
+      "rootDir": ".",
       "ignore": [
         "node_modules",
         ".git",

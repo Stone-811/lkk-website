@@ -6,11 +6,10 @@ runConfig:
   cpu: 1
   memoryMiB: 512
 
-# Override build command to skip Next.js adapter
-# Run Nuxt build directly
+# Nuxt build (app is at the repository root)
 scripts:
-  buildCommand: npm run build:newweb
-  runCommand: node apps/newweb/.output/server/index.mjs
+  buildCommand: npm run build
+  runCommand: node .output/server/index.mjs
 
 env:
   # Site URL
