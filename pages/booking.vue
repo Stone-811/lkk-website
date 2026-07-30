@@ -317,6 +317,7 @@ const handleSubmit = async () => {
         paymentMethod: formData.paymentMethod,
         message: formData.message,
         sourcePage: '/booking',
+        utm: useUtm().getUtm(),
       }),
     })
 

@@ -87,6 +87,7 @@ export default defineEventHandler(async (event) => {
         exerciseGoals: exerciseGoals || [],
         exerciseGoalOther: exerciseGoalOther || null,
         sources: sources || [],
+        utm: body.utm || null,
       },
       status: 'new',
       internalNote: null,

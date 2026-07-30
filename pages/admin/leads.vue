@@ -165,7 +165,7 @@ async function handleSaveNote() {
 }
 
 function handleExport() {
-  const headers = ['姓名', '電話', 'Email', '分店', '狀態', '性別', '出生年月', 'LINE ID', '運動目的', '偏好時段', '付款方式', '得知管道', '填寫者', '與學員關係', '預約者姓名', '聯繫電話', '健康狀況', '備註', '建立時間']
+  const headers = ['姓名', '電話', 'Email', '分店', '狀態', '性別', '出生年月', 'LINE ID', '運動目的', '偏好時段', '付款方式', '得知管道', '填寫者', '與學員關係', '預約者姓名', '聯繫電話', '健康狀況', 'UTM來源', 'UTM形式', 'UTM活動', 'UTM素材', '備註', '建立時間']
   const rows = filteredLeads.value.map(lead => {
     // 處理運動目的
     let exerciseGoalsText = ''
@@ -212,6 +212,10 @@ function handleExport() {
       bookerName,
       contactPhone,
       health,
+      lead.payload?.utm?.source || '',
+      lead.payload?.utm?.medium || '',
+      lead.payload?.utm?.campaign || '',
+      lead.payload?.utm?.content || '',
       lead.internalNote || '',
       formatDateTime(lead.createdAt),
     ]
@@ -508,6 +512,18 @@ function handleExport() {
                     — {{ selectedLead.payload.medicalConditionNote }}
                   </span>
                 </p>
+              </div>
+
+              <!-- 來源追蹤 (UTM) -->
+              <div v-if="selectedLead.payload.utm && (selectedLead.payload.utm.source || selectedLead.payload.utm.campaign || selectedLead.payload.utm.medium)" class="col-span-2">
+                <p class="text-sm text-gray-500">來源追蹤 (UTM)</p>
+                <div class="mt-1 flex flex-wrap gap-1.5">
+                  <span v-if="selectedLead.payload.utm.source" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">來源：{{ selectedLead.payload.utm.source }}</span>
+                  <span v-if="selectedLead.payload.utm.medium" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">形式：{{ selectedLead.payload.utm.medium }}</span>
+                  <span v-if="selectedLead.payload.utm.campaign" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">活動：{{ selectedLead.payload.utm.campaign }}</span>
+                  <span v-if="selectedLead.payload.utm.content" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">素材：{{ selectedLead.payload.utm.content }}</span>
+                </div>
+                <p v-if="selectedLead.payload.utm.referrer" class="text-xs text-gray-400 mt-1 truncate">referrer: {{ selectedLead.payload.utm.referrer }}</p>
               </div>
             </template>
           </div>

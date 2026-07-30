@@ -86,6 +86,7 @@ const handleSubmit = async () => {
       body: JSON.stringify({
         ...formData.value,
         sourcePage: '/franchise',
+        utm: useUtm().getUtm(),
       }),
     })
 

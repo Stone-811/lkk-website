@@ -54,6 +54,7 @@ export default defineEventHandler(async (event) => {
         organization: organization || null,
         region: region || null,
         cooperationType: cooperationType || null,
+        utm: body.utm || null,
       },
       status: 'new',
       internalNote: null,
