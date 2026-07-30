@@ -57,3 +57,8 @@ next-env.d.ts
 .data
 .cache
 .apphosting
+
+# Service-account keys & secrets — NEVER commit
+*firebase-adminsdk*.json
+*-sa.json
+service-account*.json
