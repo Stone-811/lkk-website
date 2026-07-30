@@ -29,6 +29,7 @@ interface CooperationLead {
   message: string
   internalNote: string
   createdAt: string
+  utm?: Record<string, string> | null
 }
 
 const leads = ref<CooperationLead[]>([])
@@ -69,6 +70,7 @@ async function fetchLeads() {
           cooperationType: lead.payload?.cooperationType || '-',
           companySize: lead.payload?.companySize || '',
           budgetRange: lead.payload?.budgetRange || '',
+          utm: lead.payload?.utm || null,
           region: '',
           franchiseType: '',
           status: lead.status,
@@ -94,6 +96,7 @@ async function fetchLeads() {
           budgetRange: '',
           region: lead.payload?.region || '-',
           franchiseType: lead.payload?.cooperationType || '-',
+          utm: lead.payload?.utm || null,
           status: lead.status,
           message: lead.message || '',
           internalNote: lead.internalNote || '',
@@ -166,7 +169,7 @@ async function handleSaveNote() {
 }
 
 function handleExport() {
-  const headers = ['來源', '單位', '聯絡人', '電話', 'Line ID', 'Email', '目標區域', '洽詢類型', '狀態', '留言內容', '備註', '建立時間']
+  const headers = ['來源', '單位', '聯絡人', '電話', 'Line ID', 'Email', '目標區域', '洽詢類型', '狀態', '留言內容', 'UTM來源', 'UTM形式', 'UTM活動', 'UTM素材', '備註', '建立時間']
   const rows = filteredLeads.value.map(lead => [
     leadTypeLabels[lead.leadType]?.label || lead.leadType,
     lead.organization,
@@ -178,6 +181,10 @@ function handleExport() {
     lead.cooperationType,
     statusLabels[lead.status]?.label || lead.status,
     lead.message,
+    lead.utm?.source || '',
+    lead.utm?.medium || '',
+    lead.utm?.campaign || '',
+    lead.utm?.content || '',
     lead.internalNote,
     formatDateTime(lead.createdAt),
   ])
@@ -407,6 +414,17 @@ function closeDetail() {
             <div class="col-span-2">
               <p class="text-sm text-gray-500">建立時間</p>
               <p class="font-medium">{{ formatDateTime(selectedLead.createdAt) }}</p>
+            </div>
+
+            <!-- 來源追蹤 (UTM) -->
+            <div v-if="selectedLead.utm && (selectedLead.utm.source || selectedLead.utm.campaign || selectedLead.utm.medium)" class="col-span-2">
+              <p class="text-sm text-gray-500">來源追蹤 (UTM)</p>
+              <div class="mt-1 flex flex-wrap gap-1.5">
+                <span v-if="selectedLead.utm.source" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">來源：{{ selectedLead.utm.source }}</span>
+                <span v-if="selectedLead.utm.medium" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">形式：{{ selectedLead.utm.medium }}</span>
+                <span v-if="selectedLead.utm.campaign" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">活動：{{ selectedLead.utm.campaign }}</span>
+                <span v-if="selectedLead.utm.content" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">素材：{{ selectedLead.utm.content }}</span>
+              </div>
             </div>
           </div>
           <div v-if="selectedLead.message">
