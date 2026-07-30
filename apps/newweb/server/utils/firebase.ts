@@ -20,6 +20,16 @@ async function getFirebaseAdminModule() {
   return _firebaseAdmin;
 }
 
+// Resolve the Storage bucket name. Newer Firebase projects (e.g. lkkdev) use the
+// `<project>.firebasestorage.app` bucket, not the legacy `<project>.appspot.com`,
+// so allow an explicit override via FIREBASE_STORAGE_BUCKET.
+function resolveStorageBucket(projectId?: string): string | undefined {
+  if (process.env.FIREBASE_STORAGE_BUCKET) {
+    return process.env.FIREBASE_STORAGE_BUCKET;
+  }
+  return projectId ? `${projectId}.appspot.com` : undefined;
+}
+
 // Initialize Firebase Admin SDK (lazy initialization)
 async function getFirebaseApp() {
   if (_app) return _app;
@@ -51,7 +61,7 @@ async function getFirebaseApp() {
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey: privateKey,
       }),
-      storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
+      storageBucket: resolveStorageBucket(process.env.FIREBASE_PROJECT_ID),
     });
     return _app;
   }
@@ -64,14 +74,14 @@ async function getFirebaseApp() {
     _app = initializeApp({
       credential: applicationDefault(),
       projectId,
-      storageBucket: projectId ? `${projectId}.appspot.com` : undefined,
+      storageBucket: resolveStorageBucket(projectId),
     });
   } catch (error) {
     // Fallback: initialize without explicit credential (for environments that auto-inject)
     console.warn('Failed to use applicationDefault(), falling back to basic init:', error);
     _app = initializeApp({
       projectId,
-      storageBucket: projectId ? `${projectId}.appspot.com` : undefined,
+      storageBucket: resolveStorageBucket(projectId),
     });
   }
 

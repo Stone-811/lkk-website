@@ -29,9 +29,28 @@ async function getBcrypt() {
   return bcryptModule;
 }
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-secret-key-change-in-production'
-);
+// Resolve the JWT signing secret.
+// In production a real JWT_SECRET is mandatory — fail fast on cold start rather
+// than silently signing tokens with a well-known default that anyone could forge.
+function resolveJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (secret && secret.length > 0) return secret;
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'JWT_SECRET environment variable is required in production. ' +
+      'Set it via a Firebase secret, e.g. `firebase apphosting:secrets:set jwt-secret`.'
+    );
+  }
+
+  console.warn(
+    '[auth] JWT_SECRET is not set — using an insecure development-only fallback. ' +
+    'Never run production without JWT_SECRET.'
+  );
+  return 'dev-only-insecure-secret-change-me';
+}
+
+const JWT_SECRET = new TextEncoder().encode(resolveJwtSecret());
 
 const COOKIE_NAME = 'lkk-admin-token';
 
@@ -88,7 +107,9 @@ export function clearSessionCookie(event: H3Event) {
   deleteCookie(event, COOKIE_NAME);
 }
 
-// Fallback test user for development (only used when Firestore is unavailable)
+// Fallback test user for LOCAL DEVELOPMENT ONLY.
+// This is never usable in production, and is disabled by default even in dev:
+// it only works when NODE_ENV !== 'production' AND ALLOW_DEV_ADMIN === 'true'.
 const DEV_TEST_USER = {
   email: 'admin@l-kk.tw',
   password: 'admin123',
@@ -100,14 +121,27 @@ const DEV_TEST_USER = {
   },
 };
 
+// Whether the built-in dev admin login is permitted in this environment.
+function isDevLoginAllowed(): boolean {
+  return (
+    process.env.NODE_ENV !== 'production' &&
+    process.env.ALLOW_DEV_ADMIN === 'true'
+  );
+}
+
 // Login with email and password (using Firestore for user lookup)
 export async function loginWithCredentials(
   email: string,
   password: string
 ): Promise<{ success: boolean; user?: UserSession; error?: string }> {
-  // Check fallback test user first (always allow for testing until Firestore users are set up)
-  if (email === DEV_TEST_USER.email && password === DEV_TEST_USER.password) {
-    console.log('Using fallback test user');
+  // Built-in dev admin login — never active in production, and off by default in
+  // dev unless ALLOW_DEV_ADMIN=true is explicitly set (see isDevLoginAllowed).
+  if (
+    isDevLoginAllowed() &&
+    email === DEV_TEST_USER.email &&
+    password === DEV_TEST_USER.password
+  ) {
+    console.warn('[auth] Dev admin login used via ALLOW_DEV_ADMIN — disabled in production.');
     return { success: true, user: DEV_TEST_USER.user };
   }
 

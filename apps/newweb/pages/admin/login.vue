@@ -114,17 +114,6 @@ const handleSubmit = async () => {
           </template>
         </button>
       </form>
-
-      <!-- Demo Credentials -->
-      <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-        <p class="text-xs text-gray-500 mb-2">測試帳號：</p>
-        <p class="text-sm text-gray-600">
-          Email: <code class="bg-gray-200 px-1 rounded">admin@l-kk.tw</code>
-        </p>
-        <p class="text-sm text-gray-600">
-          密碼: <code class="bg-gray-200 px-1 rounded">admin123</code>
-        </p>
-      </div>
     </div>
 
     <!-- Back to Website -->

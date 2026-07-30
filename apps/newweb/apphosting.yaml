@@ -17,9 +17,12 @@ env:
   - variable: NUXT_PUBLIC_SITE_URL
     value: https://l-kk.tw
 
-  # Firebase
+  # Firebase (migrated to lkkdev)
   - variable: FIREBASE_PROJECT_ID
-    value: lkk-website-dev
+    value: lkkdev
+  # lkkdev's default bucket uses the newer .firebasestorage.app domain
+  - variable: FIREBASE_STORAGE_BUCKET
+    value: lkkdev.firebasestorage.app
 
   # SMTP Configuration (same as Next.js web app)
   - variable: SMTP_HOST
@@ -35,3 +38,10 @@ env:
   # SMTP Password - reuse existing secret from Next.js
   - variable: SMTP_PASS
     secret: smtp-pass
+
+  # JWT signing secret for admin auth (REQUIRED in production).
+  # Create it in lkkdev and grant access to this backend, e.g.:
+  #   npx firebase-tools apphosting:secrets:set jwt-secret --project lkkdev
+  #   npx firebase-tools apphosting:secrets:grantaccess jwt-secret --project lkkdev --backend newweb
+  - variable: JWT_SECRET
+    secret: jwt-secret
