@@ -165,7 +165,7 @@ async function handleSaveNote() {
 }
 
 function handleExport() {
-  const headers = ['姓名', '電話', 'Email', '分店', '狀態', '性別', '出生年月', '運動目的', '偏好時段', '付款方式', '來源', '備註', '建立時間']
+  const headers = ['姓名', '電話', 'Email', '分店', '狀態', '性別', '出生年月', 'LINE ID', '運動目的', '偏好時段', '付款方式', '得知管道', '填寫者', '與學員關係', '預約者姓名', '聯繫電話', '健康狀況', '備註', '建立時間']
   const rows = filteredLeads.value.map(lead => {
     // 處理運動目的
     let exerciseGoalsText = ''
@@ -184,6 +184,16 @@ function handleExport() {
       ? lead.payload.sources.join('、')
       : lead.payload?.sources || ''
 
+    // 填寫者 / 代填資訊
+    const filledBy = lead.payload?.filledBySelf === false ? '親友代填' : '本人填寫'
+    const relationship = lead.payload?.filledBySelf === false ? (lead.payload?.relationship || '') : ''
+    const bookerName = lead.payload?.filledBySelf === false ? (lead.payload?.bookerName || '') : ''
+    const contactPhone = lead.payload?.contactPhone || ''
+    // 健康狀況
+    const health = lead.payload?.hasMedicalCondition
+      ? `有${lead.payload?.medicalConditionNote ? '：' + lead.payload.medicalConditionNote : ''}`
+      : '無'
+
     return [
       lead.name,
       lead.phone,
@@ -192,10 +202,16 @@ function handleExport() {
       statusLabels[lead.status]?.label || lead.status,
       lead.payload?.gender || '',
       lead.payload?.birthDate || '',
+      lead.payload?.line || '',
       exerciseGoalsText,
       preferredTime,
       lead.payload?.paymentMethod || '',
       sources,
+      filledBy,
+      relationship,
+      bookerName,
+      contactPhone,
+      health,
       lead.internalNote || '',
       formatDateTime(lead.createdAt),
     ]
@@ -463,6 +479,35 @@ function handleExport() {
               <div v-if="selectedLead.payload.sources && selectedLead.payload.sources.length > 0" class="col-span-2">
                 <p class="text-sm text-gray-500">得知管道</p>
                 <p class="font-medium">{{ Array.isArray(selectedLead.payload.sources) ? selectedLead.payload.sources.join('、') : selectedLead.payload.sources }}</p>
+              </div>
+
+              <!-- 填寫者資訊 -->
+              <div>
+                <p class="text-sm text-gray-500">填寫者</p>
+                <p class="font-medium">{{ selectedLead.payload.filledBySelf === false ? '親友代填' : '本人填寫' }}</p>
+              </div>
+              <div v-if="selectedLead.payload.filledBySelf === false && selectedLead.payload.relationship">
+                <p class="text-sm text-gray-500">與學員關係</p>
+                <p class="font-medium">{{ selectedLead.payload.relationship }}</p>
+              </div>
+              <div v-if="selectedLead.payload.filledBySelf === false && selectedLead.payload.bookerName">
+                <p class="text-sm text-gray-500">預約者姓名</p>
+                <p class="font-medium">{{ selectedLead.payload.bookerName }}</p>
+              </div>
+              <div v-if="selectedLead.payload.contactPhone && selectedLead.payload.contactPhone !== selectedLead.phone">
+                <p class="text-sm text-gray-500">聯繫電話</p>
+                <p class="font-medium">{{ selectedLead.payload.contactPhone }}</p>
+              </div>
+
+              <!-- 健康狀況 -->
+              <div class="col-span-2">
+                <p class="text-sm text-gray-500">健康狀況</p>
+                <p class="font-medium">
+                  {{ selectedLead.payload.hasMedicalCondition ? '有特殊健康狀況' : '無特殊健康狀況' }}
+                  <span v-if="selectedLead.payload.hasMedicalCondition && selectedLead.payload.medicalConditionNote" class="text-gray-600">
+                    — {{ selectedLead.payload.medicalConditionNote }}
+                  </span>
+                </p>
               </div>
             </template>
           </div>

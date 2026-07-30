@@ -402,10 +402,27 @@ const handleSubmit = async () => {
                 </svg>
               </div>
               <h2 class="text-2xl font-bold mb-4 text-navy-700 font-serif">預約成功！</h2>
-              <p class="text-ink-600 mb-8">我們將於2~3天內與您聯繫，確認體驗課時間。</p>
-              <NuxtLink to="/" class="btn btn-primary">
-                返回首頁
-              </NuxtLink>
+              <p class="text-ink-600 mb-2">我們將於 2~3 天內主動與您聯繫確認體驗課時間，並寄送 Email 通知您。</p>
+              <p class="text-navy-700 font-medium mb-8">為了更快為您服務，請加入官方 LINE 並私訊您的姓名。</p>
+
+              <!-- LINE CTA -->
+              <a
+                href="https://line.me/R/ti/p/%40201fzruh"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-[#06C755] text-white font-bold px-8 py-4 rounded-xl shadow-md hover:bg-[#05b64f] transition-colors"
+              >
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 4.269 8.846 10.036 9.608.391.084.922.258 1.057.592.121.303.079.778.039 1.085l-.171 1.027c-.053.303-.242 1.186 1.039.647 1.281-.54 6.911-4.069 9.428-6.967C23.176 14.393 24 12.458 24 10.304M7.29 13.211H4.906a.634.634 0 0 1-.632-.633V7.803a.634.634 0 0 1 1.265 0v4.143H7.29a.634.634 0 0 1 0 1.265m2.474-.633a.633.633 0 0 1-1.265 0V7.803a.634.634 0 0 1 1.265 0zm5.703 0a.633.633 0 0 1-.633.633.63.63 0 0 1-.512-.26l-2.444-3.325v2.952a.633.633 0 0 1-1.265 0V7.803a.633.633 0 0 1 .633-.632c.199 0 .385.093.507.256l2.454 3.339V7.803a.634.634 0 0 1 1.265 0v4.775zm4.024-2.952a.634.634 0 0 1 0 1.265h-1.755v1.128h1.755a.633.633 0 0 1 0 1.265h-2.388a.634.634 0 0 1-.633-.633V7.803a.634.634 0 0 1 .633-.632h2.388a.634.634 0 0 1 0 1.265h-1.755v1.128h1.755z"/>
+                </svg>
+                點此加入官方 LINE，並私訊姓名
+              </a>
+
+              <div class="mt-6">
+                <NuxtLink to="/" class="text-ink-500 hover:text-navy-700 text-sm underline underline-offset-2">
+                  返回首頁
+                </NuxtLink>
+              </div>
             </div>
 
             <!-- Form -->
