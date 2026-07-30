@@ -104,9 +104,12 @@ const relationshipOptions = [
 // 運動目的選項（可複選）
 const exerciseGoalOptions = [
   '增加肌力與活動力',
-  '慢性病管理',
-  '體重管理',
-  '其他',
+  '慢性病控制',
+  '降低跌倒風險',
+  '體態管理',
+  '傷後復健',
+  '增加運動表現',
+  '減少疼痛',
 ]
 
 // Form state
@@ -783,7 +786,7 @@ const handleSubmit = async () => {
                   <!-- 運動目的 -->
                   <div>
                     <label class="block text-sm font-medium mb-2 text-navy-700">
-                      運動目的 <span class="text-ink-500 font-normal">（可複選）</span>
+                      訓練目的 <span class="text-ink-500 font-normal">（可複選）</span>
                     </label>
                     <div class="grid grid-cols-2 gap-2">
                       <button
@@ -813,13 +816,9 @@ const handleSubmit = async () => {
                         {{ goal }}
                       </button>
                     </div>
-                    <input
-                      v-if="formData.exerciseGoals.includes('其他')"
-                      v-model="formData.exerciseGoalOther"
-                      type="text"
-                      class="w-full mt-2 px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange"
-                      placeholder="請說明其他運動目的"
-                    />
+                    <p class="text-xs text-ink/60 mt-3 leading-relaxed">
+                      註：訓練無法取代醫療，所有身體疾患務必先尋求醫療人員協助。
+                    </p>
                   </div>
 
                   <!-- 付款方式 -->

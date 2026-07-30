@@ -58,6 +58,25 @@ const leadTypeLabels: Record<string, string> = {
   cooperation: '合作洽詢',
 }
 
+// 依「學員實際年齡」判斷體驗費（50 歲以上免費、未滿 50 歲 $500）。
+// 以出生年月為權威依據，避免表單付款方式被誤選時信件顯示錯誤金額。
+function bookingFeeLabel(birthDate?: string, paymentMethod?: string): string | null {
+  if (birthDate) {
+    const b = new Date(birthDate)
+    if (!isNaN(b.getTime())) {
+      const now = new Date()
+      let age = now.getFullYear() - b.getFullYear()
+      const m = now.getMonth() - b.getMonth()
+      if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age--
+      return age >= 50 ? '50 歲以上免費體驗' : '臨櫃付款 $500'
+    }
+  }
+  if (paymentMethod) {
+    return paymentMethod === '50歲以上免費' ? '50 歲以上免費體驗' : '臨櫃付款 $500'
+  }
+  return null
+}
+
 interface LeadNotificationData {
   type: 'booking' | 'franchise' | 'cooperation'
   name: string
@@ -253,8 +272,8 @@ export async function sendLeadNotification(data: LeadNotificationData) {
       </tr>`
     }
 
-    if (data.paymentMethod) {
-      const paymentLabel = data.paymentMethod === '50歲以上免費' ? '50 歲以上免費體驗' : '臨櫃付款 $500'
+    const paymentLabel = bookingFeeLabel(data.birthDate, data.paymentMethod)
+    if (paymentLabel) {
       content += `
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">付款方式</td>
@@ -487,16 +506,18 @@ export async function sendBookingConfirmation(data: {
   storeName: string
   preferredTime: string[]
   paymentMethod?: string
+  birthDate?: string
 }) {
   const details = [
     { label: '預約分店', value: data.storeName },
     { label: '方便聯繫時段', value: data.preferredTime.join('、') },
   ]
 
-  if (data.paymentMethod) {
+  const feeLabel = bookingFeeLabel(data.birthDate, data.paymentMethod)
+  if (feeLabel) {
     details.push({
       label: '付款方式',
-      value: data.paymentMethod === '50歲以上免費' ? '50 歲以上免費體驗' : '臨櫃付款 $500',
+      value: feeLabel,
     })
   }
 
