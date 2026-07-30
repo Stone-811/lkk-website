@@ -181,6 +181,9 @@ const userAge = computed(() => {
 
 const isFreeEligible = computed(() => userAge.value !== null && userAge.value >= 50)
 
+// 選中的分店（下拉選單下方顯示地址/電話）
+const selectedStore = computed(() => stores.value.find(s => s.id === formData.storeId) || null)
+
 // Watch birthDate changes to auto-clear invalid payment method
 watch(() => formData.birthDate, () => {
   // If user is under 50 and had selected "50歲以上免費", clear the selection
@@ -558,22 +561,13 @@ const handleSubmit = async () => {
                     <label class="block text-sm font-medium mb-2 text-navy-700">
                       是否為本人填寫 <span class="text-red-500">*</span>
                     </label>
-                    <div class="flex gap-4">
-                      <button
-                        v-for="opt in ['本人填寫', '親友代填']"
-                        :key="opt"
-                        type="button"
-                        :class="[
-                          'flex-1 py-3 rounded-lg border text-center transition-all',
-                          formData.filledBySelf === opt
-                            ? 'border-orange bg-orange/10 text-orange font-medium'
-                            : 'border-cream-200 hover:border-orange/50'
-                        ]"
-                        @click="formData.filledBySelf = opt"
-                      >
-                        {{ opt }}
-                      </button>
-                    </div>
+                    <select
+                      v-model="formData.filledBySelf"
+                      class="w-full px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange focus:border-orange"
+                    >
+                      <option value="本人填寫">本人填寫</option>
+                      <option value="親友代填">親友代填</option>
+                    </select>
                   </div>
 
                   <!-- 親友代填欄位 -->
@@ -629,22 +623,14 @@ const handleSubmit = async () => {
                     <label class="block text-sm font-medium mb-2 text-navy-700">
                       是否有疾病，或 3 年內曾開過刀或住院？ <span class="text-red-500">*</span>
                     </label>
-                    <div class="flex gap-4">
-                      <button
-                        v-for="opt in ['是', '否']"
-                        :key="opt"
-                        type="button"
-                        :class="[
-                          'flex-1 py-3 rounded-lg border text-center transition-all',
-                          formData.hasMedicalCondition === opt
-                            ? 'border-orange bg-orange/10 text-orange font-medium'
-                            : 'border-cream-200 hover:border-orange/50'
-                        ]"
-                        @click="formData.hasMedicalCondition = opt"
-                      >
-                        {{ opt }}
-                      </button>
-                    </div>
+                    <select
+                      v-model="formData.hasMedicalCondition"
+                      :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange focus:border-orange', errors.hasMedicalCondition ? 'border-red-500' : 'border-cream-200']"
+                    >
+                      <option value="">請選擇</option>
+                      <option value="否">否</option>
+                      <option value="是">是</option>
+                    </select>
                     <p v-if="errors.hasMedicalCondition" class="text-red-500 text-sm mt-1">{{ errors.hasMedicalCondition }}</p>
                   </div>
 
@@ -677,23 +663,16 @@ const handleSubmit = async () => {
                     <label class="block text-sm font-medium mb-2 text-navy-700">
                       選擇分店 <span class="text-red-500">*</span>
                     </label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <button
-                        v-for="store in stores"
-                        :key="store.id"
-                        type="button"
-                        :class="[
-                          'p-3 sm:p-4 rounded-lg border text-left transition-all',
-                          formData.storeId === store.id
-                            ? 'border-orange bg-orange/10 ring-2 ring-orange'
-                            : 'border-cream-200 hover:border-orange/50'
-                        ]"
-                        @click="formData.storeId = store.id"
-                      >
-                        <div class="font-semibold text-navy-700 text-sm sm:text-base">{{ store.name }}</div>
-                        <div class="text-xs sm:text-sm text-ink/60 mt-0.5">{{ store.address }}</div>
-                      </button>
-                    </div>
+                    <select
+                      v-model="formData.storeId"
+                      :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange focus:border-orange', errors.storeId ? 'border-red-500' : 'border-cream-200']"
+                    >
+                      <option value="">請選擇分店</option>
+                      <option v-for="store in stores" :key="store.id" :value="store.id">{{ store.name }}</option>
+                    </select>
+                    <p v-if="selectedStore" class="text-xs text-ink/60 mt-1.5">
+                      {{ selectedStore.address }}<span v-if="selectedStore.phone"> ・ {{ selectedStore.phone }}</span>
+                    </p>
                     <p v-if="errors.storeId" class="text-red-500 text-sm mt-2">{{ errors.storeId }}</p>
                   </div>
 
@@ -826,51 +805,14 @@ const handleSubmit = async () => {
                     <label class="block text-sm font-medium mb-2 text-navy-700">
                       付款方式 <span class="text-red-500">*</span>
                     </label>
-                    <div :class="isFreeEligible ? 'grid grid-cols-2 gap-3' : ''">
-                      <!-- 50歲以上免費選項 - 只在符合資格時顯示 -->
-                      <button
-                        v-if="isFreeEligible"
-                        type="button"
-                        :class="[
-                          'p-4 rounded-lg border text-left transition-all',
-                          formData.paymentMethod === '50歲以上免費'
-                            ? 'border-green-500 bg-green-50 ring-2 ring-green-500'
-                            : 'border-cream-200 hover:border-green-300'
-                        ]"
-                        @click="formData.paymentMethod = '50歲以上免費'"
-                      >
-                        <div class="flex items-center gap-2">
-                          <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0', formData.paymentMethod === '50歲以上免費' ? 'border-green-500' : 'border-ink-300']">
-                            <div v-if="formData.paymentMethod === '50歲以上免費'" class="w-3 h-3 rounded-full bg-green-500" />
-                          </div>
-                          <div>
-                            <div class="font-semibold text-green-600 text-sm">50 歲以上免費</div>
-                            <div class="text-xs text-ink/60">首次體驗完全免費</div>
-                          </div>
-                        </div>
-                      </button>
-                      <!-- 臨櫃付款選項 -->
-                      <button
-                        type="button"
-                        :class="[
-                          'p-4 rounded-lg border text-left transition-all w-full',
-                          formData.paymentMethod === '臨櫃付款'
-                            ? 'border-orange bg-orange/10 ring-2 ring-orange'
-                            : 'border-cream-200 hover:border-orange/50'
-                        ]"
-                        @click="formData.paymentMethod = '臨櫃付款'"
-                      >
-                        <div class="flex items-center gap-2">
-                          <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0', formData.paymentMethod === '臨櫃付款' ? 'border-orange' : 'border-ink-300']">
-                            <div v-if="formData.paymentMethod === '臨櫃付款'" class="w-3 h-3 rounded-full bg-orange" />
-                          </div>
-                          <div>
-                            <div class="font-semibold text-navy-700 text-sm">臨櫃付款</div>
-                            <div class="text-xs text-ink/60">首次體驗 $500</div>
-                          </div>
-                        </div>
-                      </button>
-                    </div>
+                    <select
+                      v-model="formData.paymentMethod"
+                      :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange focus:border-orange', errors.paymentMethod ? 'border-red-500' : 'border-cream-200']"
+                    >
+                      <option value="">請選擇</option>
+                      <option v-if="isFreeEligible" value="50歲以上免費">50 歲以上免費（首次體驗完全免費）</option>
+                      <option value="臨櫃付款">臨櫃付款（首次體驗 $500）</option>
+                    </select>
                     <p v-if="errors.paymentMethod" class="text-red-500 text-sm mt-2">{{ errors.paymentMethod }}</p>
                   </div>
 
