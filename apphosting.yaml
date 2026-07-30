@@ -22,15 +22,15 @@ env:
   - variable: FIREBASE_STORAGE_BUCKET
     value: lkkprod.firebasestorage.app
 
-  # Firebase client (web) config — PUBLIC values, for admin Google sign-in
+  # Firebase client (web) config — PUBLIC values, for admin Google sign-in (lkkprod)
   - variable: NUXT_PUBLIC_FIREBASE_API_KEY
-    value: AIzaSyAqOFTADIc2d9CmZfe9C9oqJv92dHbFx1Q
+    value: AIzaSyCgmWKWBHDPAN6o1ljTDmnKWhjGT-4qak4
   - variable: NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-    value: lkkdev.firebaseapp.com
+    value: lkkprod.firebaseapp.com
   - variable: NUXT_PUBLIC_FIREBASE_PROJECT_ID
-    value: lkkdev
+    value: lkkprod
   - variable: NUXT_PUBLIC_FIREBASE_APP_ID
-    value: "1:519198461380:web:02167a9297dd17b714e891"
+    value: "1:358130100336:web:d7fbf02d5e53715aa32cb5"
   # Admin allow-list for Google sign-in (comma-separated)
   - variable: ADMIN_ALLOWED_EMAILS
     value: lkkwellness@gmail.com
