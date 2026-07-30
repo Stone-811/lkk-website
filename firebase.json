@@ -1,15 +1,6 @@
 {
   "apphosting": [
     {
-      "backendId": "web",
-      "rootDir": "./apps/web",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log"
-      ]
-    },
-    {
       "backendId": "newweb",
       "rootDir": "./apps/newweb",
       "ignore": [
