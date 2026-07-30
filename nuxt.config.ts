@@ -140,7 +140,12 @@ export default defineNuxtConfig({
     firebaseProjectId: process.env.FIREBASE_PROJECT_ID,
     // Public (client-side)
     public: {
-      siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://l-kk.tw',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://l-kk.tw',
+      // Firebase client (web) config — public values, used for admin Google sign-in
+      firebaseApiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY || '',
+      firebaseAuthDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+      firebaseProjectId: process.env.NUXT_PUBLIC_FIREBASE_PROJECT_ID || '',
+      firebaseAppId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID || '',
     },
   },
 

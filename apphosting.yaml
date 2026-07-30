@@ -23,6 +23,19 @@ env:
   - variable: FIREBASE_STORAGE_BUCKET
     value: lkkdev.firebasestorage.app
 
+  # Firebase client (web) config — PUBLIC values, for admin Google sign-in
+  - variable: NUXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyAqOFTADIc2d9CmZfe9C9oqJv92dHbFx1Q
+  - variable: NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: lkkdev.firebaseapp.com
+  - variable: NUXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: lkkdev
+  - variable: NUXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:519198461380:web:02167a9297dd17b714e891"
+  # Admin allow-list for Google sign-in (comma-separated)
+  - variable: ADMIN_ALLOWED_EMAILS
+    value: lkkwellness@gmail.com
+
   # SMTP Configuration (same as Next.js web app)
   - variable: SMTP_HOST
     value: smtp.gmail.com

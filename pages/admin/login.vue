@@ -8,34 +8,71 @@ useHead({
 })
 
 const router = useRouter()
+const nuxtApp = useNuxtApp()
+
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const isLoading = ref(false)
+const googleLoading = ref(false)
+const showPasswordLogin = ref(false)
 
+// Primary: Google sign-in (only allow-listed emails get an admin session)
+async function handleGoogleLogin() {
+  error.value = ''
+  const auth = (nuxtApp as any).$firebaseAuth
+  if (!auth) {
+    error.value = 'Google 登入尚未設定，請改用密碼登入'
+    showPasswordLogin.value = true
+    return
+  }
+  googleLoading.value = true
+  try {
+    const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth')
+    const provider = new GoogleAuthProvider()
+    provider.setCustomParameters({ prompt: 'select_account' })
+    const result = await signInWithPopup(auth, provider)
+    const idToken = await result.user.getIdToken()
+
+    const res = await fetch('/api/admin/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken }),
+    })
+    const data = await res.json()
+    if (!res.ok || !data.success) {
+      error.value = data.error || 'Google 登入失敗'
+      return
+    }
+    router.push('/admin')
+  } catch (e: any) {
+    if (e?.code === 'auth/popup-closed-by-user' || e?.code === 'auth/cancelled-popup-request') {
+      // user closed the popup — silent
+    } else {
+      console.error('Google login error:', e)
+      error.value = 'Google 登入失敗，請重試'
+    }
+  } finally {
+    googleLoading.value = false
+  }
+}
+
+// Emergency backup: email + password
 const handleSubmit = async () => {
   if (!email.value || !password.value) return
-
   error.value = ''
   isLoading.value = true
-
   try {
     const res = await fetch('/api/admin/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email.value,
-        password: password.value,
-      }),
+      body: JSON.stringify({ email: email.value, password: password.value }),
     })
-
     const data = await res.json()
-
     if (!res.ok) {
       error.value = data.error || '登入失敗'
       return
     }
-
     router.push('/admin')
   } catch (err) {
     error.value = '網路錯誤，請稍後再試'
@@ -55,63 +92,69 @@ const handleSubmit = async () => {
         <p class="text-gray-500 mt-1">後台管理系統</p>
       </div>
 
-      <!-- Form -->
-      <form @submit.prevent="handleSubmit" class="space-y-6">
-        <!-- Error Message -->
-        <div v-if="error" class="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
-          {{ error }}
-        </div>
+      <!-- Error Message -->
+      <div v-if="error" class="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm mb-4">
+        {{ error }}
+      </div>
 
-        <!-- Email -->
+      <!-- Google sign-in (primary) -->
+      <button
+        type="button"
+        @click="handleGoogleLogin"
+        :disabled="googleLoading"
+        class="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg class="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1Z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"/>
+          <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84Z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38Z"/>
+        </svg>
+        <span>{{ googleLoading ? '登入中…' : '使用 Google 登入' }}</span>
+      </button>
+      <p class="text-xs text-gray-400 text-center mt-3">僅限授權的 Google 帳號可進入後台</p>
+
+      <!-- Toggle emergency password login -->
+      <div class="mt-6">
+        <button
+          type="button"
+          @click="showPasswordLogin = !showPasswordLogin"
+          class="w-full text-sm text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          {{ showPasswordLogin ? '收合密碼登入' : '使用密碼登入（緊急備援）' }}
+        </button>
+      </div>
+
+      <!-- Password form (emergency backup) -->
+      <form v-if="showPasswordLogin" @submit.prevent="handleSubmit" class="space-y-4 mt-4 pt-4 border-t border-gray-100">
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
             id="email"
             type="email"
             v-model="email"
             placeholder="admin@l-kk.tw"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange/50 focus:border-orange outline-none transition-colors"
-            required
             autocomplete="email"
           />
         </div>
-
-        <!-- Password -->
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-            密碼
-          </label>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">密碼</label>
           <input
             id="password"
             type="password"
             v-model="password"
             placeholder="••••••••"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange/50 focus:border-orange outline-none transition-colors"
-            required
             autocomplete="current-password"
           />
         </div>
-
-        <!-- Submit Button -->
         <button
           type="submit"
           :disabled="isLoading"
           class="w-full bg-orange text-white font-bold py-3 rounded-lg hover:bg-orange-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <template v-if="isLoading">
-            <span class="inline-flex items-center gap-2">
-              <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-              登入中...
-            </span>
-          </template>
-          <template v-else>
-            登入
-          </template>
+          {{ isLoading ? '登入中...' : '密碼登入' }}
         </button>
       </form>
     </div>
