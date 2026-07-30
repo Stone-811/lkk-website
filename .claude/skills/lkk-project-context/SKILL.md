@@ -29,7 +29,7 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 ## 常踩的地雷
 1. **store 資料結構三套不一致**：後台送 `transport{}`/`images{env1..5}`，但 `stores/[id].patch.ts` allowedFields 漏了 `transport`（交通資訊儲存被丟棄）；公開 API 把 images 當陣列；型別 `StoreDoc` 是 `string[]`。
 2. `pages/cooperation.vue` 表單是**假送出**（setTimeout），後端 API 已就緒沒接。
-3. `pages/booking.vue` 承諾導向 LINE 但沒實作。
+3. ✅ `pages/booking.vue` 成功畫面已加官方 LINE 按鈕（`@201fzruh`）。後台 `pages/admin/leads.vue` 詳情/CSV 已顯示完整 booking payload（含代填者/健康狀況/LINE ID）。
 4. `pages/locations/index.vue` 用寫死資料，非 API。
 5. WordPress 代理、reCAPTCHA 皆未實作（CLAUDE.md 有寫）。
 
