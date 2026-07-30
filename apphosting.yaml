@@ -41,6 +41,6 @@ env:
   # JWT signing secret for admin auth (REQUIRED in production).
   # Create it in lkkdev and grant access to this backend, e.g.:
   #   npx firebase-tools apphosting:secrets:set jwt-secret --project lkkdev
-  #   npx firebase-tools apphosting:secrets:grantaccess jwt-secret --project lkkdev --backend newweb
+  #   npx firebase-tools apphosting:secrets:grantaccess jwt-secret --project lkkdev --backend lkk-website-dev
   - variable: JWT_SECRET
     secret: jwt-secret

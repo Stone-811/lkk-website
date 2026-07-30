@@ -1,7 +1,7 @@
 {
   "apphosting": [
     {
-      "backendId": "newweb",
+      "backendId": "lkk-website-dev",
       "rootDir": ".",
       "ignore": [
         "node_modules",
