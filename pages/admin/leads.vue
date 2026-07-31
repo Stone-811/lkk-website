@@ -409,7 +409,7 @@ function handleExport() {
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       @click.self="closeDetail"
     >
-      <div class="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div class="p-6 border-b border-gray-200 flex items-center justify-between">
           <h2 class="text-lg font-bold text-gray-900">預約體驗詳情</h2>
           <button @click="closeDetail" class="text-gray-400 hover:text-gray-600">
@@ -418,130 +418,164 @@ function handleExport() {
             </svg>
           </button>
         </div>
-        <div class="p-6 space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <p class="text-sm text-gray-500">姓名</p>
-              <p class="font-medium">{{ selectedLead.name }}</p>
-            </div>
-            <div>
-              <p class="text-sm text-gray-500">電話</p>
-              <p class="font-medium">{{ selectedLead.phone }}</p>
-            </div>
-            <div v-if="selectedLead.email">
-              <p class="text-sm text-gray-500">Email</p>
-              <p class="font-medium">{{ selectedLead.email }}</p>
-            </div>
-            <div>
-              <p class="text-sm text-gray-500">分店</p>
-              <p class="font-medium">{{ selectedLead.storeName || '-' }}</p>
-            </div>
-            <div>
-              <p class="text-sm text-gray-500">狀態</p>
-              <span :class="[statusLabels[selectedLead.status]?.class || 'bg-gray-100 text-gray-600', 'text-sm font-medium px-2.5 py-1 rounded-full']">
-                {{ statusLabels[selectedLead.status]?.label || selectedLead.status }}
-              </span>
-            </div>
-            <div>
-              <p class="text-sm text-gray-500">建立時間</p>
-              <p class="font-medium">{{ formatDateTime(selectedLead.createdAt) }}</p>
-            </div>
+        <div class="p-6 space-y-5">
+          <!-- 狀態列 -->
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <span :class="[statusLabels[selectedLead.status]?.class || 'bg-gray-100 text-gray-600', 'text-sm font-medium px-3 py-1 rounded-full']">
+              {{ statusLabels[selectedLead.status]?.label || selectedLead.status }}
+            </span>
+            <span class="text-sm text-gray-400">建立於 {{ formatDateTime(selectedLead.createdAt) }}</span>
+          </div>
 
-            <!-- Booking specific fields -->
-            <template v-if="selectedLead.payload">
-              <div v-if="selectedLead.payload.gender">
-                <p class="text-sm text-gray-500">性別</p>
-                <p class="font-medium">{{ selectedLead.payload.gender }}</p>
+          <!-- 學員資料 -->
+          <section class="rounded-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <h3 class="text-xs font-bold text-gray-500 tracking-wider uppercase">學員資料</h3>
+            </div>
+            <div class="p-4 grid grid-cols-2 gap-4">
+              <div>
+                <p class="text-xs text-gray-500 mb-0.5">姓名</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.name }}</p>
               </div>
-              <div v-if="selectedLead.payload.birthDate">
-                <p class="text-sm text-gray-500">出生年月</p>
-                <p class="font-medium">{{ selectedLead.payload.birthDate }}</p>
+              <div>
+                <p class="text-xs text-gray-500 mb-0.5">電話</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.phone }}</p>
               </div>
-              <div v-if="selectedLead.payload.line">
-                <p class="text-sm text-gray-500">LINE ID</p>
-                <p class="font-medium">{{ selectedLead.payload.line }}</p>
+              <div v-if="selectedLead.email">
+                <p class="text-xs text-gray-500 mb-0.5">Email</p>
+                <p class="font-medium text-gray-900 break-all">{{ selectedLead.email }}</p>
               </div>
-              <div v-if="selectedLead.payload.goal" class="col-span-2">
-                <p class="text-sm text-gray-500">運動目標</p>
-                <p class="font-medium">{{ selectedLead.payload.goal }}</p>
+              <div v-if="selectedLead.payload?.gender">
+                <p class="text-xs text-gray-500 mb-0.5">性別</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.payload.gender }}</p>
               </div>
-              <div v-if="selectedLead.payload.exerciseGoals && selectedLead.payload.exerciseGoals.length > 0" class="col-span-2">
-                <p class="text-sm text-gray-500">運動目的</p>
-                <p class="font-medium">
+              <div v-if="selectedLead.payload?.birthDate">
+                <p class="text-xs text-gray-500 mb-0.5">出生年月</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.payload.birthDate }}</p>
+              </div>
+              <div v-if="selectedLead.payload?.line">
+                <p class="text-xs text-gray-500 mb-0.5">LINE ID</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.payload.line }}</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 預約資訊 -->
+          <section class="rounded-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <h3 class="text-xs font-bold text-gray-500 tracking-wider uppercase">預約資訊</h3>
+            </div>
+            <div class="p-4 grid grid-cols-2 gap-4">
+              <div>
+                <p class="text-xs text-gray-500 mb-0.5">分店</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.storeName || '-' }}</p>
+              </div>
+              <div v-if="selectedLead.payload?.paymentMethod">
+                <p class="text-xs text-gray-500 mb-0.5">付款方式</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.payload.paymentMethod === '50歲以上免費' ? '50歲以上免費體驗' : '臨櫃付款 $500' }}</p>
+              </div>
+              <div v-if="selectedLead.payload?.preferredTime" class="col-span-2">
+                <p class="text-xs text-gray-500 mb-0.5">偏好時段</p>
+                <p class="font-medium text-gray-900">{{ Array.isArray(selectedLead.payload.preferredTime) ? selectedLead.payload.preferredTime.join('、') : selectedLead.payload.preferredTime }}</p>
+              </div>
+              <div v-if="selectedLead.payload?.goal" class="col-span-2">
+                <p class="text-xs text-gray-500 mb-0.5">運動目標</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.payload.goal }}</p>
+              </div>
+              <div v-if="selectedLead.payload?.exerciseGoals && selectedLead.payload.exerciseGoals.length > 0" class="col-span-2">
+                <p class="text-xs text-gray-500 mb-0.5">運動目的</p>
+                <p class="font-medium text-gray-900">
                   {{ selectedLead.payload.exerciseGoals.join('、') }}
                   <span v-if="selectedLead.payload.exerciseGoalOther">（其他：{{ selectedLead.payload.exerciseGoalOther }}）</span>
                 </p>
               </div>
-              <div v-if="selectedLead.payload.preferredTime" class="col-span-2">
-                <p class="text-sm text-gray-500">偏好時段</p>
-                <p class="font-medium">{{ Array.isArray(selectedLead.payload.preferredTime) ? selectedLead.payload.preferredTime.join('、') : selectedLead.payload.preferredTime }}</p>
+              <div v-if="selectedLead.payload?.sources && selectedLead.payload.sources.length > 0" class="col-span-2">
+                <p class="text-xs text-gray-500 mb-0.5">得知管道</p>
+                <p class="font-medium text-gray-900">{{ Array.isArray(selectedLead.payload.sources) ? selectedLead.payload.sources.join('、') : selectedLead.payload.sources }}</p>
               </div>
-              <div v-if="selectedLead.payload.paymentMethod">
-                <p class="text-sm text-gray-500">付款方式</p>
-                <p class="font-medium">{{ selectedLead.payload.paymentMethod === '50歲以上免費' ? '50歲以上免費體驗' : '臨櫃付款 $500' }}</p>
-              </div>
-              <div v-if="selectedLead.payload.sources && selectedLead.payload.sources.length > 0" class="col-span-2">
-                <p class="text-sm text-gray-500">得知管道</p>
-                <p class="font-medium">{{ Array.isArray(selectedLead.payload.sources) ? selectedLead.payload.sources.join('、') : selectedLead.payload.sources }}</p>
-              </div>
+            </div>
+          </section>
 
-              <!-- 填寫者資訊 -->
+          <!-- 填寫者資料 -->
+          <section class="rounded-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <h3 class="text-xs font-bold text-gray-500 tracking-wider uppercase">填寫者資料</h3>
+            </div>
+            <div class="p-4 grid grid-cols-2 gap-4">
               <div>
-                <p class="text-sm text-gray-500">填寫者</p>
-                <p class="font-medium">{{ selectedLead.payload.filledBySelf === false ? '親友代填' : '本人填寫' }}</p>
+                <p class="text-xs text-gray-500 mb-0.5">填寫者</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.payload?.filledBySelf === false ? '親友代填' : '本人填寫' }}</p>
               </div>
-              <div v-if="selectedLead.payload.filledBySelf === false && selectedLead.payload.relationship">
-                <p class="text-sm text-gray-500">與學員關係</p>
-                <p class="font-medium">{{ selectedLead.payload.relationship }}</p>
+              <div v-if="selectedLead.payload?.filledBySelf === false && selectedLead.payload?.relationship">
+                <p class="text-xs text-gray-500 mb-0.5">與學員關係</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.payload.relationship }}</p>
               </div>
-              <div v-if="selectedLead.payload.filledBySelf === false && selectedLead.payload.bookerName">
-                <p class="text-sm text-gray-500">預約者姓名</p>
-                <p class="font-medium">{{ selectedLead.payload.bookerName }}</p>
+              <div v-if="selectedLead.payload?.filledBySelf === false && selectedLead.payload?.bookerName">
+                <p class="text-xs text-gray-500 mb-0.5">預約者姓名</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.payload.bookerName }}</p>
               </div>
-              <div v-if="selectedLead.payload.contactPhone && selectedLead.payload.contactPhone !== selectedLead.phone">
-                <p class="text-sm text-gray-500">聯繫電話</p>
-                <p class="font-medium">{{ selectedLead.payload.contactPhone }}</p>
+              <div v-if="selectedLead.payload?.contactPhone && selectedLead.payload.contactPhone !== selectedLead.phone">
+                <p class="text-xs text-gray-500 mb-0.5">聯繫電話</p>
+                <p class="font-medium text-gray-900">{{ selectedLead.payload.contactPhone }}</p>
               </div>
+            </div>
+          </section>
 
-              <!-- 健康狀況 -->
-              <div class="col-span-2">
-                <p class="text-sm text-gray-500">健康狀況</p>
-                <p class="font-medium">
-                  {{ selectedLead.payload.hasMedicalCondition ? '有特殊健康狀況' : '無特殊健康狀況' }}
-                  <span v-if="selectedLead.payload.hasMedicalCondition && selectedLead.payload.medicalConditionNote" class="text-gray-600">
-                    — {{ selectedLead.payload.medicalConditionNote }}
-                  </span>
-                </p>
+          <!-- 健康狀況 -->
+          <section class="rounded-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <h3 class="text-xs font-bold text-gray-500 tracking-wider uppercase">健康狀況</h3>
+            </div>
+            <div class="p-4">
+              <p class="font-medium text-gray-900">
+                {{ selectedLead.payload?.hasMedicalCondition ? '有特殊健康狀況' : '無特殊健康狀況' }}
+                <span v-if="selectedLead.payload?.hasMedicalCondition && selectedLead.payload?.medicalConditionNote" class="text-gray-600">
+                  — {{ selectedLead.payload.medicalConditionNote }}
+                </span>
+              </p>
+            </div>
+          </section>
+
+          <!-- 來源追蹤 (UTM) -->
+          <section v-if="selectedLead.payload?.utm && (selectedLead.payload.utm.source || selectedLead.payload.utm.campaign || selectedLead.payload.utm.medium)" class="rounded-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <h3 class="text-xs font-bold text-gray-500 tracking-wider uppercase">來源追蹤 (UTM)</h3>
+            </div>
+            <div class="p-4">
+              <div class="flex flex-wrap gap-1.5">
+                <span v-if="selectedLead.payload.utm.source" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">來源：{{ selectedLead.payload.utm.source }}</span>
+                <span v-if="selectedLead.payload.utm.medium" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">形式：{{ selectedLead.payload.utm.medium }}</span>
+                <span v-if="selectedLead.payload.utm.campaign" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">活動：{{ selectedLead.payload.utm.campaign }}</span>
+                <span v-if="selectedLead.payload.utm.content" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">素材：{{ selectedLead.payload.utm.content }}</span>
               </div>
+              <p v-if="selectedLead.payload.utm.referrer" class="text-xs text-gray-400 mt-2 truncate">referrer: {{ selectedLead.payload.utm.referrer }}</p>
+            </div>
+          </section>
 
-              <!-- 來源追蹤 (UTM) -->
-              <div v-if="selectedLead.payload.utm && (selectedLead.payload.utm.source || selectedLead.payload.utm.campaign || selectedLead.payload.utm.medium)" class="col-span-2">
-                <p class="text-sm text-gray-500">來源追蹤 (UTM)</p>
-                <div class="mt-1 flex flex-wrap gap-1.5">
-                  <span v-if="selectedLead.payload.utm.source" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">來源：{{ selectedLead.payload.utm.source }}</span>
-                  <span v-if="selectedLead.payload.utm.medium" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">形式：{{ selectedLead.payload.utm.medium }}</span>
-                  <span v-if="selectedLead.payload.utm.campaign" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">活動：{{ selectedLead.payload.utm.campaign }}</span>
-                  <span v-if="selectedLead.payload.utm.content" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">素材：{{ selectedLead.payload.utm.content }}</span>
-                </div>
-                <p v-if="selectedLead.payload.utm.referrer" class="text-xs text-gray-400 mt-1 truncate">referrer: {{ selectedLead.payload.utm.referrer }}</p>
-              </div>
-            </template>
-          </div>
+          <!-- 留言 -->
+          <section v-if="selectedLead.message" class="rounded-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <h3 class="text-xs font-bold text-gray-500 tracking-wider uppercase">留言</h3>
+            </div>
+            <div class="p-4">
+              <p class="text-gray-900 whitespace-pre-wrap">{{ selectedLead.message }}</p>
+            </div>
+          </section>
 
-          <div v-if="selectedLead.message" class="col-span-2">
-            <p class="text-sm text-gray-500">留言</p>
-            <p class="mt-1 p-3 bg-gray-50 rounded-lg whitespace-pre-wrap">{{ selectedLead.message }}</p>
-          </div>
-
-          <div>
-            <p class="text-sm text-gray-500 mb-2">內部備註</p>
-            <textarea
-              v-model="noteText"
-              rows="3"
-              placeholder="新增內部備註..."
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700"
-            />
-          </div>
+          <!-- 內部備註 -->
+          <section class="rounded-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <h3 class="text-xs font-bold text-gray-500 tracking-wider uppercase">內部備註</h3>
+            </div>
+            <div class="p-4">
+              <textarea
+                v-model="noteText"
+                rows="3"
+                placeholder="新增內部備註..."
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange"
+              />
+            </div>
+          </section>
         </div>
         <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
           <button @click="closeDetail" class="bg-gray-100 text-gray-700 font-medium px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">

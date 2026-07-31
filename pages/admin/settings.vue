@@ -136,9 +136,11 @@ async function handleTestNotification() {
     } else {
       alert(res.error || '發送失敗')
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Test notification failed:', error)
-    alert('發送失敗，請確認 SMTP 設定是否正確')
+    // 把後端真正的 SMTP 錯誤顯示出來，方便診斷（例如 535 帳密不符）
+    const detail = error?.data?.message || error?.data?.statusMessage || error?.message || '未知錯誤'
+    alert('發送失敗：\n' + detail + '\n\n（多半是 SMTP App Password 問題，請截圖此訊息回報）')
   } finally {
     testingSend.value = false
   }
