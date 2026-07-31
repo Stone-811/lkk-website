@@ -311,11 +311,10 @@ const mediaReports = [
       </div>
     </section>
 
-    <!-- Records Search + Media Reports -->
-    <section class="py-16 lg:py-20 bg-white">
-      <div class="container mx-auto px-4 space-y-8">
-        <!-- 歷年參賽成績搜尋 -->
-        <div class="bg-cream rounded-2xl p-8 lg:p-10 border border-navy/10 text-center">
+    <!-- 歷年參賽成績搜尋 -->
+    <section class="py-16 lg:py-20 bg-cream">
+      <div class="container mx-auto px-4">
+        <div class="bg-white rounded-2xl p-8 lg:p-10 border border-navy/10 text-center">
           <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
             <span class="w-5 h-0.5 bg-orange" />
             歷年參賽成績
@@ -331,25 +330,24 @@ const mediaReports = [
             參賽成績查詢
           </NuxtLink>
         </div>
+      </div>
+    </section>
 
-        <!-- 媒體報導 -->
-        <div class="bg-cream rounded-2xl p-6 border border-navy/10">
-          <div class="text-xs font-bold text-ink/40 tracking-widest uppercase text-center mb-5">
-            媒體報導
-          </div>
-          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-4xl mx-auto">
+    <!-- 媒體報導 -->
+    <section class="bg-white py-8 lg:py-10">
+      <div class="container mx-auto px-4">
+        <div class="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12">
+          <span class="text-ink/60 text-sm font-medium whitespace-nowrap">媒體報導</span>
+          <div class="flex flex-wrap items-center justify-center gap-x-8 lg:gap-x-12 gap-y-4">
             <a
               v-for="report in mediaReports"
               :key="report.name"
               :href="report.url"
               target="_blank"
               rel="noopener noreferrer"
-              class="group flex items-center justify-between gap-2 bg-white rounded-xl px-4 py-3 border border-navy/10 hover:border-orange/40 hover:shadow-sm transition-colors"
+              class="text-ink/50 text-sm lg:text-base font-medium hover:text-ink/70 transition-colors"
             >
-              <span class="font-serif font-bold text-navy/80 group-hover:text-navy">{{ report.name }}</span>
-              <svg class="w-4 h-4 text-navy/30 group-hover:text-orange shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
+              {{ report.name }}
             </a>
           </div>
         </div>
