@@ -71,7 +71,13 @@ const audience = [
   '熱血的親友團，想揪團一起拚團體積分',
 ]
 
-const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新聞專題', '吳淡如人生實用商學院', '動思學院 MoveThink']
+const mediaReports = [
+  { name: '中央社', url: 'https://l-kk.tw/deadlift/' },
+  { name: 'BBC', url: 'https://l-kk.tw/bbc-90-year-old-with-parkinsons-enters-weightlifting-contest/' },
+  { name: '路透社', url: 'https://l-kk.tw/reuters-weightlifting-taiwan-granny-90-garners-cheers-health-benefits-at-gym/' },
+  { name: '法新社', url: 'https://l-kk.tw/afp-taipei-hosts-santa-themed-deadlift-contest-for-seniors/' },
+  { name: '新加坡電視台 CNA', url: 'https://l-kk.tw/cna-insider/' },
+]
 </script>
 
 <template>
@@ -107,15 +113,6 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
             </svg>
             立即報名 LKK4
           </a>
-          <NuxtLink
-            to="/personal-record"
-            class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white font-semibold px-6 py-3 rounded-full hover:bg-white/20 hover:border-white/30 transition-colors"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            參賽成績查詢
-          </NuxtLink>
         </div>
       </div>
     </section>
@@ -311,19 +308,49 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
           </div>
         </div>
 
-        <!-- Media Strip -->
-        <div class="bg-cream rounded-2xl p-6 border border-navy/10">
-          <div class="text-xs font-bold text-ink/40 tracking-widest uppercase text-center mb-4">
-            曾受各大主流媒體及知識節目專題報導
+      </div>
+    </section>
+
+    <!-- Records Search + Media Reports -->
+    <section class="py-16 lg:py-20 bg-white">
+      <div class="container mx-auto px-4 space-y-8">
+        <!-- 歷年參賽成績搜尋 -->
+        <div class="bg-cream rounded-2xl p-8 lg:p-10 border border-navy/10 text-center">
+          <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
+            <span class="w-5 h-0.5 bg-orange" />
+            歷年參賽成績
           </div>
-          <div class="flex flex-wrap justify-center items-center gap-6">
-            <span
-              v-for="logo in mediaLogos"
-              :key="logo"
-              class="font-serif text-base font-bold text-navy/60"
+          <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-3">歷年參賽成績搜尋</h2>
+          <p class="text-ink/60 max-w-xl mx-auto mb-6 leading-relaxed">
+            查詢歷屆 LKK4 選手的個人參賽成績與排名紀錄。
+          </p>
+          <NuxtLink to="/personal-record" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            參賽成績查詢
+          </NuxtLink>
+        </div>
+
+        <!-- 媒體報導 -->
+        <div class="bg-cream rounded-2xl p-6 border border-navy/10">
+          <div class="text-xs font-bold text-ink/40 tracking-widest uppercase text-center mb-5">
+            媒體報導
+          </div>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-4xl mx-auto">
+            <a
+              v-for="report in mediaReports"
+              :key="report.name"
+              :href="report.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group flex items-center justify-between gap-2 bg-white rounded-xl px-4 py-3 border border-navy/10 hover:border-orange/40 hover:shadow-sm transition-colors"
             >
-              {{ logo }}
-            </span>
+              <span class="font-serif font-bold text-navy/80 group-hover:text-navy">{{ report.name }}</span>
+              <svg class="w-4 h-4 text-navy/30 group-hover:text-orange shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
           </div>
         </div>
       </div>
