@@ -191,12 +191,13 @@ useHead({
   ]
 })
 
-// 分店照片
+// 分店照片（依序：主訓練區、一對一訓練空間、專業器材區、功能性訓練區、舒適休息區）
+const envLabels = ['主訓練區', '一對一訓練空間', '專業器材區', '功能性訓練區', '舒適休息區']
 const photos = computed(() => {
   const galleryImages = store.value?.galleryImages || []
   if (galleryImages.length > 0) {
     return galleryImages.slice(0, 5).map((img: string, index: number) => ({
-      label: `環境照片 ${index + 1}`,
+      label: envLabels[index] || `環境照片 ${index + 1}`,
       span: index === 0,
       image: img,
     }))
