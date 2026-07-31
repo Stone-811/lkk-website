@@ -18,11 +18,11 @@ useHead({
 
 // 分店環境照片分類定義
 const imageCategories = [
-  { key: 'env1', label: '環境照片 1', description: '主訓練區' },
-  { key: 'env2', label: '環境照片 2', description: '一對一訓練空間' },
-  { key: 'env3', label: '環境照片 3', description: '團體課教室' },
-  { key: 'env4', label: '環境照片 4', description: '接待區' },
-  { key: 'env5', label: '環境照片 5', description: '其他空間' },
+  { key: 'env1', label: '主訓練區（分店頁大圖）', description: '主訓練區' },
+  { key: 'env2', label: '一對一訓練空間', description: '一對一訓練空間' },
+  { key: 'env3', label: '專業器材區', description: '專業器材區' },
+  { key: 'env4', label: '功能性訓練區', description: '功能性訓練區' },
+  { key: 'env5', label: '舒適休息區', description: '舒適休息區' },
 ]
 
 interface StoreImages {

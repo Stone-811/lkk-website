@@ -157,6 +157,7 @@ export default defineEventHandler(async (event) => {
           storeName,
           preferredTime: preferredTimeArray,
           paymentMethod,
+          birthDate,
         }).catch(err => console.error('Failed to send booking confirmation:', err))
       }
     } catch (emailError) {

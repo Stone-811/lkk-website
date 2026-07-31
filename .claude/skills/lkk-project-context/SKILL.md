@@ -14,11 +14,13 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - 資料在 Firestore（Admin SDK，`server/utils/firebase.ts` 延遲載入）；`stores`/`coaches`/`lkk4_records` 有 `server/utils/fallback-data.ts` 保底。
 - 字型是系統微軟正黑體（非文件寫的 Noto；`@nuxtjs/google-fonts` 裝了沒啟用）。
 
-## 部署 / Firebase / CLI
-- ⚠️ **遷移中：`lkk-website-dev` → `lkkdev`**（維持 backend 名 newweb、後端 Firestore；lkkdev 有其他既有服務勿動）。目標 projectId=`lkkdev`、bucket=`lkkdev.firebasestorage.app`。已建 lkkdev Firestore@asia-east1 + 索引；`apphosting.yaml` 已指向 lkkdev。待做：建 lkkdev App Hosting backend newweb+連 GitHub（**root directory 填 `/`**，已拉平）、建 secrets、跑 `scripts/migrate-firestore.mjs` 搬資料。
-- 部署方式：push 到 GitHub `Stone-811/lkk-website-dev` → App Hosting 自動 build（沿用同一 repo）。
-- **gcloud/gsutil/bq 未安裝、無 ADC**。要操作 GCP：用 `npx firebase-tools`（node_modules 有 v15.24.0，已登入 tingo8320@gmail.com）；需要 gcloud 才另裝 Google Cloud SDK。
-- **部署 repo（唯一真實來源）**：`/Users/stone/4.柚智源/練健康/3. 形象網站翻新`（git remote `Stone-811/lkk-website-dev`，branch `main`）。舊的 `/Users/stone/Downloads/lkk-new-web` 雙胞胎已棄用。
+## 部署 / Firebase / CLI（dev/prod 雙環境，皆上線）
+- 同 repo `Stone-811/lkk-website`，靠「不同專案 backend + 不同分支 + 分支各自 apphosting.yaml」分離：
+  - **dev**：專案 `lkkdev`／backend `lkk-website-dev`／分支 `dev`／URL `lkk-website-dev--lkkdev.asia-east1.hosted.app`
+  - **prod**：專案 `lkkprod`／backend `lkk-website`／分支 `prod`／URL `lkk-website--lkkprod.asia-east1.hosted.app`
+- 發 prod＝merge `dev`→`prod`（apphosting.yaml 值各分支不同；合併後確認 client firebase config 是 lkkprod 值）。部署：push 分支 → 自動 build；或 `apphosting:rollouts:create <backend> --project <proj> --git-branch <branch> --force`。
+- **gcloud 未安裝**，一律 `npx firebase-tools`（已登入 tingo8320@gmail.com，可存取 lkkdev/lkkprod）。部署 repo（唯一真實來源）：`/Users/stone/4.柚智源/練健康/3. 形象網站翻新`。舊 `Downloads/lkk-new-web` 雙胞胎已棄用。
+- 新環境 setup 血淚點：Firestore 用 `firestore:databases:create --location asia-east1`（別靠 deploy 自動建→會在 nam5）；secrets set 後**務必 `grantaccess --backend`**（否則 Misconfigured Secret）；啟用 Storage；Auth 啟用 Google provider+加該 hosted.app 授權網域。詳見記憶 [[lkk-web-deploy]]。
 
 ## 安全（動 /admin 或 server/api/admin 前必看）
 - 已修補：後門帳號（改 `ALLOW_DEV_ADMIN` gate）、`JWT_SECRET` 正式站強制、登入頁明文帳密移除。
