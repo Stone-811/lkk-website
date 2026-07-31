@@ -18,11 +18,11 @@ useHead({
 
 // 分店環境照片分類定義
 const imageCategories = [
-  { key: 'env1', label: '環境照片 1', description: '主訓練區' },
-  { key: 'env2', label: '環境照片 2', description: '一對一訓練空間' },
-  { key: 'env3', label: '環境照片 3', description: '團體課教室' },
-  { key: 'env4', label: '環境照片 4', description: '接待區' },
-  { key: 'env5', label: '環境照片 5', description: '其他空間' },
+  { key: 'env1', label: '環境照片 1（分店頁大圖）', description: '分店頁大圖（最上方、較大張）' },
+  { key: 'env2', label: '環境照片 2', description: '相簿第 2 張' },
+  { key: 'env3', label: '環境照片 3', description: '相簿第 3 張' },
+  { key: 'env4', label: '環境照片 4', description: '相簿第 4 張' },
+  { key: 'env5', label: '環境照片 5', description: '相簿第 5 張' },
 ]
 
 interface StoreImages {

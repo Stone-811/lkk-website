@@ -196,7 +196,7 @@ const photos = computed(() => {
   const galleryImages = store.value?.galleryImages || []
   if (galleryImages.length > 0) {
     return galleryImages.slice(0, 5).map((img: string, index: number) => ({
-      label: index === 0 ? '主訓練區' : `環境照片 ${index}`,
+      label: `環境照片 ${index + 1}`,
       span: index === 0,
       image: img,
     }))

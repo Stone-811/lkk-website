@@ -52,6 +52,14 @@ export default defineEventHandler(async () => {
           .count()
           .get();
 
+        // Normalize images: admin saves as {env1..env5} object → ordered array
+        const imgs: any = store.images;
+        const storeImages: string[] = Array.isArray(imgs)
+          ? imgs.filter(Boolean)
+          : imgs
+            ? ['env1', 'env2', 'env3', 'env4', 'env5'].map((k) => imgs[k]).filter(Boolean)
+            : [];
+
         return {
           id: store.id,
           name: store.name,
@@ -63,8 +71,8 @@ export default defineEventHandler(async () => {
           googleMapUrl: store.googleMapUrl,
           businessHours: store.businessHours,
           transportation: store.transportation,
-          heroImage: store.images?.[0] || null,
-          galleryImages: store.images || [],
+          heroImage: storeImages[0] || null,
+          galleryImages: storeImages,
           coachCount: coachesSnapshot.data().count,
         };
       })
