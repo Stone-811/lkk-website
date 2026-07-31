@@ -405,7 +405,7 @@ const mediaReports = [
           準備好挑戰自己了嗎？
         </h2>
         <p class="text-ink/60 mb-8 max-w-xl mx-auto">
-          無論你現在的程度如何，LKK4 歡迎所有 50 歲以上熱愛運動的人。先從免費體驗開始，讓教練幫你評估實力！
+          無論你現在的程度如何，LKK4 歡迎所有熱愛運動的人。先從免費體驗開始，讓教練幫你評估實力！
         </p>
         <NuxtLink to="/booking" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
           預約免費體驗 →
