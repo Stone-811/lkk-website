@@ -40,18 +40,21 @@ const disciplines = [
   },
 ]
 
-const originStory = [
+const milestones = [
   {
-    label: '2021・緣起',
-    text: 'LKK 聖誕老人硬舉大賽誕生於 2021 年，起源於練健康發現許多中高齡學員自從開始訓練後，雖然有明顯的進步，卻苦於全台灣沒有可以讓他們展現成果的舞台。',
+    year: '2026',
+    title: '第六屆 LKK4 聖誕老人功能錦標賽',
+    desc: '不只是比賽，這是一場為所有年齡打造的訓練舞台！安全、直覺、全齡友善，所有年齡皆可參加。現場熱血歡樂、親友加油不間斷，打破你對年齡的想像，保證嗨翻整天！',
   },
   {
-    label: '第一屆・逐年擴大',
-    text: '第一屆賽事以極具趣味性的「聖誕老人硬舉邀請賽」出發，成功引發大眾及媒體熱烈迴響。隨後數年間，隨著中高齡訓練的風氣逐漸打開，賽事規模逐年擴大。',
+    year: '2022–2025',
+    title: '第二屆至第五屆 聖誕老人硬舉大賽',
+    desc: '聖誕老人硬舉大賽開始獲得公眾關注，參賽總人數屢次創新高，甚至報名開放後秒殺額滿。場地擴及華山文創、松山文創等指標場域，並獲華視、中央社、BBC、路透社、法新社、新加坡電視台 CNA 等海內外媒體報導。',
   },
   {
-    label: '進化至今',
-    text: '演進至今年，更全面進化為涵蓋肌力、爆發力、核心能力與心肺有氧能力四大面向的 LKK4 聖誕老人功能錦標賽。',
+    year: '2021',
+    title: '第一屆 聖誕老人硬舉邀請賽',
+    desc: '由練健康團隊內部發起，數十位阿公阿嬤首度披上聖誕戰袍參賽，顛覆社會大眾對高齡重訓危險的偏見。',
   },
 ]
 
@@ -278,23 +281,32 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
           <span class="w-5 h-0.5 bg-orange" />
           賽事緣起
         </div>
-        <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-10">
+        <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-8">
           賽事緣起與<span class="text-orange">里程碑</span>
         </h2>
 
+        <!-- 緣起內文 -->
+        <div class="max-w-3xl mx-auto space-y-4 text-ink/70 leading-relaxed mb-14">
+          <p>LKK 聖誕老人硬舉大賽誕生於 2021 年，起源於練健康發現許多中高齡學員自從開始訓練後，雖然有明顯的進步，卻苦於全台灣沒有可以讓他們展現成果的舞台。</p>
+          <p>第一屆賽事以極具趣味性的「聖誕老人硬舉邀請賽」出發，成功引發大眾及媒體熱烈迴響。隨後數年間，隨著中高齡訓練的風氣逐漸打開，賽事規模逐年擴大。</p>
+          <p>演進至今年，更全面進化為涵蓋<strong class="text-navy">肌力、爆發力、核心能力與心肺有氧能力</strong>四大面向的 LKK4 聖誕老人功能錦標賽。</p>
+        </div>
+
+        <!-- 里程碑時間軸 -->
         <div class="max-w-3xl mx-auto mb-12">
           <div
-            v-for="(step, i) in originStory"
-            :key="i"
+            v-for="(item, i) in milestones"
+            :key="item.year"
             class="relative flex gap-5 pb-8 last:pb-0"
           >
             <div class="flex flex-col items-center shrink-0">
               <div class="w-4 h-4 rounded-full bg-orange ring-4 ring-orange/15" />
-              <div v-if="i < originStory.length - 1" class="w-0.5 flex-1 bg-navy/10 mt-1" />
+              <div v-if="i < milestones.length - 1" class="w-0.5 flex-1 bg-navy/10 mt-1" />
             </div>
-            <div class="-mt-1">
-              <div class="font-serif text-lg font-black text-navy mb-1">{{ step.label }}</div>
-              <p class="text-ink/70 leading-relaxed">{{ step.text }}</p>
+            <div class="-mt-1 pb-1">
+              <div class="font-serif text-2xl font-black text-navy leading-none mb-1.5">{{ item.year }}</div>
+              <div class="font-bold text-ink mb-1">{{ item.title }}</div>
+              <p class="text-sm text-ink/60 leading-relaxed">{{ item.desc }}</p>
             </div>
           </div>
         </div>
