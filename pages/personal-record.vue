@@ -299,3 +299,17 @@ const getGroupDisplayName = (group: string) => {
     </section>
   </div>
 </template>
+
+<style scoped>
+/* 下拉選單自訂箭頭：位置往內（比原生的靠左一些） */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%232A5269' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.05rem;
+  padding-right: 2.75rem;
+}
+</style>
