@@ -14,37 +14,45 @@ const disciplines = [
     id: 'deadlift',
     name: '六角槓硬舉',
     iconType: 'deadlift',
-    meta: '下肢肌力・爆發力',
-    description: 'LKK4 的最招牌經典項目。透過相較於傳統槓鈴更符合人體工學的六角槓，檢測中高齡選手的純力量外釋與下肢爆發綜合素質。',
+    meta: '肌力',
+    description: '安全地從地上搬起重物、抱孫子、預防跌倒。',
   },
   {
-    id: 'walk',
-    name: '功能性行走',
-    iconType: 'walk',
-    meta: '步態穩定・平衡控制',
-    description: '模擬日常生活中最常面臨的提重物行走情境，考驗選手在負重狀態下的核心抗旋轉能力、步態動態穩定度與平衡感。',
+    id: 'sled',
+    name: '推雪橇',
+    iconType: 'sled',
+    meta: '爆發力',
+    description: '推動沉重購物車、推開厚重大門、爬坡行走的能力。',
   },
   {
-    id: 'pushpull',
-    name: '上肢推拉力',
-    iconType: 'pushpull',
-    meta: '肩部功能・核心整合',
-    description: '全面檢測上半身非對稱結構下的推與拉力表現。不僅考驗肩關節的健康度，更強調力量從核心貫穿至上肢的連動控制。',
+    id: 'farmer',
+    name: '單側農夫走路',
+    iconType: 'farmer',
+    meta: '核心能力',
+    description: '提菜買物、負重行走時的平衡感，是防跌的關鍵。',
   },
   {
-    id: 'cardio',
-    name: '心肺耐力',
-    iconType: 'cardio',
-    meta: '有氧能力・恢復速度',
-    description: '針對高強度間歇運動後的能量系統運作設計。考驗選手的有氧基底能力，以及身體在短暫休息後的機能高效率恢復速度。',
+    id: 'bike',
+    name: '風扇車',
+    iconType: 'bike',
+    meta: '有氧能力',
+    description: '提升心血管健康、爬樓梯不喘、長距離行走的能力。',
   },
 ]
 
-const history = [
-  { year: '2026', title: '第六屆 LKK4 賽事籌備中', description: '全面引進國際化評分標準與 hreflang 多語言佈局，配合海外市場（如新加坡）發展計劃，打造全亞太區指標性中高齡挑戰賽。' },
-  { year: '2025', title: '第五屆 聖誕老人老人六角槓硬舉大賽', description: '參賽總人數創歷史新高，成功引爆主流社群話題。運動醫學與物理治療的整合規範獲得高度好評。' },
-  { year: '2022-24', title: '第二屆至第四屆 賽制功能化轉型', description: '賽事正式更名為 LKK4，擺脫單純的重量競技，全面納入心肺與步態穩定度等全能指標。' },
-  { year: '2019', title: '第一屆 聖誕老人硬舉邀請賽', description: '由練健康團隊內部發起，數十位阿公阿嬤首度披上聖誕戰袍參賽，顛覆社會大眾對高齡重訓危險的偏見。' },
+const originStory = [
+  {
+    label: '2021・緣起',
+    text: 'LKK 聖誕老人硬舉大賽誕生於 2021 年，起源於練健康發現許多中高齡學員自從開始訓練後，雖然有明顯的進步，卻苦於全台灣沒有可以讓他們展現成果的舞台。',
+  },
+  {
+    label: '第一屆・逐年擴大',
+    text: '第一屆賽事以極具趣味性的「聖誕老人硬舉邀請賽」出發，成功引發大眾及媒體熱烈迴響。隨後數年間，隨著中高齡訓練的風氣逐漸打開，賽事規模逐年擴大。',
+  },
+  {
+    label: '進化至今',
+    text: '演進至今年，更全面進化為涵蓋肌力、爆發力、核心能力與心肺有氧能力四大面向的 LKK4 聖誕老人功能錦標賽。',
+  },
 ]
 
 const highlights = [
@@ -59,8 +67,6 @@ const audience = [
   '家中有正在運動的長輩，想給他一個發光的舞台',
   '熱血的親友團，想揪團一起拚團體積分',
 ]
-
-const teamBackgrounds = ['物理治療', '職能治療', '運動科學', '營養學', '資料科學', '經濟', '生物力學', '文學', '設計']
 
 const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新聞專題', '吳淡如人生實用商學院', '動思學院 MoveThink']
 </script>
@@ -172,15 +178,6 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
           <!-- 練健康是誰 -->
           <div class="bg-navy rounded-2xl p-7 lg:p-8 text-white">
             <h3 class="font-serif text-2xl font-black text-white mb-5">練健康是誰？</h3>
-            <div class="flex flex-wrap gap-2 mb-5">
-              <span
-                v-for="tag in teamBackgrounds"
-                :key="tag"
-                class="text-xs font-medium bg-white/10 border border-white/15 text-white/80 rounded-full px-3 py-1"
-              >
-                {{ tag }}
-              </span>
-            </div>
             <div class="space-y-3 text-white/70 text-sm leading-relaxed">
               <p>練健康是一個由物理治療、職能治療、運動科學、營養學、資料科學、經濟、生物力學、文學與設計背景成員所組成的團隊。</p>
               <p>我們致力於推廣銀髮族、術後及特殊健康族群的體能訓練，讓學員安全且有效率地讓身體回復水準，也專注協助專業選手改善動作模式、增強專項運動表現。</p>
@@ -196,13 +193,20 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
       <div class="container mx-auto px-4">
         <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
-          2026 全新賽制
+          賽事宗旨
         </div>
-        <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-3">
-          LKK4 核心<span class="text-orange">四項體能競技項目</span>
+        <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-5 leading-tight">
+          為什麼要舉辦<br class="hidden sm:block" />「<span class="text-orange">LKK4 聖誕老人功能錦標賽</span>」？
         </h2>
-        <p class="text-ink/60 text-lg max-w-2xl mb-10">
-          賽事以全方位身體動作功能為核心目標。每位選手皆須依序完成以下四大挑戰項目，全面檢測動作整合能力：
+        <p class="text-ink/70 text-lg max-w-3xl mb-12 leading-relaxed">
+          台灣已邁入超高齡社會，中高齡族群的健康與生活能力，將成為整個社會的重要議題。我們希望透過「LKK4 聖誕老人功能錦標賽」傳達一個觀念：<strong class="text-navy">體能不只是運動表現，而是支撐日常生活的重要能力。</strong>
+        </p>
+
+        <h3 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-3">
+          為什麼是這 <span class="text-orange">4 個項目</span>？
+        </h3>
+        <p class="text-ink/60 text-base max-w-3xl mb-8 leading-relaxed">
+          六角槓硬舉、推雪橇、單側農夫走路與風扇車，分別對應肌力、爆發力、核心與有氧能力——每一項都直接呼應日常生活中最實用的身體功能：
         </p>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -216,21 +220,21 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
               <svg v-if="item.iconType === 'deadlift'" class="w-10 h-10 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h4v12H4zM16 8h4v12h-4zM2 12h20M12 4v4" />
               </svg>
-              <!-- Walk Icon -->
-              <svg v-else-if="item.iconType === 'walk'" class="w-10 h-10 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <!-- Sled Push Icon -->
+              <svg v-else-if="item.iconType === 'sled'" class="w-10 h-10 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+              <!-- Farmer Walk Icon -->
+              <svg v-else-if="item.iconType === 'farmer'" class="w-10 h-10 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h3a2 2 0 012 2v9a2 2 0 01-2 2h-3m-6-4l3 3-3 3M7 15h6" />
               </svg>
-              <!-- Push/Pull Icon -->
-              <svg v-else-if="item.iconType === 'pushpull'" class="w-10 h-10 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              <!-- Cardio Icon -->
-              <svg v-else-if="item.iconType === 'cardio'" class="w-10 h-10 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              <!-- Fan Bike Icon -->
+              <svg v-else-if="item.iconType === 'bike'" class="w-10 h-10 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 12h-4l-3 9L9 3l-3 9H2" />
               </svg>
             </div>
-            <h3 class="font-serif text-xl font-bold text-navy mb-1">{{ item.name }}</h3>
-            <div class="text-xs font-semibold text-orange tracking-wide mb-3">{{ item.meta }}</div>
+            <h3 class="font-serif text-xl font-bold text-navy mb-2">{{ item.name }}</h3>
+            <span class="inline-block text-xs font-bold text-orange bg-orange/10 rounded-full px-2.5 py-0.5 mb-3">{{ item.meta }}</span>
             <p class="text-sm text-ink/60 leading-relaxed">{{ item.description }}</p>
           </div>
         </div>
@@ -241,30 +245,30 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
       </div>
     </section>
 
-    <!-- History -->
+    <!-- Origin & Milestones -->
     <section class="py-16 lg:py-20 bg-white">
       <div class="container mx-auto px-4">
         <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
-          榮譽里程碑
+          賽事緣起
         </div>
-        <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-3">
-          歷屆足跡與<span class="text-orange">大眾媒體肯定</span>
+        <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-10">
+          賽事緣起與<span class="text-orange">里程碑</span>
         </h2>
-        <p class="text-ink/60 text-lg max-w-2xl mb-10">
-          從地區型的趣味運動會，蛻變為各界關注的年度賽事，以下是我們的成長軌跡：
-        </p>
 
-        <div class="max-w-3xl mx-auto space-y-4 mb-12">
+        <div class="max-w-3xl mx-auto mb-12">
           <div
-            v-for="item in history"
-            :key="item.year"
-            class="flex flex-col sm:flex-row gap-3 sm:gap-4 bg-cream rounded-xl p-5 border border-navy/10"
+            v-for="(step, i) in originStory"
+            :key="i"
+            class="relative flex gap-5 pb-8 last:pb-0"
           >
-            <div class="font-serif text-2xl font-black text-navy shrink-0 sm:w-24">{{ item.year }}</div>
-            <div>
-              <div class="font-bold text-ink mb-1">{{ item.title }}</div>
-              <div class="text-sm text-ink/60 leading-relaxed">{{ item.description }}</div>
+            <div class="flex flex-col items-center shrink-0">
+              <div class="w-4 h-4 rounded-full bg-orange ring-4 ring-orange/15" />
+              <div v-if="i < originStory.length - 1" class="w-0.5 flex-1 bg-navy/10 mt-1" />
+            </div>
+            <div class="-mt-1">
+              <div class="font-serif text-lg font-black text-navy mb-1">{{ step.label }}</div>
+              <p class="text-ink/70 leading-relaxed">{{ step.text }}</p>
             </div>
           </div>
         </div>
