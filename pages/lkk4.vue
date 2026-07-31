@@ -117,43 +117,19 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
       </div>
     </section>
 
-    <!-- Brand Story -->
+    <!-- Event Highlights + Audience + Team -->
     <section class="py-16 lg:py-20 bg-white">
       <div class="container mx-auto px-4">
-        <div class="grid lg:grid-cols-2 gap-10 items-center mb-14 lg:mb-16">
-          <div>
-            <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-              <span class="w-5 h-0.5 bg-orange" />
-              賽事起源
-            </div>
-            <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-6 leading-tight">
-              從聖誕老人硬舉大賽<br />
-              到<span class="text-orange">跨領域的全能挑戰</span>
-            </h2>
-            <div class="space-y-4 text-ink/70 leading-relaxed">
-              <p>
-                <strong class="text-navy">LKK4</strong> 誕生於 2019 年，最初由「練健康」創辦。團隊發現許多學員在經過科學化肌力訓練後，展現出驚人的身體動作實力，卻苦於全台灣沒有一個能盡情發揮的體能賽事舞台。
-              </p>
-              <p>
-                第一屆賽事以極具趣味性的「聖誕老人六角槓硬舉大賽」出發，成功引發大眾及媒體熱烈迴響。隨後數年間，隨著物理治療與呼吸治療背景的教練團隊深度介入，賽事規模逐年擴大。
-              </p>
-              <p>
-                演進至今，LKK4 已全面進化為涵蓋<strong class="text-navy">肌力、爆發力、心肺與靈活度</strong>的跨領域四項全能挑戰。這不只是一場賽事，更是一個不分年齡、人人都能站上場證明自己的訓練舞台。
-              </p>
-            </div>
-          </div>
-
-          <!-- Highlights Grid -->
-          <div class="grid grid-cols-2 gap-4">
-            <div
-              v-for="item in highlights"
-              :key="item.title"
-              class="bg-cream rounded-2xl p-5 border border-navy/10"
-            >
-              <div class="font-serif text-4xl font-black text-orange leading-none mb-2">{{ item.num }}</div>
-              <div class="font-bold text-navy mb-1">{{ item.title }}</div>
-              <div class="text-sm text-ink/60 leading-relaxed">{{ item.desc }}</div>
-            </div>
+        <!-- Highlights Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-14 lg:mb-16">
+          <div
+            v-for="item in highlights"
+            :key="item.title"
+            class="bg-cream rounded-2xl p-5 border border-navy/10"
+          >
+            <div class="font-serif text-4xl font-black text-orange leading-none mb-2">{{ item.num }}</div>
+            <div class="font-bold text-navy mb-1">{{ item.title }}</div>
+            <div class="text-sm text-ink/60 leading-relaxed">{{ item.desc }}</div>
           </div>
         </div>
 
