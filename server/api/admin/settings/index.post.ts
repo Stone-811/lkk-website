@@ -27,20 +27,33 @@ export default defineEventHandler(async (event) => {
         },
       })
 
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to: recipients.join(', '),
-        subject: '[練健康] 測試通知',
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2A5269;">測試通知</h2>
-            <p>這是一封測試郵件，用於確認通知功能正常運作。</p>
-            <p>如果您收到此郵件，表示郵件通知設定正確！</p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-            <p style="color: #666; font-size: 12px;">此郵件由練健康後台系統自動發送</p>
-          </div>
-        `,
-      })
+      // 用 200 + success:false 把真正的 SMTP 錯誤回傳（正式環境會把 throw 的 500 訊息吃掉）
+      try {
+        await transporter.verify()
+        await transporter.sendMail({
+          from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          to: recipients.join(', '),
+          subject: '[練健康] 測試通知',
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #2A5269;">測試通知</h2>
+              <p>這是一封測試郵件，用於確認通知功能正常運作。</p>
+              <p>如果您收到此郵件，表示郵件通知設定正確！</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+              <p style="color: #666; font-size: 12px;">此郵件由練健康後台系統自動發送</p>
+            </div>
+          `,
+        })
+      } catch (smtpError: any) {
+        console.error('[test-notification] SMTP error:', smtpError)
+        const detail = [smtpError?.message, smtpError?.response, smtpError?.code]
+          .filter(Boolean)
+          .join(' | ')
+        return {
+          success: false,
+          error: `SMTP 失敗：${detail || String(smtpError)}（SMTP_USER=${process.env.SMTP_USER || '未設定'}、密碼${process.env.SMTP_PASS ? '已設定' : '缺失'}）`,
+        }
+      }
 
       return {
         success: true,
