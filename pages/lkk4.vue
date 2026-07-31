@@ -133,6 +133,56 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
           </div>
         </div>
 
+        <!-- 參賽資訊 -->
+        <div class="mb-14 lg:mb-16">
+          <div class="bg-gradient-to-br from-[#1a3545] to-[#0e2230] rounded-3xl p-8 lg:p-10 text-center">
+            <div class="text-sm font-bold text-orange tracking-widest uppercase mb-4">
+              安全・直覺・全齡友善
+            </div>
+            <h3 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">
+              所有年齡皆可參加
+            </h3>
+            <p class="text-white/70 text-lg max-w-2xl mx-auto leading-relaxed mb-8">
+              現場熱血歡樂、親友加油不間斷，打破你對年齡的想像，保證嗨翻整天！
+            </p>
+
+            <!-- Date + Location -->
+            <div class="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto mb-6 text-left">
+              <div class="flex items-start gap-3 bg-white/[0.06] border border-white/10 rounded-2xl p-5">
+                <svg class="w-6 h-6 text-orange shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <div>
+                  <div class="text-xs text-white/50 font-semibold tracking-wide mb-1">活動日期</div>
+                  <div class="font-bold text-white">2026 年 12 月 13 日（日）</div>
+                  <div class="text-sm text-white/70">09:00 – 17:00</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 bg-white/[0.06] border border-white/10 rounded-2xl p-5">
+                <svg class="w-6 h-6 text-orange shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <div>
+                  <div class="text-xs text-white/50 font-semibold tracking-wide mb-1">活動地點</div>
+                  <div class="font-bold text-white">台北世貿一館 C 區</div>
+                  <div class="text-sm text-white/70">台北市信義區信義路五段 5 號</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Promo dates -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <span class="inline-flex items-center gap-2 bg-orange text-white rounded-full px-5 py-2 text-sm font-bold shadow-lg shadow-orange/30">
+                早鳥優惠 2026/6/29 – 7/12
+              </span>
+              <span class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 rounded-full px-5 py-2 text-sm font-semibold">
+                報名截止 2026/10/30
+              </span>
+            </div>
+          </div>
+        </div>
+
         <!-- 誰適合來參賽 + 練健康是誰 -->
         <div class="grid lg:grid-cols-2 gap-6">
           <!-- 誰適合來參賽 -->
