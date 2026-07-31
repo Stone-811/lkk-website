@@ -65,28 +65,41 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
       <div class="container mx-auto px-4 relative z-10">
         <!-- Status pill -->
         <div class="inline-flex items-center bg-orange/15 border border-orange/30 rounded-full px-4 py-1.5 mb-6">
-          <span class="text-orange text-sm font-medium">第六屆賽事・2026 年 12 月・籌備中</span>
+          <span class="text-orange text-sm font-medium">第六屆賽事・2026 年 12 月 13 日・台北世貿一館</span>
         </div>
 
         <h1 class="font-serif text-6xl lg:text-8xl font-black text-white tracking-tight mb-2">
           LKK<span class="text-orange">4</span>
         </h1>
         <div class="text-xl lg:text-2xl text-white/70 font-light tracking-widest mb-6">
-          中高齡四項體能挑戰賽
+          聖誕老人功能錦標賽🔥
         </div>
         <p class="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed font-light mb-8">
-          台灣唯一專為 50 歲以上設計的年度競技賽事。擺脫被動老化，我們在安全無虞的運動醫學基礎上，號召全台銀髮強者用成績證明：年齡不是終點。
+          不只是比賽，這是一場為所有年齡打造的訓練舞台！
         </p>
 
-        <NuxtLink
-          to="/personal-record"
-          class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white font-semibold px-6 py-3 rounded-full hover:bg-white/20 hover:border-white/30 transition-colors"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          參賽成績查詢
-        </NuxtLink>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a
+            href="https://www.accupass.com/event/2606231002373711869520?utm_source=google&utm_medium=Direct&utm_campaign=accu_260702a6zestso"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5h14a2 2 0 012 2v3a2 2 0 000 4v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a2 2 0 000-4V7a2 2 0 012-2z" />
+            </svg>
+            立即報名 LKK4
+          </a>
+          <NuxtLink
+            to="/personal-record"
+            class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white font-semibold px-6 py-3 rounded-full hover:bg-white/20 hover:border-white/30 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            參賽成績查詢
+          </NuxtLink>
+        </div>
       </div>
     </section>
 
