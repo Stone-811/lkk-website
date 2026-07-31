@@ -48,11 +48,19 @@ const history = [
 ]
 
 const highlights = [
-  { num: '50+', title: '參賽年齡資格', desc: '專為 50 歲以上健康長輩與特殊族群量身規劃的安全賽制。' },
-  { num: '5 屆', title: '賽事歷史累積', desc: '已成功舉辦五屆年度盛事，累計數百位中高齡選手參賽。' },
-  { num: '100%', title: '醫療背景主導', desc: '全程由專業物理治療師與合格教練進行安全監督與動作審查。' },
-  { num: '4 項', title: '全能核心指標', desc: '整合日常生活中最核心的動作功能，兼顧肌力與靈活性。' },
+  { num: '全齡', title: '參賽年齡資格', desc: '不限年齡都能依組別輕鬆參加' },
+  { num: '5 屆', title: '活動歷史累積', desc: '已成功舉辦五屆，累計數百位夥伴一起同樂' },
+  { num: '100%', title: '專業教練主導', desc: '賽制由物理治療師及運動科學專家規劃，確保安全及有效性' },
+  { num: '4 個', title: '貼近生活的關卡', desc: '每一關都對應日常生活中最實用的能力' },
 ]
+
+const audience = [
+  '想為自己的訓練立下一個目標與里程碑',
+  '家中有正在運動的長輩，想給他一個發光的舞台',
+  '熱血的親友團，想揪團一起拚團體積分',
+]
+
+const teamBackgrounds = ['物理治療', '職能治療', '運動科學', '營養學', '資料科學', '經濟', '生物力學', '文學', '設計']
 
 const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新聞專題', '吳淡如人生實用商學院', '動思學院 MoveThink']
 </script>
@@ -106,7 +114,7 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
     <!-- Brand Story -->
     <section class="py-16 lg:py-20 bg-white">
       <div class="container mx-auto px-4">
-        <div class="grid lg:grid-cols-2 gap-10 items-center">
+        <div class="grid lg:grid-cols-2 gap-10 items-center mb-14 lg:mb-16">
           <div>
             <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
               <span class="w-5 h-0.5 bg-orange" />
@@ -118,13 +126,13 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
             </h2>
             <div class="space-y-4 text-ink/70 leading-relaxed">
               <p>
-                <strong class="text-navy">LKK4</strong> 誕生於 2019 年，最初由「練健康」創辦。團隊發現許多中高齡學員在經過科學化肌力訓練後，展現出驚人的身體動作實力，卻苦於全台灣沒有任何一個專為他們設計的體能賽事舞台。
+                <strong class="text-navy">LKK4</strong> 誕生於 2019 年，最初由「練健康」創辦。團隊發現許多學員在經過科學化肌力訓練後，展現出驚人的身體動作實力，卻苦於全台灣沒有一個能盡情發揮的體能賽事舞台。
               </p>
               <p>
-                第一屆賽事以極具趣味性的「聖誕老人老人六角槓硬舉大賽」出發，成功引發大眾及媒體熱烈迴響。隨後數年間，隨著物理治療與呼吸治療背景的教練團隊深度介入，賽事規模逐年擴大。
+                第一屆賽事以極具趣味性的「聖誕老人六角槓硬舉大賽」出發，成功引發大眾及媒體熱烈迴響。隨後數年間，隨著物理治療與呼吸治療背景的教練團隊深度介入，賽事規模逐年擴大。
               </p>
               <p>
-                演進至今，LKK4 已全面進化為涵蓋<strong class="text-navy">肌力、爆發力、心肺與靈活度</strong>的跨領域四項全能競技挑戰。這不只是一場賽事，更是台灣中高齡群體向被動老化宣戰的最高殿堂。
+                演進至今，LKK4 已全面進化為涵蓋<strong class="text-navy">肌力、爆發力、心肺與靈活度</strong>的跨領域四項全能挑戰。這不只是一場賽事，更是一個不分年齡、人人都能站上場證明自己的訓練舞台。
               </p>
             </div>
           </div>
@@ -139,6 +147,44 @@ const mediaLogos = ['BBC 國際新聞', '志祺七七 關鍵評論', '大愛新�
               <div class="font-serif text-4xl font-black text-orange leading-none mb-2">{{ item.num }}</div>
               <div class="font-bold text-navy mb-1">{{ item.title }}</div>
               <div class="text-sm text-ink/60 leading-relaxed">{{ item.desc }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 誰適合來參賽 + 練健康是誰 -->
+        <div class="grid lg:grid-cols-2 gap-6">
+          <!-- 誰適合來參賽 -->
+          <div class="bg-cream rounded-2xl p-7 lg:p-8 border border-navy/10">
+            <h3 class="font-serif text-2xl font-black text-navy mb-5">誰適合來參賽？</h3>
+            <ul class="space-y-3">
+              <li v-for="item in audience" :key="item" class="flex items-start gap-3">
+                <svg class="w-6 h-6 text-orange shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-ink/70 leading-relaxed">{{ item }}</span>
+              </li>
+            </ul>
+            <p class="mt-5 text-sm text-ink/70 bg-white rounded-xl px-4 py-3 border border-navy/10">
+              沒有報名參賽的朋友也歡迎來現場觀賽，給每一位選手最大的掌聲！
+            </p>
+          </div>
+
+          <!-- 練健康是誰 -->
+          <div class="bg-navy rounded-2xl p-7 lg:p-8 text-white">
+            <h3 class="font-serif text-2xl font-black text-white mb-5">練健康是誰？</h3>
+            <div class="flex flex-wrap gap-2 mb-5">
+              <span
+                v-for="tag in teamBackgrounds"
+                :key="tag"
+                class="text-xs font-medium bg-white/10 border border-white/15 text-white/80 rounded-full px-3 py-1"
+              >
+                {{ tag }}
+              </span>
+            </div>
+            <div class="space-y-3 text-white/70 text-sm leading-relaxed">
+              <p>練健康是一個由物理治療、職能治療、運動科學、營養學、資料科學、經濟、生物力學、文學與設計背景成員所組成的團隊。</p>
+              <p>我們致力於推廣銀髮族、術後及特殊健康族群的體能訓練，讓學員安全且有效率地讓身體回復水準，也專注協助專業選手改善動作模式、增強專項運動表現。</p>
+              <p>現場教學之外，我們也是運動科學科普平台，轉譯正確知識、教育大眾，並分享激勵人心的中高齡與特殊族群訓練紀錄，鼓勵每一個人加入訓練的行列。</p>
             </div>
           </div>
         </div>
