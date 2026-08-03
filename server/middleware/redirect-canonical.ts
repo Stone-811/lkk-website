@@ -8,8 +8,10 @@ const PROD_DEFAULT_HOST = 'lkk-website--lkkprod.asia-east1.hosted.app'
 const CANONICAL_ORIGIN = 'https://lkkwellness.com'
 
 export default defineEventHandler((event) => {
+  // App Hosting 前面的 Envoy CDN 可能改寫 Host，原始網域可能落在 x-forwarded-host
   const host = (getRequestHeader(event, 'host') || '').toLowerCase()
-  if (host === PROD_DEFAULT_HOST) {
+  const xfHost = (getRequestHeader(event, 'x-forwarded-host') || '').toLowerCase()
+  if (host === PROD_DEFAULT_HOST || xfHost === PROD_DEFAULT_HOST) {
     // event.path 已含 pathname + query string
     return sendRedirect(event, `${CANONICAL_ORIGIN}${event.path}`, 301)
   }
