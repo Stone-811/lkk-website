@@ -539,9 +539,12 @@ export async function sendBookingConfirmation(data: {
   exerciseGoals?: string[]
   exerciseGoalOther?: string
   sources?: string[]
+  message?: string
 }) {
   // 學員資料
-  const studentRows: Array<{ label: string; value: string }> = []
+  const studentRows: Array<{ label: string; value: string }> = [
+    { label: '姓名', value: data.name },
+  ]
   if (data.phone) studentRows.push({ label: '電話', value: data.phone })
   if (data.email) studentRows.push({ label: 'Email', value: data.email })
   if (data.gender) studentRows.push({ label: '性別', value: data.gender })
@@ -583,6 +586,9 @@ export async function sendBookingConfirmation(data: {
   }
   if (data.sources && data.sources.length > 0) {
     bookingRows.push({ label: '得知管道', value: data.sources.join('、') })
+  }
+  if (data.message) {
+    bookingRows.push({ label: '備註', value: data.message })
   }
 
   return sendFormConfirmation({

@@ -170,6 +170,7 @@ export default defineEventHandler(async (event) => {
           exerciseGoals: Array.isArray(exerciseGoals) ? exerciseGoals : [],
           exerciseGoalOther,
           sources: Array.isArray(sources) ? sources : sources ? [sources] : [],
+          message,
         }).catch(err => console.error('Failed to send booking confirmation:', err))
       }
     } catch (emailError) {
