@@ -174,9 +174,6 @@ const mediaReports = [
             <!-- Promo dates -->
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
               <span class="inline-flex items-center gap-2 bg-orange text-white rounded-full px-5 py-2 text-sm font-bold shadow-lg shadow-orange/30">
-                早鳥優惠 2026/6/29 – 7/12
-              </span>
-              <span class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 rounded-full px-5 py-2 text-sm font-semibold">
                 報名截止 2026/10/30
               </span>
             </div>

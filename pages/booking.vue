@@ -71,11 +71,11 @@ const whatYouGet = [
 
 // 方便聯繫時段選項（多選）
 const contactTimeOptions = [
+  '不限',
   '平日10:00-17:00',
   '平日18:00-21:00',
   '假日10:00-17:00',
   '假日18:00-21:00',
-  '不限',
   '其他',
 ]
 
@@ -110,6 +110,7 @@ const exerciseGoalOptions = [
   '傷後復健',
   '增加運動表現',
   '減少疼痛',
+  '其他',
 ]
 
 // Form state
@@ -795,6 +796,13 @@ const handleSubmit = async () => {
                         {{ goal }}
                       </button>
                     </div>
+                    <input
+                      v-if="formData.exerciseGoals.includes('其他')"
+                      v-model="formData.exerciseGoalOther"
+                      type="text"
+                      class="w-full mt-2 px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange"
+                      placeholder="例如：改善腰痠背痛、上樓梯更有力、久坐姿態調整、或簡述希望體驗的專項訓練...等等"
+                    />
                     <p class="text-xs text-ink/60 mt-3 leading-relaxed">
                       註：訓練無法取代醫療，所有身體疾患務必先尋求醫療人員協助。
                     </p>
