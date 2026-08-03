@@ -499,26 +499,66 @@ export async function sendFormConfirmation(data: FormConfirmationData) {
   }
 }
 
-// Booking confirmation helper
+// Booking confirmation helper —— 給填單人的確認信，帶完整表單填寫內容（對齊管理者通知信）
 export async function sendBookingConfirmation(data: {
   name: string
   email: string
+  phone?: string
+  gender?: string
+  birthDate?: string
+  line?: string
+  filledBySelf?: boolean
+  relationship?: string
+  bookerName?: string
+  contactPhone?: string
+  hasMedicalCondition?: boolean
+  medicalConditionNote?: string
   storeName: string
   preferredTime: string[]
   paymentMethod?: string
-  birthDate?: string
+  exerciseGoals?: string[]
+  exerciseGoalOther?: string
+  sources?: string[]
 }) {
-  const details = [
-    { label: '預約分店', value: data.storeName },
-    { label: '方便聯繫時段', value: data.preferredTime.join('、') },
-  ]
+  const details: Array<{ label: string; value: string }> = []
 
+  // 學員資料
+  if (data.phone) details.push({ label: '電話', value: data.phone })
+  if (data.email) details.push({ label: 'Email', value: data.email })
+  if (data.gender) details.push({ label: '性別', value: data.gender })
+  if (data.birthDate) details.push({ label: '出生年月日', value: data.birthDate })
+  if (data.line) details.push({ label: 'LINE ID', value: data.line })
+
+  // 填表人（代填）
+  if (data.filledBySelf === false) {
+    details.push({ label: '填表人', value: '親友代為填寫' })
+    if (data.relationship) details.push({ label: '與學員關係', value: data.relationship })
+    if (data.bookerName) details.push({ label: '填表人姓名', value: data.bookerName })
+    if (data.contactPhone) details.push({ label: '聯絡電話', value: data.contactPhone })
+  }
+
+  // 健康狀況
+  if (data.hasMedicalCondition) {
+    let v = '有特殊健康狀況'
+    if (data.medicalConditionNote) v += `（${data.medicalConditionNote}）`
+    details.push({ label: '健康狀況', value: v })
+  }
+
+  // 預約資訊
+  details.push({ label: '預約分店', value: data.storeName })
+  if (data.preferredTime && data.preferredTime.length > 0) {
+    details.push({ label: '方便聯繫時段', value: data.preferredTime.join('、') })
+  }
   const feeLabel = bookingFeeLabel(data.birthDate, data.paymentMethod)
-  if (feeLabel) {
-    details.push({
-      label: '付款方式',
-      value: feeLabel,
-    })
+  if (feeLabel) details.push({ label: '付款方式', value: feeLabel })
+
+  if (data.exerciseGoals && data.exerciseGoals.length > 0) {
+    let goalsText = data.exerciseGoals.join('、')
+    if (data.exerciseGoalOther) goalsText += `（其他：${data.exerciseGoalOther}）`
+    details.push({ label: '訓練目的', value: goalsText })
+  }
+  if (data.sources && data.sources.length > 0) {
+    details.push({ label: '得知管道', value: data.sources.join('、') })
   }
 
   return sendFormConfirmation({
