@@ -427,6 +427,7 @@ interface FormConfirmationData {
   name: string
   email: string
   details?: Array<{ label: string; value: string }>
+  sections?: Array<{ title: string; rows: Array<{ label: string; value: string }> }>
 }
 
 // Send form confirmation email to submitter
@@ -444,7 +445,26 @@ export async function sendFormConfirmation(data: FormConfirmationData) {
   }
 
   let detailsHtml = ''
-  if (data.details && data.details.length > 0) {
+  if (data.sections && data.sections.length > 0) {
+    // 分區塊版型（每區一個標題列 + 欄位），比照後台名單詳情
+    detailsHtml = data.sections
+      .filter((s) => s.rows && s.rows.length > 0)
+      .map(
+        (section) => `
+    <div style="background: white; border-radius: 8px; margin: 16px 0; border: 1px solid #e2e2e2; overflow: hidden;">
+      <div style="background: #f1f5f7; padding: 10px 16px; border-bottom: 1px solid #e2e2e2; font-weight: bold; color: #2A5269; font-size: 14px;">${section.title}</div>
+      <div style="padding: 14px 16px;">
+        ${section.rows
+          .map(
+            (d) =>
+              `<p style="margin: 0 0 8px 0; color: #444; font-size: 14px; line-height: 1.6;"><strong style="color: #888; font-weight: 600;">${d.label}：</strong>${d.value}</p>`
+          )
+          .join('')}
+      </div>
+    </div>`
+      )
+      .join('')
+  } else if (data.details && data.details.length > 0) {
     detailsHtml = `
     <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #ddd;">
       ${data.details.map(d => `<p style="margin: 0 0 10px 0; color: #666;"><strong>${d.label}：</strong>${d.value}</p>`).join('')}
@@ -520,52 +540,61 @@ export async function sendBookingConfirmation(data: {
   exerciseGoalOther?: string
   sources?: string[]
 }) {
-  const details: Array<{ label: string; value: string }> = []
-
   // 學員資料
-  if (data.phone) details.push({ label: '電話', value: data.phone })
-  if (data.email) details.push({ label: 'Email', value: data.email })
-  if (data.gender) details.push({ label: '性別', value: data.gender })
-  if (data.birthDate) details.push({ label: '出生年月日', value: data.birthDate })
-  if (data.line) details.push({ label: 'LINE ID', value: data.line })
+  const studentRows: Array<{ label: string; value: string }> = []
+  if (data.phone) studentRows.push({ label: '電話', value: data.phone })
+  if (data.email) studentRows.push({ label: 'Email', value: data.email })
+  if (data.gender) studentRows.push({ label: '性別', value: data.gender })
+  if (data.birthDate) studentRows.push({ label: '出生年月日', value: data.birthDate })
+  if (data.line) studentRows.push({ label: 'LINE ID', value: data.line })
 
-  // 填表人（代填）
+  // 填表人資料（僅代填時顯示）
+  const fillerRows: Array<{ label: string; value: string }> = []
   if (data.filledBySelf === false) {
-    details.push({ label: '填表人', value: '親友代為填寫' })
-    if (data.relationship) details.push({ label: '與學員關係', value: data.relationship })
-    if (data.bookerName) details.push({ label: '填表人姓名', value: data.bookerName })
-    if (data.contactPhone) details.push({ label: '聯絡電話', value: data.contactPhone })
+    fillerRows.push({ label: '填表人', value: '親友代為填寫' })
+    if (data.relationship) fillerRows.push({ label: '與學員關係', value: data.relationship })
+    if (data.bookerName) fillerRows.push({ label: '填表人姓名', value: data.bookerName })
+    if (data.contactPhone) fillerRows.push({ label: '聯絡電話', value: data.contactPhone })
   }
 
   // 健康狀況
-  if (data.hasMedicalCondition) {
-    let v = '有特殊健康狀況'
-    if (data.medicalConditionNote) v += `（${data.medicalConditionNote}）`
-    details.push({ label: '健康狀況', value: v })
-  }
+  const healthRows: Array<{ label: string; value: string }> = [
+    {
+      label: '健康狀況',
+      value: data.hasMedicalCondition
+        ? '有特殊健康狀況' + (data.medicalConditionNote ? `（${data.medicalConditionNote}）` : '')
+        : '無特殊健康狀況',
+    },
+  ]
 
   // 預約資訊
-  details.push({ label: '預約分店', value: data.storeName })
+  const bookingRows: Array<{ label: string; value: string }> = [
+    { label: '預約分店', value: data.storeName },
+  ]
   if (data.preferredTime && data.preferredTime.length > 0) {
-    details.push({ label: '方便聯繫時段', value: data.preferredTime.join('、') })
+    bookingRows.push({ label: '方便聯繫時段', value: data.preferredTime.join('、') })
   }
   const feeLabel = bookingFeeLabel(data.birthDate, data.paymentMethod)
-  if (feeLabel) details.push({ label: '付款方式', value: feeLabel })
-
+  if (feeLabel) bookingRows.push({ label: '付款方式', value: feeLabel })
   if (data.exerciseGoals && data.exerciseGoals.length > 0) {
     let goalsText = data.exerciseGoals.join('、')
     if (data.exerciseGoalOther) goalsText += `（其他：${data.exerciseGoalOther}）`
-    details.push({ label: '訓練目的', value: goalsText })
+    bookingRows.push({ label: '訓練目的', value: goalsText })
   }
   if (data.sources && data.sources.length > 0) {
-    details.push({ label: '得知管道', value: data.sources.join('、') })
+    bookingRows.push({ label: '得知管道', value: data.sources.join('、') })
   }
 
   return sendFormConfirmation({
     type: 'booking',
     name: data.name,
     email: data.email,
-    details,
+    sections: [
+      { title: '學員資料', rows: studentRows },
+      { title: '填表人資料', rows: fillerRows },
+      { title: '健康狀況', rows: healthRows },
+      { title: '預約資訊', rows: bookingRows },
+    ],
   })
 }
 
