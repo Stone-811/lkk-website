@@ -34,6 +34,8 @@ const error = ref('')
 
 const selectedStore = ref('all')
 const selectedStatus = ref('all')
+const selectedUtmSource = ref('all')
+const selectedUtmCampaign = ref('all')
 const searchQuery = ref('')
 const sortBy = ref<'createdAt' | 'name' | 'store' | 'status'>('createdAt')
 const sortDir = ref<'asc' | 'desc'>('desc')
@@ -101,10 +103,24 @@ async function updateStatus(lead: Lead, event: Event) {
 onMounted(fetchLeads)
 
 
+// UTM 篩選選項（從名單資料動態產生）
+const utmSourceOptions = computed(() => {
+  const set = new Set<string>()
+  leads.value.forEach((l) => { const s = l.payload?.utm?.source; if (s) set.add(s) })
+  return Array.from(set).sort()
+})
+const utmCampaignOptions = computed(() => {
+  const set = new Set<string>()
+  leads.value.forEach((l) => { const c = l.payload?.utm?.campaign; if (c) set.add(c) })
+  return Array.from(set).sort()
+})
+
 const filteredLeads = computed(() => {
   let result = leads.value.filter(lead => {
     if (selectedStore.value !== 'all' && lead.storeId !== selectedStore.value) return false
     if (selectedStatus.value !== 'all' && lead.status !== selectedStatus.value) return false
+    if (selectedUtmSource.value !== 'all' && (lead.payload?.utm?.source || '') !== selectedUtmSource.value) return false
+    if (selectedUtmCampaign.value !== 'all' && (lead.payload?.utm?.campaign || '') !== selectedUtmCampaign.value) return false
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
       return (
@@ -291,6 +307,24 @@ function handleExport() {
           <option value="cancelled">已取消</option>
         </select>
 
+        <!-- Filter by UTM source -->
+        <select
+          v-model="selectedUtmSource"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+        >
+          <option value="all">所有來源</option>
+          <option v-for="s in utmSourceOptions" :key="s" :value="s">{{ s }}</option>
+        </select>
+
+        <!-- Filter by UTM campaign -->
+        <select
+          v-model="selectedUtmCampaign"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+        >
+          <option value="all">所有活動</option>
+          <option v-for="c in utmCampaignOptions" :key="c" :value="c">{{ c }}</option>
+        </select>
+
         <!-- Results count -->
         <div class="text-sm text-gray-500">
           共 {{ filteredLeads.length }} 筆
@@ -336,6 +370,7 @@ function handleExport() {
               </div>
             </th>
             <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">電話</th>
+            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">來源 (UTM)</th>
             <th
               @click="toggleSort('status')"
               class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3 cursor-pointer hover:bg-gray-100"
@@ -363,7 +398,7 @@ function handleExport() {
         </thead>
         <tbody class="divide-y divide-gray-200">
           <tr v-if="filteredLeads.length === 0">
-            <td colspan="6" class="px-6 py-12 text-center text-gray-500">尚無預約名單</td>
+            <td colspan="7" class="px-6 py-12 text-center text-gray-500">尚無預約名單</td>
           </tr>
           <tr v-for="lead in filteredLeads" :key="lead.id" class="hover:bg-gray-50">
             <td class="px-6 py-4 whitespace-nowrap">
@@ -374,6 +409,13 @@ function handleExport() {
               {{ lead.storeName }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ lead.phone }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <div v-if="lead.payload?.utm?.source || lead.payload?.utm?.campaign" class="flex flex-wrap gap-1">
+                <span v-if="lead.payload?.utm?.source" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">{{ lead.payload.utm.source }}</span>
+                <span v-if="lead.payload?.utm?.campaign" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">{{ lead.payload.utm.campaign }}</span>
+              </div>
+              <span v-else class="text-gray-300">—</span>
+            </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <select
                 :value="lead.status"
