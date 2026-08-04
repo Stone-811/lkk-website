@@ -38,10 +38,10 @@ export default defineEventHandler(async (event) => {
       records = records.filter(r => r.year === year)
     }
 
-    // Filter by name if provided (case-insensitive contains)
+    // Filter by name if provided —— 完整姓名精確比對（不做模糊/部分比對）
     if (name && name.trim()) {
       const searchName = name.trim().toLowerCase()
-      records = records.filter(r => r.name.toLowerCase().includes(searchName))
+      records = records.filter(r => (r.name || '').trim().toLowerCase() === searchName)
     }
 
     return {

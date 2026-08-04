@@ -134,10 +134,11 @@ const getGroupDisplayName = (group: string) => {
                   type="text"
                   id="name"
                   v-model="name"
-                  placeholder="請輸入報名時填寫的姓名"
+                  placeholder="請輸入完整姓名（需與報名時完全相同）"
                   class="w-full px-4 py-3 border border-navy/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange/50 focus:border-orange transition-colors"
                   required
                 />
+                <p class="text-xs text-ink/50 mt-1.5">＊需輸入完整姓名才查得到，不支援部分搜尋。</p>
               </div>
 
               <!-- Error Message -->
