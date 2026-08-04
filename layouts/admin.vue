@@ -70,7 +70,7 @@ const isActive = (path: string) => {
 </script>
 
 <template>
-  <div class="min-h-screen flex bg-gray-100 font-sans">
+  <div class="admin-root min-h-screen flex bg-gray-100 font-sans">
     <!-- Sidebar -->
     <aside
       :class="[
@@ -221,3 +221,17 @@ const isActive = (path: string) => {
     </div>
   </div>
 </template>
+
+<!-- 後台下拉選單：關掉原生箭頭、改自訂箭頭並往內縮（左移一點） -->
+<style>
+.admin-root select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 1.05em 1.05em;
+  padding-right: 2.25rem;
+}
+</style>
