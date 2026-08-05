@@ -37,6 +37,10 @@ onMounted(async () => {
     const { data } = await useFetch('/api/admin/auth/session')
     if (data.value?.success && data.value?.user) {
       user.value = data.value.user
+      // 角色頁面守衛：初次載入/重新整理時 route middleware 不會在 client 重跑，這裡補上
+      if (!canAccessAdminPath(user.value.role, route.path)) {
+        router.replace(user.value.role === 'sales' ? '/admin/leads' : '/admin')
+      }
     } else {
       // Redirect to login if not authenticated
       router.push('/admin/login')
