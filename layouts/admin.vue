@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { canAccessAdminPath } from '~/utils/adminAccess'
 
 const route = useRoute()
@@ -65,6 +65,50 @@ async function logout() {
     router.push('/admin/login')
   } catch (error) {
     console.error('Logout error:', error)
+  }
+}
+
+// 自助修改密碼
+const showPasswordModal = ref(false)
+const pwSaving = ref(false)
+const pwError = ref('')
+const pwForm = reactive({ current: '', next: '', confirm: '' })
+
+function openPasswordModal() {
+  pwForm.current = ''
+  pwForm.next = ''
+  pwForm.confirm = ''
+  pwError.value = ''
+  showPasswordModal.value = true
+}
+
+async function submitPassword() {
+  if (pwSaving.value) return
+  pwError.value = ''
+  if (!pwForm.current || !pwForm.next) {
+    pwError.value = '請填寫目前密碼與新密碼'
+    return
+  }
+  if (pwForm.next.length < 6) {
+    pwError.value = '新密碼至少需 6 碼'
+    return
+  }
+  if (pwForm.next !== pwForm.confirm) {
+    pwError.value = '兩次輸入的新密碼不一致'
+    return
+  }
+  pwSaving.value = true
+  try {
+    await $fetch('/api/admin/auth/change-password', {
+      method: 'POST',
+      body: { currentPassword: pwForm.current, newPassword: pwForm.next },
+    })
+    showPasswordModal.value = false
+    alert('密碼已更新，下次登入請使用新密碼')
+  } catch (e: any) {
+    pwError.value = e?.data?.statusMessage || e?.statusMessage || '更新失敗'
+  } finally {
+    pwSaving.value = false
   }
 }
 
@@ -195,6 +239,16 @@ const isActive = (path: string) => {
             </svg>
           </button>
         </div>
+        <button
+          v-if="user"
+          @click="openPasswordModal"
+          class="mt-3 w-full flex items-center gap-2 text-xs text-gray-400 hover:text-white px-2 py-1.5 rounded hover:bg-gray-800 transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+          </svg>
+          修改密碼
+        </button>
       </div>
     </aside>
 
@@ -229,6 +283,38 @@ const isActive = (path: string) => {
         <!-- Content -->
         <slot v-else />
       </main>
+    </div>
+
+    <!-- 修改密碼 Modal（所有登入者皆可自助修改）-->
+    <div
+      v-if="showPasswordModal"
+      class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+      @click.self="showPasswordModal = false"
+    >
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">修改密碼</h2>
+        <div v-if="pwError" class="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg mb-3">{{ pwError }}</div>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">目前密碼</label>
+            <input v-model="pwForm.current" type="password" autocomplete="current-password" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">新密碼（至少 6 碼）</label>
+            <input v-model="pwForm.next" type="password" autocomplete="new-password" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">確認新密碼</label>
+            <input v-model="pwForm.confirm" type="password" autocomplete="new-password" @keyup.enter="submitPassword" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-6">
+          <button @click="showPasswordModal = false" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">取消</button>
+          <button @click="submitPassword" :disabled="pwSaving" class="px-4 py-2 bg-orange text-white font-medium rounded-lg hover:bg-orange-500 transition-colors disabled:opacity-60">
+            {{ pwSaving ? '更新中…' : '更新密碼' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
