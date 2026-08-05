@@ -185,6 +185,18 @@ const isFreeEligible = computed(() => userAge.value !== null && userAge.value >=
 // 選中的分店（下拉選單下方顯示地址/電話）
 const selectedStore = computed(() => stores.value.find(s => s.id === formData.storeId) || null)
 
+// 成功畫面：LINE 官方帳號預填訊息（使用者仍需自行按送出）
+const LINE_OA_ID = '@201fzruh'
+const lineMessage = computed(() => {
+  const namePart = (formData.name || '').trim()
+  const storePart = (selectedStore.value?.name || '').trim()
+  const storeText = storePart ? ` ${storePart}` : ''
+  return `你好，我是 ${namePart}，我已報名練健康${storeText} 的個人教練體驗課，請協助確認。`
+})
+const lineMessageUrl = computed(
+  () => `https://line.me/R/oaMessage/${LINE_OA_ID}/?${encodeURIComponent(lineMessage.value)}`,
+)
+
 // Watch birthDate changes to auto-clear invalid payment method
 watch(() => formData.birthDate, () => {
   // If user is under 50 and had selected "50歲以上免費", clear the selection
@@ -411,11 +423,11 @@ const handleSubmit = async () => {
               </div>
               <h2 class="text-2xl font-bold mb-4 text-navy-700 font-serif">預約成功！</h2>
               <p class="text-ink-600 mb-2">我們將於 2~3 天內主動與您聯繫確認體驗課時間，並寄送 Email 通知您。</p>
-              <p class="text-navy-700 font-medium mb-8">為了更快為您服務，請加入官方 LINE 並私訊您的姓名。</p>
+              <p class="text-navy-700 font-medium mb-8">為了更快為您服務，我們已為您預填預約資訊，請點下方按鈕加入官方 LINE，直接送出即可（訊息需由您親自按下傳送）。</p>
 
-              <!-- LINE CTA -->
+              <!-- LINE CTA（已預填預約資訊） -->
               <a
-                href="https://line.me/R/ti/p/%40201fzruh"
+                :href="lineMessageUrl"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-[#06C755] text-white font-bold px-8 py-4 rounded-xl shadow-md hover:bg-[#05b64f] transition-colors"
@@ -423,8 +435,24 @@ const handleSubmit = async () => {
                 <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 4.269 8.846 10.036 9.608.391.084.922.258 1.057.592.121.303.079.778.039 1.085l-.171 1.027c-.053.303-.242 1.186 1.039.647 1.281-.54 6.911-4.069 9.428-6.967C23.176 14.393 24 12.458 24 10.304M7.29 13.211H4.906a.634.634 0 0 1-.632-.633V7.803a.634.634 0 0 1 1.265 0v4.143H7.29a.634.634 0 0 1 0 1.265m2.474-.633a.633.633 0 0 1-1.265 0V7.803a.634.634 0 0 1 1.265 0zm5.703 0a.633.633 0 0 1-.633.633.63.63 0 0 1-.512-.26l-2.444-3.325v2.952a.633.633 0 0 1-1.265 0V7.803a.633.633 0 0 1 .633-.632c.199 0 .385.093.507.256l2.454 3.339V7.803a.634.634 0 0 1 1.265 0v4.775zm4.024-2.952a.634.634 0 0 1 0 1.265h-1.755v1.128h1.755a.633.633 0 0 1 0 1.265h-2.388a.634.634 0 0 1-.633-.633V7.803a.634.634 0 0 1 .633-.632h2.388a.634.634 0 0 1 0 1.265h-1.755v1.128h1.755z"/>
                 </svg>
-                點此加入官方 LINE，並私訊姓名
+                加入官方 LINE 並傳送預約資訊
               </a>
+
+              <!-- 預填訊息預覽 -->
+              <p class="mt-4 text-xs text-ink-500 leading-relaxed">
+                將自動帶入訊息：「{{ lineMessage }}」
+              </p>
+
+              <!-- 尚未加好友的備援 -->
+              <p class="mt-2 text-xs text-ink-400">
+                還不是官方 LINE 好友？
+                <a
+                  href="https://line.me/R/ti/p/%40201fzruh"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-navy-700 underline underline-offset-2"
+                >先點此加入好友</a>
+              </p>
 
               <div class="mt-6">
                 <NuxtLink to="/" class="text-ink-500 hover:text-navy-700 text-sm underline underline-offset-2">
