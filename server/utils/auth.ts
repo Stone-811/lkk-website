@@ -1,4 +1,4 @@
-import { H3Event, getCookie, setCookie, deleteCookie } from 'h3';
+import { H3Event, getCookie, setCookie, deleteCookie, createError } from 'h3';
 
 // Lazy load firebase to avoid initialization issues
 async function getFirebaseDb() {
@@ -54,11 +54,13 @@ const JWT_SECRET = new TextEncoder().encode(resolveJwtSecret());
 
 const COOKIE_NAME = 'lkk-admin-token';
 
+export type UserRole = 'admin' | 'editor' | 'store_staff' | 'sales';
+
 export type UserSession = {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'editor' | 'store_staff';
+  role: UserRole;
   storeId?: string;
 };
 
@@ -233,4 +235,21 @@ export async function requireAuth(
   }
 
   return { authorized: true, user: session };
+}
+
+// Require a session with one of the allowedRoles, else throw 401/403.
+// For use at the top of admin API handlers (defense-in-depth alongside the
+// server middleware in server/middleware/admin-api-guard.ts).
+export async function requireRole(
+  event: H3Event,
+  allowedRoles?: UserRole[]
+): Promise<UserSession> {
+  const session = await getSession(event);
+  if (!session) {
+    throw createError({ statusCode: 401, statusMessage: '未登入' });
+  }
+  if (allowedRoles && !allowedRoles.includes(session.role)) {
+    throw createError({ statusCode: 403, statusMessage: '權限不足' });
+  }
+  return session;
 }
