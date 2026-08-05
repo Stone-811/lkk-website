@@ -1,29 +1,32 @@
 import { canAccessAdminPath } from '~/utils/adminAccess'
 
-// 後台路由守衛（僅 client 端執行）。
-// 為何只在 client：SSR 端用內部 $fetch 把 cookie 轉發到 session API，在 App Hosting 不穩，
-// 會讓「已登入者重新整理」被誤判為未登入而導向登入頁（＝一刷新就被登出）。
-// 改由 client 檢查（瀏覽器自動帶 cookie，穩定）；初次載入/重新整理則由
-// layouts/admin.vue 的 onMounted 以同樣的 canAccessAdminPath 補上守衛。
+// 後台路由守衛（SSR + client 皆執行）。
+// 用 useRequestFetch()：在 SSR 會把「當前這個請求」的 cookie 轉發到內部 session API，
+// 在 client 等同 $fetch（瀏覽器自動帶 cookie）。這是可靠取得登入狀態的方式——
+// 先前用 $fetch + 手動 useRequestHeaders 在 App Hosting SSR 沒正確帶 cookie，
+// 導致已登入者一重新整理就被誤判未登入、踢回登入頁。
+// session 存進 useState('adminUser') 供 layouts/admin.vue 共用（避免重複請求）。
 export default defineNuxtRouteMiddleware(async (to) => {
-  if (import.meta.server) return
   if (!to.path.startsWith('/admin') || to.path === '/admin/login') return
 
-  let user: { role?: string } | null = null
+  const adminUser = useState<{ id: string; name: string; email: string; role: string } | null>(
+    'adminUser',
+    () => null,
+  )
+
+  const requestFetch = useRequestFetch()
   try {
-    const res = await $fetch<{ success: boolean; user?: { role?: string } }>(
-      '/api/admin/auth/session',
-    )
-    user = res?.success ? res.user ?? null : null
+    const res = await requestFetch<{ success: boolean; user?: any }>('/api/admin/auth/session')
+    adminUser.value = res?.success ? (res.user ?? null) : null
   } catch {
-    user = null
+    adminUser.value = null
   }
 
-  if (!user) {
+  if (!adminUser.value) {
     return navigateTo('/admin/login')
   }
 
-  if (!canAccessAdminPath(user.role, to.path)) {
-    return navigateTo(user.role === 'sales' ? '/admin/leads' : '/admin')
+  if (!canAccessAdminPath(adminUser.value.role, to.path)) {
+    return navigateTo(adminUser.value.role === 'sales' ? '/admin/leads' : '/admin')
   }
 })

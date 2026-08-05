@@ -24,38 +24,23 @@ const visibleMenuItems = computed(() =>
 
 const isSidebarOpen = ref(false)
 
-// User session
-const user = ref<{ id: string; name: string; email: string; role: string } | null>(null)
-const isLoading = ref(true)
+// User session（由 middleware/admin-access.global.ts 透過 useState 提供，SSR 即填好）
+// session 驗證與未登入/角色導向都在 route middleware 處理，這裡只讀取顯示。
+const user = useState<{ id: string; name: string; email: string; role: string } | null>(
+  'adminUser',
+  () => null,
+)
+const isLoading = ref(false)
 
 // Pending leads count
 const pendingLeadsCount = ref(0)
 
-// Check session on mount
+// 取得待處理名單數（僅供選單 badge）
 onMounted(async () => {
   try {
-    const { data } = await useFetch('/api/admin/auth/session')
-    if (data.value?.success && data.value?.user) {
-      user.value = data.value.user
-      // 角色頁面守衛：初次載入/重新整理時 route middleware 不會在 client 重跑，這裡補上
-      if (!canAccessAdminPath(user.value.role, route.path)) {
-        router.replace(user.value.role === 'sales' ? '/admin/leads' : '/admin')
-      }
-    } else {
-      // Redirect to login if not authenticated
-      router.push('/admin/login')
-    }
-  } catch (error) {
-    router.push('/admin/login')
-  } finally {
-    isLoading.value = false
-  }
-
-  // Fetch pending leads count
-  try {
-    const { data } = await useFetch('/api/admin/leads?status=new')
-    if (data.value?.success) {
-      pendingLeadsCount.value = data.value.data?.length || 0
+    const res = await $fetch<{ success: boolean; data?: any[] }>('/api/admin/leads?status=new')
+    if (res?.success) {
+      pendingLeadsCount.value = res.data?.length || 0
     }
   } catch (error) {
     console.error('Error fetching leads count:', error)
