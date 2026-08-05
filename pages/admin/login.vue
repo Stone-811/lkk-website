@@ -73,7 +73,8 @@ const handleSubmit = async () => {
       error.value = data.error || '登入失敗'
       return
     }
-    router.push('/admin')
+    // sales（名單專員）登入直接進客戶預約，其餘進儀表板
+    router.push(data.user?.role === 'sales' ? '/admin/leads' : '/admin')
   } catch (err) {
     error.value = '網路錯誤，請稍後再試'
   } finally {

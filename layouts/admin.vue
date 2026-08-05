@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { canAccessAdminPath } from '~/utils/adminAccess'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,7 +14,13 @@ const menuItems = [
   { name: '講師管理', path: '/admin/lecturers', icon: 'school' },
   { name: 'LKK4 成績', path: '/admin/lkk4-records', icon: 'chart' },
   { name: '系統設定', path: '/admin/settings', icon: 'settings' },
+  { name: '使用者管理', path: '/admin/users', icon: 'users' },
 ]
+
+// 依登入者角色過濾可見選單（與路由守衛共用 canAccessAdminPath）
+const visibleMenuItems = computed(() =>
+  menuItems.filter((item) => canAccessAdminPath(user.value?.role, item.path)),
+)
 
 const isSidebarOpen = ref(false)
 
@@ -88,7 +95,7 @@ const isActive = (path: string) => {
       <!-- Navigation -->
       <nav class="flex-1 py-4 overflow-y-auto">
         <ul class="space-y-1 px-3">
-          <li v-for="item in menuItems" :key="item.path">
+          <li v-for="item in visibleMenuItems" :key="item.path">
             <NuxtLink
               :to="item.path"
               :class="[
@@ -130,6 +137,10 @@ const isActive = (path: string) => {
               <!-- Help Icon -->
               <svg v-else-if="item.icon === 'help'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <!-- Users Icon -->
+              <svg v-else-if="item.icon === 'users'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
               <!-- Settings Icon -->
               <svg v-else-if="item.icon === 'settings'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
