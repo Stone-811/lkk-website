@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { canAccessAdminPath } from '~/utils/adminAccess'
+import { validatePasswordStrength, PASSWORD_HINT } from '~/utils/passwordPolicy'
 
 const route = useRoute()
 const router = useRouter()
@@ -78,8 +79,9 @@ async function submitPassword() {
     pwError.value = '請填寫目前密碼與新密碼'
     return
   }
-  if (pwForm.next.length < 6) {
-    pwError.value = '新密碼至少需 6 碼'
+  const strengthErr = validatePasswordStrength(pwForm.next)
+  if (strengthErr) {
+    pwError.value = strengthErr
     return
   }
   if (pwForm.next !== pwForm.confirm) {
@@ -289,7 +291,7 @@ const isActive = (path: string) => {
             <input v-model="pwForm.current" type="password" autocomplete="current-password" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">新密碼（至少 6 碼）</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">新密碼（{{ PASSWORD_HINT }}）</label>
             <input v-model="pwForm.next" type="password" autocomplete="new-password" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
           </div>
           <div>

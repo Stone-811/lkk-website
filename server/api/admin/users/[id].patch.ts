@@ -2,7 +2,7 @@
 const ALLOWED_ROLES = ['admin', 'editor', 'store_staff', 'sales']
 
 export default defineEventHandler(async (event) => {
-  const { requireRole } = await import('~/server/utils/auth')
+  const { requireRole, validatePasswordStrength } = await import('~/server/utils/auth')
   const actor = await requireRole(event, ['admin'])
 
   const id = getRouterParam(event, 'id')
@@ -26,8 +26,9 @@ export default defineEventHandler(async (event) => {
     updates.isActive = body.isActive
   }
   if (body?.password) {
-    if (String(body.password).length < 6) {
-      throw createError({ statusCode: 400, statusMessage: '密碼至少需 6 碼' })
+    const pwErr = validatePasswordStrength(body.password)
+    if (pwErr) {
+      throw createError({ statusCode: 400, statusMessage: pwErr })
     }
     const bcrypt = (await import('bcryptjs')).default
     updates.passwordHash = await bcrypt.hash(String(body.password), 10)

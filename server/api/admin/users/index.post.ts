@@ -2,7 +2,7 @@
 const ALLOWED_ROLES = ['admin', 'editor', 'store_staff', 'sales']
 
 export default defineEventHandler(async (event) => {
-  const { requireRole, createUser } = await import('~/server/utils/auth')
+  const { requireRole, createUser, validatePasswordStrength } = await import('~/server/utils/auth')
   await requireRole(event, ['admin'])
 
   const body = await readBody(event)
@@ -20,8 +20,9 @@ export default defineEventHandler(async (event) => {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     throw createError({ statusCode: 400, statusMessage: 'Email 格式不正確' })
   }
-  if (String(password).length < 6) {
-    throw createError({ statusCode: 400, statusMessage: '密碼至少需 6 碼' })
+  const pwErr = validatePasswordStrength(password)
+  if (pwErr) {
+    throw createError({ statusCode: 400, statusMessage: pwErr })
   }
 
   const { getDb } = await import('~/server/utils/firebase')
