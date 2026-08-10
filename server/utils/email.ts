@@ -60,7 +60,9 @@ const leadTypeLabels: Record<string, string> = {
 
 // 依「學員實際年齡」判斷體驗費（50 歲以上免費、未滿 50 歲 $500）。
 // 以出生年月為權威依據，避免表單付款方式被誤選時信件顯示錯誤金額。
-function bookingFeeLabel(birthDate?: string, paymentMethod?: string): string | null {
+function bookingFeeLabel(birthDate?: string, paymentMethod?: string, company?: string): string | null {
+  // 帶公司參數的變體活動（全齡免費）→ 不顯示付款方式（避免誤標臨櫃 $500）
+  if (company) return null
   if (birthDate) {
     const b = new Date(birthDate)
     if (!isNaN(b.getTime())) {
@@ -99,6 +101,7 @@ interface LeadNotificationData {
   medicalConditionNote?: string
   preferredTime?: string[]
   paymentMethod?: string
+  company?: string
   exerciseGoals?: string[]
   exerciseGoalOther?: string
   sources?: string[]
@@ -272,7 +275,7 @@ export async function sendLeadNotification(data: LeadNotificationData) {
       </tr>`
     }
 
-    const paymentLabel = bookingFeeLabel(data.birthDate, data.paymentMethod)
+    const paymentLabel = bookingFeeLabel(data.birthDate, data.paymentMethod, data.company)
     if (paymentLabel) {
       content += `
       <tr>
@@ -536,6 +539,7 @@ export async function sendBookingConfirmation(data: {
   storeName: string
   preferredTime: string[]
   paymentMethod?: string
+  company?: string
   exerciseGoals?: string[]
   exerciseGoalOther?: string
   sources?: string[]
@@ -577,7 +581,7 @@ export async function sendBookingConfirmation(data: {
   if (data.preferredTime && data.preferredTime.length > 0) {
     bookingRows.push({ label: '方便聯繫時段', value: data.preferredTime.join('、') })
   }
-  const feeLabel = bookingFeeLabel(data.birthDate, data.paymentMethod)
+  const feeLabel = bookingFeeLabel(data.birthDate, data.paymentMethod, data.company)
   if (feeLabel) bookingRows.push({ label: '付款方式', value: feeLabel })
   if (data.exerciseGoals && data.exerciseGoals.length > 0) {
     let goalsText = data.exerciseGoals.join('、')
