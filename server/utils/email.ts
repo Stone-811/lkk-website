@@ -434,6 +434,7 @@ interface FormConfirmationData {
   type: 'booking' | 'cooperation' | 'franchise'
   name: string
   email: string
+  company?: string
   details?: Array<{ label: string; value: string }>
   sections?: Array<{ title: string; rows: Array<{ label: string; value: string }> }>
 }
@@ -484,6 +485,10 @@ export async function sendFormConfirmation(data: FormConfirmationData) {
   <div style="background: #2A5269; color: white; padding: 20px; text-align: center;">
     <h1 style="margin: 0; font-size: 24px;">${config.title}</h1>
   </div>
+  ${data.company ? `
+  <div style="background: #FB720A; color: white; padding: 10px 20px; font-size: 15px; font-weight: bold; text-align: center;">
+    報名活動：${data.company}
+  </div>` : ''}
 
   <div style="padding: 30px; background: #f9f9f9;">
     <p style="color: #333; font-size: 16px; margin-bottom: 20px;">
@@ -605,6 +610,7 @@ export async function sendBookingConfirmation(data: {
     type: 'booking',
     name: data.name,
     email: data.email,
+    company: data.company,
     sections: [
       { title: '學員資料', rows: studentRows },
       { title: '填表人資料', rows: fillerRows },
