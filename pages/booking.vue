@@ -381,6 +381,8 @@ const handleSubmit = async () => {
         sourcePage: '/booking',
         formVariant: (route.query.v as string) || null,
         sourceTag: variant.value.sourceTag || null,
+        company: variant.value.company || null,
+        leadSource: variant.value.leadSource || null,
         utm: useUtm().getUtm(),
       }),
     })

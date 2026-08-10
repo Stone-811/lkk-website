@@ -579,6 +579,21 @@ function handleExport() {
           </section>
 
           <!-- 來源追蹤 (UTM) -->
+          <!-- 活動來源（變體表單：公司 / 來源）-->
+          <section v-if="selectedLead.payload?.company || selectedLead.payload?.leadSource || selectedLead.payload?.sourceTag || selectedLead.payload?.formVariant" class="rounded-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <h3 class="text-xs font-bold text-gray-500 tracking-wider uppercase">活動來源</h3>
+            </div>
+            <div class="p-4">
+              <div class="flex flex-wrap gap-1.5">
+                <span v-if="selectedLead.payload.company" class="inline-flex items-center px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-xs">公司：{{ selectedLead.payload.company }}</span>
+                <span v-if="selectedLead.payload.leadSource" class="inline-flex items-center px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-xs">來源：{{ selectedLead.payload.leadSource }}</span>
+                <span v-if="selectedLead.payload.sourceTag" class="inline-flex items-center px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-xs">標記：{{ selectedLead.payload.sourceTag }}</span>
+                <span v-if="selectedLead.payload.formVariant" class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 text-gray-500 text-xs">表單：{{ selectedLead.payload.formVariant }}</span>
+              </div>
+            </div>
+          </section>
+
           <section v-if="selectedLead.payload?.utm && (selectedLead.payload.utm.source || selectedLead.payload.utm.campaign || selectedLead.payload.utm.medium)" class="rounded-lg border border-gray-200 overflow-hidden">
             <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
               <h3 class="text-xs font-bold text-gray-500 tracking-wider uppercase">來源追蹤 (UTM)</h3>

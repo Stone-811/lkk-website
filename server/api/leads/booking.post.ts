@@ -91,6 +91,8 @@ export default defineEventHandler(async (event) => {
         // 廠商變體表單（?v=）：來源標記，方便後台辨識活動來源
         formVariant: body.formVariant || null,
         sourceTag: body.sourceTag || null,
+        company: body.company || null,
+        leadSource: body.leadSource || null,
       },
       status: 'new',
       internalNote: null,

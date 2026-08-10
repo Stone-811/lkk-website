@@ -21,7 +21,11 @@ export interface BookingVariant {
   // 不限年齡免費：解除「50 歲以上才免費」規則。開啟後：
   // 隱藏付款方式選擇（自動免費）、Hero/底部/FAQ/服務卡的價格文案改為全齡免費。
   allAgesFree?: boolean
-  // 名單來源標記：存進 lead.payload.sourceTag，後台方便辨識是哪個廠商活動
+  // 公司（合作夥伴）：存進名單、後台顯示辨識，如 '南山' / '亞培'
+  company?: string
+  // 來源（管道）：存進名單、後台顯示，如 '網站' / 'LINE' / 'Facebook' / 'Email'
+  leadSource?: string
+  // 名單來源標記（舊欄位，選填）：存進 lead.payload.sourceTag
   sourceTag?: string
 }
 
@@ -39,10 +43,11 @@ export const bookingVariants: Record<string, BookingVariant> = {
     },
     allAgesFree: true,
     hideSources: true,
-    sourceTag: '亞培活動',
+    company: '亞培',
+    leadSource: 'LINE',
   },
 
-  // ── 範例：南山 ──
+  // ── 南山（不限年齡免費、不鎖店；來源：網站）──
   nanshan: {
     hero: {
       title: '南山 × 練健康',
@@ -52,7 +57,8 @@ export const bookingVariants: Record<string, BookingVariant> = {
     },
     allAgesFree: true,
     hideSources: true,
-    sourceTag: '南山活動',
+    company: '南山',
+    leadSource: '網站',
   },
 }
 
