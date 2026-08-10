@@ -18,6 +18,9 @@ export interface BookingVariant {
   lockStoreId?: string
   // 隱藏「從哪裡得知」區塊（來源已知時）
   hideSources?: boolean
+  // 不限年齡免費：解除「50 歲以上才免費」規則。開啟後：
+  // 隱藏付款方式選擇（自動免費）、Hero/底部/FAQ/服務卡的價格文案改為全齡免費。
+  allAgesFree?: boolean
   // 名單來源標記：存進 lead.payload.sourceTag，後台方便辨識是哪個廠商活動
   sourceTag?: string
 }
@@ -26,16 +29,15 @@ export const bookingVariants: Record<string, BookingVariant> = {
   // 沒帶 ?v= 或未知值 → 用這個（＝原本的表單，什麼都不覆蓋）
   default: {},
 
-  // ── 範例：亞培（實際文案/分店請自行調整）──
+  // ── 範例：亞培（不限年齡免費、不鎖分店；實際文案請自行調整）──
   abbott: {
     hero: {
-      badge: '亞培 × 練健康 專屬體驗',
-      title: '專為你打造的',
+      title: '亞培 × 練健康',
       titleHighlight: '專屬體驗課',
-      subtitle: '由醫療相關、運動科學等專業背景教練帶領，安全有效。填寫後我們會主動與您聯繫安排時間。',
+      subtitle: '不限年齡皆可報名，由專業教練帶領，安全有效。填寫後我們會主動與您聯繫安排時間。',
       ctaText: '立即預約專屬體驗 →',
     },
-    lockStoreId: '南京店',
+    allAgesFree: true,
     hideSources: true,
     sourceTag: '亞培活動',
   },
@@ -43,12 +45,12 @@ export const bookingVariants: Record<string, BookingVariant> = {
   // ── 範例：南山 ──
   nanshan: {
     hero: {
-      badge: '南山 × 練健康 專屬體驗',
-      title: '專為你打造的',
+      title: '南山 × 練健康',
       titleHighlight: '專屬體驗課',
+      subtitle: '不限年齡皆可報名，由專業教練帶領，安全有效。',
       ctaText: '立即預約專屬體驗 →',
     },
-    lockStoreId: '南京店',
+    allAgesFree: true,
     hideSources: true,
     sourceTag: '南山活動',
   },

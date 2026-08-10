@@ -16,8 +16,34 @@ const stores = ref([
   { id: 'xindian', name: '七張店', address: '新北市新店區北新路二段 252 號 B1-2', phone: '(02) 8914-6428' },
 ])
 
-// FAQ 分類資料
-const faqCategories = [
+// ── 變體（廠商 UTM 活動）：/booking?v=<key> 對應 config/bookingVariants.ts ──
+const route = useRoute()
+const variant = computed(() => getBookingVariant(route.query.v))
+
+// 價格文案集中一處：所有提到費用的地方（Hero badge/標題、底部、FAQ、服務卡）都讀這裡，
+// 依 allAgesFree 決定一次，避免價格訊息散落多處各自分支（技術債最小化）。
+const pricingCopy = computed(() => variant.value.allAgesFree
+  ? {
+      badge: '不限年齡・免費體驗',
+      title: '不限年齡',
+      titleHighlight: '體驗課完全免費',
+      note: '不限年齡免費・無隱藏費用・不強迫買課',
+      faqFee: '本活動不限年齡，首次體驗完全免費。',
+      faqPay: '本活動免費，無需付款。',
+      cardBadges: ['不限年齡 免費'],
+    }
+  : {
+      badge: '50歲以下，體驗課$500元',
+      title: '50 歲以上',
+      titleHighlight: '體驗課完全免費',
+      note: '50歲以上免費・一般首次 $500・無隱藏費用・不強迫買課',
+      faqFee: '50歲以上免費體驗；未滿50歲酌收 $500 檢測與體驗費用。若為一對二且皆未滿50歲，兩位皆需收取 $500。',
+      faqPay: '體驗結束後至櫃台臨櫃繳費即可。',
+      cardBadges: ['50歲以上 免費', '一般首次 $500'],
+    })
+
+// FAQ 分類資料（費用/付款兩題讀 pricingCopy，其餘固定）
+const faqCategories = computed(() => [
   {
     title: '個人相關',
     faqs: [
@@ -37,12 +63,12 @@ const faqCategories = [
   {
     title: '費用相關',
     faqs: [
-      { id: 'f1', q: '體驗課費用？', a: '50歲以上免費體驗；未滿50歲酌收 $500 檢測與體驗費用。若為一對二且皆未滿50歲，兩位皆需收取 $500。' },
-      { id: 'f2', q: '體驗課如何付款？', a: '體驗結束後至櫃台臨櫃繳費即可。' },
+      { id: 'f1', q: '體驗課費用？', a: pricingCopy.value.faqFee },
+      { id: 'f2', q: '體驗課如何付款？', a: pricingCopy.value.faqPay },
       { id: 'f3', q: '正式課程的費用？', a: '從 $600/堂的團體課，到 $2,460/堂的私人教練課程都有。體驗課中教練會了解您的狀況並給予客製化建議，購課越多優惠越多。' },
     ],
   },
-]
+])
 
 // FAQ 折疊狀態
 const openFaqId = ref<string | null>(null)
@@ -56,12 +82,12 @@ const cases = [
   { name: '陳小姐', info: '55歲・乳癌術後', quote: '醫生說我的恢復狀況比預期好很多。' },
 ]
 
-const steps = [
+const steps = computed(() => [
   { title: '填寫預約表單', desc: '約 1~2 分鐘完成，提供必要資訊' },
   { title: '教練主動電話聯繫', desc: '2~3天內，我們會打電話給您安排時間' },
-  { title: '到店體驗課（60–75 分鐘）', desc: '身體評估 + 基礎動作訓練 + 教練諮詢', badges: ['50歲以上 免費', '一般首次 $500'] },
+  { title: '到店體驗課（60–75 分鐘）', desc: '身體評估 + 基礎動作訓練 + 教練諮詢', badges: pricingCopy.value.cardBadges },
   { title: '客製化訓練建議', desc: '教練提供最適合您的訓練規劃' },
-]
+])
 
 const whatYouGet = [
   '身體素質・活動度・肌力 全面檢測',
@@ -187,10 +213,6 @@ const isFreeEligible = computed(() => userAge.value !== null && userAge.value >=
 // 選中的分店（下拉選單下方顯示地址/電話）
 const selectedStore = computed(() => stores.value.find(s => s.id === formData.storeId) || null)
 
-// ── 變體（廠商 UTM 活動）：booking.vue?v=<key> 對應 config/bookingVariants.ts ──
-const route = useRoute()
-const variant = computed(() => getBookingVariant(route.query.v))
-
 // 鎖定分店：以 id / slug / name 命中；stores 為非同步載入，解析到就自動帶入
 const lockedStore = computed(() => {
   const key = variant.value.lockStoreId
@@ -198,6 +220,11 @@ const lockedStore = computed(() => {
   return stores.value.find((s: any) => s.id === key || s.slug === key || s.name === key) || null
 })
 watch(lockedStore, (s) => { if (s) formData.storeId = s.id }, { immediate: true })
+
+// 不限年齡免費變體：付款方式自動設為「活動免費」（付款區會隱藏、驗證照過）
+watch(() => variant.value.allAgesFree, (free) => {
+  if (free) formData.paymentMethod = '活動免費'
+}, { immediate: true })
 
 // 成功畫面：LINE 官方帳號預填訊息（使用者仍需自行按送出）
 const LINE_OA_ID = '@201fzruh'
@@ -213,6 +240,8 @@ const lineMessageUrl = computed(
 
 // Watch birthDate changes to auto-clear invalid payment method
 watch(() => formData.birthDate, () => {
+  // 全齡免費變體：付款固定為活動免費，不受年齡影響
+  if (variant.value.allAgesFree) return
   // If user is under 50 and had selected "50歲以上免費", clear the selection
   if (!isFreeEligible.value && formData.paymentMethod === '50歲以上免費') {
     formData.paymentMethod = ''
@@ -384,12 +413,12 @@ const handleSubmit = async () => {
           <div>
             <!-- Free badge -->
             <div class="inline-flex items-center gap-2 bg-orange/20 border border-orange/40 text-orange text-sm font-medium px-4 py-1.5 rounded-full mb-5">
-              {{ variant.hero?.badge ?? '50歲以下，體驗課$500元' }}
+              {{ variant.hero?.badge ?? pricingCopy.badge }}
             </div>
 
             <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-3 sm:mb-4">
-              {{ variant.hero?.title ?? '50 歲以上' }}<br />
-              <span class="text-orange">{{ variant.hero?.titleHighlight ?? '體驗課完全免費' }}</span>
+              {{ variant.hero?.title ?? pricingCopy.title }}<br />
+              <span class="text-orange">{{ variant.hero?.titleHighlight ?? pricingCopy.titleHighlight }}</span>
             </h1>
 
             <p class="text-white/60 text-base sm:text-lg font-light leading-relaxed mb-5 sm:mb-6 max-w-lg mx-auto">
@@ -416,7 +445,7 @@ const handleSubmit = async () => {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span><strong class="text-orange-300">50歲以上免費</strong>・一般首次 $500・無隱藏費用・不強迫買課</span>
+              <span>{{ pricingCopy.note }}</span>
             </div>
           </div>
 
@@ -551,7 +580,7 @@ const handleSubmit = async () => {
                         max="2010-01-01"
                         min="1920-01-01"
                       />
-                      <p v-if="isFreeEligible" class="text-green-600 text-sm mt-1 font-medium flex items-center gap-1">
+                      <p v-if="isFreeEligible && !variant.allAgesFree" class="text-green-600 text-sm mt-1 font-medium flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
@@ -862,8 +891,8 @@ const handleSubmit = async () => {
                     </p>
                   </div>
 
-                  <!-- 付款方式 -->
-                  <div id="paymentMethod">
+                  <!-- 付款方式（全齡免費變體隱藏，付款自動設為「活動免費」）-->
+                  <div v-if="!variant.allAgesFree" id="paymentMethod">
                     <label class="block text-sm font-medium mb-2 text-navy-700">
                       付款方式 <span class="text-red-500">*</span>
                     </label>
