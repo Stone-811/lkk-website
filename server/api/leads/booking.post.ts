@@ -90,7 +90,6 @@ export default defineEventHandler(async (event) => {
         utm: body.utm || null,
         // 廠商變體表單（?v=）：來源標記，方便後台辨識活動來源
         formVariant: body.formVariant || null,
-        sourceTag: body.sourceTag || null,
         company: body.company || null,
         leadSource: body.leadSource || null,
       },
@@ -153,6 +152,7 @@ export default defineEventHandler(async (event) => {
         exerciseGoalOther,
         sources: Array.isArray(sources) ? sources : sources ? [sources] : [],
         company: body.company,
+        leadSource: body.leadSource,
       }).catch(err => console.error('Failed to send admin notification:', err))
 
       // Send confirmation to customer with the full submitted details (if email provided)

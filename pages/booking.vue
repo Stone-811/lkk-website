@@ -380,7 +380,6 @@ const handleSubmit = async () => {
         message: formData.message,
         sourcePage: '/booking',
         formVariant: (route.query.v as string) || null,
-        sourceTag: variant.value.sourceTag || null,
         company: variant.value.company || null,
         // 來源優先讀網址參數 ?src=（同公司不同來源共用同一變體），沒帶就用變體預設
         leadSource: (typeof route.query.src === 'string' ? route.query.src : null) || variant.value.leadSource || null,

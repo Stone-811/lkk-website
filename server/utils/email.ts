@@ -102,6 +102,7 @@ interface LeadNotificationData {
   preferredTime?: string[]
   paymentMethod?: string
   company?: string
+  leadSource?: string
   exerciseGoals?: string[]
   exerciseGoalOther?: string
   sources?: string[]
@@ -139,7 +140,7 @@ export async function sendLeadNotification(data: LeadNotificationData) {
   }
 
   const typeLabel = leadTypeLabels[data.type] || data.type
-  const subject = `【練健康】新${typeLabel}表單 - ${data.name}`
+  const subject = `【練健康】新${typeLabel}表單${data.company ? `【${data.company}】` : ''} - ${data.name}`
   const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://l-kk.tw'
 
   let content = `
@@ -147,6 +148,10 @@ export async function sendLeadNotification(data: LeadNotificationData) {
   <div style="background: #2A5269; color: white; padding: 20px; text-align: center;">
     <h1 style="margin: 0; font-size: 24px;">新${typeLabel}通知</h1>
   </div>
+  ${(data.company || data.leadSource) ? `
+  <div style="background: #FB720A; color: white; padding: 12px 20px; font-size: 15px; font-weight: bold; text-align: center;">
+    活動來源：${[data.company, data.leadSource].filter(Boolean).join(' · ')}
+  </div>` : ''}
 
   <div style="padding: 20px; background: #f9f9f9;">
     <table style="width: 100%; border-collapse: collapse;">
@@ -540,6 +545,7 @@ export async function sendBookingConfirmation(data: {
   preferredTime: string[]
   paymentMethod?: string
   company?: string
+  leadSource?: string
   exerciseGoals?: string[]
   exerciseGoalOther?: string
   sources?: string[]
