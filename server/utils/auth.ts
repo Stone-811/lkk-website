@@ -84,13 +84,43 @@ export async function verifyToken(token: string): Promise<UserSession | null> {
   }
 }
 
+// 停用即時生效：getSession 會回查 users.isActive（短快取降低 Firestore 讀取）。
+// 停用某帳號後，最多約 30 秒（該執行實例快取到期）該人就會被踢出，不必等 JWT 7 天到期。
+const deactivatedCache = new Map<string, { deactivated: boolean; at: number }>();
+const DEACTIVATED_TTL_MS = 30_000;
+
+async function isSessionDeactivated(userId: string): Promise<boolean> {
+  const now = Date.now();
+  const cached = deactivatedCache.get(userId);
+  if (cached && now - cached.at < DEACTIVATED_TTL_MS) return cached.deactivated;
+
+  let deactivated = false;
+  try {
+    const db = await getFirebaseDb();
+    const snap = await db.collection('users').doc(userId).get();
+    // 僅在明確 isActive===false 時判為停用；查無文件/出錯一律放行
+    //（Google 登入的 id 是 Firebase uid、dev 測試帳號 id 也無 users 文件，皆不受影響）
+    deactivated = snap.exists && (snap.data() as any)?.isActive === false;
+  } catch {
+    deactivated = false;
+  }
+  deactivatedCache.set(userId, { deactivated, at: now });
+  return deactivated;
+}
+
 // Get session from cookie (for API routes)
 export async function getSession(event: H3Event): Promise<UserSession | null> {
   const token = getCookie(event, COOKIE_NAME);
 
   if (!token) return null;
 
-  return verifyToken(token);
+  const session = await verifyToken(token);
+  if (!session) return null;
+
+  // 停用即時生效：帳號被停用（isActive=false）即視為未登入
+  if (session.id && (await isSessionDeactivated(session.id))) return null;
+
+  return session;
 }
 
 // Set session cookie
@@ -217,6 +247,15 @@ export async function createUser(
     console.error('Create user error:', error);
     return { success: false, error: '建立使用者失敗' };
   }
+}
+
+// 密碼強度規則（僅在「設定/變更密碼」時檢查，不影響既有帳號登入）。
+// 回傳錯誤訊息字串；通過則回傳 null。前端 utils/passwordPolicy.ts 需與此保持一致。
+export function validatePasswordStrength(pw: string): string | null {
+  const s = String(pw || '');
+  if (s.length < 8) return '密碼至少需 8 碼';
+  if (!/[A-Za-z]/.test(s) || !/[0-9]/.test(s)) return '密碼需同時包含英文字母與數字';
+  return null;
 }
 
 // Require authentication middleware helper

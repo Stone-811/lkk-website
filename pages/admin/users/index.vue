@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ROLE_OPTIONS, ROLE_LABELS } from '~/utils/adminAccess'
+import { validatePasswordStrength, PASSWORD_HINT } from '~/utils/passwordPolicy'
 
 definePageMeta({ layout: 'admin' })
 useHead({ title: '使用者管理｜練健康後台' })
@@ -52,6 +53,11 @@ async function submitCreate() {
     alert('請填寫姓名、Email、密碼')
     return
   }
+  const pwErr = validatePasswordStrength(createForm.password)
+  if (pwErr) {
+    alert(pwErr)
+    return
+  }
   creating.value = true
   try {
     await $fetch('/api/admin/users', { method: 'POST', body: { ...createForm } })
@@ -79,6 +85,13 @@ function openEdit(u: AdminUser) {
 }
 async function submitEdit() {
   if (saving.value) return
+  if (editForm.password) {
+    const pwErr = validatePasswordStrength(editForm.password)
+    if (pwErr) {
+      alert(pwErr)
+      return
+    }
+  }
   saving.value = true
   try {
     const body: any = { name: editForm.name, role: editForm.role, isActive: editForm.isActive }
@@ -213,7 +226,7 @@ async function toggleActive(u: AdminUser) {
             <input v-model="createForm.email" type="email" autocomplete="off" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">密碼（至少 6 碼）</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">密碼（{{ PASSWORD_HINT }}）</label>
             <input v-model="createForm.password" type="text" autocomplete="new-password" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
           </div>
           <div>
@@ -249,7 +262,7 @@ async function toggleActive(u: AdminUser) {
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">重設密碼（留空＝不變更）</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">重設密碼（留空＝不變更；{{ PASSWORD_HINT }}）</label>
             <input v-model="editForm.password" type="text" autocomplete="new-password" placeholder="輸入新密碼以重設" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
           </div>
           <label class="flex items-center gap-2 cursor-pointer">

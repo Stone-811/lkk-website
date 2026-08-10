@@ -2,7 +2,7 @@
 // 放在 /api/admin/auth/ 底下，故不受 admin-api-guard 的角色限制；
 // 但 handler 自身要求有效 session，且只能改「自己」(session.id) 的密碼。
 export default defineEventHandler(async (event) => {
-  const { getSession } = await import('~/server/utils/auth')
+  const { getSession, validatePasswordStrength } = await import('~/server/utils/auth')
   const session = await getSession(event)
   if (!session) {
     throw createError({ statusCode: 401, statusMessage: '未登入' })
@@ -15,8 +15,9 @@ export default defineEventHandler(async (event) => {
   if (!currentPassword || !newPassword) {
     throw createError({ statusCode: 400, statusMessage: '請輸入目前密碼與新密碼' })
   }
-  if (String(newPassword).length < 6) {
-    throw createError({ statusCode: 400, statusMessage: '新密碼至少需 6 碼' })
+  const pwErr = validatePasswordStrength(newPassword)
+  if (pwErr) {
+    throw createError({ statusCode: 400, statusMessage: pwErr })
   }
   if (newPassword === currentPassword) {
     throw createError({ statusCode: 400, statusMessage: '新密碼不可與目前密碼相同' })
