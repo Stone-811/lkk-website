@@ -88,6 +88,9 @@ export default defineEventHandler(async (event) => {
         exerciseGoalOther: exerciseGoalOther || null,
         sources: sources || [],
         utm: body.utm || null,
+        // 廠商變體表單（?v=）：來源標記，方便後台辨識活動來源
+        formVariant: body.formVariant || null,
+        sourceTag: body.sourceTag || null,
       },
       status: 'new',
       internalNote: null,

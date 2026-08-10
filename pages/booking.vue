@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
+import { getBookingVariant } from '~/config/bookingVariants'
 
 useHead({
   title: '預約體驗 | 練健康',
@@ -156,6 +157,7 @@ onMounted(async () => {
       if (data.data && data.data.length > 0) {
         stores.value = data.data.map((s: any) => ({
           id: s.id,
+          slug: s.slug,
           name: s.name,
           address: `${s.city || ''}${s.district || ''}${s.address || ''}`,
           phone: s.phone || '',
@@ -184,6 +186,18 @@ const isFreeEligible = computed(() => userAge.value !== null && userAge.value >=
 
 // 選中的分店（下拉選單下方顯示地址/電話）
 const selectedStore = computed(() => stores.value.find(s => s.id === formData.storeId) || null)
+
+// ── 變體（廠商 UTM 活動）：booking.vue?v=<key> 對應 config/bookingVariants.ts ──
+const route = useRoute()
+const variant = computed(() => getBookingVariant(route.query.v))
+
+// 鎖定分店：以 id / slug / name 命中；stores 為非同步載入，解析到就自動帶入
+const lockedStore = computed(() => {
+  const key = variant.value.lockStoreId
+  if (!key) return null
+  return stores.value.find((s: any) => s.id === key || s.slug === key || s.name === key) || null
+})
+watch(lockedStore, (s) => { if (s) formData.storeId = s.id }, { immediate: true })
 
 // 成功畫面：LINE 官方帳號預填訊息（使用者仍需自行按送出）
 const LINE_OA_ID = '@201fzruh'
@@ -336,6 +350,8 @@ const handleSubmit = async () => {
         paymentMethod: formData.paymentMethod,
         message: formData.message,
         sourcePage: '/booking',
+        formVariant: (route.query.v as string) || null,
+        sourceTag: variant.value.sourceTag || null,
         utm: useUtm().getUtm(),
       }),
     })
@@ -368,21 +384,21 @@ const handleSubmit = async () => {
           <div>
             <!-- Free badge -->
             <div class="inline-flex items-center gap-2 bg-orange/20 border border-orange/40 text-orange text-sm font-medium px-4 py-1.5 rounded-full mb-5">
-              50歲以下，體驗課$500元
+              {{ variant.hero?.badge ?? '50歲以下，體驗課$500元' }}
             </div>
 
             <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-3 sm:mb-4">
-              50 歲以上<br />
-              <span class="text-orange">體驗課完全免費</span>
+              {{ variant.hero?.title ?? '50 歲以上' }}<br />
+              <span class="text-orange">{{ variant.hero?.titleHighlight ?? '體驗課完全免費' }}</span>
             </h1>
 
             <p class="text-white/60 text-base sm:text-lg font-light leading-relaxed mb-5 sm:mb-6 max-w-lg mx-auto">
-              不論年齡、運動經驗、身體狀況——體驗課的目的是讓我們了解您，而不是評判您。由醫療相關、運動科學等專業背景教練帶領，安全有效。
+              {{ variant.hero?.subtitle ?? '不論年齡、運動經驗、身體狀況——體驗課的目的是讓我們了解您，而不是評判您。由醫療相關、運動科學等專業背景教練帶領，安全有效。' }}
             </p>
 
             <!-- What you get -->
             <div class="inline-flex flex-col items-start space-y-2 mb-6 text-left">
-              <div v-for="item in whatYouGet" :key="item" class="flex items-start gap-3 text-white/70 text-sm">
+              <div v-for="item in (variant.hero?.checklist ?? whatYouGet)" :key="item" class="flex items-start gap-3 text-white/70 text-sm">
                 <div class="w-5 h-5 rounded-full bg-orange/20 border border-orange/40 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span class="text-orange text-xs">&#10003;</span>
                 </div>
@@ -392,7 +408,7 @@ const handleSubmit = async () => {
 
             <div class="mb-4">
               <a href="#form" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-                立即填寫預約 &rarr;
+                {{ variant.hero?.ctaText ?? '立即填寫預約 →' }}
               </a>
             </div>
 
@@ -690,19 +706,29 @@ const handleSubmit = async () => {
                   <!-- 選擇分店 -->
                   <div id="storeId">
                     <label class="block text-sm font-medium mb-2 text-navy-700">
-                      選擇分店 <span class="text-red-500">*</span>
+                      選擇分店 <span v-if="!variant.lockStoreId" class="text-red-500">*</span>
                     </label>
-                    <select
-                      v-model="formData.storeId"
-                      :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange focus:border-orange', errors.storeId ? 'border-red-500' : 'border-cream-200']"
-                    >
-                      <option value="">請選擇分店</option>
-                      <option v-for="store in stores" :key="store.id" :value="store.id">{{ store.name }}</option>
-                    </select>
-                    <p v-if="selectedStore" class="text-xs text-ink/60 mt-1.5">
-                      {{ selectedStore.address }}<span v-if="selectedStore.phone"> ・ {{ selectedStore.phone }}</span>
-                    </p>
-                    <p v-if="errors.storeId" class="text-red-500 text-sm mt-2">{{ errors.storeId }}</p>
+                    <!-- 一般：可自由選擇 -->
+                    <template v-if="!variant.lockStoreId">
+                      <select
+                        v-model="formData.storeId"
+                        :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange focus:border-orange', errors.storeId ? 'border-red-500' : 'border-cream-200']"
+                      >
+                        <option value="">請選擇分店</option>
+                        <option v-for="store in stores" :key="store.id" :value="store.id">{{ store.name }}</option>
+                      </select>
+                      <p v-if="selectedStore" class="text-xs text-ink/60 mt-1.5">
+                        {{ selectedStore.address }}<span v-if="selectedStore.phone"> ・ {{ selectedStore.phone }}</span>
+                      </p>
+                      <p v-if="errors.storeId" class="text-red-500 text-sm mt-2">{{ errors.storeId }}</p>
+                    </template>
+                    <!-- 變體鎖定分店：唯讀顯示 -->
+                    <div v-else class="w-full px-4 py-3 border border-cream-200 rounded-lg bg-cream-50 text-navy-700 font-medium">
+                      {{ lockedStore?.name ?? variant.lockStoreId }}
+                      <span v-if="lockedStore?.address" class="block text-xs text-ink/60 font-normal mt-0.5">
+                        {{ lockedStore.address }}<span v-if="lockedStore.phone"> ・ {{ lockedStore.phone }}</span>
+                      </span>
+                    </div>
                   </div>
 
                   <!-- 方便聯繫時段 -->
@@ -749,8 +775,8 @@ const handleSubmit = async () => {
                     <p v-if="errors.preferredTimes" class="text-red-500 text-sm mt-2">{{ errors.preferredTimes }}</p>
                   </div>
 
-                  <!-- 從哪裡得知 -->
-                  <div>
+                  <!-- 從哪裡得知（變體可隱藏）-->
+                  <div v-if="!variant.hideSources">
                     <label class="block text-sm font-medium mb-2 text-navy-700">
                       從哪裡得知練健康？ <span class="text-ink-500 font-normal">（可複選）</span>
                     </label>
