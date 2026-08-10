@@ -152,6 +152,7 @@ export default defineEventHandler(async (event) => {
         exerciseGoals: Array.isArray(exerciseGoals) ? exerciseGoals : [],
         exerciseGoalOther,
         sources: Array.isArray(sources) ? sources : sources ? [sources] : [],
+        company: body.company,
       }).catch(err => console.error('Failed to send admin notification:', err))
 
       // Send confirmation to customer with the full submitted details (if email provided)
@@ -176,6 +177,7 @@ export default defineEventHandler(async (event) => {
           exerciseGoalOther,
           sources: Array.isArray(sources) ? sources : sources ? [sources] : [],
           message,
+          company: body.company,
         }).catch(err => console.error('Failed to send booking confirmation:', err))
       }
     } catch (emailError) {
