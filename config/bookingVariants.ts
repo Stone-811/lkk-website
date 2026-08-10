@@ -25,8 +25,6 @@ export interface BookingVariant {
   company?: string
   // 來源（管道）：存進名單、後台顯示，如 '網站' / 'LINE' / 'Facebook' / 'Email'
   leadSource?: string
-  // 名單來源標記（舊欄位，選填）：存進 lead.payload.sourceTag
-  sourceTag?: string
 }
 
 export const bookingVariants: Record<string, BookingVariant> = {
