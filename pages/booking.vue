@@ -486,11 +486,6 @@ const handleSubmit = async () => {
                 加入官方 LINE 並傳送預約資訊
               </a>
 
-              <!-- 預填訊息預覽 -->
-              <p class="mt-4 text-xs text-ink-500 leading-relaxed">
-                將自動帶入訊息：「{{ lineMessage }}」
-              </p>
-
               <!-- 尚未加好友的備援 -->
               <p class="mt-2 text-xs text-ink-400">
                 還不是官方 LINE 好友？

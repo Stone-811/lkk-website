@@ -370,7 +370,7 @@ function handleExport() {
               </div>
             </th>
             <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">電話</th>
-            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">來源 (UTM)</th>
+            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">來源</th>
             <th
               @click="toggleSort('status')"
               class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3 cursor-pointer hover:bg-gray-100"
@@ -410,7 +410,9 @@ function handleExport() {
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ lead.phone }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm">
-              <div v-if="lead.payload?.utm?.source || lead.payload?.utm?.campaign" class="flex flex-wrap gap-1">
+              <div v-if="lead.payload?.company || lead.payload?.leadSource || lead.payload?.utm?.source || lead.payload?.utm?.campaign" class="flex flex-wrap gap-1">
+                <span v-if="lead.payload?.company" class="inline-flex items-center px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-xs">{{ lead.payload.company }}</span>
+                <span v-if="lead.payload?.leadSource" class="inline-flex items-center px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-xs">{{ lead.payload.leadSource }}</span>
                 <span v-if="lead.payload?.utm?.source" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">{{ lead.payload.utm.source }}</span>
                 <span v-if="lead.payload?.utm?.campaign" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">{{ lead.payload.utm.campaign }}</span>
               </div>
