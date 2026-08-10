@@ -27,7 +27,7 @@ const pricingCopy = computed(() => variant.value.allAgesFree
       badge: '不限年齡・免費體驗',
       title: '不限年齡',
       titleHighlight: '體驗課完全免費',
-      note: '不限年齡免費・無隱藏費用・不強迫買課',
+      note: '本活動不限年齡免費・無隱藏費用・不強迫買課',
       faqFee: '本活動不限年齡，首次體驗完全免費。',
       faqPay: '本活動免費，無需付款。',
       cardBadges: ['不限年齡 免費'],
