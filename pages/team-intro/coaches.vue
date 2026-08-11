@@ -158,7 +158,7 @@ function setActiveStore(storeSlug: string | null) {
         </h1>
 
         <p class="text-white/60 text-lg font-light leading-relaxed max-w-2xl mx-auto mb-6">
-          每位教練都有物理治療師或醫療專業背景，專精於中高齡與特殊族群訓練，讓您在安全的環境下達到最佳訓練效果。
+          每位教練都有物理治療師或醫療專業背景，專精於中高齡與特殊族群訓練，讓你在安全的環境下達到最佳訓練效果。
         </p>
 
         <div class="text-white/40 text-sm">
@@ -324,10 +324,10 @@ function setActiveStore(storeSlug: string | null) {
     <section class="bg-orange py-16 lg:py-20 text-center">
       <div class="max-w-4xl mx-auto px-6 lg:px-8">
         <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">
-          找到適合您的教練了嗎？
+          找到適合你的教練了嗎？
         </h2>
         <p class="text-white/80 mb-8 max-w-md mx-auto">
-          預約免費體驗，讓專業教練為您評估並制定訓練計畫。50歲以上首次體驗完全免費。
+          預約免費體驗，讓專業教練為你評估並制定訓練計畫。50歲以上首次體驗完全免費。
         </p>
         <NuxtLink
           to="/booking"

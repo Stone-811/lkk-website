@@ -22,7 +22,7 @@ const faqs = [
     id: '4',
     question: '體驗課之後一定要買課嗎？',
     answer:
-      '完全不強迫。體驗課的目的是讓您了解我們的訓練方式，以及評估是否適合。教練會在體驗課後說明適合的課程選項，由您自由決定。',
+      '完全不強迫。體驗課的目的是讓你了解我們的訓練方式，以及評估是否適合。教練會在體驗課後說明適合的課程選項，由你自由決定。',
   },
   {
     id: '5',
@@ -48,7 +48,7 @@ const toggleFaq = (id: string) => {
         常見問題
       </div>
       <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy-700 mb-10">
-        您可能想知道的<span class="text-orange">事</span>
+        你可能想知道的<span class="text-orange">事</span>
       </h2>
 
       <!-- FAQ list -->

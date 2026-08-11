@@ -236,7 +236,7 @@ const steps = [
           想在海外推廣練健康？
         </h2>
         <p class="text-white/80 mb-8 max-w-md mx-auto">
-          歡迎海外專業人士加入練健康授權講師網絡，將專業訓練帶到您的國家。
+          歡迎海外專業人士加入練健康授權講師網絡，將專業訓練帶到你的國家。
         </p>
         <NuxtLink
           to="/cooperation"

@@ -2,7 +2,7 @@
 useHead({
   title: '商品導購｜練健康 LKK Wellness',
   meta: [
-    { name: 'description', content: '練健康商品導購，物理治療師與專業教練團隊嚴選。從精準調理、居家防跌到自主增肌，我們幫您挑選最安全、最科學化的銀髮健康必備品。' }
+    { name: 'description', content: '練健康商品導購，物理治療師與專業教練團隊嚴選。從精準調理、居家防跌到自主增肌，我們幫你挑選最安全、最科學化的銀髮健康必備品。' }
   ]
 })
 
@@ -51,10 +51,10 @@ const openModal = (name: string) => {
           <span class="w-4 h-px bg-orange" />
         </div>
         <h1 class="font-serif text-4xl lg:text-5xl font-black text-white leading-tight mb-3">
-          支撐您一輩子的<span class="text-orange">自主健康生活</span>
+          支撐你一輩子的<span class="text-orange">自主健康生活</span>
         </h1>
         <p class="text-white/65 font-light max-w-xl mx-auto">
-          物理治療師與專業教練團隊嚴選。從精準調理、居家防跌到自主增肌，我們幫您挑選最安全、最科學化的銀髮健康必備品。
+          物理治療師與專業教練團隊嚴選。從精準調理、居家防跌到自主增肌，我們幫你挑選最安全、最科學化的銀髮健康必備品。
         </p>
       </div>
     </section>
@@ -223,7 +223,7 @@ const openModal = (name: string) => {
           <h3 class="font-serif text-xl font-black text-navy mb-3">{{ modalProduct }} - 洽詢</h3>
           <p class="text-ink/60 text-sm leading-relaxed mb-6">
             本網頁為「練健康商城」之一頁式視覺與商品展示示意設計，目前暫不開放直接線上購物。<br /><br />
-            <strong class="text-navy">若您對此商品有訂購或體驗需求，歡迎前往或致電練健康各大實體分店，由您的專屬教練或現場人員為您提供預購與諮詢服務！</strong>
+            <strong class="text-navy">若你對此商品有訂購或體驗需求，歡迎前往或致電練健康各大實體分店，由你的專屬教練或現場人員為你提供預購與諮詢服務！</strong>
           </p>
           <button @click="showModal = false" class="bg-orange text-white font-medium px-6 py-2.5 rounded shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
             我知道了

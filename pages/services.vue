@@ -149,7 +149,7 @@ const personalFeatures = [
   '每堂課 50 分鐘，動作示範與即時糾正',
   '定期追蹤進度，課表隨狀況調整',
   '必要時提供營養與生活習慣建議',
-  '彈性排課，配合您的時間',
+  '彈性排課，配合你的時間',
 ]
 </script>
 
@@ -159,10 +159,10 @@ const personalFeatures = [
     <section id="hero" class="bg-gradient-to-br from-navy-700 to-navy-800 text-white py-16 md:py-24">
       <div class="container mx-auto px-4 text-center">
         <h1 class="text-3xl md:text-5xl font-bold mb-6 font-serif">
-          找到最適合您的上課方式
+          找到最適合你的上課方式
         </h1>
         <p class="text-cream-200 text-lg md:text-xl mb-6 max-w-3xl mx-auto leading-relaxed">
-          練健康提供三種上課形式，不管您是第一次接觸重訓、希望有同伴一起練，還是想在家自主訓練，都有對應的選擇。
+          練健康提供三種上課形式，不管你是第一次接觸重訓、希望有同伴一起練，還是想在家自主訓練，都有對應的選擇。
         </p>
         <p class="text-orange text-lg md:text-xl font-semibold mb-10">
           50 歲以上完全免費 · 一般首次體驗 $500
@@ -263,7 +263,7 @@ const personalFeatures = [
               一對一訓練
             </h2>
             <p class="text-ink-600 text-lg mb-6 leading-relaxed">
-              由專業教練全程陪伴，根據您的身體狀況、健康目標與生活習慣，量身打造個人訓練計畫。一週一次，持續進步。
+              由專業教練全程陪伴，根據你的身體狀況、健康目標與生活習慣，量身打造個人訓練計畫。一週一次，持續進步。
             </p>
             <p class="text-orange font-semibold mb-6">
               首次體驗 $500 · 50歲以上免費
@@ -454,7 +454,7 @@ const personalFeatures = [
               線上課程
             </h2>
             <p class="text-ink-600 text-lg mb-6 leading-relaxed">
-              不方便到分店，或是想在家自主訓練？線上課程讓您在任何地點、任何時間，跟著練健康的教練動起來。
+              不方便到分店，或是想在家自主訓練？線上課程讓你在任何地點、任何時間，跟著練健康的教練動起來。
             </p>
             <p class="text-orange font-semibold mb-6">
               sat.cool 線上平台
@@ -529,7 +529,7 @@ const personalFeatures = [
           怎麼選？三種上課形式<span class="text-orange">快速比較</span>
         </h2>
         <p class="text-center text-cream-200 mb-12 max-w-2xl mx-auto">
-          不確定適合哪一種？先來一堂體驗課，教練會評估您的狀況再建議最適合的方式。
+          不確定適合哪一種？先來一堂體驗課，教練會評估你的狀況再建議最適合的方式。
         </p>
 
         <div class="overflow-x-auto">

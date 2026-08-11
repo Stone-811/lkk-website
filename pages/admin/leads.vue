@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { bookingVariants } from '~/config/bookingVariants'
 
 const { statusLabels, getStatusLabel, getStatusClass } = useLeadStatus()
 const { formatDateTime } = useFormatDate()
@@ -34,8 +35,10 @@ const error = ref('')
 
 const selectedStore = ref('all')
 const selectedStatus = ref('all')
-const selectedUtmSource = ref('all')
-const selectedUtmCampaign = ref('all')
+const selectedCompany = ref('all')
+const selectedSource = ref('all')
+const dateFrom = ref('')
+const dateTo = ref('')
 const searchQuery = ref('')
 const sortBy = ref<'createdAt' | 'name' | 'store' | 'status'>('createdAt')
 const sortDir = ref<'asc' | 'desc'>('desc')
@@ -103,24 +106,31 @@ async function updateStatus(lead: Lead, event: Event) {
 onMounted(fetchLeads)
 
 
-// UTM 篩選選項（從名單資料動態產生）
-const utmSourceOptions = computed(() => {
+// 廠商來源管道清單（?src= 規範，見 docs/廠商表單網址規範.md）
+const SOURCE_CHANNELS = ['網站', 'LINE', 'Facebook', 'Instagram', 'Email', '傳單', 'Google']
+
+// 「公司」篩選選項：變體設定 company ∪ 名單實際 company（設定當底 → 亞培/南山即使還沒有名單也一定在）
+const companyOptions = computed(() => {
   const set = new Set<string>()
-  leads.value.forEach((l) => { const s = l.payload?.utm?.source; if (s) set.add(s) })
+  Object.values(bookingVariants).forEach((v) => { if (v.company) set.add(v.company) })
+  leads.value.forEach((l) => { const c = l.payload?.company; if (c) set.add(c) })
   return Array.from(set).sort()
 })
-const utmCampaignOptions = computed(() => {
-  const set = new Set<string>()
-  leads.value.forEach((l) => { const c = l.payload?.utm?.campaign; if (c) set.add(c) })
-  return Array.from(set).sort()
+// 「來源」篩選選項：?src= 規範管道清單 ∪ 名單實際 leadSource（管道用固定順序、額外的接後面）
+const sourceOptions = computed(() => {
+  const set = new Set<string>(SOURCE_CHANNELS)
+  leads.value.forEach((l) => { const s = l.payload?.leadSource; if (s) set.add(s) })
+  return Array.from(set)
 })
 
 const filteredLeads = computed(() => {
   let result = leads.value.filter(lead => {
     if (selectedStore.value !== 'all' && lead.storeId !== selectedStore.value) return false
     if (selectedStatus.value !== 'all' && lead.status !== selectedStatus.value) return false
-    if (selectedUtmSource.value !== 'all' && (lead.payload?.utm?.source || '') !== selectedUtmSource.value) return false
-    if (selectedUtmCampaign.value !== 'all' && (lead.payload?.utm?.campaign || '') !== selectedUtmCampaign.value) return false
+    if (selectedCompany.value !== 'all' && (lead.payload?.company || '') !== selectedCompany.value) return false
+    if (selectedSource.value !== 'all' && (lead.payload?.leadSource || '') !== selectedSource.value) return false
+    if (dateFrom.value && new Date(lead.createdAt) < new Date(dateFrom.value + 'T00:00:00')) return false
+    if (dateTo.value && new Date(lead.createdAt) > new Date(dateTo.value + 'T23:59:59.999')) return false
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
       return (
@@ -307,23 +317,46 @@ function handleExport() {
           <option value="cancelled">已取消</option>
         </select>
 
-        <!-- Filter by UTM source -->
+        <!-- Filter by 公司 -->
         <select
-          v-model="selectedUtmSource"
+          v-model="selectedCompany"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+        >
+          <option value="all">所有公司</option>
+          <option v-for="c in companyOptions" :key="c" :value="c">{{ c }}</option>
+        </select>
+
+        <!-- Filter by 來源 -->
+        <select
+          v-model="selectedSource"
           class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
         >
           <option value="all">所有來源</option>
-          <option v-for="s in utmSourceOptions" :key="s" :value="s">{{ s }}</option>
+          <option v-for="s in sourceOptions" :key="s" :value="s">{{ s }}</option>
         </select>
 
-        <!-- Filter by UTM campaign -->
-        <select
-          v-model="selectedUtmCampaign"
-          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-        >
-          <option value="all">所有活動</option>
-          <option v-for="c in utmCampaignOptions" :key="c" :value="c">{{ c }}</option>
-        </select>
+        <!-- Filter by 日期範圍（createdAt 起訖）-->
+        <div class="flex items-center gap-1.5">
+          <input
+            v-model="dateFrom"
+            type="date"
+            aria-label="起始日期"
+            class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+          />
+          <span class="text-gray-400 text-sm">～</span>
+          <input
+            v-model="dateTo"
+            type="date"
+            aria-label="結束日期"
+            class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+          />
+          <button
+            v-if="dateFrom || dateTo"
+            @click="dateFrom = ''; dateTo = ''"
+            class="text-gray-400 hover:text-gray-600 text-sm px-1"
+            title="清除日期"
+          >✕</button>
+        </div>
 
         <!-- Results count -->
         <div class="text-sm text-gray-500">

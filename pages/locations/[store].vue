@@ -393,10 +393,10 @@ const photos = computed(() => {
               本店教練
             </div>
             <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">
-              認識<span class="text-orange">您的教練</span>
+              認識<span class="text-orange">你的教練</span>
             </h2>
             <p class="text-ink/60 leading-relaxed max-w-xl">
-              每位教練都有醫療或專業運動科學背景，我們相信讓您在第一次見面前就認識教練，是降低陌生感最好的方式。
+              每位教練都有醫療或專業運動科學背景，我們相信讓你在第一次見面前就認識教練，是降低陌生感最好的方式。
             </p>
           </div>
         </div>
@@ -447,7 +447,7 @@ const photos = computed(() => {
     <section class="bg-navy-700 py-16 lg:py-20 text-center">
       <div class="container mx-auto px-4">
         <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">
-          {{ store.name }}，等您來
+          {{ store.name }}，等你來
         </h2>
         <p class="text-white/70 mb-8">
           從捷運站走過來只要幾分鐘，第一堂 50 歲以上完全免費。
