@@ -6,6 +6,7 @@
     </main>
     <LayoutFooter />
     <LayoutMobileBookingButton />
+    <LayoutLineFloatButton />
     <LayoutBackToTop />
   </div>
 </template>
