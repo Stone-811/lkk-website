@@ -13,7 +13,7 @@ const steps = [
   {
     step: 3,
     title: '身體評估檢測',
-    description: '肌力、活動度、平衡\n全面了解你的狀況',
+    description: '肌力、活動度、平衡\n全面了解您的狀況',
   },
   {
     step: 4,

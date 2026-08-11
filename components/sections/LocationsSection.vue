@@ -40,7 +40,7 @@ const stores = [
         分店資訊
       </div>
       <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy-700 mb-10">
-        台北・新北，<span class="text-orange">找到離你最近</span>的分店
+        台北・新北，<span class="text-orange">找到離您最近</span>的分店
       </h2>
 
       <!-- Stores grid -->

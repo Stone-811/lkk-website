@@ -19,7 +19,7 @@ const services = [
   {
     id: 'performance',
     title: '運動表現訓練',
-    description: '針對專項需求與身體檢測，找出弱點，透過數據分析與專業肌力訓練提升你的運動表現。',
+    description: '針對專項需求與身體檢測，找出弱點，透過數據分析與專業肌力訓練提升您的運動表現。',
     tags: ['數據化訓練', '動作分析', '運動傷害預防'],
     badge: null,
     image: '/images/services/performance.png',
@@ -36,7 +36,7 @@ const services = [
         我們的服務
       </div>
       <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy-700 mb-3">
-        找到<span class="text-orange">適合你</span>的訓練方式
+        找到<span class="text-orange">適合您</span>的訓練方式
       </h2>
       <p class="text-ink/60 leading-relaxed mb-10 max-w-xl">
         以運動醫學知識為核心，提供您專業客製化肌力訓練課程，<span class="whitespace-nowrap">讓您生活健康自主又活得有尊嚴。</span>
