@@ -44,7 +44,7 @@ const milestones = [
   {
     year: '2026',
     title: '第六屆 LKK4 聖誕老人功能錦標賽',
-    desc: '不只是比賽，這是一場為所有年齡打造的訓練舞台！安全、直覺、全齡友善，所有年齡皆可參加。現場熱血歡樂、親友加油不間斷，打破你對年齡的想像，保證嗨翻整天！',
+    desc: '不只是比賽，這是一場為所有年齡打造的訓練舞台！安全、直覺、全齡友善，所有年齡皆可參加。現場熱血歡樂、親友加油不間斷，打破您對年齡的想像，保證嗨翻整天！',
   },
   {
     year: '2022–2025',
@@ -143,7 +143,7 @@ const mediaReports = [
               所有年齡皆可參加
             </h3>
             <p class="text-white/70 text-lg max-w-2xl mx-auto leading-relaxed mb-8">
-              現場熱血歡樂、親友加油不間斷，打破你對年齡的想像，保證嗨翻整天！
+              現場熱血歡樂、親友加油不間斷，打破您對年齡的想像，保證嗨翻整天！
             </p>
 
             <!-- Date + Location -->
@@ -400,7 +400,7 @@ const mediaReports = [
           準備好挑戰自己了嗎？
         </h2>
         <p class="text-ink/60 mb-8 max-w-xl mx-auto">
-          無論你現在的程度如何，LKK4 歡迎所有熱愛運動的人。先從免費體驗開始，讓教練幫你評估實力！
+          無論您現在的程度如何，LKK4 歡迎所有熱愛運動的人。先從免費體驗開始，讓教練幫您評估實力！
         </p>
         <NuxtLink to="/booking" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
           預約免費體驗 →

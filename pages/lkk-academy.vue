@@ -246,11 +246,11 @@ const coursesByLevel = [
             </div>
 
             <p class="text-ink/80 leading-relaxed mb-4">
-              為了回應這些需求，我們設立了<strong class="text-orange">練健康學院</strong>，整合學科與術科的專業，設計出循序漸進的研習課程。不論你是剛入門、想補強基礎的教練，還是希望在職涯中持續精進、拓展專業的人，都能在練健康學院所開的課表中，找到實用且符合現場需求的學習資源。
+              為了回應這些需求，我們設立了<strong class="text-orange">練健康學院</strong>，整合學科與術科的專業，設計出循序漸進的研習課程。不論您是剛入門、想補強基礎的教練，還是希望在職涯中持續精進、拓展專業的人，都能在練健康學院所開的課表中，找到實用且符合現場需求的學習資源。
             </p>
 
             <p class="text-navy font-medium leading-relaxed">
-              我們相信，專業教練的養成不只需要知識，更需要能落地的解法。練健康學院整合學科與術科，為你搭建一座從「正確練」到「好會教」的橋樑。
+              我們相信，專業教練的養成不只需要知識，更需要能落地的解法。練健康學院整合學科與術科，為您搭建一座從「正確練」到「好會教」的橋樑。
             </p>
           </div>
         </div>
@@ -414,7 +414,7 @@ const coursesByLevel = [
     <section class="bg-orange py-16 lg:py-20 text-center">
       <div class="container mx-auto px-4">
         <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">
-          準備好開始你的教練之路了嗎？
+          準備好開始您的教練之路了嗎？
         </h2>
         <p class="text-white/80 mb-8 max-w-md mx-auto">
           加入練健康學院，成為專業的中高齡訓練教練。

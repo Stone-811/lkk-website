@@ -46,7 +46,7 @@ const pressOutlets = [
 
             <p class="text-white/65 text-lg font-light leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
               60分鐘專屬體驗，10,000位學員的共同選擇<br />
-              安心啟動你的肌力人生
+              安心啟動您的肌力人生
             </p>
 
             <div class="flex flex-wrap gap-3 justify-center lg:justify-start">

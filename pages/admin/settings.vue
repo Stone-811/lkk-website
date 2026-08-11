@@ -28,7 +28,7 @@ interface Settings {
 
 const defaultSettings: Settings = {
   siteName: '練健康',
-  siteDescription: '專業一對一私人教練，科學化訓練，找回你的健康生活。',
+  siteDescription: '專業一對一私人教練，科學化訓練，找回您的健康生活。',
   contactEmail: 'lkk@l-kk.tw',
   contactPhone: '02-2712-3456',
   socialLinks: {

@@ -232,7 +232,7 @@ const lineMessage = computed(() => {
   const namePart = (formData.name || '').trim()
   const storePart = (selectedStore.value?.name || '').trim()
   const storeText = storePart ? ` ${storePart}` : ''
-  return `你好，我是 ${namePart}，我已報名練健康${storeText} 的個人教練體驗課，請協助確認。`
+  return `您好，我是 ${namePart}，我已報名練健康${storeText} 的個人教練體驗課，請協助確認。`
 })
 const lineMessageUrl = computed(
   () => `https://line.me/R/oaMessage/${LINE_OA_ID}/?${encodeURIComponent(lineMessage.value)}`,
@@ -1004,10 +1004,10 @@ const handleSubmit = async () => {
             <div class="mt-6 mb-6">
               <div class="flex items-center gap-2 text-[0.82rem] font-bold tracking-widest text-orange mb-2">
                 <span class="w-4 h-0.5 bg-orange"></span>
-                你可能在想
+                您可能在想
               </div>
               <h3 class="font-serif text-xl font-black text-navy-700 mb-4">
-                先回答你<span class="text-orange">最常問的問題</span>
+                先回答您<span class="text-orange">最常問的問題</span>
               </h3>
               <div class="space-y-4">
                 <div v-for="category in faqCategories" :key="category.title">
