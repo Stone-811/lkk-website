@@ -9,6 +9,10 @@ useHead({
   ]
 })
 
+// 這幾位教練的原始照片構圖較鬆（人較小、留白多），顯示端放大裁緊以與其他人一致
+//（用現有圖片、不重新上傳；日後重上傳一致構圖即可移除）
+const tightCropCoaches = new Set(['林學禮', '劉心維', '王文郁', '蔡秉杰', '沈思彤', '張承玴', '許雅琪', '邱子豪'])
+
 interface Coach {
   id: string
   name: string
@@ -274,7 +278,12 @@ function setActiveStore(storeSlug: string | null) {
                     :src="coach.photo"
                     :alt="coach.name"
                     loading="lazy"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    :class="[
+                      'w-full h-full object-cover transition-transform duration-500',
+                      tightCropCoaches.has(coach.name)
+                        ? 'origin-top scale-[1.28] group-hover:scale-[1.34]'
+                        : 'group-hover:scale-105',
+                    ]"
                   />
                   <div v-else class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-navy to-navy/80">
                     <span class="font-serif text-5xl font-black text-white/20">{{ coach.name.charAt(0) }}</span>
