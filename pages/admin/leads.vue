@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { bookingVariants } from '~/config/bookingVariants'
 
 const { statusLabels, getStatusLabel, getStatusClass } = useLeadStatus()
 const { formatDateTime } = useFormatDate()
@@ -103,10 +104,21 @@ async function updateStatus(lead: Lead, event: Event) {
 onMounted(fetchLeads)
 
 
-// UTM 篩選選項（從名單資料動態產生）
+// 「來源」篩選選項：變體設定的廠商(company)/來源(leadSource) ∪ 名單實際出現的 company/leadSource/utm.source
+// 用變體設定當底 → 南山/亞培等即使還沒有名單，也一定出現在選項裡
 const utmSourceOptions = computed(() => {
   const set = new Set<string>()
-  leads.value.forEach((l) => { const s = l.payload?.utm?.source; if (s) set.add(s) })
+  Object.values(bookingVariants).forEach((v) => {
+    if (v.company) set.add(v.company)
+    if (v.leadSource) set.add(v.leadSource)
+  })
+  leads.value.forEach((l) => {
+    const p = l.payload
+    if (!p) return
+    if (p.company) set.add(p.company)
+    if (p.leadSource) set.add(p.leadSource)
+    if (p.utm?.source) set.add(p.utm.source)
+  })
   return Array.from(set).sort()
 })
 const utmCampaignOptions = computed(() => {
@@ -119,7 +131,11 @@ const filteredLeads = computed(() => {
   let result = leads.value.filter(lead => {
     if (selectedStore.value !== 'all' && lead.storeId !== selectedStore.value) return false
     if (selectedStatus.value !== 'all' && lead.status !== selectedStatus.value) return false
-    if (selectedUtmSource.value !== 'all' && (lead.payload?.utm?.source || '') !== selectedUtmSource.value) return false
+    if (selectedUtmSource.value !== 'all') {
+      const p = lead.payload
+      const sel = selectedUtmSource.value
+      if (!p || (p.company !== sel && p.leadSource !== sel && (p.utm?.source || '') !== sel)) return false
+    }
     if (selectedUtmCampaign.value !== 'all' && (lead.payload?.utm?.campaign || '') !== selectedUtmCampaign.value) return false
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
