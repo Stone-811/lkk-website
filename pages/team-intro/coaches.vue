@@ -265,7 +265,7 @@ function setActiveStore(storeSlug: string | null) {
                 v-for="coach in group.coaches"
                 :key="coach.id"
                 @click="openCoachModal(coach)"
-                class="group bg-white rounded-xl overflow-hidden shadow-sm border border-navy/10 hover:shadow-lg hover:border-orange/30 transition-all duration-300 text-left cursor-pointer"
+                class="group flex flex-col bg-white rounded-xl overflow-hidden shadow-sm border border-navy/10 hover:shadow-lg hover:border-orange/30 transition-all duration-300 text-left cursor-pointer"
               >
                 <!-- Coach Image -->
                 <div class="aspect-[3/4] relative bg-cream-200 overflow-hidden">
