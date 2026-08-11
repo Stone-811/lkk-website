@@ -49,15 +49,15 @@ const faqCategories = computed(() => [
     faqs: [
       { id: 'p1', q: '什麼樣的年紀適合來練健康訓練？', a: '練健康 70% 的學員都是中高齡族群，我們的教練都有經過專業培訓。但訓練不分年齡，我們也有20~30歲的學員，大家一起練健康！' },
       { id: 'p2', q: '我從來沒運動過，可以來嗎？', a: '沒有運動習慣的人反而容易進步。教練會從最基礎的動作教起，不會有比較或評判。有任何的訓練目標（增肌、術後肌力恢復或是改善腰痠背痛等等），都可以在體驗課中告訴教練喔！' },
-      { id: 'p3', q: '有慢性病或有重大傷病可以訓練嗎？', a: '可以。我們有完整的篩檢評估流程，會詳細提供您訓練或轉介的建議。請在備註欄詳細描述，方便教練更了解您的狀況。' },
+      { id: 'p3', q: '有慢性病或有重大傷病可以訓練嗎？', a: '可以。我們有完整的篩檢評估流程，會詳細提供你訓練或轉介的建議。請在備註欄詳細描述，方便教練更了解你的狀況。' },
     ],
   },
   {
     title: '課程相關',
     faqs: [
-      { id: 'c1', q: '體驗完之後一定要買課嗎？', a: '我們不強迫推銷。體驗課的目的是讓雙方了解彼此，教練會說明適合的選項，歡迎您考慮衡量後再決定。' },
+      { id: 'c1', q: '體驗完之後一定要買課嗎？', a: '我們不強迫推銷。體驗課的目的是讓雙方了解彼此，教練會說明適合的選項，歡迎你考慮衡量後再決定。' },
       { id: 'c2', q: '上體驗課需要準備什麼？', a: '穿著舒適、好活動的服裝前來即可。' },
-      { id: 'c3', q: '可以預約明天嗎？', a: '請至少提前 2–3 天預約，讓教練有時間為您安排合適的檢測與備課，量身打造合適的課表。' },
+      { id: 'c3', q: '可以預約明天嗎？', a: '請至少提前 2–3 天預約，讓教練有時間為你安排合適的檢測與備課，量身打造合適的課表。' },
     ],
   },
   {
@@ -65,7 +65,7 @@ const faqCategories = computed(() => [
     faqs: [
       { id: 'f1', q: '體驗課費用？', a: pricingCopy.value.faqFee },
       { id: 'f2', q: '體驗課如何付款？', a: pricingCopy.value.faqPay },
-      { id: 'f3', q: '正式課程的費用？', a: '從 $600/堂的團體課，到 $2,460/堂的私人教練課程都有。體驗課中教練會了解您的狀況並給予客製化建議，購課越多優惠越多。' },
+      { id: 'f3', q: '正式課程的費用？', a: '從 $600/堂的團體課，到 $2,460/堂的私人教練課程都有。體驗課中教練會了解你的狀況並給予客製化建議，購課越多優惠越多。' },
     ],
   },
 ])
@@ -84,9 +84,9 @@ const cases = [
 
 const steps = computed(() => [
   { title: '填寫預約表單', desc: '約 1~2 分鐘完成，提供必要資訊' },
-  { title: '教練主動電話聯繫', desc: '2~3天內，我們會打電話給您安排時間' },
+  { title: '教練主動電話聯繫', desc: '2~3天內，我們會打電話給你安排時間' },
   { title: '到店體驗課（60–75 分鐘）', desc: '身體評估 + 基礎動作訓練 + 教練諮詢', badges: pricingCopy.value.cardBadges },
-  { title: '客製化訓練建議', desc: '教練提供最適合您的訓練規劃' },
+  { title: '客製化訓練建議', desc: '教練提供最適合你的訓練規劃' },
 ])
 
 const whatYouGet = [
@@ -232,7 +232,7 @@ const lineMessage = computed(() => {
   const namePart = (formData.name || '').trim()
   const storePart = (selectedStore.value?.name || '').trim()
   const storeText = storePart ? ` ${storePart}` : ''
-  return `您好，我是 ${namePart}，我已報名練健康${storeText} 的個人教練體驗課，請協助確認。`
+  return `你好，我是 ${namePart}，我已報名練健康${storeText} 的個人教練體驗課，請協助確認。`
 })
 const lineMessageUrl = computed(
   () => `https://line.me/R/oaMessage/${LINE_OA_ID}/?${encodeURIComponent(lineMessage.value)}`,
@@ -424,7 +424,7 @@ const handleSubmit = async () => {
             </h1>
 
             <p class="text-white/60 text-base sm:text-lg font-light leading-relaxed mb-5 sm:mb-6 max-w-lg mx-auto">
-              {{ variant.hero?.subtitle ?? '不論年齡、運動經驗、身體狀況——體驗課的目的是讓我們了解您，而不是評判您。由醫療相關、運動科學等專業背景教練帶領，安全有效。' }}
+              {{ variant.hero?.subtitle ?? '不論年齡、運動經驗、身體狀況——體驗課的目的是讓我們了解你，而不是評判你。由醫療相關、運動科學等專業背景教練帶領，安全有效。' }}
             </p>
 
             <!-- What you get -->
@@ -469,8 +469,8 @@ const handleSubmit = async () => {
                 </svg>
               </div>
               <h2 class="text-2xl font-bold mb-4 text-navy-700 font-serif">預約成功！</h2>
-              <p class="text-ink-600 mb-2">我們將於 2~3 天內主動與您聯繫確認體驗課時間，並寄送 Email 通知您。</p>
-              <p class="text-navy-700 font-medium mb-8">為了更快為您服務，我們已為您預填預約資訊，請點下方按鈕加入官方 LINE，直接送出即可（訊息需由您親自按下傳送）。</p>
+              <p class="text-ink-600 mb-2">我們將於 2~3 天內主動與你聯繫確認體驗課時間，並寄送 Email 通知你。</p>
+              <p class="text-navy-700 font-medium mb-8">為了更快為你服務，我們已為你預填預約資訊，請點下方按鈕加入官方 LINE，直接送出即可（訊息需由你親自按下傳送）。</p>
 
               <!-- LINE CTA（已預填預約資訊） -->
               <a
@@ -507,7 +507,7 @@ const handleSubmit = async () => {
             <div v-else class="max-w-2xl mx-auto">
               <div class="text-center mb-6 sm:mb-8">
                 <h1 class="text-2xl sm:text-3xl font-bold mb-2 text-navy-700 font-serif">預約體驗課</h1>
-                <p class="text-ink-600 text-sm sm:text-base">填寫後我們會主動聯繫您安排時間</p>
+                <p class="text-ink-600 text-sm sm:text-base">填寫後我們會主動聯繫你安排時間</p>
               </div>
 
               <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8">
@@ -611,7 +611,7 @@ const handleSubmit = async () => {
                         type="text"
                         name="line"
                         class="w-full px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange focus:border-orange"
-                        placeholder="方便我們聯繫您"
+                        placeholder="方便我們聯繫你"
                       />
                     </div>
                   </div>
@@ -668,7 +668,7 @@ const handleSubmit = async () => {
                           type="text"
                           name="bookerName"
                           :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange focus:border-orange', errors.bookerName ? 'border-red-500' : 'border-cream-200']"
-                          placeholder="請輸入您的姓名"
+                          placeholder="請輸入你的姓名"
                         />
                         <p v-if="errors.bookerName" class="text-red-500 text-sm mt-1">{{ errors.bookerName }}</p>
                       </div>
@@ -954,10 +954,10 @@ const handleSubmit = async () => {
                     {{ isSubmitting ? '送出中...' : '送出預約' }}
                   </button>
                   <p class="text-xs text-ink/60 text-center mt-4 leading-relaxed">
-                    送出即表示同意我們以電話或 LINE 與您聯繫安排體驗課，個人資料僅用於此目的。
+                    送出即表示同意我們以電話或 LINE 與你聯繫安排體驗課，個人資料僅用於此目的。
                   </p>
                   <p class="text-xs text-ink/60 text-center mt-2 leading-relaxed">
-                    送出後請稍候，頁面將導向加入 LINE 官方帳號，加入後即可收到最新通知；同時我們也會寄送 Email 通知您報名成功。
+                    送出後請稍候，頁面將導向加入 LINE 官方帳號，加入後即可收到最新通知；同時我們也會寄送 Email 通知你報名成功。
                   </p>
                 </div>
               </div>
@@ -1004,10 +1004,10 @@ const handleSubmit = async () => {
             <div class="mt-6 mb-6">
               <div class="flex items-center gap-2 text-[0.82rem] font-bold tracking-widest text-orange mb-2">
                 <span class="w-4 h-0.5 bg-orange"></span>
-                您可能在想
+                你可能在想
               </div>
               <h3 class="font-serif text-xl font-black text-navy-700 mb-4">
-                先回答您<span class="text-orange">最常問的問題</span>
+                先回答你<span class="text-orange">最常問的問題</span>
               </h3>
               <div class="space-y-4">
                 <div v-for="category in faqCategories" :key="category.title">

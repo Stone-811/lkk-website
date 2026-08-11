@@ -2,7 +2,7 @@
 useHead({
   title: 'LKK4 參賽成績查詢｜練健康',
   meta: [
-    { name: 'description', content: 'LKK4 中高齡四項體能挑戰賽成績查詢，選擇參賽年度並輸入姓名即可查詢您的參賽成績紀錄。' }
+    { name: 'description', content: 'LKK4 中高齡四項體能挑戰賽成績查詢，選擇參賽年度並輸入姓名即可查詢你的參賽成績紀錄。' }
   ]
 })
 
@@ -96,7 +96,7 @@ const getGroupDisplayName = (group: string) => {
           LKK4 <span class="text-orange">參賽成績查詢</span>
         </h1>
         <p class="text-white/60 text-lg max-w-xl mx-auto">
-          選擇參賽年度並輸入姓名，即可查詢您的參賽成績紀錄
+          選擇參賽年度並輸入姓名，即可查詢你的參賽成績紀錄
         </p>
       </div>
     </section>
@@ -280,7 +280,7 @@ const getGroupDisplayName = (group: string) => {
           還沒參加過 LKK4？
         </h2>
         <p class="text-ink/60 mb-6 max-w-md mx-auto">
-          50 歲以上即可報名參賽，先從免費體驗開始，讓教練評估您的實力！
+          50 歲以上即可報名參賽，先從免費體驗開始，讓教練評估你的實力！
         </p>
         <div class="flex flex-wrap justify-center gap-4">
           <NuxtLink

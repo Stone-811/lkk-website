@@ -48,9 +48,9 @@ const pressStats = [
 ]
 
 const enquiryTypes = [
-  { label: '🎤 講座邀約', value: '講座邀約', placeholder: '請簡述您的講座邀約需求（例如：預計日期、聽眾背景對象、期望講授的主題方向、授課形式等）…' },
-  { label: '🏢 企業健康促進', value: '企業健康促進邀請', placeholder: '請簡述您的企業同仁健康促進規劃（例如：同仁年齡層背景、期望採用的形式如健康講座/科學化動作篩檢/員工重訓體驗團體課、預計人數等）…' },
-  { label: '🤝 採訪與異業合作', value: '媒體採訪與異業合作', placeholder: '請詳述您的採訪需求或異業合作提案內容（例如：報導專題、產品跨界結合構想、海外教練培訓授權洽談等）…' },
+  { label: '🎤 講座邀約', value: '講座邀約', placeholder: '請簡述你的講座邀約需求（例如：預計日期、聽眾背景對象、期望講授的主題方向、授課形式等）…' },
+  { label: '🏢 企業健康促進', value: '企業健康促進邀請', placeholder: '請簡述你的企業同仁健康促進規劃（例如：同仁年齡層背景、期望採用的形式如健康講座/科學化動作篩檢/員工重訓體驗團體課、預計人數等）…' },
+  { label: '🤝 採訪與異業合作', value: '媒體採訪與異業合作', placeholder: '請詳述你的採訪需求或異業合作提案內容（例如：報導專題、產品跨界結合構想、海外教練培訓授權洽談等）…' },
 ]
 
 interface FormData {
@@ -349,12 +349,12 @@ const resetForm = () => {
             與我們攜手，<span class="text-orange">共創雙贏的健康價值</span>
           </h2>
           <p class="text-ink/60 text-base leading-relaxed max-w-2xl mx-auto">
-            不論您是需要專業授課的醫療學術單位、期望舉辦員工健康促進講座的企業品牌，或是海外地區的訓練營授權洽詢。歡迎填寫下方表單，團隊將於 3-5 個工作天內由專人主動與您聯繫。
+            不論你是需要專業授課的醫療學術單位、期望舉辦員工健康促進講座的企業品牌，或是海外地區的訓練營授權洽詢。歡迎填寫下方表單，團隊將於 3-5 個工作天內由專人主動與你聯繫。
           </p>
         </div>
 
         <div class="bg-white border border-navy-700/15 rounded-lg p-6 lg:p-8 shadow-sm max-w-3xl mx-auto">
-          <p class="text-xs font-bold text-ink/50 tracking-wide mb-4">請選擇您的洽詢項目：</p>
+          <p class="text-xs font-bold text-ink/50 tracking-wide mb-4">請選擇你的洽詢項目：</p>
 
           <!-- Type selector -->
           <div class="grid grid-cols-3 gap-2 mb-6">
@@ -382,7 +382,7 @@ const resetForm = () => {
               </svg>
             </div>
             <h3 class="font-serif text-2xl font-bold text-navy-700 mb-2">表單已送出！</h3>
-            <p class="text-ink/60 mb-6">我們將於 3-5 個工作天內與您聯繫</p>
+            <p class="text-ink/60 mb-6">我們將於 3-5 個工作天內與你聯繫</p>
             <button
               type="button"
               @click="resetForm"
@@ -430,7 +430,7 @@ const resetForm = () => {
                   v-model="formData.phone"
                   :disabled="isSubmitting"
                   class="w-full px-4 py-2.5 bg-cream-100 border border-navy-700/20 rounded focus:ring-2 focus:ring-navy-700 focus:border-navy-700 outline-none text-sm disabled:opacity-50"
-                  placeholder="請輸入您的聯絡電話"
+                  placeholder="請輸入你的聯絡電話"
                 />
               </div>
               <div>
@@ -497,7 +497,7 @@ const resetForm = () => {
             >
               {{ isSubmitting ? '送出中...' : '送出合作洽詢表單 →' }}
             </button>
-            <p class="text-center text-xs text-ink/40">送出即代表您同意本網頁資訊將僅作為商務對接與回覆洽詢使用。</p>
+            <p class="text-center text-xs text-ink/40">送出即代表你同意本網頁資訊將僅作為商務對接與回覆洽詢使用。</p>
           </form>
         </div>
       </div>

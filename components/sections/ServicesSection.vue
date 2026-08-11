@@ -3,7 +3,7 @@ const services = [
   {
     id: 'senior',
     title: '中高齡肌力訓練',
-    description: '40歲後肌肉、骨質流失速度增加，透過訓練讓您找回屬於您的身體動作能力。',
+    description: '40歲後肌肉、骨質流失速度增加，透過訓練讓你找回屬於你的身體動作能力。',
     tags: ['肌少症預防', '骨質強化', '平衡訓練', '一對一教練'],
     badge: '最受歡迎',
     image: '/images/services/senior.jpg',
@@ -11,7 +11,7 @@ const services = [
   {
     id: 'special',
     title: '特殊族群訓練',
-    description: '中風、癌症、手術後、糖尿病、骨質疏鬆族群之專業訓練介入，讓您在最安全且有效的方式下，讓身體恢復到原有水準。',
+    description: '中風、癌症、手術後、糖尿病、骨質疏鬆族群之專業訓練介入，讓你在最安全且有效的方式下，讓身體恢復到原有水準。',
     tags: ['中風復健', '術後訓練', '慢性病管理', '專業教練把關'],
     badge: '醫療背景',
     image: '/images/services/special.png',
@@ -19,7 +19,7 @@ const services = [
   {
     id: 'performance',
     title: '運動表現訓練',
-    description: '針對專項需求與身體檢測，找出弱點，透過數據分析與專業肌力訓練提升您的運動表現。',
+    description: '針對專項需求與身體檢測，找出弱點，透過數據分析與專業肌力訓練提升你的運動表現。',
     tags: ['數據化訓練', '動作分析', '運動傷害預防'],
     badge: null,
     image: '/images/services/performance.png',
@@ -36,10 +36,10 @@ const services = [
         我們的服務
       </div>
       <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy-700 mb-3">
-        找到<span class="text-orange">適合您</span>的訓練方式
+        找到<span class="text-orange">適合你</span>的訓練方式
       </h2>
       <p class="text-ink/60 leading-relaxed mb-10 max-w-xl">
-        以運動醫學知識為核心，提供您專業客製化肌力訓練課程，<span class="whitespace-nowrap">讓您生活健康自主又活得有尊嚴。</span>
+        以運動醫學知識為核心，提供你專業客製化肌力訓練課程，<span class="whitespace-nowrap">讓你生活健康自主又活得有尊嚴。</span>
       </p>
 
       <!-- Services grid -->

@@ -8,12 +8,12 @@ const steps = [
   {
     step: 2,
     title: '教練主動聯繫',
-    description: '2~3天內\n我們會打電話給您安排時間',
+    description: '2~3天內\n我們會打電話給你安排時間',
   },
   {
     step: 3,
     title: '身體評估檢測',
-    description: '肌力、活動度、平衡\n全面了解您的狀況',
+    description: '肌力、活動度、平衡\n全面了解你的狀況',
   },
   {
     step: 4,

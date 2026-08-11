@@ -79,7 +79,7 @@ const reasons = [
   {
     iconType: 'free',
     title: '50歲以上免費體驗',
-    desc: '不是試課，是真正完整的 60-75 分鐘體驗課，讓我們先了解您。',
+    desc: '不是試課，是真正完整的 60-75 分鐘體驗課，讓我們先了解你。',
   },
 ]
 </script>
@@ -106,7 +106,7 @@ const reasons = [
         </div>
 
         <h1 class="font-serif text-4xl lg:text-5xl font-black text-white leading-tight mb-4">
-          找到離您最近的<span class="text-orange">練健康</span>
+          找到離你最近的<span class="text-orange">練健康</span>
         </h1>
 
         <p class="text-white/60 text-lg font-light leading-relaxed mb-8 max-w-xl mx-auto">
@@ -341,10 +341,10 @@ const reasons = [
     <section class="bg-orange py-16 lg:py-20 text-center">
       <div class="container mx-auto px-4">
         <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">
-          找到離您最近的分店了嗎？
+          找到離你最近的分店了嗎？
         </h2>
         <p class="text-white/80 mb-8 max-w-md mx-auto">
-          立即預約免費體驗，由我們的專業教練帶領您開始第一步。
+          立即預約免費體驗，由我們的專業教練帶領你開始第一步。
         </p>
         <NuxtLink
           to="/booking"
