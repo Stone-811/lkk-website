@@ -9,6 +9,16 @@ useHead({
   ]
 })
 
+// [暫時方案] 顯示端裁切：少數構圖較鬆的教練放大對齊其他人（原圖 500×550 不動、尺寸不變）。
+// 倍率 ≥1.25 會把燒進圖裡的名字橫幅一起推出畫面，避免出現半截橫幅。
+// 等廠商提供構圖統一的新照片後，移除本區塊與 template 的對應 :style 即可。
+const cropScale: Record<string, number> = {
+  '林學禮': 1.26,
+  '沈思彤': 1.26,
+  '張承玴': 1.26,
+  '許雅琪': 1.26,
+}
+
 interface Coach {
   id: string
   name: string
@@ -274,7 +284,9 @@ function setActiveStore(storeSlug: string | null) {
                     :src="coach.photo"
                     :alt="coach.name"
                     loading="lazy"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    class="w-full h-full object-cover transition-transform duration-500"
+                    :class="cropScale[coach.name] ? '' : 'group-hover:scale-105'"
+                    :style="cropScale[coach.name] ? { transform: `scale(${cropScale[coach.name]})`, transformOrigin: 'top center' } : undefined"
                   />
                   <div v-else class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-navy to-navy/80">
                     <span class="font-serif text-5xl font-black text-white/20">{{ coach.name.charAt(0) }}</span>
