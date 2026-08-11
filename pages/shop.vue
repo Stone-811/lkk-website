@@ -2,7 +2,7 @@
 useHead({
   title: '商品導購｜練健康 LKK Wellness',
   meta: [
-    { name: 'description', content: '練健康商品導購，物理治療師與專業教練團隊嚴選。從精準調理、居家防跌到自主增肌，我們幫你挑選最安全、最科學化的銀髮健康必備品。' }
+    { name: 'description', content: '練健康商品導購，物理治療師與專業教練團隊嚴選。從精準調理、居家防跌到自主增肌，我們幫您挑選最安全、最科學化的銀髮健康必備品。' }
   ]
 })
 
@@ -51,10 +51,10 @@ const openModal = (name: string) => {
           <span class="w-4 h-px bg-orange" />
         </div>
         <h1 class="font-serif text-4xl lg:text-5xl font-black text-white leading-tight mb-3">
-          支撐你一輩子的<span class="text-orange">自主健康生活</span>
+          支撐您一輩子的<span class="text-orange">自主健康生活</span>
         </h1>
         <p class="text-white/65 font-light max-w-xl mx-auto">
-          物理治療師與專業教練團隊嚴選。從精準調理、居家防跌到自主增肌，我們幫你挑選最安全、最科學化的銀髮健康必備品。
+          物理治療師與專業教練團隊嚴選。從精準調理、居家防跌到自主增肌，我們幫您挑選最安全、最科學化的銀髮健康必備品。
         </p>
       </div>
     </section>

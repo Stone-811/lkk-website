@@ -280,7 +280,7 @@ const getGroupDisplayName = (group: string) => {
           還沒參加過 LKK4？
         </h2>
         <p class="text-ink/60 mb-6 max-w-md mx-auto">
-          50 歲以上即可報名參賽，先從免費體驗開始，讓教練評估你的實力！
+          50 歲以上即可報名參賽，先從免費體驗開始，讓教練評估您的實力！
         </p>
         <div class="flex flex-wrap justify-center gap-4">
           <NuxtLink

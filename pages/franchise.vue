@@ -23,7 +23,7 @@ const marketPoints = [
 
 const timingCards = [
   { num: '01', title: '市場空窗正在關閉', body: '高齡化帶來的商業機會已有更多人意識到，但能真正落地執行、有完整方法論的品牌仍然極少。先進場的品牌將取得定位優勢，後進者需要付出更高的市場教育成本。' },
-  { num: '02', title: '練健康的體系已經成熟', body: '七年的實戰經驗、四間分店的營運模式、完整的教練培訓體系、以及六屆 LKK4 建立的品牌知名度——這些都已就位。你不是在投資一個概念，而是一個已被市場驗證的系統。' },
+  { num: '02', title: '練健康的體系已經成熟', body: '七年的實戰經驗、四間分店的營運模式、完整的教練培訓體系、以及六屆 LKK4 建立的品牌知名度——這些都已就位。您不是在投資一個概念，而是一個已被市場驗證的系統。' },
   { num: '03', title: '我們正在選擇性擴張', body: '我們不以規模為優先，而是選擇真正理解這個市場、有資源把事情做好的夥伴。現在是加入討論的合適時機，我們希望和有意思的人一起把這件事做大。' },
 ]
 
@@ -41,7 +41,7 @@ const differentiators = [
   {
     tag: '品牌資產',
     title: '已有媒體信任度和公眾知名度',
-    body: '大愛新聞、吳淡如、動思學院等媒體背書，以及六屆 LKK4 建立的賽事品牌，讓練健康在中高齡訓練這個品類上已有公眾辨識度。加盟夥伴進場時，不需要從零開始建立品牌信任——你站在一個已有高度的起點上。',
+    body: '大愛新聞、吳淡如、動思學院等媒體背書，以及六屆 LKK4 建立的賽事品牌，讓練健康在中高齡訓練這個品類上已有公眾辨識度。加盟夥伴進場時，不需要從零開始建立品牌信任——您站在一個已有高度的起點上。',
   },
 ]
 
@@ -138,7 +138,7 @@ const handleSubmit = async () => {
         </p>
 
         <p class="text-white/60 text-lg font-light leading-relaxed max-w-xl mb-10">
-          全球人口老化速度最快的地區，正是你我所在的亞洲。<br />
+          全球人口老化速度最快的地區，正是我們所在的亞洲。<br />
           <strong class="text-white/85 font-medium">需求已經在這裡，缺的是有方法論的人來承接它。</strong><br />
           練健康花了七年建立這套體系，現在我們正在選擇合適的夥伴，一起把它帶出去。
         </p>
@@ -235,7 +235,7 @@ const handleSubmit = async () => {
 
         <div class="border border-white/10 rounded p-6 flex flex-col lg:flex-row items-center justify-between gap-6">
           <p class="text-white/65 leading-relaxed">
-            若你也認同這個市場機會，<strong class="text-white font-medium">我們希望和你進一步談談</strong>。說明會保密進行，沒有銷售壓力。
+            若您也認同這個市場機會，<strong class="text-white font-medium">我們希望和您進一步談談</strong>。說明會保密進行，沒有銷售壓力。
           </p>
           <a href="#apply" class="inline-flex items-center gap-2 bg-orange text-white font-medium px-8 py-3 rounded shadow-lg shadow-orange/40 hover:bg-orange-600 transition-all flex-shrink-0">
             預約說明會 →
@@ -322,7 +322,7 @@ const handleSubmit = async () => {
       <div class="container mx-auto px-4">
         <span class="text-orange text-sm font-medium tracking-widest uppercase block mb-4">總部支援</span>
         <h2 class="font-serif text-4xl lg:text-5xl font-black text-navy leading-tight mb-3">
-          你不是一個人<br /><span class="text-orange italic">在面對這個市場</span>
+          您不是一個人<br /><span class="text-orange italic">在面對這個市場</span>
         </h2>
         <p class="text-ink/70 leading-relaxed max-w-xl mb-10">
           我們的目標不是找人開店，而是找對的夥伴，然後給他最好的後援讓他做好。
@@ -370,7 +370,7 @@ const handleSubmit = async () => {
               讓我們<br /><span class="text-orange italic">深入談談</span>
             </h2>
             <p class="text-white/55 leading-relaxed mb-8">
-              說明會以線上或面談方式進行，通常 60–90 分鐘，保密進行，沒有任何銷售壓力。我們只是想多了解你，也讓你更了解我們。
+              說明會以線上或面談方式進行，通常 60–90 分鐘，保密進行，沒有任何銷售壓力。我們只是想多了解您，也讓您更了解我們。
             </p>
 
             <div class="space-y-4 mb-8">
@@ -385,7 +385,7 @@ const handleSubmit = async () => {
                 <span class="text-orange mt-1">→</span>
                 <div>
                   <strong class="text-white/80 font-medium block">雙向提問</strong>
-                  <span class="text-white/45 text-sm">你問我們，我們也想了解你的背景和想法</span>
+                  <span class="text-white/45 text-sm">您問我們，我們也想了解您的背景和想法</span>
                 </div>
               </div>
               <div class="flex gap-3 items-start">
