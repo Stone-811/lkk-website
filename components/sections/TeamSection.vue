@@ -53,7 +53,7 @@ const coaches = [
           class="bg-white rounded-3xl p-6 lg:p-8 border border-navy-700/15 shadow-lg flex flex-col items-center text-center hover:-translate-y-1 transition-transform"
         >
           <!-- Avatar -->
-          <div class="w-20 h-20 rounded-full bg-navy-700 flex items-center justify-center text-white font-serif text-2xl font-bold mb-4 border-[3px] border-cream-200 overflow-hidden relative">
+          <div class="w-32 h-32 rounded-full bg-navy-700 flex items-center justify-center text-white font-serif text-4xl font-bold mb-4 border-[3px] border-cream-200 overflow-hidden relative">
             <img
               v-if="coach.photo"
               :src="coach.photo"
