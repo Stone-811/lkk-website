@@ -39,7 +39,7 @@ const services = [
         找到<span class="text-orange">適合你</span>的訓練方式
       </h2>
       <p class="text-ink/60 leading-relaxed mb-10 max-w-xl">
-        以運動醫學知識為核心，提供您專業客製化肌力訓練課程，讓您生活健康自主又活得有尊嚴。
+        以運動醫學知識為核心，提供您專業客製化肌力訓練課程，<span class="whitespace-nowrap">讓您生活健康自主又活得有尊嚴。</span>
       </p>
 
       <!-- Services grid -->
