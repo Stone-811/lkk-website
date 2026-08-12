@@ -154,9 +154,9 @@ const activeFilters = computed(() => {
   if (selectedStatus.value !== 'all') out.push({ key: 'status', label: '狀態', value: statusFilterOptions.find((o) => o.value === selectedStatus.value)?.label || selectedStatus.value, clear: () => (selectedStatus.value = 'all') })
   if (selectedCompany.value !== 'all') out.push({ key: 'company', label: '公司', value: selectedCompany.value, clear: () => (selectedCompany.value = 'all') })
   if (selectedSource.value !== 'all') out.push({ key: 'source', label: '來源', value: selectedSource.value, clear: () => (selectedSource.value = 'all') })
-  if (selectedUtmSource.value !== 'all') out.push({ key: 'us', label: 'utm source', value: selectedUtmSource.value, clear: () => (selectedUtmSource.value = 'all') })
-  if (selectedUtmMedium.value !== 'all') out.push({ key: 'um', label: 'utm medium', value: selectedUtmMedium.value, clear: () => (selectedUtmMedium.value = 'all') })
-  if (selectedUtmCampaign.value !== 'all') out.push({ key: 'uc', label: 'utm campaign', value: selectedUtmCampaign.value, clear: () => (selectedUtmCampaign.value = 'all') })
+  if (selectedUtmSource.value !== 'all') out.push({ key: 'us', label: 'UTM 來源', value: selectedUtmSource.value, clear: () => (selectedUtmSource.value = 'all') })
+  if (selectedUtmMedium.value !== 'all') out.push({ key: 'um', label: 'UTM 媒介', value: selectedUtmMedium.value, clear: () => (selectedUtmMedium.value = 'all') })
+  if (selectedUtmCampaign.value !== 'all') out.push({ key: 'uc', label: 'UTM 活動', value: selectedUtmCampaign.value, clear: () => (selectedUtmCampaign.value = 'all') })
   if (dateFrom.value || dateTo.value) out.push({ key: 'date', label: '日期', value: `${dateFrom.value || '…'} ～ ${dateTo.value || '…'}`, clear: () => { dateFrom.value = ''; dateTo.value = '' } })
   return out
 })
@@ -355,44 +355,41 @@ function handleExport() {
         </div>
       </div>
 
-      <!-- 第二排：可搜尋下拉（每格附標籤、分組）-->
-      <div class="flex flex-wrap items-end gap-x-5 gap-y-2 mt-3">
-        <div class="flex items-end gap-2">
-          <div>
-            <label class="block text-[11px] text-gray-400 mb-0.5">分店</label>
-            <SearchableSelect class="w-28" v-model="selectedStore" :options="storeFilterOptions" all-label="全部" placeholder="搜尋分店…" />
-          </div>
-          <div>
-            <label class="block text-[11px] text-gray-400 mb-0.5">狀態</label>
-            <SearchableSelect class="w-24" v-model="selectedStatus" :options="statusFilterOptions" all-label="全部" placeholder="搜尋狀態…" />
-          </div>
-        </div>
-
-        <div class="self-stretch w-px bg-gray-200 hidden md:block"></div>
-
+      <!-- 第二排：基本篩選 -->
+      <div class="flex items-end gap-2 mt-3">
         <div>
-          <div class="text-[11px] text-gray-400 mb-0.5">來源與追蹤（含 UTM）</div>
-          <div class="flex flex-wrap items-end gap-2">
-            <div>
-              <label class="block text-[11px] text-gray-400 mb-0.5">公司</label>
-              <SearchableSelect class="w-24" v-model="selectedCompany" :options="companyOptions" all-label="全部" placeholder="搜尋公司…" />
-            </div>
-            <div>
-              <label class="block text-[11px] text-gray-400 mb-0.5">來源</label>
-              <SearchableSelect class="w-24" v-model="selectedSource" :options="sourceOptions" all-label="全部" placeholder="搜尋來源…" />
-            </div>
-            <div>
-              <label class="block text-[11px] text-gray-400 mb-0.5">utm source</label>
-              <SearchableSelect class="w-28" v-model="selectedUtmSource" :options="utmSourceOptions" all-label="全部" placeholder="搜尋…" />
-            </div>
-            <div>
-              <label class="block text-[11px] text-gray-400 mb-0.5">utm medium</label>
-              <SearchableSelect class="w-28" v-model="selectedUtmMedium" :options="utmMediumOptions" all-label="全部" placeholder="搜尋…" />
-            </div>
-            <div>
-              <label class="block text-[11px] text-gray-400 mb-0.5">utm campaign</label>
-              <SearchableSelect class="w-32" v-model="selectedUtmCampaign" :options="utmCampaignOptions" all-label="全部" placeholder="搜尋活動…" />
-            </div>
+          <label class="block text-[11px] text-gray-400 mb-0.5">分店</label>
+          <SearchableSelect class="w-32" v-model="selectedStore" :options="storeFilterOptions" all-label="全部" placeholder="搜尋分店…" />
+        </div>
+        <div>
+          <label class="block text-[11px] text-gray-400 mb-0.5">狀態</label>
+          <SearchableSelect class="w-28" v-model="selectedStatus" :options="statusFilterOptions" all-label="全部" placeholder="搜尋狀態…" />
+        </div>
+      </div>
+
+      <!-- 第三排：來源與追蹤（含 UTM）——直列，欄位標籤置左 -->
+      <div class="mt-3">
+        <div class="text-[11px] text-gray-400 mb-1.5">來源與追蹤（含 UTM）</div>
+        <div class="space-y-1.5 max-w-xs">
+          <div class="flex items-center gap-2">
+            <label class="w-20 shrink-0 text-xs text-gray-500">公司</label>
+            <SearchableSelect class="flex-1" v-model="selectedCompany" :options="companyOptions" all-label="全部" placeholder="搜尋公司…" />
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="w-20 shrink-0 text-xs text-gray-500">來源</label>
+            <SearchableSelect class="flex-1" v-model="selectedSource" :options="sourceOptions" all-label="全部" placeholder="搜尋來源…" />
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="w-20 shrink-0 text-xs text-gray-500">UTM 來源</label>
+            <SearchableSelect class="flex-1" v-model="selectedUtmSource" :options="utmSourceOptions" all-label="全部" placeholder="搜尋…" />
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="w-20 shrink-0 text-xs text-gray-500">UTM 媒介</label>
+            <SearchableSelect class="flex-1" v-model="selectedUtmMedium" :options="utmMediumOptions" all-label="全部" placeholder="搜尋…" />
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="w-20 shrink-0 text-xs text-gray-500">UTM 活動</label>
+            <SearchableSelect class="flex-1" v-model="selectedUtmCampaign" :options="utmCampaignOptions" all-label="全部" placeholder="搜尋活動…" />
           </div>
         </div>
       </div>
