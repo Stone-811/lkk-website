@@ -284,8 +284,8 @@ function closeDetail() {
     </div>
 
     <!-- Leads Table -->
-    <div v-else class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <table class="w-full">
+    <div v-else class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+      <table class="w-full min-w-[720px]">
         <thead class="bg-gray-50">
           <tr>
             <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">來源</th>

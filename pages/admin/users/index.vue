@@ -143,7 +143,7 @@ async function toggleActive(u: AdminUser) {
     <div v-if="error" class="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-4">{{ error }}</div>
 
     <!-- Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
       <div v-if="loading" class="flex items-center justify-center py-16">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange"></div>
       </div>
