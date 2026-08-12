@@ -59,8 +59,8 @@ const storeExtraData: Record<string, any> = {
     },
     transport: {
       mrt: { station: '七張站 2 號出口', desc: '出站後沿北新路方向直行，約步行 5 分鐘，大樓入口在便利商店旁，下樓梯至 B1-2。' },
-      bus: { stop: '七張站', desc: '849、綠12、綠14、橘12 等路線均可抵達，下車後步行 2 分鐘。' },
-      car: { desc: '沿北新路往新店方向，過七張路口後即可見到，大樓地下室入口在右側。' },
+      bus: { stop: '新店郵局', desc: '' },
+      car: { desc: '停車場：歐特儀-中興低碳立體停車場、寶橋停車場' },
       parking: { desc: '七張捷運站旁有公共停車場（收費），或北新路沿線路邊停車格。地下室停車空間有限，請提前確認。' },
     },
     geo: { lat: 24.9682, lng: 121.5396 },
@@ -76,8 +76,8 @@ const storeExtraData: Record<string, any> = {
     },
     transport: {
       mrt: { station: '松江南京站 6 號出口', desc: '出站後沿南京東路方向步行約 6 分鐘。' },
-      bus: { stop: '松江南京站', desc: '多條公車路線可達。' },
-      car: { desc: '南京東路三段，近松江南京捷運站。' },
+      bus: { stop: '中山女高、長春國小、南京建國路口', desc: '' },
+      car: { desc: '停車場：建國北路高架下、台灣聯通停車場(首都場)' },
       parking: { desc: '附近有公共停車場，或路邊停車格。' },
     },
     geo: { lat: 25.0522, lng: 121.5443 },
@@ -93,8 +93,8 @@ const storeExtraData: Record<string, any> = {
     },
     transport: {
       mrt: { station: '松江南京站 8 號出口', desc: '出站後沿松江路方向步行約 1 分鐘。' },
-      bus: { stop: '松江南京站', desc: '多條公車路線可達。' },
-      car: { desc: '松江路，近松江南京捷運站。' },
+      bus: { stop: '捷運松江南京站、松江長春路口', desc: '' },
+      car: { desc: '停車場：建國北路高架下、台灣聯通停車場-將捷一場' },
       parking: { desc: '附近有公共停車場。' },
     },
     geo: { lat: 25.0531, lng: 121.5332 },
@@ -110,8 +110,8 @@ const storeExtraData: Record<string, any> = {
     },
     transport: {
       mrt: { station: '西門站 3 號出口', desc: '出站後沿寶慶路方向步行約 3 分鐘。' },
-      bus: { stop: '西門站', desc: '多條公車路線可達。' },
-      car: { desc: '寶慶路，近西門捷運站。' },
+      bus: { stop: '寶慶路', desc: '' },
+      car: { desc: '停車場：歐特儀-中山地下停車場、嘟嘟房中華西門1號、中山堂' },
       parking: { desc: '附近有多處公共停車場。' },
     },
     geo: { lat: 25.0423, lng: 121.5069 },
@@ -347,14 +347,6 @@ const photos = computed(() => {
                 <div class="text-sm text-ink/70 leading-relaxed">
                   <strong class="text-navy-700">{{ store.city }}{{ store.district }}{{ store.address }}</strong><br />
                   {{ transport.car?.desc || '' }}
-                </div>
-              </div>
-
-              <div class="flex gap-3 items-start p-4 bg-cream-100 rounded-xl border border-navy-700/15">
-                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-ink/50 text-white flex-shrink-0 mt-0.5">停車</span>
-                <div class="text-sm text-ink/70 leading-relaxed">
-                  <strong class="text-navy-700">建議使用附近公共停車場</strong><br />
-                  {{ transport.parking?.desc || '' }}
                 </div>
               </div>
             </div>
