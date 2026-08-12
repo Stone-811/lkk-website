@@ -33,13 +33,6 @@ interface StoreImages {
   env5: string
 }
 
-interface TransportInfo {
-  mrt: { station: string; desc: string }
-  bus: { stop: string; desc: string }
-  car: { desc: string }
-  parking: { desc: string }
-}
-
 interface FormData {
   id: string
   name: string
@@ -55,7 +48,6 @@ interface FormData {
     sunday: string
     holiday: string
   }
-  transport: TransportInfo
   images: StoreImages
   sortOrder: number
   isActive: boolean
@@ -82,12 +74,6 @@ const formData = ref<FormData>({
     saturday: '09:00 - 18:00',
     sunday: '公休',
     holiday: '依公告，請來電確認',
-  },
-  transport: {
-    mrt: { station: '', desc: '' },
-    bus: { stop: '', desc: '' },
-    car: { desc: '' },
-    parking: { desc: '' },
   },
   images: {
     env1: '',
@@ -168,32 +154,6 @@ onMounted(async () => {
         }
       }
 
-      // Parse transport
-      let transport = {
-        mrt: { station: '', desc: '' },
-        bus: { stop: '', desc: '' },
-        car: { desc: '' },
-        parking: { desc: '' },
-      }
-      if (storeData.transport && typeof storeData.transport === 'object') {
-        transport = {
-          mrt: {
-            station: storeData.transport.mrt?.station || '',
-            desc: storeData.transport.mrt?.desc || '',
-          },
-          bus: {
-            stop: storeData.transport.bus?.stop || '',
-            desc: storeData.transport.bus?.desc || '',
-          },
-          car: {
-            desc: storeData.transport.car?.desc || '',
-          },
-          parking: {
-            desc: storeData.transport.parking?.desc || '',
-          },
-        }
-      }
-
       // 取得預設資料（如果有的話）
       const defaults = getStoreDefaults(storeData.slug || '')
 
@@ -212,22 +172,6 @@ onMounted(async () => {
           saturday: businessHours.saturday || defaults?.businessHours?.saturday || '09:00 - 18:00',
           sunday: businessHours.sunday || defaults?.businessHours?.sunday || '公休',
           holiday: businessHours.holiday || defaults?.businessHours?.holiday || '依公告，請來電確認',
-        },
-        transport: {
-          mrt: {
-            station: transport.mrt.station || defaults?.transport?.mrt?.station || '',
-            desc: transport.mrt.desc || defaults?.transport?.mrt?.desc || '',
-          },
-          bus: {
-            stop: transport.bus.stop || defaults?.transport?.bus?.stop || '',
-            desc: transport.bus.desc || defaults?.transport?.bus?.desc || '',
-          },
-          car: {
-            desc: transport.car.desc || defaults?.transport?.car?.desc || '',
-          },
-          parking: {
-            desc: transport.parking.desc || defaults?.transport?.parking?.desc || '',
-          },
         },
         images,
         sortOrder: storeData.sortOrder || 0,
@@ -323,7 +267,6 @@ async function handleSubmit() {
       phone: formData.value.phone.trim(),
       googleMapUrl: formData.value.googleMapUrl.trim(),
       businessHours: JSON.stringify(formData.value.businessHours),
-      transport: formData.value.transport,
       images: formData.value.images,
       sortOrder: formData.value.sortOrder,
       isActive: formData.value.isActive,
@@ -598,83 +541,10 @@ function removeImage(key: string) {
           />
         </div>
 
-        <!-- MRT -->
-        <div class="bg-green-50 rounded-lg p-4 space-y-3">
-          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-green-600 text-white">捷運</span>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs text-gray-600 mb-1">站名與出口</label>
-              <input
-                type="text"
-                v-model="formData.transport.mrt.station"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                placeholder="例：南京復興站 2 號出口"
-              />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-600 mb-1">步行說明</label>
-              <input
-                type="text"
-                v-model="formData.transport.mrt.desc"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                placeholder="例：出站後沿南京東路方向步行約 3 分鐘"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Bus -->
-        <div class="bg-orange-50 rounded-lg p-4 space-y-3">
-          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-orange text-white">公車</span>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs text-gray-600 mb-1">站牌名稱</label>
-              <input
-                type="text"
-                v-model="formData.transport.bus.stop"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                placeholder="例：南京復興站"
-              />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-600 mb-1">路線說明</label>
-              <input
-                type="text"
-                v-model="formData.transport.bus.desc"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                placeholder="例：多條公車路線可達"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Car -->
-        <div class="bg-blue-50 rounded-lg p-4 space-y-3">
-          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-navy-700 text-white">開車</span>
-          <div>
-            <label class="block text-xs text-gray-600 mb-1">開車路線說明</label>
-            <textarea
-              v-model="formData.transport.car.desc"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              rows="2"
-              placeholder="例：沿北新路往新店方向，過七張路口後即可見到"
-            />
-          </div>
-        </div>
-
-        <!-- Parking -->
-        <div class="bg-gray-50 rounded-lg p-4 space-y-3">
-          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-500 text-white">停車</span>
-          <div>
-            <label class="block text-xs text-gray-600 mb-1">停車資訊</label>
-            <textarea
-              v-model="formData.transport.parking.desc"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              rows="2"
-              placeholder="例：附近有公共停車場，或路邊停車格"
-            />
-          </div>
-        </div>
+        <!-- 捷運／公車／開車／停車：由網站程式統一維護（見 pages/locations/[store].vue），此處不提供編輯 -->
+        <p class="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
+          捷運／公車／開車／停車等交通說明由網站程式統一維護，如需修改請聯繫開發者。
+        </p>
       </div>
 
       <!-- Images -->
