@@ -313,6 +313,8 @@ const photos = computed(() => {
               :title="`${store.name} 地圖`"
               class="absolute inset-0 pointer-events-none"
             />
+            <!-- 蓋掉 Google 內嵌左上的「在 Google 地圖中開啟」連結（iframe 內、無法用 CSS 移除）-->
+            <div class="absolute top-0 left-0 w-56 h-12 bg-cream-100 pointer-events-none"></div>
             <a
               v-if="mapLink"
               :href="mapLink"
