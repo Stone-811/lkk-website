@@ -50,6 +50,7 @@ const coaches = computed(() => store.value?.coaches || [])
 const storeExtraData: Record<string, any> = {
   'xindian': {
     phoneRaw: '+886289146428',
+    googleMapUrl: 'https://maps.app.goo.gl/TMJki8DVdS6bE3sR7',
     description: '捷運七張站 2 號出口，步行 5 分鐘',
     businessHours: {
       weekday: '10:00–22:00',
@@ -66,6 +67,7 @@ const storeExtraData: Record<string, any> = {
   },
   'nanjing': {
     phoneRaw: '+886225074196',
+    googleMapUrl: 'https://maps.app.goo.gl/gnGhthhJNtiww4jn9',
     description: '捷運松江南京站 6 號出口，步行 6 分鐘',
     businessHours: {
       weekday: '09:30–22:00',
@@ -82,6 +84,7 @@ const storeExtraData: Record<string, any> = {
   },
   'songjiang': {
     phoneRaw: '+886225371055',
+    googleMapUrl: 'https://maps.app.goo.gl/YzNzUDwxVLgSJgxr8',
     description: '捷運松江南京站 8 號出口，步行 1 分鐘',
     businessHours: {
       weekday: '10:00–22:00',
@@ -98,6 +101,7 @@ const storeExtraData: Record<string, any> = {
   },
   'ximending': {
     phoneRaw: '+886223703245',
+    googleMapUrl: 'https://maps.app.goo.gl/9N3aCCfo1DFP1raG7',
     description: '捷運西門站 3 號出口，步行 3 分鐘',
     businessHours: {
       weekday: '10:00–22:00',
@@ -116,6 +120,8 @@ const storeExtraData: Record<string, any> = {
 
 // 合併 API 資料與本地補充資料
 const extraData = computed(() => storeExtraData[storeSlug] || {})
+// Google Maps 連結：優先用程式碼裡的真連結（Firestore 部分分店存的是佔位字串）
+const mapLink = computed(() => extraData.value?.googleMapUrl || store.value?.googleMapUrl || '')
 const storeDescription = computed(() => extraData.value?.description || store.value?.name + ' 專業訓練中心')
 const phoneRaw = computed(() => extraData.value?.phoneRaw || store.value?.phone?.replace(/[^0-9+]/g, '') || '')
 const businessHours = computed(() => {
@@ -157,16 +163,15 @@ const geo = computed(() => {
 
 // 生成地圖嵌入 URL
 const mapEmbedUrl = computed(() => {
-  // 優先使用座標
+  // 優先用「實際地址」嵌入（正確、可後台編輯）；不用不準的寫死座標
+  const address = `${store.value?.city || ''}${store.value?.district || ''}${store.value?.address || ''}`.trim()
+  if (address) {
+    return `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=17&output=embed`
+  }
+  // 備用：座標（從 googleMapUrl 解析或本地）
   if (geo.value.lat && geo.value.lng) {
     return `https://www.google.com/maps?q=${geo.value.lat},${geo.value.lng}&z=16&output=embed`
   }
-  // 備用：使用地址搜尋
-  const address = `${store.value?.city || ''}${store.value?.district || ''}${store.value?.address || ''}`
-  if (address) {
-    return `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=16&output=embed`
-  }
-  // 最後備用
   return 'https://www.google.com/maps?q=25.0330,121.5654&z=16&output=embed'
 })
 
@@ -306,8 +311,8 @@ const photos = computed(() => {
               class="absolute inset-0"
             />
             <a
-              v-if="store.googleMapUrl"
-              :href="store.googleMapUrl"
+              v-if="mapLink"
+              :href="mapLink"
               target="_blank"
               rel="noopener noreferrer"
               class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm text-navy-700 font-medium text-sm px-4 py-2 rounded-full shadow-lg hover:bg-white transition-colors flex items-center gap-2"
