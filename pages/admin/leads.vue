@@ -37,6 +37,9 @@ const selectedStore = ref('all')
 const selectedStatus = ref('all')
 const selectedCompany = ref('all')
 const selectedSource = ref('all')
+const selectedUtmSource = ref('all')
+const selectedUtmMedium = ref('all')
+const selectedUtmCampaign = ref('all')
 const dateFrom = ref('')
 const dateTo = ref('')
 const searchQuery = ref('')
@@ -123,12 +126,35 @@ const sourceOptions = computed(() => {
   return Array.from(set)
 })
 
+// 狀態/分店 選項（給可搜尋下拉；狀態的值≠顯示文字）
+const statusFilterOptions = [
+  { value: 'new', label: '新名單' },
+  { value: 'contacted', label: '已聯繫' },
+  { value: 'scheduled', label: '已預約' },
+  { value: 'completed', label: '已完成' },
+  { value: 'cancelled', label: '已取消' },
+]
+const storeFilterOptions = computed(() => stores.value.map((s) => ({ value: s.id, label: s.name })))
+
+// UTM 篩選選項：從現有名單自動蒐集（去重、排序）
+function utmOptions(field: 'source' | 'medium' | 'campaign') {
+  const set = new Set<string>()
+  leads.value.forEach((l) => { const v = l.payload?.utm?.[field]; if (v) set.add(v) })
+  return Array.from(set).sort()
+}
+const utmSourceOptions = computed(() => utmOptions('source'))
+const utmMediumOptions = computed(() => utmOptions('medium'))
+const utmCampaignOptions = computed(() => utmOptions('campaign'))
+
 const filteredLeads = computed(() => {
   let result = leads.value.filter(lead => {
     if (selectedStore.value !== 'all' && lead.storeId !== selectedStore.value) return false
     if (selectedStatus.value !== 'all' && lead.status !== selectedStatus.value) return false
     if (selectedCompany.value !== 'all' && (lead.payload?.company || '') !== selectedCompany.value) return false
     if (selectedSource.value !== 'all' && (lead.payload?.leadSource || '') !== selectedSource.value) return false
+    if (selectedUtmSource.value !== 'all' && (lead.payload?.utm?.source || '') !== selectedUtmSource.value) return false
+    if (selectedUtmMedium.value !== 'all' && (lead.payload?.utm?.medium || '') !== selectedUtmMedium.value) return false
+    if (selectedUtmCampaign.value !== 'all' && (lead.payload?.utm?.campaign || '') !== selectedUtmCampaign.value) return false
     if (dateFrom.value && new Date(lead.createdAt) < new Date(dateFrom.value + 'T00:00:00')) return false
     if (dateTo.value && new Date(lead.createdAt) > new Date(dateTo.value + 'T23:59:59.999')) return false
     if (searchQuery.value) {
@@ -295,45 +321,14 @@ function handleExport() {
           </div>
         </div>
 
-        <!-- Filter by store -->
-        <select
-          v-model="selectedStore"
-          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-        >
-          <option value="all">所有分店</option>
-          <option v-for="store in stores" :key="store.id" :value="store.id">{{ store.name }}</option>
-        </select>
-
-        <!-- Filter by status -->
-        <select
-          v-model="selectedStatus"
-          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-        >
-          <option value="all">所有狀態</option>
-          <option value="new">新名單</option>
-          <option value="contacted">已聯繫</option>
-          <option value="scheduled">已預約</option>
-          <option value="completed">已完成</option>
-          <option value="cancelled">已取消</option>
-        </select>
-
-        <!-- Filter by 公司 -->
-        <select
-          v-model="selectedCompany"
-          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-        >
-          <option value="all">所有公司</option>
-          <option v-for="c in companyOptions" :key="c" :value="c">{{ c }}</option>
-        </select>
-
-        <!-- Filter by 來源 -->
-        <select
-          v-model="selectedSource"
-          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-        >
-          <option value="all">所有來源</option>
-          <option v-for="s in sourceOptions" :key="s" :value="s">{{ s }}</option>
-        </select>
+        <!-- 篩選（皆為可搜尋下拉：點開顯示全部、打字即過濾）-->
+        <SearchableSelect class="w-36" v-model="selectedStore" :options="storeFilterOptions" all-label="所有分店" placeholder="搜尋分店…" />
+        <SearchableSelect class="w-32" v-model="selectedStatus" :options="statusFilterOptions" all-label="所有狀態" placeholder="搜尋狀態…" />
+        <SearchableSelect class="w-36" v-model="selectedCompany" :options="companyOptions" all-label="所有公司" placeholder="搜尋公司…" />
+        <SearchableSelect class="w-36" v-model="selectedSource" :options="sourceOptions" all-label="所有來源" placeholder="搜尋來源…" />
+        <SearchableSelect class="w-40" v-model="selectedUtmSource" :options="utmSourceOptions" all-label="所有 utm_source" placeholder="搜尋 utm_source…" />
+        <SearchableSelect class="w-40" v-model="selectedUtmMedium" :options="utmMediumOptions" all-label="所有 utm_medium" placeholder="搜尋 utm_medium…" />
+        <SearchableSelect class="w-44" v-model="selectedUtmCampaign" :options="utmCampaignOptions" all-label="所有 utm_campaign" placeholder="搜尋 utm_campaign…" />
 
         <!-- Filter by 日期範圍（createdAt 起訖）-->
         <div class="flex items-center gap-1.5">
