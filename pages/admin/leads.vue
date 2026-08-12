@@ -369,7 +369,6 @@ function handleExport() {
         <div class="self-stretch w-px bg-gray-200 hidden md:block"></div>
 
         <div>
-          <div class="text-[11px] text-gray-400 mb-1.5">來源與追蹤（含 UTM）</div>
           <div class="flex flex-nowrap items-end gap-2">
             <div>
               <label class="block text-[11px] text-gray-400 mb-0.5">公司</label>
