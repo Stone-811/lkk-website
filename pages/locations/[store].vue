@@ -50,7 +50,7 @@ const coaches = computed(() => store.value?.coaches || [])
 const storeExtraData: Record<string, any> = {
   'xindian': {
     phoneRaw: '+886289146428',
-    description: '新北市新店區唯一專注中高齡與特殊族群的肌力訓練中心，由物理治療師背景教練帶領，捷運七張站步行 3 分鐘。',
+    description: '捷運七張站 2 號出口，步行 5 分鐘',
     businessHours: {
       weekday: '09:00 – 21:00',
       saturday: '09:00 – 18:00',
@@ -58,7 +58,7 @@ const storeExtraData: Record<string, any> = {
       holiday: '依公告，請來電確認',
     },
     transport: {
-      mrt: { station: '新店七張站 1 號出口', desc: '出站後沿北新路方向直行，約步行 3 分鐘，大樓入口在便利商店旁，下樓梯至 B1-2。' },
+      mrt: { station: '七張站 2 號出口', desc: '出站後沿北新路方向直行，約步行 5 分鐘，大樓入口在便利商店旁，下樓梯至 B1-2。' },
       bus: { stop: '七張站', desc: '849、綠12、綠14、橘12 等路線均可抵達，下車後步行 2 分鐘。' },
       car: { desc: '沿北新路往新店方向，過七張路口後即可見到，大樓地下室入口在右側。' },
       parking: { desc: '七張捷運站旁有公共停車場（收費），或北新路沿線路邊停車格。地下室停車空間有限，請提前確認。' },
@@ -67,7 +67,7 @@ const storeExtraData: Record<string, any> = {
   },
   'nanjing': {
     phoneRaw: '+886225074196',
-    description: '位於台北市中心南京復興商圈，捷運南京復興站步行 3 分鐘。專為中高齡及特殊族群設計的肌力訓練中心。',
+    description: '捷運松江南京站 6 號出口，步行 6 分鐘',
     businessHours: {
       weekday: '09:00 – 21:00',
       saturday: '09:00 – 18:00',
@@ -75,16 +75,16 @@ const storeExtraData: Record<string, any> = {
       holiday: '依公告，請來電確認',
     },
     transport: {
-      mrt: { station: '南京復興站 2 號出口', desc: '出站後沿南京東路三段方向步行約 3 分鐘。' },
-      bus: { stop: '南京復興站', desc: '多條公車路線可達。' },
-      car: { desc: '南京東路三段，近南京復興捷運站。' },
+      mrt: { station: '松江南京站 6 號出口', desc: '出站後沿南京東路方向步行約 6 分鐘。' },
+      bus: { stop: '松江南京站', desc: '多條公車路線可達。' },
+      car: { desc: '南京東路三段，近松江南京捷運站。' },
       parking: { desc: '附近有公共停車場，或路邊停車格。' },
     },
     geo: { lat: 25.0522, lng: 121.5443 },
   },
   'songjiang': {
     phoneRaw: '+886225371055',
-    description: '位於台北市松江路商圈，捷運松江南京站步行 5 分鐘。專業物理治療師教練團隊。',
+    description: '捷運松江南京站 8 號出口，步行 1 分鐘',
     businessHours: {
       weekday: '09:00 – 21:00',
       saturday: '09:00 – 18:00',
@@ -92,7 +92,7 @@ const storeExtraData: Record<string, any> = {
       holiday: '依公告，請來電確認',
     },
     transport: {
-      mrt: { station: '松江南京站 4 號出口', desc: '出站後沿松江路方向步行約 5 分鐘。' },
+      mrt: { station: '松江南京站 8 號出口', desc: '出站後沿松江路方向步行約 1 分鐘。' },
       bus: { stop: '松江南京站', desc: '多條公車路線可達。' },
       car: { desc: '松江路，近松江南京捷運站。' },
       parking: { desc: '附近有公共停車場。' },
@@ -101,7 +101,7 @@ const storeExtraData: Record<string, any> = {
   },
   'ximending': {
     phoneRaw: '+886223703245',
-    description: '位於西門町商圈，捷運西門站步行 3 分鐘。鄰近交通便利，適合各年齡層。',
+    description: '捷運西門站 3 號出口，步行 3 分鐘',
     businessHours: {
       weekday: '09:00 – 21:00',
       saturday: '09:00 – 18:00',
@@ -109,7 +109,7 @@ const storeExtraData: Record<string, any> = {
       holiday: '依公告，請來電確認',
     },
     transport: {
-      mrt: { station: '西門站 6 號出口', desc: '出站後沿寶慶路方向步行約 3 分鐘。' },
+      mrt: { station: '西門站 3 號出口', desc: '出站後沿寶慶路方向步行約 3 分鐘。' },
       bus: { stop: '西門站', desc: '多條公車路線可達。' },
       car: { desc: '寶慶路，近西門捷運站。' },
       parking: { desc: '附近有多處公共停車場。' },
