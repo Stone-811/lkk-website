@@ -50,7 +50,8 @@ const coaches = computed(() => store.value?.coaches || [])
 const storeExtraData: Record<string, any> = {
   'xindian': {
     phoneRaw: '+886289146428',
-    googleMapUrl: 'https://maps.app.goo.gl/TMJki8DVdS6bE3sR7',
+    googleMapUrl: 'https://maps.app.goo.gl/HtbnehGKnShnHsiB7',
+    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.5428873!3d24.9784213!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x346801fa0764a755%3A0x29042ff770880f40!2z%E7%B7%B4%E5%81%A5%E5%BA%B7%EF%BC%8D%E6%96%B0%E5%BA%97%E4%B8%83%E5%BC%B5%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
     description: '捷運七張站 2 號出口，步行 5 分鐘',
     businessHours: {
       weekday: '10:00–22:00',
@@ -67,7 +68,8 @@ const storeExtraData: Record<string, any> = {
   },
   'nanjing': {
     phoneRaw: '+886225074196',
-    googleMapUrl: 'https://maps.app.goo.gl/gnGhthhJNtiww4jn9',
+    googleMapUrl: 'https://maps.app.goo.gl/Px5LAT6LC9Q8KvAA7',
+    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.537984!3d25.052245!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442ab59356317d7%3A0xbd4e3d04026121fe!2z%E7%B7%B4%E5%81%A5%E5%BA%B7%EF%BC%8D%E5%8D%97%E4%BA%AC%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
     description: '捷運松江南京站 6 號出口，步行 6 分鐘',
     businessHours: {
       weekday: '09:30–22:00',
@@ -84,7 +86,8 @@ const storeExtraData: Record<string, any> = {
   },
   'songjiang': {
     phoneRaw: '+886225371055',
-    googleMapUrl: 'https://maps.app.goo.gl/YzNzUDwxVLgSJgxr8',
+    googleMapUrl: 'https://maps.app.goo.gl/giFuLHGz4pMwAnpFA',
+    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.5327347!3d25.0525134!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a95792149a0f%3A0x3883ae1ade5dc5c7!2z%E7%B7%B4%E5%81%A5%E5%BA%B7-%E6%9D%BE%E6%B1%9F%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
     description: '捷運松江南京站 8 號出口，步行 1 分鐘',
     businessHours: {
       weekday: '10:00–22:00',
@@ -101,7 +104,8 @@ const storeExtraData: Record<string, any> = {
   },
   'ximending': {
     phoneRaw: '+886223703245',
-    googleMapUrl: 'https://maps.app.goo.gl/9N3aCCfo1DFP1raG7',
+    googleMapUrl: 'https://maps.app.goo.gl/b4z2D4XECCsi7zsy7',
+    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.5101882!3d25.0416063!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a96d8303852b%3A0x8c919512ed52b425!2z%E7%B7%B4%E5%81%A5%E5%BA%B7%EF%BC%8D%E8%A5%BF%E9%96%80%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
     description: '捷運西門站 3 號出口，步行 3 分鐘',
     businessHours: {
       weekday: '10:00–22:00',
@@ -163,7 +167,11 @@ const geo = computed(() => {
 
 // 生成地圖嵌入 URL
 const mapEmbedUrl = computed(() => {
-  // 優先用「實際地址」嵌入（正確、可後台編輯）；不用不準的寫死座標
+  // 優先用乾淨的「嵌入地圖」pb 格式（無 place card）
+  if (extraData.value?.mapEmbed) {
+    return extraData.value.mapEmbed
+  }
+  // 備用：用實際地址嵌入
   const address = `${store.value?.city || ''}${store.value?.district || ''}${store.value?.address || ''}`.trim()
   if (address) {
     return `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=17&output=embed`
