@@ -479,35 +479,7 @@ function removeImage(key: string) {
         </div>
       </div>
 
-      <!-- Business Hours -->
-      <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-        <h2 class="font-bold text-lg border-b pb-2">營業時間</h2>
-
-        <!-- 營業時間：由網站程式統一維護（見 pages/locations/[store].vue），此處不提供編輯 -->
-        <p class="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
-          營業時間由網站程式統一維護，如需修改請聯繫開發者。
-        </p>
-      </div>
-
-      <!-- Transport -->
-      <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-        <h2 class="font-bold text-lg border-b pb-2">交通資訊</h2>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">Google Maps 連結</label>
-          <input
-            type="url"
-            v-model="formData.googleMapUrl"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2"
-            placeholder="https://maps.google.com/..."
-          />
-        </div>
-
-        <!-- 捷運／公車／開車／停車：由網站程式統一維護（見 pages/locations/[store].vue），此處不提供編輯 -->
-        <p class="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
-          捷運／公車／開車／停車等交通說明由網站程式統一維護，如需修改請聯繫開發者。
-        </p>
-      </div>
+      <!-- 營業時間、交通資訊（含 Google Maps 連結）已改由網站程式統一維護（見 pages/locations/[store].vue、composables/useStoreDefaults.ts），後台不再顯示/編輯 -->
 
       <!-- Images -->
       <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-6">

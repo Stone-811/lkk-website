@@ -231,8 +231,8 @@ async function moveCoach(coach: Coach, direction: 'up' | 'down') {
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange"></div>
     </div>
 
-    <div v-else class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <table class="w-full">
+    <div v-else class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+      <table class="w-full min-w-[720px]">
         <thead class="bg-gray-50">
           <tr>
             <th

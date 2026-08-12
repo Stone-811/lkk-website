@@ -407,8 +407,8 @@ function handleExport() {
     </div>
 
     <!-- Leads Table -->
-    <div v-else class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <table class="w-full">
+    <div v-else class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+      <table class="w-full min-w-[720px]">
         <thead class="bg-gray-50">
           <tr>
             <th

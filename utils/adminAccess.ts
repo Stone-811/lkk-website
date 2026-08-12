@@ -4,7 +4,7 @@
 export type AdminRole = 'admin' | 'editor' | 'store_staff' | 'sales'
 
 // 「名單專員」(sales) 只能存取的頁面前綴
-const SALES_ALLOWED_PREFIXES = ['/admin/leads', '/admin/cooperation']
+const SALES_ALLOWED_PREFIXES = ['/admin/leads', '/admin/group-classes', '/admin/cooperation']
 
 // 判斷某角色是否可存取某後台路徑
 export function canAccessAdminPath(role: string | undefined, path: string): boolean {
@@ -31,7 +31,7 @@ export const ROLE_LABELS: Record<AdminRole, string> = {
   admin: '系統管理員（全部）',
   editor: '編輯（內容管理）',
   store_staff: '分店人員',
-  sales: '名單專員（客戶預約＋合作表單）',
+  sales: '名單專員（客戶預約＋團課＋合作表單）',
 }
 
 // 建立帳號時可選的角色（依序）
