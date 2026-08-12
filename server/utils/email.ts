@@ -58,11 +58,19 @@ const leadTypeLabels: Record<string, string> = {
   cooperation: '合作洽詢',
 }
 
-// 依「學員實際年齡」判斷體驗費（50 歲以上免費、未滿 50 歲 $500）。
-// 以出生年月為權威依據，避免表單付款方式被誤選時信件顯示錯誤金額。
+// 體驗費標示：以「使用者實際勾選的付款方式」為權威依據，信件與表單勾選一致。
+// （50 歲以上仍可自行選擇臨櫃付款；未勾選時才退回用出生年月的年齡推算。）
 function bookingFeeLabel(birthDate?: string, paymentMethod?: string, company?: string): string | null {
   // 帶公司參數的變體活動（全齡免費）→ 不顯示付款方式（避免誤標臨櫃 $500）
   if (company) return null
+  // 優先依使用者勾選的付款方式
+  if (paymentMethod) {
+    if (paymentMethod === '臨櫃付款') return '臨櫃付款 $500'
+    if (paymentMethod === '50歲以上免費') return '50 歲以上免費體驗'
+    if (paymentMethod === '活動免費') return null
+    return paymentMethod // 其他未知值：原樣顯示
+  }
+  // 沒帶付款方式時（保險）才退回用年齡推算
   if (birthDate) {
     const b = new Date(birthDate)
     if (!isNaN(b.getTime())) {
@@ -72,9 +80,6 @@ function bookingFeeLabel(birthDate?: string, paymentMethod?: string, company?: s
       if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age--
       return age >= 50 ? '50 歲以上免費體驗' : '臨櫃付款 $500'
     }
-  }
-  if (paymentMethod) {
-    return paymentMethod === '50歲以上免費' ? '50 歲以上免費體驗' : '臨櫃付款 $500'
   }
   return null
 }

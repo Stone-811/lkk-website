@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, nextTick, onMounted, watch } from 'vue'
 import { getBookingVariant } from '~/config/bookingVariants'
 
 useHead({
@@ -390,8 +390,11 @@ const handleSubmit = async () => {
     if (response.ok) {
       isSuccess.value = true
       // 送出成功後平滑捲動到成功畫面頂端（含加入官方 LINE 按鈕）
+      // 長表單→短成功畫面會使頁面高度塌陷；等兩個 frame 讓瀏覽器重排完成後再捲動，避免捲動被覆蓋
       await nextTick()
-      document.getElementById('form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.getElementById('form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }))
     } else {
       alert('送出失敗，請稍後再試')
     }
