@@ -370,28 +370,28 @@ function handleExport() {
 
         <div>
           <div class="text-[11px] text-gray-400 mb-1.5">來源與追蹤（含 UTM）</div>
-          <div class="space-y-1.5 w-64">
-            <div class="flex items-center gap-2">
-            <label class="w-20 shrink-0 text-xs text-gray-500">公司</label>
-            <SearchableSelect class="flex-1" v-model="selectedCompany" :options="companyOptions" all-label="全部" placeholder="搜尋公司…" />
+          <div class="flex flex-wrap items-end gap-2">
+            <div>
+              <label class="block text-[11px] text-gray-400 mb-0.5">公司</label>
+              <SearchableSelect class="w-24" v-model="selectedCompany" :options="companyOptions" all-label="全部" placeholder="搜尋公司…" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-gray-400 mb-0.5">來源</label>
+              <SearchableSelect class="w-24" v-model="selectedSource" :options="sourceOptions" all-label="全部" placeholder="搜尋來源…" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-gray-400 mb-0.5">UTM 來源</label>
+              <SearchableSelect class="w-28" v-model="selectedUtmSource" :options="utmSourceOptions" all-label="全部" placeholder="搜尋…" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-gray-400 mb-0.5">UTM 媒介</label>
+              <SearchableSelect class="w-28" v-model="selectedUtmMedium" :options="utmMediumOptions" all-label="全部" placeholder="搜尋…" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-gray-400 mb-0.5">UTM 活動</label>
+              <SearchableSelect class="w-32" v-model="selectedUtmCampaign" :options="utmCampaignOptions" all-label="全部" placeholder="搜尋活動…" />
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <label class="w-20 shrink-0 text-xs text-gray-500">來源</label>
-            <SearchableSelect class="flex-1" v-model="selectedSource" :options="sourceOptions" all-label="全部" placeholder="搜尋來源…" />
-          </div>
-          <div class="flex items-center gap-2">
-            <label class="w-20 shrink-0 text-xs text-gray-500">UTM 來源</label>
-            <SearchableSelect class="flex-1" v-model="selectedUtmSource" :options="utmSourceOptions" all-label="全部" placeholder="搜尋…" />
-          </div>
-          <div class="flex items-center gap-2">
-            <label class="w-20 shrink-0 text-xs text-gray-500">UTM 媒介</label>
-            <SearchableSelect class="flex-1" v-model="selectedUtmMedium" :options="utmMediumOptions" all-label="全部" placeholder="搜尋…" />
-          </div>
-          <div class="flex items-center gap-2">
-            <label class="w-20 shrink-0 text-xs text-gray-500">UTM 活動</label>
-            <SearchableSelect class="flex-1" v-model="selectedUtmCampaign" :options="utmCampaignOptions" all-label="全部" placeholder="搜尋活動…" />
-          </div>
-        </div>
       </div>
       </div>
 
