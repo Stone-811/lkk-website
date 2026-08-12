@@ -167,15 +167,15 @@ const geo = computed(() => {
 
 // 生成地圖嵌入 URL
 const mapEmbedUrl = computed(() => {
-  // 只置中對準分店座標、不放地點標記 → 沒有 Google 的 place card（也沒有紅色圖釘）
+  // 正常 Google 地圖嵌入：優先用分店精確座標（顯示地點＋圖釘）
   if (geo.value.lat && geo.value.lng) {
-    return `https://maps.google.com/maps?ll=${geo.value.lat},${geo.value.lng}&z=17&output=embed`
+    return `https://www.google.com/maps?q=${geo.value.lat},${geo.value.lng}&z=17&output=embed`
   }
   const address = `${store.value?.city || ''}${store.value?.district || ''}${store.value?.address || ''}`.trim()
   if (address) {
-    return `https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=17&output=embed`
+    return `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=17&output=embed`
   }
-  return 'https://maps.google.com/maps?ll=25.0330,121.5654&z=16&output=embed'
+  return 'https://www.google.com/maps?q=25.0330,121.5654&z=16&output=embed'
 })
 
 // Fetch other stores for navigation
@@ -311,10 +311,8 @@ const photos = computed(() => {
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
               :title="`${store.name} 地圖`"
-              class="absolute inset-0 pointer-events-none"
+              class="absolute inset-0"
             />
-            <!-- 蓋掉 Google 內嵌左上的「在 Google 地圖中開啟」連結（iframe 內、無法用 CSS 移除）-->
-            <div class="absolute top-0 left-0 w-56 h-12 bg-cream-100 pointer-events-none"></div>
             <a
               v-if="mapLink"
               :href="mapLink"
