@@ -255,8 +255,8 @@ const isActive = (path: string) => {
       @click="isSidebarOpen = false"
     />
 
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col lg:pl-64">
+    <!-- Main Content Area（min-w-0：允許收縮，讓寬表格在卡片內橫向捲動，而非撐破版面被 body overflow-x:hidden 裁切）-->
+    <div class="flex-1 flex flex-col lg:pl-64 min-w-0">
       <!-- Top Header (Mobile) -->
       <header class="sticky top-0 h-16 bg-white border-b border-gray-200 flex items-center px-4 lg:hidden z-30">
         <button
