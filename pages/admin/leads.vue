@@ -355,8 +355,8 @@ function handleExport() {
         </div>
       </div>
 
-      <!-- 第二排：基本篩選 -->
-      <div class="flex items-end gap-2 mt-3">
+      <!-- 第二排：分店/狀態 與 來源與追蹤（含 UTM）同一排 -->
+      <div class="flex flex-wrap items-start gap-x-5 gap-y-3 mt-3">
         <div>
           <label class="block text-[11px] text-gray-400 mb-0.5">分店</label>
           <SearchableSelect class="w-32" v-model="selectedStore" :options="storeFilterOptions" all-label="全部" placeholder="搜尋分店…" />
@@ -365,13 +365,13 @@ function handleExport() {
           <label class="block text-[11px] text-gray-400 mb-0.5">狀態</label>
           <SearchableSelect class="w-28" v-model="selectedStatus" :options="statusFilterOptions" all-label="全部" placeholder="搜尋狀態…" />
         </div>
-      </div>
 
-      <!-- 第三排：來源與追蹤（含 UTM）——直列，欄位標籤置左 -->
-      <div class="mt-3">
-        <div class="text-[11px] text-gray-400 mb-1.5">來源與追蹤（含 UTM）</div>
-        <div class="space-y-1.5 max-w-xs">
-          <div class="flex items-center gap-2">
+        <div class="self-stretch w-px bg-gray-200 hidden md:block"></div>
+
+        <div>
+          <div class="text-[11px] text-gray-400 mb-1.5">來源與追蹤（含 UTM）</div>
+          <div class="space-y-1.5 w-64">
+            <div class="flex items-center gap-2">
             <label class="w-20 shrink-0 text-xs text-gray-500">公司</label>
             <SearchableSelect class="flex-1" v-model="selectedCompany" :options="companyOptions" all-label="全部" placeholder="搜尋公司…" />
           </div>
@@ -392,6 +392,7 @@ function handleExport() {
             <SearchableSelect class="flex-1" v-model="selectedUtmCampaign" :options="utmCampaignOptions" all-label="全部" placeholder="搜尋活動…" />
           </div>
         </div>
+      </div>
       </div>
 
       <!-- 第三排：已套用的篩選 chips + 清除全部 + 筆數 -->
