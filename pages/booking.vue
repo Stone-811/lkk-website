@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, nextTick, onMounted, watch } from 'vue'
 import { getBookingVariant } from '~/config/bookingVariants'
 
 useHead({
@@ -389,6 +389,12 @@ const handleSubmit = async () => {
 
     if (response.ok) {
       isSuccess.value = true
+      // 送出成功後平滑捲動到成功畫面頂端（含加入官方 LINE 按鈕）
+      // 長表單→短成功畫面會使頁面高度塌陷；等兩個 frame 讓瀏覽器重排完成後再捲動，避免捲動被覆蓋
+      await nextTick()
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.getElementById('form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }))
     } else {
       alert('送出失敗，請稍後再試')
     }
@@ -460,7 +466,7 @@ const handleSubmit = async () => {
       <div class="container mx-auto px-4">
         <div class="grid md:grid-cols-[1fr_320px] lg:grid-cols-[1fr_360px] gap-6 lg:gap-8">
           <!-- Left - Form -->
-          <div id="form">
+          <div id="form" class="scroll-mt-20 lg:scroll-mt-24">
             <!-- Success State -->
             <div v-if="isSuccess" class="max-w-lg mx-auto text-center py-16">
               <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">

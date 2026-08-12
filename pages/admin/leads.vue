@@ -37,6 +37,8 @@ const selectedStore = ref('all')
 const selectedStatus = ref('all')
 const selectedCompany = ref('all')
 const selectedSource = ref('all')
+const selectedUtmSource = ref('all')
+const selectedUtmCampaign = ref('all')
 const dateFrom = ref('')
 const dateTo = ref('')
 const searchQuery = ref('')
@@ -123,12 +125,59 @@ const sourceOptions = computed(() => {
   return Array.from(set)
 })
 
+// 狀態/分店 選項（給可搜尋下拉；狀態的值≠顯示文字）
+const statusFilterOptions = [
+  { value: 'new', label: '新名單' },
+  { value: 'contacted', label: '已聯繫' },
+  { value: 'scheduled', label: '已預約' },
+  { value: 'completed', label: '已完成' },
+  { value: 'cancelled', label: '已取消' },
+]
+const storeFilterOptions = computed(() => stores.value.map((s) => ({ value: s.id, label: s.name })))
+
+// UTM 篩選選項：從現有名單自動蒐集（去重、排序）
+function utmOptions(field: 'source' | 'medium' | 'campaign') {
+  const set = new Set<string>()
+  leads.value.forEach((l) => { const v = l.payload?.utm?.[field]; if (v) set.add(v) })
+  return Array.from(set).sort()
+}
+const utmSourceOptions = computed(() => utmOptions('source'))
+const utmCampaignOptions = computed(() => utmOptions('campaign'))
+
+// 已套用的篩選（給 chip 顯示與單獨移除）
+const activeFilters = computed(() => {
+  const out: { key: string; label: string; value: string; clear: () => void }[] = []
+  if (searchQuery.value) out.push({ key: 'q', label: '搜尋', value: searchQuery.value, clear: () => (searchQuery.value = '') })
+  if (selectedStore.value !== 'all') out.push({ key: 'store', label: '分店', value: storeFilterOptions.value.find((o) => o.value === selectedStore.value)?.label || selectedStore.value, clear: () => (selectedStore.value = 'all') })
+  if (selectedStatus.value !== 'all') out.push({ key: 'status', label: '狀態', value: statusFilterOptions.find((o) => o.value === selectedStatus.value)?.label || selectedStatus.value, clear: () => (selectedStatus.value = 'all') })
+  if (selectedCompany.value !== 'all') out.push({ key: 'company', label: '公司', value: selectedCompany.value, clear: () => (selectedCompany.value = 'all') })
+  if (selectedSource.value !== 'all') out.push({ key: 'source', label: '來源', value: selectedSource.value, clear: () => (selectedSource.value = 'all') })
+  if (selectedUtmSource.value !== 'all') out.push({ key: 'us', label: 'UTM 來源', value: selectedUtmSource.value, clear: () => (selectedUtmSource.value = 'all') })
+  if (selectedUtmCampaign.value !== 'all') out.push({ key: 'uc', label: 'UTM 活動', value: selectedUtmCampaign.value, clear: () => (selectedUtmCampaign.value = 'all') })
+  if (dateFrom.value || dateTo.value) out.push({ key: 'date', label: '日期', value: `${dateFrom.value || '…'} ～ ${dateTo.value || '…'}`, clear: () => { dateFrom.value = ''; dateTo.value = '' } })
+  return out
+})
+const hasActiveFilters = computed(() => activeFilters.value.length > 0)
+function clearAllFilters() {
+  searchQuery.value = ''
+  selectedStore.value = 'all'
+  selectedStatus.value = 'all'
+  selectedCompany.value = 'all'
+  selectedSource.value = 'all'
+  selectedUtmSource.value = 'all'
+  selectedUtmCampaign.value = 'all'
+  dateFrom.value = ''
+  dateTo.value = ''
+}
+
 const filteredLeads = computed(() => {
   let result = leads.value.filter(lead => {
     if (selectedStore.value !== 'all' && lead.storeId !== selectedStore.value) return false
     if (selectedStatus.value !== 'all' && lead.status !== selectedStatus.value) return false
     if (selectedCompany.value !== 'all' && (lead.payload?.company || '') !== selectedCompany.value) return false
     if (selectedSource.value !== 'all' && (lead.payload?.leadSource || '') !== selectedSource.value) return false
+    if (selectedUtmSource.value !== 'all' && (lead.payload?.utm?.source || '') !== selectedUtmSource.value) return false
+    if (selectedUtmCampaign.value !== 'all' && (lead.payload?.utm?.campaign || '') !== selectedUtmCampaign.value) return false
     if (dateFrom.value && new Date(lead.createdAt) < new Date(dateFrom.value + 'T00:00:00')) return false
     if (dateTo.value && new Date(lead.createdAt) > new Date(dateTo.value + 'T23:59:59.999')) return false
     if (searchQuery.value) {
@@ -279,89 +328,71 @@ function handleExport() {
 
     <!-- Filters -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
-      <div class="flex flex-wrap items-center gap-4">
-        <!-- Search -->
-        <div class="flex-1 min-w-[200px]">
-          <div class="relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <!-- 篩選欄：全部同一排（flex-wrap 空間不足時自動換行）-->
+      <div class="flex flex-wrap items-end gap-x-3 gap-y-3">
+        <div>
+          <label class="block text-[11px] text-gray-400 mb-0.5">搜尋</label>
+          <div class="relative w-52">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="搜尋姓名、電話、Email..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+              placeholder="姓名、電話、Email"
+              class="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
             />
           </div>
         </div>
-
-        <!-- Filter by store -->
-        <select
-          v-model="selectedStore"
-          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-        >
-          <option value="all">所有分店</option>
-          <option v-for="store in stores" :key="store.id" :value="store.id">{{ store.name }}</option>
-        </select>
-
-        <!-- Filter by status -->
-        <select
-          v-model="selectedStatus"
-          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-        >
-          <option value="all">所有狀態</option>
-          <option value="new">新名單</option>
-          <option value="contacted">已聯繫</option>
-          <option value="scheduled">已預約</option>
-          <option value="completed">已完成</option>
-          <option value="cancelled">已取消</option>
-        </select>
-
-        <!-- Filter by 公司 -->
-        <select
-          v-model="selectedCompany"
-          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-        >
-          <option value="all">所有公司</option>
-          <option v-for="c in companyOptions" :key="c" :value="c">{{ c }}</option>
-        </select>
-
-        <!-- Filter by 來源 -->
-        <select
-          v-model="selectedSource"
-          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-        >
-          <option value="all">所有來源</option>
-          <option v-for="s in sourceOptions" :key="s" :value="s">{{ s }}</option>
-        </select>
-
-        <!-- Filter by 日期範圍（createdAt 起訖）-->
-        <div class="flex items-center gap-1.5">
-          <input
-            v-model="dateFrom"
-            type="date"
-            aria-label="起始日期"
-            class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-          />
-          <span class="text-gray-400 text-sm">～</span>
-          <input
-            v-model="dateTo"
-            type="date"
-            aria-label="結束日期"
-            class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-          />
-          <button
-            v-if="dateFrom || dateTo"
-            @click="dateFrom = ''; dateTo = ''"
-            class="text-gray-400 hover:text-gray-600 text-sm px-1"
-            title="清除日期"
-          >✕</button>
+        <div>
+          <label class="block text-[11px] text-gray-400 mb-0.5">日期</label>
+          <div class="flex items-center gap-1.5">
+            <input v-model="dateFrom" type="date" aria-label="起始日期" class="w-[132px] border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+            <span class="text-gray-400 text-sm">～</span>
+            <input v-model="dateTo" type="date" aria-label="結束日期" class="w-[132px] border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+          </div>
         </div>
-
-        <!-- Results count -->
-        <div class="text-sm text-gray-500">
-          共 {{ filteredLeads.length }} 筆
+        <div>
+          <label class="block text-[11px] text-gray-400 mb-0.5">分店</label>
+          <SearchableSelect class="w-32" v-model="selectedStore" :options="storeFilterOptions" all-label="全部" placeholder="搜尋分店…" />
         </div>
+        <div>
+          <label class="block text-[11px] text-gray-400 mb-0.5">狀態</label>
+          <SearchableSelect class="w-28" v-model="selectedStatus" :options="statusFilterOptions" all-label="全部" placeholder="搜尋狀態…" />
+        </div>
+        <div>
+          <label class="block text-[11px] text-gray-400 mb-0.5">公司</label>
+          <SearchableSelect class="w-24" v-model="selectedCompany" :options="companyOptions" all-label="全部" placeholder="搜尋公司…" />
+        </div>
+        <div>
+          <label class="block text-[11px] text-gray-400 mb-0.5">來源</label>
+          <SearchableSelect class="w-24" v-model="selectedSource" :options="sourceOptions" all-label="全部" placeholder="搜尋來源…" />
+        </div>
+        <div>
+          <label class="block text-[11px] text-gray-400 mb-0.5">UTM 來源</label>
+          <SearchableSelect class="w-28" v-model="selectedUtmSource" :options="utmSourceOptions" all-label="全部" placeholder="搜尋…" />
+        </div>
+        <div>
+          <label class="block text-[11px] text-gray-400 mb-0.5">UTM 活動</label>
+          <SearchableSelect class="w-28" v-model="selectedUtmCampaign" :options="utmCampaignOptions" all-label="全部" placeholder="搜尋活動…" />
+        </div>
+      </div>
+
+      <!-- 第三排：已套用的篩選 chips + 清除全部 + 筆數 -->
+      <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+        <template v-if="hasActiveFilters">
+          <span class="text-xs text-gray-500">已套用</span>
+          <span
+            v-for="f in activeFilters"
+            :key="f.key"
+            class="inline-flex items-center gap-1 bg-orange/10 text-orange-700 rounded px-2 py-0.5 text-xs"
+          >
+            {{ f.label }}：{{ f.value }}
+            <button type="button" @click="f.clear()" :aria-label="`移除 ${f.label} 篩選`" class="hover:text-orange-900 leading-none">✕</button>
+          </span>
+          <button type="button" @click="clearAllFilters" class="text-xs text-gray-500 hover:text-gray-800 underline decoration-dotted underline-offset-2">清除全部</button>
+        </template>
+        <span :class="['text-sm text-gray-500', hasActiveFilters ? 'ml-auto' : '']">共 {{ filteredLeads.length }} 筆</span>
       </div>
     </div>
 
