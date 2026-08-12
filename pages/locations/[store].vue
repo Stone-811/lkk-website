@@ -64,7 +64,7 @@ const storeExtraData: Record<string, any> = {
       car: { desc: '停車場：歐特儀-中興低碳立體停車場、寶橋停車場' },
       parking: { desc: '七張捷運站旁有公共停車場（收費），或北新路沿線路邊停車格。地下室停車空間有限，請提前確認。' },
     },
-    geo: { lat: 24.9682, lng: 121.5396 },
+    geo: { lat: 24.9784213, lng: 121.5428873 },
   },
   'nanjing': {
     phoneRaw: '+886225074196',
@@ -82,7 +82,7 @@ const storeExtraData: Record<string, any> = {
       car: { desc: '停車場：建國北路高架下、台灣聯通停車場(首都場)' },
       parking: { desc: '附近有公共停車場，或路邊停車格。' },
     },
-    geo: { lat: 25.0522, lng: 121.5443 },
+    geo: { lat: 25.052245, lng: 121.537984 },
   },
   'songjiang': {
     phoneRaw: '+886225371055',
@@ -100,7 +100,7 @@ const storeExtraData: Record<string, any> = {
       car: { desc: '停車場：建國北路高架下、台灣聯通停車場-將捷一場' },
       parking: { desc: '附近有公共停車場。' },
     },
-    geo: { lat: 25.0531, lng: 121.5332 },
+    geo: { lat: 25.0525134, lng: 121.5327347 },
   },
   'ximending': {
     phoneRaw: '+886223703245',
@@ -118,7 +118,7 @@ const storeExtraData: Record<string, any> = {
       car: { desc: '停車場：歐特儀-中山地下停車場、嘟嘟房中華西門1號、中山堂' },
       parking: { desc: '附近有多處公共停車場。' },
     },
-    geo: { lat: 25.0423, lng: 121.5069 },
+    geo: { lat: 25.0416063, lng: 121.5101882 },
   },
 }
 
@@ -167,20 +167,15 @@ const geo = computed(() => {
 
 // 生成地圖嵌入 URL
 const mapEmbedUrl = computed(() => {
-  // 優先用乾淨的「嵌入地圖」pb 格式（無 place card）
-  if (extraData.value?.mapEmbed) {
-    return extraData.value.mapEmbed
+  // 只置中對準分店座標、不放地點標記 → 沒有 Google 的 place card（也沒有紅色圖釘）
+  if (geo.value.lat && geo.value.lng) {
+    return `https://maps.google.com/maps?ll=${geo.value.lat},${geo.value.lng}&z=17&output=embed`
   }
-  // 備用：用實際地址嵌入
   const address = `${store.value?.city || ''}${store.value?.district || ''}${store.value?.address || ''}`.trim()
   if (address) {
-    return `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=17&output=embed`
+    return `https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=17&output=embed`
   }
-  // 備用：座標（從 googleMapUrl 解析或本地）
-  if (geo.value.lat && geo.value.lng) {
-    return `https://www.google.com/maps?q=${geo.value.lat},${geo.value.lng}&z=16&output=embed`
-  }
-  return 'https://www.google.com/maps?q=25.0330,121.5654&z=16&output=embed'
+  return 'https://maps.google.com/maps?ll=25.0330,121.5654&z=16&output=embed'
 })
 
 // Fetch other stores for navigation
