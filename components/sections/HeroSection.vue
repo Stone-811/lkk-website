@@ -3,7 +3,6 @@ const dataStats = [
   { num: '1%', text: ['40歲後每年流失的肌肉量', '不訓練，就是被動老化'] },
   { num: '50+', text: ['歲以上首次體驗完全免費', '零門檻開始第一堂課'] },
   { num: '90+歲', text: ['學員也能做訓練', '年齡不是限制，方法才是'] },
-  { num: '專業', text: ['教育訓練團隊把關', '物理治療師主導，安全不受傷'] },
 ]
 
 const pressOutlets = [
@@ -124,13 +123,13 @@ const pressOutlets = [
     <!-- Data Strip -->
     <section class="bg-navy-800 py-8 lg:py-10">
       <div class="container mx-auto px-4">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.08] rounded-2xl overflow-hidden">
+        <div class="grid grid-cols-3 gap-px bg-white/[0.08] rounded-2xl overflow-hidden">
           <div
             v-for="stat in dataStats"
             :key="stat.num"
-            class="bg-navy-800 p-6 lg:p-8 hover:bg-white/[0.04] transition-colors"
+            class="bg-navy-800 px-2 py-5 sm:p-6 lg:p-8 hover:bg-white/[0.04] transition-colors"
           >
-            <div class="font-serif text-3xl lg:text-5xl font-black text-orange leading-none mb-2">
+            <div class="font-serif text-2xl sm:text-3xl lg:text-5xl font-black text-orange leading-none mb-2">
               {{ stat.num }}
             </div>
             <p class="text-white/65 text-sm leading-relaxed">
