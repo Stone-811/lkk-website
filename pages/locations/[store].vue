@@ -311,19 +311,23 @@ const photos = computed(() => {
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
               :title="`${store.name} 地圖`"
-              class="absolute inset-0"
+              class="absolute inset-0 pointer-events-none"
             />
+            <!-- 整張地圖點擊 → 開啟正確的 Google 地圖連結（含左上「在 Google 地圖中開啟」區域）-->
             <a
               v-if="mapLink"
               :href="mapLink"
               target="_blank"
               rel="noopener noreferrer"
-              class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm text-navy-700 font-medium text-sm px-4 py-2 rounded-full shadow-lg hover:bg-white transition-colors flex items-center gap-2"
+              :aria-label="`在 Google 地圖開啟 ${store.name}`"
+              class="absolute inset-0 group"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              在 Google Maps 開啟
+              <span class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm text-navy-700 font-medium text-sm px-4 py-2 rounded-full shadow-lg group-hover:bg-white transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                在 Google Maps 開啟
+              </span>
             </a>
           </div>
 
