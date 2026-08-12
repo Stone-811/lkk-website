@@ -9,6 +9,7 @@ const router = useRouter()
 const menuItems = [
   { name: '儀表板', path: '/admin', icon: 'dashboard' },
   { name: '客戶預約', path: '/admin/leads', icon: 'calendar', badge: true },
+  { name: '團課預約', path: '/admin/group-classes', icon: 'usergroup' },
   { name: '合作表單', path: '/admin/cooperation', icon: 'briefcase' },
   { name: '分店管理', path: '/admin/stores', icon: 'store' },
   { name: '教練管理', path: '/admin/coaches', icon: 'people' },
@@ -148,6 +149,10 @@ const isActive = (path: string) => {
               <!-- Calendar Icon -->
               <svg v-else-if="item.icon === 'calendar'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <!-- User Group Icon (團課預約) -->
+              <svg v-else-if="item.icon === 'usergroup'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <!-- Briefcase Icon -->
               <svg v-else-if="item.icon === 'briefcase'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
