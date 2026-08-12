@@ -50,76 +50,82 @@ const coaches = computed(() => store.value?.coaches || [])
 const storeExtraData: Record<string, any> = {
   'xindian': {
     phoneRaw: '+886289146428',
-    description: '新北市新店區唯一專注中高齡與特殊族群的肌力訓練中心，由物理治療師背景教練帶領，捷運七張站步行 3 分鐘。',
+    googleMapUrl: 'https://maps.app.goo.gl/HtbnehGKnShnHsiB7',
+    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.5428873!3d24.9784213!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x346801fa0764a755%3A0x29042ff770880f40!2z%E7%B7%B4%E5%81%A5%E5%BA%B7%EF%BC%8D%E6%96%B0%E5%BA%97%E4%B8%83%E5%BC%B5%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
+    description: '捷運七張站 2 號出口，步行 5 分鐘',
     businessHours: {
-      weekday: '09:00 – 21:00',
-      saturday: '09:00 – 18:00',
-      sunday: '公休',
-      holiday: '依公告，請來電確認',
+      weekday: '10:00–22:00',
+      saturday: '10:00–18:00',
+      sunday: '10:00–18:00',
     },
     transport: {
-      mrt: { station: '新店七張站 1 號出口', desc: '出站後沿北新路方向直行，約步行 3 分鐘，大樓入口在便利商店旁，下樓梯至 B1-2。' },
-      bus: { stop: '七張站', desc: '849、綠12、綠14、橘12 等路線均可抵達，下車後步行 2 分鐘。' },
-      car: { desc: '沿北新路往新店方向，過七張路口後即可見到，大樓地下室入口在右側。' },
+      mrt: { station: '七張站 2 號出口', desc: '出站後沿北新路方向直行，約步行 5 分鐘，大樓入口在便利商店旁，下樓梯至 B1-2。' },
+      bus: { stop: '公車站：新店郵局', desc: '' },
+      car: { desc: '停車場：歐特儀-中興低碳立體停車場、寶橋停車場' },
       parking: { desc: '七張捷運站旁有公共停車場（收費），或北新路沿線路邊停車格。地下室停車空間有限，請提前確認。' },
     },
-    geo: { lat: 24.9682, lng: 121.5396 },
+    geo: { lat: 24.9784213, lng: 121.5428873 },
   },
   'nanjing': {
     phoneRaw: '+886225074196',
-    description: '位於台北市中心南京復興商圈，捷運南京復興站步行 3 分鐘。專為中高齡及特殊族群設計的肌力訓練中心。',
+    googleMapUrl: 'https://maps.app.goo.gl/Px5LAT6LC9Q8KvAA7',
+    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.537984!3d25.052245!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442ab59356317d7%3A0xbd4e3d04026121fe!2z%E7%B7%B4%E5%81%A5%E5%BA%B7%EF%BC%8D%E5%8D%97%E4%BA%AC%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
+    description: '捷運松江南京站 6 號出口，步行 6 分鐘',
     businessHours: {
-      weekday: '09:00 – 21:00',
-      saturday: '09:00 – 18:00',
-      sunday: '公休',
-      holiday: '依公告，請來電確認',
+      weekday: '09:30–22:00',
+      saturday: '09:30–18:00',
+      sunday: '09:30–18:00',
     },
     transport: {
-      mrt: { station: '南京復興站 2 號出口', desc: '出站後沿南京東路三段方向步行約 3 分鐘。' },
-      bus: { stop: '南京復興站', desc: '多條公車路線可達。' },
-      car: { desc: '南京東路三段，近南京復興捷運站。' },
+      mrt: { station: '松江南京站 6 號出口', desc: '出站後沿南京東路方向步行約 6 分鐘。' },
+      bus: { stop: '公車站：中山女高、長春國小、南京建國路口', desc: '' },
+      car: { desc: '停車場：建國北路高架下、台灣聯通停車場(首都場)' },
       parking: { desc: '附近有公共停車場，或路邊停車格。' },
     },
-    geo: { lat: 25.0522, lng: 121.5443 },
+    geo: { lat: 25.052245, lng: 121.537984 },
   },
   'songjiang': {
     phoneRaw: '+886225371055',
-    description: '位於台北市松江路商圈，捷運松江南京站步行 5 分鐘。專業物理治療師教練團隊。',
+    googleMapUrl: 'https://maps.app.goo.gl/giFuLHGz4pMwAnpFA',
+    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.5327347!3d25.0525134!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a95792149a0f%3A0x3883ae1ade5dc5c7!2z%E7%B7%B4%E5%81%A5%E5%BA%B7-%E6%9D%BE%E6%B1%9F%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
+    description: '捷運松江南京站 8 號出口，步行 1 分鐘',
     businessHours: {
-      weekday: '09:00 – 21:00',
-      saturday: '09:00 – 18:00',
-      sunday: '公休',
-      holiday: '依公告，請來電確認',
+      weekday: '10:00–22:00',
+      saturday: '10:00–18:00',
+      sunday: '10:00–18:00',
     },
     transport: {
-      mrt: { station: '松江南京站 4 號出口', desc: '出站後沿松江路方向步行約 5 分鐘。' },
-      bus: { stop: '松江南京站', desc: '多條公車路線可達。' },
-      car: { desc: '松江路，近松江南京捷運站。' },
+      mrt: { station: '松江南京站 8 號出口', desc: '出站後沿松江路方向步行約 1 分鐘。' },
+      bus: { stop: '公車站：捷運松江南京站、松江長春路口', desc: '' },
+      car: { desc: '停車場：建國北路高架下、台灣聯通停車場-將捷一場' },
       parking: { desc: '附近有公共停車場。' },
     },
-    geo: { lat: 25.0531, lng: 121.5332 },
+    geo: { lat: 25.0525134, lng: 121.5327347 },
   },
   'ximending': {
     phoneRaw: '+886223703245',
-    description: '位於西門町商圈，捷運西門站步行 3 分鐘。鄰近交通便利，適合各年齡層。',
+    googleMapUrl: 'https://maps.app.goo.gl/b4z2D4XECCsi7zsy7',
+    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.5101882!3d25.0416063!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a96d8303852b%3A0x8c919512ed52b425!2z%E7%B7%B4%E5%81%A5%E5%BA%B7%EF%BC%8D%E8%A5%BF%E9%96%80%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
+    description: '捷運西門站 3 號出口，步行 3 分鐘',
     businessHours: {
-      weekday: '09:00 – 21:00',
-      saturday: '09:00 – 18:00',
-      sunday: '公休',
-      holiday: '依公告，請來電確認',
+      weekday: '10:00–22:00',
+      saturday: '10:00–18:00',
+      sunday: '10:00–18:00',
     },
     transport: {
-      mrt: { station: '西門站 6 號出口', desc: '出站後沿寶慶路方向步行約 3 分鐘。' },
-      bus: { stop: '西門站', desc: '多條公車路線可達。' },
-      car: { desc: '寶慶路，近西門捷運站。' },
+      mrt: { station: '西門站 3 號出口', desc: '出站後沿寶慶路方向步行約 3 分鐘。' },
+      bus: { stop: '公車站：寶慶路', desc: '' },
+      car: { desc: '停車場：歐特儀-中山地下停車場、嘟嘟房中華西門1號、中山堂' },
       parking: { desc: '附近有多處公共停車場。' },
     },
-    geo: { lat: 25.0423, lng: 121.5069 },
+    geo: { lat: 25.0416063, lng: 121.5101882 },
   },
 }
 
 // 合併 API 資料與本地補充資料
 const extraData = computed(() => storeExtraData[storeSlug] || {})
+// Google Maps 連結：優先用程式碼裡的真連結（Firestore 部分分店存的是佔位字串）
+const mapLink = computed(() => extraData.value?.googleMapUrl || store.value?.googleMapUrl || '')
 const storeDescription = computed(() => extraData.value?.description || store.value?.name + ' 專業訓練中心')
 const phoneRaw = computed(() => extraData.value?.phoneRaw || store.value?.phone?.replace(/[^0-9+]/g, '') || '')
 const businessHours = computed(() => {
@@ -161,16 +167,14 @@ const geo = computed(() => {
 
 // 生成地圖嵌入 URL
 const mapEmbedUrl = computed(() => {
-  // 優先使用座標
+  // 正常 Google 地圖嵌入：優先用分店精確座標（顯示地點＋圖釘）
   if (geo.value.lat && geo.value.lng) {
-    return `https://www.google.com/maps?q=${geo.value.lat},${geo.value.lng}&z=16&output=embed`
+    return `https://www.google.com/maps?q=${geo.value.lat},${geo.value.lng}&z=17&output=embed`
   }
-  // 備用：使用地址搜尋
-  const address = `${store.value?.city || ''}${store.value?.district || ''}${store.value?.address || ''}`
+  const address = `${store.value?.city || ''}${store.value?.district || ''}${store.value?.address || ''}`.trim()
   if (address) {
-    return `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=16&output=embed`
+    return `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=17&output=embed`
   }
-  // 最後備用
   return 'https://www.google.com/maps?q=25.0330,121.5654&z=16&output=embed'
 })
 
@@ -307,19 +311,23 @@ const photos = computed(() => {
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
               :title="`${store.name} 地圖`"
-              class="absolute inset-0"
+              class="absolute inset-0 pointer-events-none"
             />
+            <!-- 整張地圖點擊 → 開啟正確的 Google 地圖連結（含左上「在 Google 地圖中開啟」區域）-->
             <a
-              v-if="store.googleMapUrl"
-              :href="store.googleMapUrl"
+              v-if="mapLink"
+              :href="mapLink"
               target="_blank"
               rel="noopener noreferrer"
-              class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm text-navy-700 font-medium text-sm px-4 py-2 rounded-full shadow-lg hover:bg-white transition-colors flex items-center gap-2"
+              :aria-label="`在 Google 地圖開啟 ${store.name}`"
+              class="absolute inset-0 group"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              在 Google Maps 開啟
+              <span class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm text-navy-700 font-medium text-sm px-4 py-2 rounded-full shadow-lg group-hover:bg-white transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                在 Google Maps 開啟
+              </span>
             </a>
           </div>
 
@@ -349,35 +357,10 @@ const photos = computed(() => {
                   {{ transport.car?.desc || '' }}
                 </div>
               </div>
-
-              <div class="flex gap-3 items-start p-4 bg-cream-100 rounded-xl border border-navy-700/15">
-                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-ink/50 text-white flex-shrink-0 mt-0.5">停車</span>
-                <div class="text-sm text-ink/70 leading-relaxed">
-                  <strong class="text-navy-700">建議使用附近公共停車場</strong><br />
-                  {{ transport.parking?.desc || '' }}
-                </div>
-              </div>
             </div>
 
-            <!-- Hours table -->
-            <div class="mt-6 border border-navy-700/15 rounded-xl overflow-hidden">
-              <div class="grid grid-cols-2">
-                <div class="px-4 py-3 text-sm font-medium text-navy-700 bg-cream-100">週一 – 週五</div>
-                <div class="px-4 py-3 text-sm text-ink/70">{{ businessHours.weekday }}</div>
-              </div>
-              <div class="grid grid-cols-2 border-t border-navy-700/15">
-                <div class="px-4 py-3 text-sm font-medium text-navy-700 bg-cream-100">週六</div>
-                <div class="px-4 py-3 text-sm text-ink/70">{{ businessHours.saturday }}</div>
-              </div>
-              <div class="grid grid-cols-2 border-t border-navy-700/15">
-                <div class="px-4 py-3 text-sm font-medium text-navy-700 bg-cream-100">週日</div>
-                <div class="px-4 py-3 text-sm text-ink/70">{{ businessHours.sunday }}</div>
-              </div>
-              <div class="grid grid-cols-2 border-t border-navy-700/15">
-                <div class="px-4 py-3 text-sm font-medium text-navy-700 bg-cream-100">國定假日</div>
-                <div class="px-4 py-3 text-sm text-ink/70">{{ businessHours.holiday || '依公告，請來電確認' }}</div>
-              </div>
-            </div>
+            <!-- 營業時間（Google Maps 式下拉）-->
+            <StoreHours :hours="businessHours" />
           </div>
         </div>
       </div>

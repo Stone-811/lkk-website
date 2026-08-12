@@ -36,10 +36,9 @@ export const bookingVariants: Record<string, BookingVariant> = {
     hero: {
       title: '亞培 × 練健康',
       titleHighlight: '專屬體驗課',
-      subtitle: '不限年齡皆可報名，由專業教練帶領，安全有效。填寫後我們會主動與您聯繫安排時間。',
+      subtitle: '由專業教練帶領，安全有效。填寫後我們會主動與您聯繫安排時間。',
       ctaText: '立即預約專屬體驗 →',
     },
-    allAgesFree: true,
     company: '亞培',
     leadSource: 'LINE',
   },

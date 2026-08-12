@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+
 interface Coach {
   id: string
   name: string
@@ -17,24 +19,42 @@ const props = defineProps<{
 const scrollRef = ref<HTMLElement | null>(null)
 const activeIndex = ref(0)
 
-const totalItems = computed(() => props.coaches.length + 1) // +1 for "view all" card
+const totalItems = computed(() => props.coaches.length + 1) // +1 for "view all" card（每組）
 const itemsPerPage = 3
 const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage))
 const maxDots = 7
 const showPageDots = computed(() => totalPages.value > maxDots)
 const activePage = computed(() => Math.floor(activeIndex.value / itemsPerPage))
 
-// Update active index on scroll
+// ── 自動輪播：桌機才啟用、滑鼠移上去暫停、尊重「減少動態」偏好 ──
+const autoScroll = ref(false) // 啟用後會複製一組卡片做無縫循環
+let rafId: number | null = null
+let paused = false
+const SPEED = 0.6 // px / frame（約 36px/s，順順地滑）
+
+// Update active index on scroll（複製組會超出，用 mod 對回第一組）
 const handleScroll = () => {
   const container = scrollRef.value
   if (!container) return
 
-  const scrollLeft = container.scrollLeft
   const firstChild = container.firstElementChild as HTMLElement
-  const itemWidth = firstChild?.clientWidth || 240
+  const itemWidth = firstChild?.clientWidth || 320
   const gap = 16 // gap-4 = 16px
-  const index = Math.round(scrollLeft / (itemWidth + gap))
-  activeIndex.value = Math.min(index, totalItems.value - 1)
+  const index = Math.round(container.scrollLeft / (itemWidth + gap))
+  activeIndex.value = Math.min(index % totalItems.value, totalItems.value - 1)
+}
+
+// 自動輪播每幀推進；到第一組末端無縫跳回
+const step = () => {
+  const el = scrollRef.value
+  if (el && autoScroll.value && !paused) {
+    el.scrollLeft += SPEED
+    const half = el.scrollWidth / 2 // 複製了一組 → 第一組寬度 = 總寬一半
+    if (half > 0 && el.scrollLeft >= half) {
+      el.scrollLeft -= half
+    }
+  }
+  rafId = requestAnimationFrame(step)
 }
 
 // Scroll to specific index
@@ -43,7 +63,7 @@ const scrollToIndex = (index: number) => {
   if (!container) return
 
   const firstChild = container.firstElementChild as HTMLElement
-  const itemWidth = firstChild?.clientWidth || 240
+  const itemWidth = firstChild?.clientWidth || 320
   const gap = 16
   container.scrollTo({
     left: index * (itemWidth + gap),
@@ -75,11 +95,26 @@ const getVisibleDotRange = () => {
 
 const dotRange = computed(() => getVisibleDotRange())
 
+const onEnter = () => { paused = true }
+const onLeave = () => { paused = false }
+
 onMounted(() => {
-  scrollRef.value?.addEventListener('scroll', handleScroll)
+  scrollRef.value?.addEventListener('scroll', handleScroll, { passive: true })
+
+  // 只有桌機（有滑鼠、可 hover）、未開啟減少動態、且教練夠多時才自動輪播
+  const canAuto =
+    window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+    props.coaches.length > 3
+
+  if (canAuto) {
+    autoScroll.value = true
+    rafId = requestAnimationFrame(step)
+  }
 })
 
 onUnmounted(() => {
+  if (rafId) cancelAnimationFrame(rafId)
   scrollRef.value?.removeEventListener('scroll', handleScroll)
 })
 </script>
@@ -89,19 +124,20 @@ onUnmounted(() => {
     <!-- Carousel container -->
     <div
       ref="scrollRef"
-      class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"
+      class="flex gap-4 overflow-x-auto pb-4"
       style="scrollbar-width: none; -ms-overflow-style: none;"
+      @mouseenter="onEnter"
+      @mouseleave="onLeave"
     >
+      <!-- 第一組 -->
       <CoachCard
         v-for="coach in coaches"
-        :key="coach.id"
+        :key="`a-${coach.id}`"
         :coach="coach"
       />
-
-      <!-- View all coaches card -->
       <NuxtLink
         to="/team-intro/coaches"
-        class="flex-shrink-0 w-[200px] sm:w-[240px] bg-white/50 border-2 border-dashed border-navy/20 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-orange/50 hover:bg-orange/5 transition-colors snap-start min-h-[300px]"
+        class="flex-shrink-0 w-[200px] sm:w-[240px] bg-white/50 border-2 border-dashed border-navy/20 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-orange/50 hover:bg-orange/5 transition-colors min-h-[300px]"
       >
         <div class="w-12 h-12 rounded-full bg-orange/15 flex items-center justify-center">
           <svg class="w-6 h-6 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,10 +146,33 @@ onUnmounted(() => {
         </div>
         <span class="text-sm font-semibold text-navy">查看全體教練</span>
       </NuxtLink>
+
+      <!-- 第二組（複製，供桌機無縫自動輪播；aria-hidden 避免重複朗讀）-->
+      <template v-if="autoScroll">
+        <CoachCard
+          v-for="coach in coaches"
+          :key="`b-${coach.id}`"
+          :coach="coach"
+          aria-hidden="true"
+        />
+        <NuxtLink
+          to="/team-intro/coaches"
+          aria-hidden="true"
+          tabindex="-1"
+          class="flex-shrink-0 w-[200px] sm:w-[240px] bg-white/50 border-2 border-dashed border-navy/20 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-orange/50 hover:bg-orange/5 transition-colors min-h-[300px]"
+        >
+          <div class="w-12 h-12 rounded-full bg-orange/15 flex items-center justify-center">
+            <svg class="w-6 h-6 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </div>
+          <span class="text-sm font-semibold text-navy">查看全體教練</span>
+        </NuxtLink>
+      </template>
     </div>
 
-    <!-- Interactive scroll indicators -->
-    <div class="flex justify-center items-center gap-1.5 mt-4">
+    <!-- 手動模式（手機/減少動態）才顯示分頁圓點；自動輪播時隱藏 -->
+    <div v-if="!autoScroll" class="flex justify-center items-center gap-1.5 mt-4">
       <!-- Left ellipsis for many pages -->
       <button
         v-if="showPageDots && dotRange.start > 0"
