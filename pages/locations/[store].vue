@@ -59,7 +59,7 @@ const storeExtraData: Record<string, any> = {
     },
     transport: {
       mrt: { station: '七張站 2 號出口', desc: '出站後沿北新路方向直行，約步行 5 分鐘，大樓入口在便利商店旁，下樓梯至 B1-2。' },
-      bus: { stop: '新店郵局', desc: '' },
+      bus: { stop: '公車站：新店郵局', desc: '' },
       car: { desc: '停車場：歐特儀-中興低碳立體停車場、寶橋停車場' },
       parking: { desc: '七張捷運站旁有公共停車場（收費），或北新路沿線路邊停車格。地下室停車空間有限，請提前確認。' },
     },
@@ -76,7 +76,7 @@ const storeExtraData: Record<string, any> = {
     },
     transport: {
       mrt: { station: '松江南京站 6 號出口', desc: '出站後沿南京東路方向步行約 6 分鐘。' },
-      bus: { stop: '中山女高、長春國小、南京建國路口', desc: '' },
+      bus: { stop: '公車站：中山女高、長春國小、南京建國路口', desc: '' },
       car: { desc: '停車場：建國北路高架下、台灣聯通停車場(首都場)' },
       parking: { desc: '附近有公共停車場，或路邊停車格。' },
     },
@@ -93,7 +93,7 @@ const storeExtraData: Record<string, any> = {
     },
     transport: {
       mrt: { station: '松江南京站 8 號出口', desc: '出站後沿松江路方向步行約 1 分鐘。' },
-      bus: { stop: '捷運松江南京站、松江長春路口', desc: '' },
+      bus: { stop: '公車站：捷運松江南京站、松江長春路口', desc: '' },
       car: { desc: '停車場：建國北路高架下、台灣聯通停車場-將捷一場' },
       parking: { desc: '附近有公共停車場。' },
     },
@@ -110,7 +110,7 @@ const storeExtraData: Record<string, any> = {
     },
     transport: {
       mrt: { station: '西門站 3 號出口', desc: '出站後沿寶慶路方向步行約 3 分鐘。' },
-      bus: { stop: '寶慶路', desc: '' },
+      bus: { stop: '公車站：寶慶路', desc: '' },
       car: { desc: '停車場：歐特儀-中山地下停車場、嘟嘟房中華西門1號、中山堂' },
       parking: { desc: '附近有多處公共停車場。' },
     },
