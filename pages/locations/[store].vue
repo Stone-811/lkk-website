@@ -308,7 +308,7 @@ const photos = computed(() => {
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
               :title="`${store.name} 地圖`"
-              class="absolute inset-0"
+              class="absolute inset-0 pointer-events-none"
             />
             <a
               v-if="mapLink"
