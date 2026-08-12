@@ -146,6 +146,34 @@ const utmSourceOptions = computed(() => utmOptions('source'))
 const utmMediumOptions = computed(() => utmOptions('medium'))
 const utmCampaignOptions = computed(() => utmOptions('campaign'))
 
+// 已套用的篩選（給 chip 顯示與單獨移除）
+const activeFilters = computed(() => {
+  const out: { key: string; label: string; value: string; clear: () => void }[] = []
+  if (searchQuery.value) out.push({ key: 'q', label: '搜尋', value: searchQuery.value, clear: () => (searchQuery.value = '') })
+  if (selectedStore.value !== 'all') out.push({ key: 'store', label: '分店', value: storeFilterOptions.value.find((o) => o.value === selectedStore.value)?.label || selectedStore.value, clear: () => (selectedStore.value = 'all') })
+  if (selectedStatus.value !== 'all') out.push({ key: 'status', label: '狀態', value: statusFilterOptions.find((o) => o.value === selectedStatus.value)?.label || selectedStatus.value, clear: () => (selectedStatus.value = 'all') })
+  if (selectedCompany.value !== 'all') out.push({ key: 'company', label: '公司', value: selectedCompany.value, clear: () => (selectedCompany.value = 'all') })
+  if (selectedSource.value !== 'all') out.push({ key: 'source', label: '來源', value: selectedSource.value, clear: () => (selectedSource.value = 'all') })
+  if (selectedUtmSource.value !== 'all') out.push({ key: 'us', label: 'utm source', value: selectedUtmSource.value, clear: () => (selectedUtmSource.value = 'all') })
+  if (selectedUtmMedium.value !== 'all') out.push({ key: 'um', label: 'utm medium', value: selectedUtmMedium.value, clear: () => (selectedUtmMedium.value = 'all') })
+  if (selectedUtmCampaign.value !== 'all') out.push({ key: 'uc', label: 'utm campaign', value: selectedUtmCampaign.value, clear: () => (selectedUtmCampaign.value = 'all') })
+  if (dateFrom.value || dateTo.value) out.push({ key: 'date', label: '日期', value: `${dateFrom.value || '…'} ～ ${dateTo.value || '…'}`, clear: () => { dateFrom.value = ''; dateTo.value = '' } })
+  return out
+})
+const hasActiveFilters = computed(() => activeFilters.value.length > 0)
+function clearAllFilters() {
+  searchQuery.value = ''
+  selectedStore.value = 'all'
+  selectedStatus.value = 'all'
+  selectedCompany.value = 'all'
+  selectedSource.value = 'all'
+  selectedUtmSource.value = 'all'
+  selectedUtmMedium.value = 'all'
+  selectedUtmCampaign.value = 'all'
+  dateFrom.value = ''
+  dateTo.value = ''
+}
+
 const filteredLeads = computed(() => {
   let result = leads.value.filter(lead => {
     if (selectedStore.value !== 'all' && lead.storeId !== selectedStore.value) return false
@@ -305,58 +333,85 @@ function handleExport() {
 
     <!-- Filters -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
-      <div class="flex flex-wrap items-center gap-4">
-        <!-- Search -->
-        <div class="flex-1 min-w-[200px]">
+      <!-- 第一排：關鍵字搜尋 + 日期範圍 -->
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="flex-1 min-w-[220px]">
           <div class="relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="搜尋姓名、電話、Email..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+              placeholder="搜尋姓名、電話、Email"
+              class="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
             />
           </div>
         </div>
-
-        <!-- 篩選（皆為可搜尋下拉：點開顯示全部、打字即過濾）-->
-        <SearchableSelect class="w-36" v-model="selectedStore" :options="storeFilterOptions" all-label="所有分店" placeholder="搜尋分店…" />
-        <SearchableSelect class="w-32" v-model="selectedStatus" :options="statusFilterOptions" all-label="所有狀態" placeholder="搜尋狀態…" />
-        <SearchableSelect class="w-36" v-model="selectedCompany" :options="companyOptions" all-label="所有公司" placeholder="搜尋公司…" />
-        <SearchableSelect class="w-36" v-model="selectedSource" :options="sourceOptions" all-label="所有來源" placeholder="搜尋來源…" />
-        <SearchableSelect class="w-40" v-model="selectedUtmSource" :options="utmSourceOptions" all-label="所有 utm_source" placeholder="搜尋 utm_source…" />
-        <SearchableSelect class="w-40" v-model="selectedUtmMedium" :options="utmMediumOptions" all-label="所有 utm_medium" placeholder="搜尋 utm_medium…" />
-        <SearchableSelect class="w-44" v-model="selectedUtmCampaign" :options="utmCampaignOptions" all-label="所有 utm_campaign" placeholder="搜尋 utm_campaign…" />
-
-        <!-- Filter by 日期範圍（createdAt 起訖）-->
         <div class="flex items-center gap-1.5">
-          <input
-            v-model="dateFrom"
-            type="date"
-            aria-label="起始日期"
-            class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-          />
+          <input v-model="dateFrom" type="date" aria-label="起始日期" class="border border-gray-300 rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
           <span class="text-gray-400 text-sm">～</span>
-          <input
-            v-model="dateTo"
-            type="date"
-            aria-label="結束日期"
-            class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
-          />
-          <button
-            v-if="dateFrom || dateTo"
-            @click="dateFrom = ''; dateTo = ''"
-            class="text-gray-400 hover:text-gray-600 text-sm px-1"
-            title="清除日期"
-          >✕</button>
+          <input v-model="dateTo" type="date" aria-label="結束日期" class="border border-gray-300 rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+        </div>
+      </div>
+
+      <!-- 第二排：可搜尋下拉（每格附標籤、分組）-->
+      <div class="flex flex-wrap items-end gap-x-5 gap-y-2 mt-3">
+        <div class="flex items-end gap-2">
+          <div>
+            <label class="block text-[11px] text-gray-400 mb-0.5">分店</label>
+            <SearchableSelect class="w-28" v-model="selectedStore" :options="storeFilterOptions" all-label="全部" placeholder="搜尋分店…" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-gray-400 mb-0.5">狀態</label>
+            <SearchableSelect class="w-24" v-model="selectedStatus" :options="statusFilterOptions" all-label="全部" placeholder="搜尋狀態…" />
+          </div>
         </div>
 
-        <!-- Results count -->
-        <div class="text-sm text-gray-500">
-          共 {{ filteredLeads.length }} 筆
+        <div class="self-stretch w-px bg-gray-200 hidden md:block"></div>
+
+        <div>
+          <div class="text-[11px] text-gray-400 mb-0.5">來源與追蹤（含 UTM）</div>
+          <div class="flex flex-wrap items-end gap-2">
+            <div>
+              <label class="block text-[11px] text-gray-400 mb-0.5">公司</label>
+              <SearchableSelect class="w-24" v-model="selectedCompany" :options="companyOptions" all-label="全部" placeholder="搜尋公司…" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-gray-400 mb-0.5">來源</label>
+              <SearchableSelect class="w-24" v-model="selectedSource" :options="sourceOptions" all-label="全部" placeholder="搜尋來源…" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-gray-400 mb-0.5">utm source</label>
+              <SearchableSelect class="w-28" v-model="selectedUtmSource" :options="utmSourceOptions" all-label="全部" placeholder="搜尋…" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-gray-400 mb-0.5">utm medium</label>
+              <SearchableSelect class="w-28" v-model="selectedUtmMedium" :options="utmMediumOptions" all-label="全部" placeholder="搜尋…" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-gray-400 mb-0.5">utm campaign</label>
+              <SearchableSelect class="w-32" v-model="selectedUtmCampaign" :options="utmCampaignOptions" all-label="全部" placeholder="搜尋活動…" />
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- 第三排：已套用的篩選 chips + 清除全部 + 筆數 -->
+      <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+        <template v-if="hasActiveFilters">
+          <span class="text-xs text-gray-500">已套用</span>
+          <span
+            v-for="f in activeFilters"
+            :key="f.key"
+            class="inline-flex items-center gap-1 bg-orange/10 text-orange-700 rounded px-2 py-0.5 text-xs"
+          >
+            {{ f.label }}：{{ f.value }}
+            <button type="button" @click="f.clear()" :aria-label="`移除 ${f.label} 篩選`" class="hover:text-orange-900 leading-none">✕</button>
+          </span>
+          <button type="button" @click="clearAllFilters" class="text-xs text-gray-500 hover:text-gray-800 underline decoration-dotted underline-offset-2">清除全部</button>
+        </template>
+        <span :class="['text-sm text-gray-500', hasActiveFilters ? 'ml-auto' : '']">共 {{ filteredLeads.length }} 筆</span>
       </div>
     </div>
 

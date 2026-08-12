@@ -69,7 +69,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside))
       type="text"
       :placeholder="modelValue === 'all' ? allLabel : placeholder"
       @focus="onFocus"
-      class="w-full border border-gray-300 rounded-lg pl-3 pr-7 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+      class="w-full border border-gray-300 rounded-md pl-2.5 pr-6 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
     />
     <button
       v-if="modelValue !== 'all'"
