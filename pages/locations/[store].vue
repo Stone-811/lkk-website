@@ -52,10 +52,9 @@ const storeExtraData: Record<string, any> = {
     phoneRaw: '+886289146428',
     description: '捷運七張站 2 號出口，步行 5 分鐘',
     businessHours: {
-      weekday: '09:00 – 21:00',
-      saturday: '09:00 – 18:00',
-      sunday: '公休',
-      holiday: '依公告，請來電確認',
+      weekday: '10:00–22:00',
+      saturday: '10:00–18:00',
+      sunday: '10:00–18:00',
     },
     transport: {
       mrt: { station: '七張站 2 號出口', desc: '出站後沿北新路方向直行，約步行 5 分鐘，大樓入口在便利商店旁，下樓梯至 B1-2。' },
@@ -69,10 +68,9 @@ const storeExtraData: Record<string, any> = {
     phoneRaw: '+886225074196',
     description: '捷運松江南京站 6 號出口，步行 6 分鐘',
     businessHours: {
-      weekday: '09:00 – 21:00',
-      saturday: '09:00 – 18:00',
-      sunday: '公休',
-      holiday: '依公告，請來電確認',
+      weekday: '09:30–22:00',
+      saturday: '09:30–18:00',
+      sunday: '09:30–18:00',
     },
     transport: {
       mrt: { station: '松江南京站 6 號出口', desc: '出站後沿南京東路方向步行約 6 分鐘。' },
@@ -86,10 +84,9 @@ const storeExtraData: Record<string, any> = {
     phoneRaw: '+886225371055',
     description: '捷運松江南京站 8 號出口，步行 1 分鐘',
     businessHours: {
-      weekday: '09:00 – 21:00',
-      saturday: '09:00 – 18:00',
-      sunday: '公休',
-      holiday: '依公告，請來電確認',
+      weekday: '10:00–22:00',
+      saturday: '10:00–18:00',
+      sunday: '10:00–18:00',
     },
     transport: {
       mrt: { station: '松江南京站 8 號出口', desc: '出站後沿松江路方向步行約 1 分鐘。' },
@@ -103,10 +100,9 @@ const storeExtraData: Record<string, any> = {
     phoneRaw: '+886223703245',
     description: '捷運西門站 3 號出口，步行 3 分鐘',
     businessHours: {
-      weekday: '09:00 – 21:00',
-      saturday: '09:00 – 18:00',
-      sunday: '公休',
-      holiday: '依公告，請來電確認',
+      weekday: '10:00–22:00',
+      saturday: '10:00–18:00',
+      sunday: '10:00–18:00',
     },
     transport: {
       mrt: { station: '西門站 3 號出口', desc: '出站後沿寶慶路方向步行約 3 分鐘。' },
@@ -351,25 +347,8 @@ const photos = computed(() => {
               </div>
             </div>
 
-            <!-- Hours table -->
-            <div class="mt-6 border border-navy-700/15 rounded-xl overflow-hidden">
-              <div class="grid grid-cols-2">
-                <div class="px-4 py-3 text-sm font-medium text-navy-700 bg-cream-100">週一 – 週五</div>
-                <div class="px-4 py-3 text-sm text-ink/70">{{ businessHours.weekday }}</div>
-              </div>
-              <div class="grid grid-cols-2 border-t border-navy-700/15">
-                <div class="px-4 py-3 text-sm font-medium text-navy-700 bg-cream-100">週六</div>
-                <div class="px-4 py-3 text-sm text-ink/70">{{ businessHours.saturday }}</div>
-              </div>
-              <div class="grid grid-cols-2 border-t border-navy-700/15">
-                <div class="px-4 py-3 text-sm font-medium text-navy-700 bg-cream-100">週日</div>
-                <div class="px-4 py-3 text-sm text-ink/70">{{ businessHours.sunday }}</div>
-              </div>
-              <div class="grid grid-cols-2 border-t border-navy-700/15">
-                <div class="px-4 py-3 text-sm font-medium text-navy-700 bg-cream-100">國定假日</div>
-                <div class="px-4 py-3 text-sm text-ink/70">{{ businessHours.holiday || '依公告，請來電確認' }}</div>
-              </div>
-            </div>
+            <!-- 營業時間（Google Maps 式下拉）-->
+            <StoreHours :hours="businessHours" />
           </div>
         </div>
       </div>

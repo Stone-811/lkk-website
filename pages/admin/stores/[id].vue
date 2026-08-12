@@ -266,7 +266,6 @@ async function handleSubmit() {
       address: formData.value.address.trim(),
       phone: formData.value.phone.trim(),
       googleMapUrl: formData.value.googleMapUrl.trim(),
-      businessHours: JSON.stringify(formData.value.businessHours),
       images: formData.value.images,
       sortOrder: formData.value.sortOrder,
       isActive: formData.value.isActive,
@@ -484,47 +483,10 @@ function removeImage(key: string) {
       <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 class="font-bold text-lg border-b pb-2">營業時間</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">週一至週五</label>
-            <input
-              type="text"
-              v-model="formData.businessHours.weekday"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="09:00 - 21:00"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">週六</label>
-            <input
-              type="text"
-              v-model="formData.businessHours.saturday"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="09:00 - 18:00"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">週日</label>
-            <input
-              type="text"
-              v-model="formData.businessHours.sunday"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="公休"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">國定假日</label>
-            <input
-              type="text"
-              v-model="formData.businessHours.holiday"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="依公告，請來電確認"
-            />
-          </div>
-        </div>
+        <!-- 營業時間：由網站程式統一維護（見 pages/locations/[store].vue），此處不提供編輯 -->
+        <p class="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
+          營業時間由網站程式統一維護，如需修改請聯繫開發者。
+        </p>
       </div>
 
       <!-- Transport -->
