@@ -365,7 +365,7 @@ const mediaReports = [
           LKK4 是全台規模最大的中高齡全能體能挑戰賽，我們誠摯歡迎企業贊助、加盟通路、技術研究或媒體採訪，共同發揮品牌影響力：
         </p>
 
-        <div class="grid md:grid-cols-2 gap-6">
+        <div class="max-w-2xl">
           <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-6">
             <h3 class="font-serif text-xl font-black text-white mb-2">
               企業贊助與<span class="text-orange">品牌合作</span>
@@ -376,18 +376,6 @@ const mediaReports = [
             <NuxtLink to="/cooperation" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-6 py-2.5 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors text-sm">
               洽談贊助與合作 →
             </NuxtLink>
-          </div>
-
-          <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-6">
-            <h3 class="font-serif text-xl font-black text-white mb-2">
-              媒體公關與<span class="text-orange">新聞專區</span>
-            </h3>
-            <p class="text-white/60 text-sm leading-relaxed mb-5">
-              專為記者、節目製作人與研究機構設立。提供歷屆賽事影像資產、選手精彩故事、專業物理治療數據報告以及專屬媒體採訪席位登記。
-            </p>
-            <a href="mailto:lkk@l-kk.tw" class="inline-flex items-center gap-2 bg-transparent border border-white/25 text-white font-semibold px-6 py-2.5 rounded-full hover:border-white hover:bg-white/5 transition-colors text-sm">
-              索取 Press Kit / 採訪登記
-            </a>
           </div>
         </div>
       </div>

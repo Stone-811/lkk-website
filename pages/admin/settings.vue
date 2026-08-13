@@ -29,15 +29,15 @@ interface Settings {
 const defaultSettings: Settings = {
   siteName: '練健康',
   siteDescription: '專業一對一私人教練，科學化訓練，找回您的健康生活。',
-  contactEmail: 'lkk@l-kk.tw',
-  contactPhone: '02-2712-3456',
+  contactEmail: 'lkkwellness@gmail.com',
+  contactPhone: '02-2537-1055',
   socialLinks: {
     facebook: 'https://www.facebook.com/LKKWellnessCenter/',
     instagram: 'https://www.instagram.com/lkk_wellness/',
     youtube: 'https://www.youtube.com/c/LKKWellness',
     podcast: 'https://podcasts.apple.com/tw/podcast/%E5%88%9D%E4%B8%80%E5%8D%81%E4%BA%94%E7%B7%B4%E5%81%A5%E5%BA%B7/id1779024584',
     line: 'https://line.me/R/ti/p/%40201fzruh',
-    email: 'lkk@l-kk.tw',
+    email: 'lkkwellness@gmail.com',
   },
   notifications: {
     emailOnNewLead: true,
@@ -342,7 +342,7 @@ async function handleTestNotification() {
             v-model="settings.socialLinks.email"
             type="email"
             class="w-full max-w-xl border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange focus:border-orange transition-colors"
-            placeholder="lkk@l-kk.tw"
+            placeholder="lkkwellness@gmail.com"
           />
         </div>
       </div>

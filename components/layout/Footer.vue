@@ -80,7 +80,7 @@ const currentYear = new Date().getFullYear()
             </a>
             <!-- Email -->
             <a
-              href="mailto:lkk@l-kk.tw"
+              href="mailto:lkkwellness@gmail.com"
               class="text-cream-200 hover:text-orange transition-colors"
               aria-label="Email"
             >
@@ -127,8 +127,8 @@ const currentYear = new Date().getFullYear()
           <h3 class="font-medium mb-3 sm:mb-4 font-serif text-sm sm:text-base">聯絡我們</h3>
           <ul class="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-cream-200">
             <li>
-              <a href="mailto:lkk@l-kk.tw" class="hover:text-white transition-colors">
-                lkk@l-kk.tw
+              <a href="mailto:lkkwellness@gmail.com" class="hover:text-white transition-colors">
+                lkkwellness@gmail.com
               </a>
             </li>
             <li>
