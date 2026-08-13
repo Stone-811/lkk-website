@@ -9,7 +9,7 @@ import { canAccessAdminPath } from '~/utils/adminAccess'
 export default defineNuxtRouteMiddleware(async (to) => {
   if (!to.path.startsWith('/admin') || to.path === '/admin/login') return
 
-  const adminUser = useState<{ id: string; name: string; email: string; role: string } | null>(
+  const adminUser = useState<{ id: string; name: string; email: string; role: string; permissions?: string[] } | null>(
     'adminUser',
     () => null,
   )
@@ -26,7 +26,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo('/admin/login')
   }
 
-  if (!canAccessAdminPath(adminUser.value.role, to.path)) {
+  if (!canAccessAdminPath(adminUser.value, to.path)) {
     return navigateTo(adminUser.value.role === 'sales' ? '/admin/leads' : '/admin')
   }
 })

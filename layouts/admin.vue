@@ -19,16 +19,16 @@ const menuItems = [
   { name: '使用者管理', path: '/admin/users', icon: 'users' },
 ]
 
-// 依登入者角色過濾可見選單（與路由守衛共用 canAccessAdminPath）
+// 依登入者權限過濾可見選單（與路由守衛共用 canAccessAdminPath）
 const visibleMenuItems = computed(() =>
-  menuItems.filter((item) => canAccessAdminPath(user.value?.role, item.path)),
+  menuItems.filter((item) => canAccessAdminPath(user.value, item.path)),
 )
 
 const isSidebarOpen = ref(false)
 
 // User session（由 middleware/admin-access.global.ts 透過 useState 提供，SSR 即填好）
 // session 驗證與未登入/角色導向都在 route middleware 處理，這裡只讀取顯示。
-const user = useState<{ id: string; name: string; email: string; role: string } | null>(
+const user = useState<{ id: string; name: string; email: string; role: string; permissions?: string[] } | null>(
   'adminUser',
   () => null,
 )

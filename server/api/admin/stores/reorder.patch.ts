@@ -1,5 +1,6 @@
 import { getDb, getTimestamp } from '~/server/utils/firebase'
 import { getSession } from '~/server/utils/auth'
+import { hasPagePermission } from '~/utils/adminAccess'
 
 export default defineEventHandler(async (event) => {
   const session = await getSession(event)
@@ -10,7 +11,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (session.role !== 'admin') {
+  if (session.role !== 'admin' && !hasPagePermission(session, '/admin/stores')) {
     throw createError({
       statusCode: 403,
       statusMessage: '權限不足',

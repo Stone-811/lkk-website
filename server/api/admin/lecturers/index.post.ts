@@ -1,10 +1,11 @@
 import { getDb, getTimestamp } from '~/server/utils/firebase'
 import { getSession } from '~/server/utils/auth'
+import { hasPagePermission } from '~/utils/adminAccess'
 
 export default defineEventHandler(async (event) => {
   try {
     const session = await getSession(event)
-    if (!session || !['admin', 'editor'].includes(session.role)) {
+    if (!session || (!['admin', 'editor'].includes(session.role) && !hasPagePermission(session, '/admin/lecturers'))) {
       throw createError({ statusCode: 401, message: '未授權' })
     }
 
