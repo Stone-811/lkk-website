@@ -9,49 +9,40 @@ useHead({
   ]
 })
 
-// 分店資料
-const stores = [
-  {
-    id: 'xindian',
-    name: '七張店',
-    district: '新北市新店區',
-    address: '新北市新店區北新路二段 252 號 B1-2',
-    phone: '(02) 8914-6428',
-    mrt: '捷運七張站 步行5分鐘',
-    features: ['一對一訓練', '寬敞空間'],
-    coachCount: 10,
-  },
-  {
-    id: 'nanjing',
-    name: '南京店',
-    district: '台北市中山區',
-    address: '台北市中山區南京東路三段 29 號 B1',
-    phone: '(02) 2507-4196',
-    mrt: '捷運松江南京站 步行6分鐘',
-    features: ['一對一訓練', '團體課程'],
-    coachCount: 14,
-  },
-  {
-    id: 'songjiang',
-    name: '松江店',
-    district: '台北市中山區',
-    address: '台北市中山區松江路 122 號 B1',
-    phone: '(02) 2537-1055',
-    mrt: '捷運松江南京站 步行1分鐘',
-    features: ['一對一訓練'],
-    coachCount: 5,
-  },
-  {
-    id: 'ximending',
-    name: '西門店',
-    district: '台北市中正區',
-    address: '台北市中正區寶慶路 39 號',
-    phone: '(02) 2370-3245',
-    mrt: '捷運西門站 步行3分鐘',
-    features: ['一對一訓練', '團體課程'],
-    coachCount: 14,
-  },
+// 分店資料：由後台分店管理（Firestore /api/public/stores）驅動；抓不到時用 fallback，頁面永不空白。
+// 註：mrt 敘述與行銷標籤 features 在 DB 沒有欄位，以 slug 對應補上。
+const FALLBACK_STORES = [
+  { id: 'xindian', name: '七張店', district: '新北市新店區', address: '新北市新店區北新路二段 252 號 B1-2', phone: '(02) 8914-6428', mrt: '捷運七張站 步行5分鐘', features: ['一對一訓練', '寬敞空間'] },
+  { id: 'nanjing', name: '南京店', district: '台北市中山區', address: '台北市中山區南京東路三段 29 號 B1', phone: '(02) 2507-4196', mrt: '捷運松江南京站 步行6分鐘', features: ['一對一訓練', '團體課程'] },
+  { id: 'songjiang', name: '松江店', district: '台北市中山區', address: '台北市中山區松江路 122 號 B1', phone: '(02) 2537-1055', mrt: '捷運松江南京站 步行1分鐘', features: ['一對一訓練'] },
+  { id: 'ximending', name: '西門店', district: '台北市中正區', address: '台北市中正區寶慶路 39 號', phone: '(02) 2370-3245', mrt: '捷運西門站 步行3分鐘', features: ['一對一訓練', '團體課程'] },
 ]
+
+const FEATURES_BY_SLUG: Record<string, string[]> = {
+  xindian: ['一對一訓練', '寬敞空間'],
+  nanjing: ['一對一訓練', '團體課程'],
+  songjiang: ['一對一訓練'],
+  ximending: ['一對一訓練', '團體課程'],
+}
+
+const { getStoreDefaults } = useStoreDefaults()
+
+// 非阻塞載入：先渲染 fallback（SSR 不卡、無白屏），抓到後台資料後即更新
+const { data: storeRes } = useLazyFetch<{ data?: any[] }>('/api/public/stores', { key: 'public-stores-overview' })
+
+const stores = computed(() => {
+  const list = storeRes.value?.data
+  if (!Array.isArray(list) || list.length === 0) return FALLBACK_STORES
+  return list.map((s: any) => ({
+    id: s.slug || s.id,
+    name: s.name,
+    district: `${s.city || ''}${s.district || ''}`,
+    address: `${s.city || ''}${s.district || ''}${s.address || ''}`,
+    phone: s.phone || '',
+    mrt: getStoreDefaults(s.slug)?.description || '',
+    features: FEATURES_BY_SLUG[s.slug] || ['一對一訓練'],
+  }))
+})
 
 const stats = [
   { num: '4', label: '間分店' },
