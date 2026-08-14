@@ -1,5 +1,6 @@
-// 更新後台使用者（姓名／角色／啟用狀態／重設密碼）。僅 admin。
-const ALLOWED_ROLES = ['admin', 'editor', 'store_staff', 'sales']
+// 更新後台使用者（姓名／角色／權限／啟用狀態／重設密碼）。僅 admin。
+import { ASSIGNABLE_PAGE_PATHS } from '~/utils/adminAccess'
+const ALLOWED_ROLES = ['admin', 'editor', 'store_staff', 'sales', 'custom']
 
 export default defineEventHandler(async (event) => {
   const { requireRole, validatePasswordStrength } = await import('~/server/utils/auth')
@@ -21,6 +22,13 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: '角色不正確' })
     }
     updates.role = body.role
+  }
+  if (Array.isArray(body?.permissions)) {
+    updates.permissions = body.permissions.filter((p: string) => ASSIGNABLE_PAGE_PATHS.includes(p))
+  }
+  // 改為非自訂角色時清空權限清單，避免殘留誤判
+  if (updates.role && updates.role !== 'custom') {
+    updates.permissions = []
   }
   if (typeof body?.isActive === 'boolean') {
     updates.isActive = body.isActive

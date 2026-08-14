@@ -14,6 +14,26 @@ const stores = [
   { name: '七張店', phone: '(02) 8914-6428', href: '/locations/xindian' },
 ]
 
+// 聯絡資訊與社群連結：由後台系統設定驅動（settings/general + settings/social）。
+// 非阻塞載入，先以預設值渲染（後台未設定時就用這些預設），抓到後台值後更新。
+const { data: site } = useLazyFetch('/api/public/settings', {
+  key: 'public-site-settings',
+  default: () => ({
+    contactEmail: 'lkkwellness@gmail.com',
+    contactPhone: '02-2537-1055',
+    socialLinks: {
+      facebook: 'https://www.facebook.com/LKKWellnessCenter/',
+      instagram: 'https://www.instagram.com/lkk_wellness/',
+      youtube: 'https://www.youtube.com/c/LKKWellness',
+      podcast: 'https://podcasts.apple.com/tw/podcast/%E5%88%9D%E4%B8%80%E5%8D%81%E4%BA%94%E7%B7%B4%E5%81%A5%E5%BA%B7/id1779024584',
+      line: 'https://line.me/R/ti/p/%40201fzruh',
+      email: 'lkkwellness@gmail.com',
+    },
+  }),
+})
+
+const telHref = (phone: string) => `tel:${(phone || '').replace(/[^0-9+]/g, '')}`
+
 const currentYear = new Date().getFullYear()
 </script>
 
@@ -32,7 +52,8 @@ const currentYear = new Date().getFullYear()
           <div class="flex flex-wrap gap-3">
             <!-- Facebook -->
             <a
-              href="https://www.facebook.com/LKKWellnessCenter/"
+              v-if="site.socialLinks.facebook"
+              :href="site.socialLinks.facebook"
               target="_blank"
               rel="noopener noreferrer"
               class="text-cream-200 hover:text-orange transition-colors"
@@ -44,7 +65,8 @@ const currentYear = new Date().getFullYear()
             </a>
             <!-- Instagram -->
             <a
-              href="https://www.instagram.com/lkk_wellness/"
+              v-if="site.socialLinks.instagram"
+              :href="site.socialLinks.instagram"
               target="_blank"
               rel="noopener noreferrer"
               class="text-cream-200 hover:text-orange transition-colors"
@@ -56,7 +78,8 @@ const currentYear = new Date().getFullYear()
             </a>
             <!-- YouTube -->
             <a
-              href="https://www.youtube.com/c/LKKWellness"
+              v-if="site.socialLinks.youtube"
+              :href="site.socialLinks.youtube"
               target="_blank"
               rel="noopener noreferrer"
               class="text-cream-200 hover:text-orange transition-colors"
@@ -66,9 +89,23 @@ const currentYear = new Date().getFullYear()
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
               </svg>
             </a>
+            <!-- Podcast -->
+            <a
+              v-if="site.socialLinks.podcast"
+              :href="site.socialLinks.podcast"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-cream-200 hover:text-orange transition-colors"
+              aria-label="Podcast"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-14 0m7 7v4m0-4a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+            </a>
             <!-- LINE -->
             <a
-              href="https://line.me/R/ti/p/%40201fzruh"
+              v-if="site.socialLinks.line"
+              :href="site.socialLinks.line"
               target="_blank"
               rel="noopener noreferrer"
               class="text-cream-200 hover:text-orange transition-colors"
@@ -80,7 +117,8 @@ const currentYear = new Date().getFullYear()
             </a>
             <!-- Email -->
             <a
-              href="mailto:lkk@l-kk.tw"
+              v-if="site.contactEmail"
+              :href="`mailto:${site.contactEmail}`"
               class="text-cream-200 hover:text-orange transition-colors"
               aria-label="Email"
             >
@@ -126,14 +164,19 @@ const currentYear = new Date().getFullYear()
         <div class="col-span-2 sm:col-span-1">
           <h3 class="font-medium mb-3 sm:mb-4 font-serif text-sm sm:text-base">聯絡我們</h3>
           <ul class="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-cream-200">
-            <li>
-              <a href="mailto:lkk@l-kk.tw" class="hover:text-white transition-colors">
-                lkk@l-kk.tw
+            <li v-if="site.contactEmail">
+              <a :href="`mailto:${site.contactEmail}`" class="hover:text-white transition-colors">
+                {{ site.contactEmail }}
               </a>
             </li>
-            <li>
+            <li v-if="site.contactPhone">
+              <a :href="telHref(site.contactPhone)" class="hover:text-white transition-colors">
+                {{ site.contactPhone }}
+              </a>
+            </li>
+            <li v-if="site.socialLinks.line">
               <a
-                href="https://line.me/R/ti/p/%40201fzruh"
+                :href="site.socialLinks.line"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="hover:text-white transition-colors"

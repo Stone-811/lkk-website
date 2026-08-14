@@ -1,10 +1,11 @@
 import { getSession } from '~/server/utils/auth'
 import { getDb } from '~/server/utils/firebase'
+import { hasPagePermission } from '~/utils/adminAccess'
 
 export default defineEventHandler(async (event) => {
   try {
     const session = await getSession(event)
-    if (!session || session.role !== 'admin') {
+    if (!session || (session.role !== 'admin' && !hasPagePermission(session, '/admin/settings'))) {
       throw createError({ statusCode: 401, message: 'Unauthorized' })
     }
 
@@ -23,8 +24,8 @@ export default defineEventHandler(async (event) => {
       : {
           siteName: '練健康',
           siteDescription: '專業一對一私人教練，科學化訓練，找回您的健康生活。',
-          contactEmail: 'service@l-kk.tw',
-          contactPhone: '02-2712-3456',
+          contactEmail: 'lkkwellness@gmail.com',
+          contactPhone: '02-2537-1055',
         }
 
     // Get social links

@@ -1,5 +1,6 @@
 import { getDb, getTimestamp } from '~/server/utils/firebase';
 import { getSession } from '~/server/utils/auth';
+import { hasPagePermission } from '~/utils/adminAccess';
 
 export default defineEventHandler(async (event) => {
   // Check authentication
@@ -11,8 +12,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Only admin can create stores
-  if (session.role !== 'admin') {
+  // 系統管理員或有「分店管理」權限的自訂帳號可建立分店
+  if (session.role !== 'admin' && !hasPagePermission(session, '/admin/stores')) {
     throw createError({
       statusCode: 403,
       statusMessage: '權限不足',

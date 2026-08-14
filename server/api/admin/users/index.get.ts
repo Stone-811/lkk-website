@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
       name: data.name ?? '',
       role: data.role ?? 'editor',
       storeId: data.storeId ?? null,
+      permissions: Array.isArray(data.permissions) ? data.permissions : [],
       isActive: data.isActive !== false,
       createdAt: toIso(data.createdAt),
     }

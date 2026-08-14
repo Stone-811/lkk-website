@@ -54,7 +54,7 @@ const JWT_SECRET = new TextEncoder().encode(resolveJwtSecret());
 
 const COOKIE_NAME = 'lkk-admin-token';
 
-export type UserRole = 'admin' | 'editor' | 'store_staff' | 'sales';
+export type UserRole = 'admin' | 'editor' | 'store_staff' | 'sales' | 'custom';
 
 export type UserSession = {
   id: string;
@@ -62,6 +62,8 @@ export type UserSession = {
   name: string;
   role: UserRole;
   storeId?: string;
+  // 自訂權限帳號（role === 'custom'）可存取的後台頁面路徑清單
+  permissions?: string[];
 };
 
 // Create JWT token for session
@@ -84,28 +86,38 @@ export async function verifyToken(token: string): Promise<UserSession | null> {
   }
 }
 
-// 停用即時生效：getSession 會回查 users.isActive（短快取降低 Firestore 讀取）。
-// 停用某帳號後，最多約 30 秒（該執行實例快取到期）該人就會被踢出，不必等 JWT 7 天到期。
-const deactivatedCache = new Map<string, { deactivated: boolean; at: number }>();
-const DEACTIVATED_TTL_MS = 30_000;
+// 即時生效機制：getSession 會回查 users 文件取「當前」狀態（短快取降低 Firestore 讀取）。
+// 停用帳號、或改角色/勾選權限後，最多約 30 秒（該執行實例快取到期）就會生效，
+// 不必等 JWT 7 天到期，也不必重新登入。權限來源以 DB 為準、不放進 JWT。
+type LiveUserState = { exists: boolean; isActive: boolean; role?: UserRole; permissions?: string[] };
+const userStateCache = new Map<string, { state: LiveUserState; at: number }>();
+const USER_STATE_TTL_MS = 30_000;
 
-async function isSessionDeactivated(userId: string): Promise<boolean> {
+async function getLiveUserState(userId: string): Promise<LiveUserState> {
   const now = Date.now();
-  const cached = deactivatedCache.get(userId);
-  if (cached && now - cached.at < DEACTIVATED_TTL_MS) return cached.deactivated;
+  const cached = userStateCache.get(userId);
+  if (cached && now - cached.at < USER_STATE_TTL_MS) return cached.state;
 
-  let deactivated = false;
+  // 預設：查無文件/出錯一律「存在=false、視為啟用」→ 保留 JWT 內容、不誤踢。
+  //（Google 登入 id 是 Firebase uid、dev 測試帳號 id 也無 users 文件，皆走此路徑）
+  let state: LiveUserState = { exists: false, isActive: true };
   try {
     const db = await getFirebaseDb();
     const snap = await db.collection('users').doc(userId).get();
-    // 僅在明確 isActive===false 時判為停用；查無文件/出錯一律放行
-    //（Google 登入的 id 是 Firebase uid、dev 測試帳號 id 也無 users 文件，皆不受影響）
-    deactivated = snap.exists && (snap.data() as any)?.isActive === false;
+    if (snap.exists) {
+      const d = snap.data() as any;
+      state = {
+        exists: true,
+        isActive: d?.isActive !== false,
+        role: d?.role,
+        permissions: Array.isArray(d?.permissions) ? d.permissions : undefined,
+      };
+    }
   } catch {
-    deactivated = false;
+    state = { exists: false, isActive: true };
   }
-  deactivatedCache.set(userId, { deactivated, at: now });
-  return deactivated;
+  userStateCache.set(userId, { state, at: now });
+  return state;
 }
 
 // Get session from cookie (for API routes)
@@ -117,8 +129,15 @@ export async function getSession(event: H3Event): Promise<UserSession | null> {
   const session = await verifyToken(token);
   if (!session) return null;
 
-  // 停用即時生效：帳號被停用（isActive=false）即視為未登入
-  if (session.id && (await isSessionDeactivated(session.id))) return null;
+  // 以 DB 現況覆寫 JWT 內的角色/權限，並即時反映停用狀態
+  if (session.id) {
+    const live = await getLiveUserState(session.id);
+    if (live.exists) {
+      if (!live.isActive) return null; // 帳號已停用 → 視為未登入
+      if (live.role) session.role = live.role;
+      session.permissions = live.permissions;
+    }
+  }
 
   return session;
 }
@@ -208,6 +227,7 @@ export async function loginWithCredentials(
       name: userData.name,
       role: userData.role,
       storeId: userData.storeId,
+      permissions: Array.isArray(userData.permissions) ? userData.permissions : undefined,
     };
 
     return { success: true, user };
@@ -223,7 +243,8 @@ export async function createUser(
   password: string,
   name: string,
   role: UserSession['role'] = 'editor',
-  storeId?: string
+  storeId?: string,
+  permissions: string[] = []
 ): Promise<{ success: boolean; userId?: string; error?: string }> {
   try {
     const bcrypt = await getBcrypt();
@@ -237,6 +258,8 @@ export async function createUser(
       passwordHash,
       role,
       storeId: storeId || null,
+      // 僅自訂權限帳號有意義；其餘角色存空陣列即可（canAccessAdminPath 以角色判斷）
+      permissions: role === 'custom' ? permissions : [],
       isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),

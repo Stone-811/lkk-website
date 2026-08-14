@@ -8,8 +8,6 @@ useHead({
 })
 
 interface Settings {
-  siteName: string
-  siteDescription: string
   contactEmail: string
   contactPhone: string
   socialLinks: {
@@ -27,17 +25,15 @@ interface Settings {
 }
 
 const defaultSettings: Settings = {
-  siteName: '練健康',
-  siteDescription: '專業一對一私人教練，科學化訓練，找回您的健康生活。',
-  contactEmail: 'lkk@l-kk.tw',
-  contactPhone: '02-2712-3456',
+  contactEmail: 'lkkwellness@gmail.com',
+  contactPhone: '02-2537-1055',
   socialLinks: {
     facebook: 'https://www.facebook.com/LKKWellnessCenter/',
     instagram: 'https://www.instagram.com/lkk_wellness/',
     youtube: 'https://www.youtube.com/c/LKKWellness',
     podcast: 'https://podcasts.apple.com/tw/podcast/%E5%88%9D%E4%B8%80%E5%8D%81%E4%BA%94%E7%B7%B4%E5%81%A5%E5%BA%B7/id1779024584',
     line: 'https://line.me/R/ti/p/%40201fzruh',
-    email: 'lkk@l-kk.tw',
+    email: 'lkkwellness@gmail.com',
   },
   notifications: {
     emailOnNewLead: true,
@@ -46,12 +42,9 @@ const defaultSettings: Settings = {
 }
 
 const settings = ref<Settings>({ ...defaultSettings })
-const activeTab = ref<'general' | 'social' | 'notifications' | 'data'>('general')
 const saving = ref(false)
 const loading = ref(true)
 const testingSend = ref(false)
-const seeding = ref(false)
-const seedResults = ref<{ stores: { created: number; skipped: number }; coaches: { created: number; skipped: number } } | null>(null)
 
 // Fetch settings on mount
 onMounted(async () => {
@@ -59,8 +52,6 @@ onMounted(async () => {
     const res = await $fetch<{ success: boolean; data: any }>('/api/admin/settings')
     if (res.success && res.data) {
       settings.value = {
-        siteName: res.data.siteName || defaultSettings.siteName,
-        siteDescription: res.data.siteDescription || defaultSettings.siteDescription,
         contactEmail: res.data.contactEmail || defaultSettings.contactEmail,
         contactPhone: res.data.contactPhone || defaultSettings.contactPhone,
         socialLinks: {
@@ -88,8 +79,6 @@ async function handleSave() {
       {
         section: 'general',
         data: {
-          siteName: settings.value.siteName,
-          siteDescription: settings.value.siteDescription,
           contactEmail: settings.value.contactEmail,
           contactPhone: settings.value.contactPhone,
         },
@@ -152,7 +141,7 @@ async function handleTestNotification() {
     <!-- Page Header -->
     <div>
       <h1 class="text-2xl font-bold text-gray-900">系統設定</h1>
-      <p class="text-gray-500 mt-1">管理網站基本設定</p>
+      <p class="text-gray-500 mt-1">管理聯絡資訊、社群連結與表單通知</p>
     </div>
 
     <!-- Loading -->
@@ -161,66 +150,9 @@ async function handleTestNotification() {
     </div>
 
     <template v-else>
-      <!-- Tabs -->
-      <div class="border-b border-gray-200">
-        <nav class="flex gap-6">
-          <button
-            @click="activeTab = 'general'"
-            :class="[
-              'pb-3 px-1 border-b-2 font-medium text-sm transition-colors',
-              activeTab === 'general'
-                ? 'border-navy text-navy'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            ]"
-          >
-            基本資訊
-          </button>
-          <button
-            @click="activeTab = 'social'"
-            :class="[
-              'pb-3 px-1 border-b-2 font-medium text-sm transition-colors',
-              activeTab === 'social'
-                ? 'border-navy text-navy'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            ]"
-          >
-            社群連結
-          </button>
-          <button
-            @click="activeTab = 'notifications'"
-            :class="[
-              'pb-3 px-1 border-b-2 font-medium text-sm transition-colors',
-              activeTab === 'notifications'
-                ? 'border-navy text-navy'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            ]"
-          >
-            通知設定
-          </button>
-        </nav>
-      </div>
-
-      <!-- General Tab -->
-      <div v-if="activeTab === 'general'" class="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">網站名稱</label>
-          <input
-            v-model="settings.siteName"
-            type="text"
-            class="w-full max-w-md border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange focus:border-orange transition-colors"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">網站描述</label>
-          <textarea
-            v-model="settings.siteDescription"
-            rows="2"
-            class="w-full max-w-xl border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange focus:border-orange transition-colors"
-          />
-          <p class="text-xs text-gray-500 mt-1">用於 SEO meta description</p>
-        </div>
-
+      <!-- 聯絡資訊 -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+        <h2 class="text-lg font-semibold text-gray-900">聯絡資訊</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">聯絡信箱</label>
@@ -242,8 +174,9 @@ async function handleTestNotification() {
         </div>
       </div>
 
-      <!-- Social Tab -->
-      <div v-if="activeTab === 'social'" class="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+      <!-- 社群連結 -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+        <h2 class="text-lg font-semibold text-gray-900">社群連結</h2>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
             <span class="inline-flex items-center gap-2">
@@ -342,13 +275,14 @@ async function handleTestNotification() {
             v-model="settings.socialLinks.email"
             type="email"
             class="w-full max-w-xl border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange focus:border-orange transition-colors"
-            placeholder="lkk@l-kk.tw"
+            placeholder="lkkwellness@gmail.com"
           />
         </div>
       </div>
 
-      <!-- Notifications Tab -->
-      <div v-if="activeTab === 'notifications'" class="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+      <!-- 通知設定 -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+        <h2 class="text-lg font-semibold text-gray-900">通知設定</h2>
         <!-- 功能說明 -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 class="font-medium text-blue-800 mb-2">通知功能說明</h3>
@@ -381,7 +315,7 @@ async function handleTestNotification() {
             v-model="settings.notifications.emailRecipients"
             type="text"
             class="w-full max-w-xl border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange focus:border-orange transition-colors"
-            placeholder="service@l-kk.tw, manager@l-kk.tw"
+            placeholder="lkkwellness@gmail.com, manager@gmail.com"
           />
           <p class="text-xs text-gray-500 mt-1">多個收件人請用逗號分隔。新表單通知會寄送到這些信箱。</p>
         </div>

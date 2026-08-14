@@ -1,5 +1,6 @@
 // 建立後台使用者。僅 admin。
-const ALLOWED_ROLES = ['admin', 'editor', 'store_staff', 'sales']
+import { ASSIGNABLE_PAGE_PATHS } from '~/utils/adminAccess'
+const ALLOWED_ROLES = ['admin', 'editor', 'store_staff', 'sales', 'custom']
 
 export default defineEventHandler(async (event) => {
   const { requireRole, createUser, validatePasswordStrength } = await import('~/server/utils/auth')
@@ -10,6 +11,10 @@ export default defineEventHandler(async (event) => {
   const email = (body?.email || '').trim().toLowerCase()
   const password = body?.password || ''
   const role = body?.role || ''
+  // 自訂權限帳號的勾選頁面（只收合法頁面路徑）
+  const permissions: string[] = Array.isArray(body?.permissions)
+    ? body.permissions.filter((p: string) => ASSIGNABLE_PAGE_PATHS.includes(p))
+    : []
 
   if (!name || !email || !password || !role) {
     throw createError({ statusCode: 400, statusMessage: '請填寫姓名、Email、密碼與角色' })
@@ -32,7 +37,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, statusMessage: '此 Email 已被使用' })
   }
 
-  const result = await createUser(email, password, name, role)
+  const result = await createUser(email, password, name, role, undefined, permissions)
   if (!result.success) {
     throw createError({ statusCode: 500, statusMessage: result.error || '建立使用者失敗' })
   }
