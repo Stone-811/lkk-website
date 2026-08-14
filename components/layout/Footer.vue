@@ -165,23 +165,26 @@ const currentYear = new Date().getFullYear()
           <h3 class="font-medium mb-3 sm:mb-4 font-serif text-sm sm:text-base">聯絡我們</h3>
           <ul class="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-cream-200">
             <li v-if="site.contactEmail">
+              <span class="text-cream-300/70">信箱：</span>
               <a :href="`mailto:${site.contactEmail}`" class="hover:text-white transition-colors">
                 {{ site.contactEmail }}
               </a>
             </li>
             <li v-if="site.contactPhone">
+              <span class="text-cream-300/70">電話：</span>
               <a :href="telHref(site.contactPhone)" class="hover:text-white transition-colors">
                 {{ site.contactPhone }}
               </a>
             </li>
             <li v-if="site.socialLinks.line">
+              <span class="text-cream-300/70">LINE：</span>
               <a
                 :href="site.socialLinks.line"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="hover:text-white transition-colors"
               >
-                LINE 官方帳號
+                官方帳號
               </a>
             </li>
           </ul>
