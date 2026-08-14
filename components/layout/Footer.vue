@@ -183,9 +183,7 @@ const currentYear = new Date().getFullYear()
                 target="_blank"
                 rel="noopener noreferrer"
                 class="hover:text-white transition-colors"
-              >
-                官方帳號
-              </a>
+              >官方帳號</a>
             </li>
           </ul>
         </div>
