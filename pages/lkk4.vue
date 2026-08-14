@@ -354,19 +354,19 @@ const mediaReports = [
     <!-- Commercial CTA -->
     <section class="py-16 lg:py-20 bg-gradient-to-br from-[#1a3545] to-[#0e2230] text-white">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-3">
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
           商業與公關洽詢
         </div>
-        <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">
+        <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3 text-center">
           攜手 LKK4，共同開創<span class="text-orange">銀髮健康新經濟</span>
         </h2>
-        <p class="text-white/60 text-lg max-w-2xl mb-10">
+        <p class="text-white/60 text-lg max-w-2xl mx-auto text-center mb-10">
           LKK4 是全台規模最大的中高齡全能體能挑戰賽，我們誠摯歡迎企業贊助、加盟通路、技術研究或媒體採訪，共同發揮品牌影響力：
         </p>
 
-        <div class="max-w-2xl">
-          <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-6">
+        <div class="max-w-2xl mx-auto">
+          <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-6 text-center">
             <h3 class="font-serif text-xl font-black text-white mb-2">
               企業贊助與<span class="text-orange">品牌合作</span>
             </h3>
