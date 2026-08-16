@@ -154,10 +154,16 @@ const more: Report[] = [
     link: { text: 'YouTube 觀看 →', href: 'https://youtu.be/Xfzd8MsNW2o' } },
 ]
 
-// 篩選後若整區皆無符合，就隱藏該區塊標題（比只留空標題乾淨）
-const showIntl = computed(() => [apFeatured, ...intl].some(matches))
-const showTw = computed(() => tw.some(matches))
-const showMore = computed(() => more.some(matches))
+// 篩選用「computed 過濾陣列」重繪，而非在 v-for 元素上掛 v-show
+//（v-for + v-show 同一元素在此不會更新 → 改用過濾後的陣列）
+const apShown = computed(() => matches(apFeatured))
+const fIntl = computed(() => intl.filter((i) => matches(i)))
+const fTw = computed(() => tw.filter((i) => matches(i)))
+const fMore = computed(() => more.filter((i) => matches(i)))
+// 篩選後整區皆無符合就隱藏該區塊（比只留空標題乾淨）
+const showIntl = computed(() => apShown.value || fIntl.value.length > 0)
+const showTw = computed(() => fTw.value.length > 0)
+const showMore = computed(() => fMore.value.length > 0)
 </script>
 
 <template>
@@ -223,7 +229,7 @@ const showMore = computed(() => more.some(matches))
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- AP featured (big) -->
           <article
-            v-show="matches(apFeatured)"
+            v-if="apShown"
             class="md:col-span-2 lg:col-span-3 grid md:grid-cols-2 bg-white rounded-3xl overflow-hidden border border-navy-700/12 shadow-sm"
           >
             <div class="aspect-video md:aspect-auto md:min-h-[280px] overflow-hidden bg-navy-700/5">
@@ -257,8 +263,7 @@ const showMore = computed(() => more.some(matches))
 
           <!-- BBC / Reuters / AFP / CNA -->
           <article
-            v-for="item in intl"
-            v-show="matches(item)"
+            v-for="item in fIntl"
             :key="item.title"
             class="group bg-white rounded-2xl overflow-hidden border border-navy-700/12 shadow-sm hover:shadow-xl transition-all flex flex-col"
           >
@@ -306,8 +311,7 @@ const showMore = computed(() => more.some(matches))
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <article
-            v-for="item in tw"
-            v-show="matches(item)"
+            v-for="item in fTw"
             :key="item.title"
             class="group bg-cream-100 rounded-2xl overflow-hidden border border-navy-700/12 shadow-sm hover:shadow-xl transition-all flex flex-col"
           >
@@ -342,8 +346,7 @@ const showMore = computed(() => more.some(matches))
 
         <div class="space-y-3 max-w-4xl">
           <a
-            v-for="item in more"
-            v-show="matches(item)"
+            v-for="item in fMore"
             :key="item.title + item.date"
             :href="item.link.href"
             target="_blank"
