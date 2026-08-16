@@ -177,6 +177,17 @@ const closeMobileMenu = () => {
             LKK4
           </NuxtLink>
 
+          <!-- 媒體報導 -->
+          <NuxtLink
+            to="/news"
+            :class="[
+              'text-sm xl:text-base transition-colors',
+              isActive('/news') ? 'text-orange font-medium' : 'text-cream-100 hover:text-orange'
+            ]"
+          >
+            媒體報導
+          </NuxtLink>
+
           <!-- 異業結盟 -->
           <NuxtLink
             to="/cooperation"
@@ -335,6 +346,15 @@ const closeMobileMenu = () => {
             @click="closeMobileMenu"
           >
             LKK4
+          </NuxtLink>
+
+          <!-- 媒體報導 -->
+          <NuxtLink
+            to="/news"
+            :class="['py-3 px-2 rounded', isActive('/news') ? 'text-orange font-medium bg-navy-600/50' : 'text-cream-100']"
+            @click="closeMobileMenu"
+          >
+            媒體報導
           </NuxtLink>
 
           <!-- 異業結盟 -->
