@@ -88,7 +88,7 @@ const intl: Report[] = [
     outlet: 'CNA Insider 新加坡', type: 'video', lkk4: false,
     title: 'CNA Insider：重新定義亞洲的積極老化',
     excerpt: '新加坡 Channel NewsAsia 深入採訪，記錄練健康如何改變台灣人對老化的認知，透過力量訓練讓長輩活得更好。',
-    date: '2024', image: null,
+    date: '2024', image: '/images/news/cna.jpg',
     link: { text: 'YouTube 觀看 →', href: 'https://youtu.be/Xfzd8MsNW2o' },
   },
 ]
