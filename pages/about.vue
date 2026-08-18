@@ -28,10 +28,10 @@ const sectionNav = [
 ]
 
 const stats = [
-  { n: '10', l: 'Instagram 追蹤（萬）' },
-  { n: '2.85', l: 'YouTube 訂閱（萬）' },
-  { n: '2.4', l: 'Facebook 追蹤（萬）' },
-  { n: '290', l: '單支影片最高觸及（萬次）' },
+  { n: '10', u: '萬', l: 'Instagram 追蹤' },
+  { n: '2.85', u: '萬', l: 'YouTube 訂閱' },
+  { n: '2.4', u: '萬', l: 'Facebook 追蹤' },
+  { n: '290', u: '萬次', l: '單支影片最高觸及' },
 ]
 
 const socials = [
@@ -224,8 +224,8 @@ const programGroups = [
           </span>
         </div>
 
-        <div class="bg-white rounded-3xl border border-navy-700/12 shadow-sm p-5 lg:p-8 overflow-x-auto">
-          <svg viewBox="0 0 820 420" class="w-full min-w-[600px] h-auto" role="img" aria-label="肌力隨年齡下滑與持續訓練的對照圖">
+        <div class="bg-white rounded-2xl border border-navy-700/12 shadow-sm p-4 lg:p-6 overflow-x-auto max-w-3xl">
+          <svg viewBox="0 0 820 420" class="w-full min-w-[520px] h-auto" role="img" aria-label="肌力隨年齡下滑與持續訓練的對照圖">
             <!-- 軸 -->
             <line x1="90" y1="40" x2="90" y2="360" stroke="#2A5269" stroke-opacity="0.25" stroke-width="2" />
             <line x1="90" y1="360" x2="790" y2="360" stroke="#2A5269" stroke-opacity="0.25" stroke-width="2" />
@@ -236,22 +236,25 @@ const programGroups = [
             <text x="760" y="392" font-size="13" fill="#2A5269" fill-opacity="0.5" text-anchor="end">90 歲</text>
 
             <!-- 落差陰影 -->
-            <path d="M120,95 C330,120 540,175 770,250 L770,368 C540,300 330,160 120,95 Z" fill="#FB720A" fill-opacity="0.10" />
+            <path d="M120,95 C330,120 540,175 770,250 L770,368 C540,300 330,160 120,95 Z" fill="#FB720A" fill-opacity="0.13" />
 
             <!-- 日常獨立生活門檻 -->
             <line x1="90" y1="300" x2="790" y2="300" stroke="#2A5269" stroke-opacity="0.5" stroke-width="1.5" stroke-dasharray="6 6" />
             <text x="784" y="292" text-anchor="end" font-size="13" fill="#2A5269" fill-opacity="0.6">日常獨立生活門檻</text>
 
             <!-- 自然老化 -->
-            <path d="M120,95 C330,160 540,300 770,368" fill="none" stroke="#94a3b8" stroke-width="3.5" stroke-linecap="round" />
-            <text x="470" y="330" font-size="15" font-weight="bold" fill="#64748b">自然老化</text>
+            <path d="M120,95 C330,160 540,300 770,368" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+            <circle cx="770" cy="368" r="6" fill="#94a3b8" />
+            <text x="470" y="332" font-size="16" font-weight="bold" fill="#64748b">自然老化</text>
 
             <!-- 持續訓練 -->
-            <path d="M120,95 C330,120 540,175 770,250" fill="none" stroke="#FB720A" stroke-width="4" stroke-linecap="round" />
-            <text x="612" y="205" font-size="15" font-weight="bold" fill="#FB720A">持續訓練</text>
+            <path d="M120,95 C330,120 540,175 770,250" fill="none" stroke="#FB720A" stroke-width="5" stroke-linecap="round" />
+            <circle cx="120" cy="95" r="6" fill="#FB720A" />
+            <circle cx="770" cy="250" r="6" fill="#FB720A" />
+            <text x="612" y="203" font-size="16" font-weight="bold" fill="#FB720A">持續訓練</text>
 
             <!-- 落差標籤 -->
-            <text x="410" y="245" font-size="16" font-weight="bold" fill="#2A5269">這段落差，是練出來的</text>
+            <text x="404" y="243" font-size="17" font-weight="bold" fill="#2A5269">這段落差，是練出來的</text>
           </svg>
         </div>
       </div>
@@ -291,10 +294,12 @@ const programGroups = [
         </div>
 
         <!-- 社群數據 -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div v-for="s in stats" :key="s.l" class="bg-cream-100 rounded-2xl border border-navy-700/10 p-8 text-center">
-            <div class="font-serif text-4xl lg:text-5xl font-black text-navy-700">{{ s.n }}</div>
-            <div class="text-sm text-ink/55 mt-2">{{ s.l }}</div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div v-for="s in stats" :key="s.l" class="bg-cream-100 rounded-2xl border border-navy-700/10 p-5 text-center">
+            <div class="font-serif text-navy-700 leading-none">
+              <span class="text-3xl font-black">{{ s.n }}</span><span class="text-base font-bold text-navy-700/60 ml-0.5">{{ s.u }}</span>
+            </div>
+            <div class="text-xs text-ink/55 mt-2 leading-snug">{{ s.l }}</div>
           </div>
         </div>
       </div>
