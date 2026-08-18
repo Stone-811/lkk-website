@@ -381,16 +381,20 @@ const branches = [
           <div>
             <div class="flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-3">
               <span class="w-5 h-0.5 bg-orange" />
-              LKK4 賽事
+              Signature Event
+              <span class="text-white/35 tracking-normal normal-case font-medium">・年度盛事</span>
             </div>
-            <h2 class="font-serif text-2xl lg:text-3xl font-black mb-4">聖誕老人硬舉大賽 → <span class="text-orange">LKK4 全齡挑戰</span></h2>
+            <h2 class="font-serif text-3xl lg:text-4xl font-black mb-2 leading-tight">
+              聖誕老人<span class="text-orange">硬舉大賽</span>
+            </h2>
+            <p class="text-orange-300/80 text-xs font-bold tracking-widest uppercase mb-5">LKK4 · Santa Claus Deadlift Competition</p>
             <p class="text-white/60 leading-relaxed">
-              2021 年起，練健康把中高齡的力量搬上舞台。長者穿上聖誕裝挑戰硬舉，感動了無數家庭，也吸引 BBC、路透社、法新社來台採訪。如今發展為 LKK4 中高齡四項體能挑戰賽。
+              辦一場給長輩的比賽，是我們喚起社會意識的方式。每年 12 月舉辦，2026 年邁入第六屆，曾吸引 BBC、Reuters、AFP 等國際媒體到場採訪，是練健康最具代表性的年度品牌活動。
             </p>
           </div>
           <div class="lg:text-right">
             <NuxtLink to="/lkk4" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-              認識 LKK4 賽事 →
+              查看 2026 第六屆賽事詳情 →
             </NuxtLink>
           </div>
         </div>
