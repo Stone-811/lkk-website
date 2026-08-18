@@ -201,20 +201,20 @@ const programGroups = [
 
     <!-- 品牌主張：肌力衰退 vs 持續訓練 -->
     <section id="brand" class="py-14 lg:py-20 scroll-mt-28">
-      <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
+      <div class="container mx-auto px-4 text-center">
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
           Our Belief
           <span class="text-navy-700/40 tracking-normal normal-case font-medium">・品牌主張</span>
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-4 max-w-3xl leading-snug">
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-4 max-w-3xl mx-auto leading-snug">
           透過專業訓練，讓每個人<span class="text-orange">在理想狀態老去</span>
         </h2>
-        <p class="text-ink/70 leading-relaxed mb-8 max-w-2xl">
+        <p class="text-ink/70 leading-relaxed mb-8 max-w-2xl mx-auto">
           老化不可逆，但衰退的速度可以被改變。肌力是少數能靠訓練「重新長回來」的能力——即使已經八十、九十歲。這是練健康存在的理由：把運動科學與醫學實證，變成長輩真的做得到的訓練。
         </p>
 
-        <div class="flex flex-wrap gap-2.5 mb-10">
+        <div class="flex flex-wrap justify-center gap-2.5 mb-10">
           <span
             v-for="pillar in brandPillars"
             :key="pillar"
@@ -224,7 +224,7 @@ const programGroups = [
           </span>
         </div>
 
-        <div class="bg-white rounded-2xl border border-navy-700/12 shadow-sm p-4 lg:p-6 overflow-x-auto max-w-3xl">
+        <div class="bg-white rounded-2xl border border-navy-700/12 shadow-sm p-4 lg:p-6 overflow-x-auto max-w-3xl mx-auto">
           <svg viewBox="0 0 820 420" class="w-full min-w-[520px] h-auto" role="img" aria-label="肌力隨年齡下滑與持續訓練的對照圖">
             <!-- 軸 -->
             <line x1="90" y1="40" x2="90" y2="360" stroke="#2A5269" stroke-opacity="0.25" stroke-width="2" />
@@ -262,22 +262,22 @@ const programGroups = [
 
     <!-- 我們是誰 -->
     <section id="who" class="bg-white py-14 lg:py-20 scroll-mt-28">
-      <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
+      <div class="container mx-auto px-4 text-center">
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
           Who We Are
           <span class="text-navy-700/40 tracking-normal normal-case font-medium">・我們是誰</span>
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-6 max-w-3xl leading-snug">
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-6 max-w-3xl mx-auto leading-snug">
           由醫療與<span class="text-orange">運動科學背景</span>創立的訓練團隊
         </h2>
-        <div class="space-y-4 text-ink/70 leading-relaxed max-w-3xl mb-8">
+        <div class="space-y-4 text-ink/70 leading-relaxed max-w-3xl mx-auto mb-8">
           <p>中高齡訓練的難處，從來不只是「怎麼練」。它牽涉到疾病史、用藥、關節限制、營養、心理與家庭支持，單一專業無法涵蓋。我們深知中高齡族群的身體需求，也知道錯誤的訓練會造成什麼後果——因此從評估、課表到現場指導，都由具備醫療或運動科學專業的教練把關，讓每一堂課都建立在專業與安全之上。</p>
           <p>現場教學之外，練健康也是一個運動科學科普平台：把正確知識轉譯成一般人聽得懂的語言，並分享中高齡與特殊族群真實的訓練紀錄，鼓勵每一個人加入訓練的行列。</p>
         </div>
 
         <!-- 社群 -->
-        <div class="flex flex-wrap gap-2.5 mb-10">
+        <div class="flex flex-wrap justify-center gap-2.5 mb-10">
           <a
             v-for="s in socials"
             :key="s.name"
@@ -334,13 +334,13 @@ const programGroups = [
     <!-- 發展歷程 -->
     <section id="history" class="py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
           Milestones
           <span class="text-navy-700/40 tracking-normal normal-case font-medium">・發展歷程</span>
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-2">練健康的旅程</h2>
-        <p class="text-ink/40 text-xs mb-6">← 左右滑動看完整歷程 →</p>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-2 text-center">練健康的旅程</h2>
+        <p class="text-ink/40 text-xs mb-6 text-center">← 左右滑動看完整歷程 →</p>
 
         <div class="overflow-x-auto pb-4">
           <div class="relative flex gap-8 min-w-max">
@@ -364,15 +364,15 @@ const programGroups = [
     <!-- 經營團隊 -->
     <section id="team" class="bg-white py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
           Our Team
           <span class="text-navy-700/40 tracking-normal normal-case font-medium">・經營團隊</span>
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">核心經營與<span class="text-orange">教練團隊</span></h2>
-        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl">帶領練健康走到今天的核心夥伴，橫跨經營、訓練與物理治療專業。</p>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3 text-center">核心經營與<span class="text-orange">教練團隊</span></h2>
+        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl mx-auto text-center">帶領練健康走到今天的核心夥伴，橫跨經營、訓練與物理治療專業。</p>
 
-        <div class="grid md:grid-cols-3 gap-6 max-w-5xl">
+        <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           <article
             v-for="member in managementTeam"
             :key="member.id"
@@ -402,7 +402,7 @@ const programGroups = [
           </article>
         </div>
 
-        <div class="mt-8">
+        <div class="mt-8 text-center">
           <NuxtLink to="/team-intro/coaches" class="inline-flex items-center gap-2 text-navy-700 border border-navy-700/15 px-6 py-2.5 rounded-full hover:border-navy-700 transition-colors font-medium">
             查看全體教練團隊 →
           </NuxtLink>
@@ -413,26 +413,22 @@ const programGroups = [
     <!-- 聖誕老人硬舉大賽 / LKK4 -->
     <section id="lkk4" class="py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="bg-gradient-to-br from-navy-700 to-[#0e2230] rounded-3xl p-8 lg:p-12 text-white grid lg:grid-cols-2 gap-8 items-center">
-          <div>
-            <div class="flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-3">
-              <span class="w-5 h-0.5 bg-orange" />
-              Signature Event
-              <span class="text-white/35 tracking-normal normal-case font-medium">・年度盛事</span>
-            </div>
-            <h2 class="font-serif text-3xl lg:text-4xl font-black mb-2 leading-tight">
-              聖誕老人<span class="text-orange">硬舉大賽</span>
-            </h2>
-            <p class="text-orange-300/80 text-xs font-bold tracking-widest uppercase mb-5">LKK4 · Santa Claus Deadlift Competition</p>
-            <p class="text-white/60 leading-relaxed">
-              辦一場給長輩的比賽，是我們喚起社會意識的方式。每年 12 月舉辦，2026 年邁入第六屆，曾吸引 BBC、Reuters、AFP 等國際媒體到場採訪，是練健康最具代表性的年度品牌活動。
-            </p>
+        <div class="bg-gradient-to-br from-navy-700 to-[#0e2230] rounded-3xl p-8 lg:p-12 text-white text-center max-w-3xl mx-auto">
+          <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-3">
+            <span class="w-5 h-0.5 bg-orange" />
+            Signature Event
+            <span class="text-white/35 tracking-normal normal-case font-medium">・年度盛事</span>
           </div>
-          <div class="lg:text-right">
-            <NuxtLink to="/lkk4" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-              查看 2026 第六屆賽事詳情 →
-            </NuxtLink>
-          </div>
+          <h2 class="font-serif text-3xl lg:text-4xl font-black mb-2 leading-tight">
+            聖誕老人<span class="text-orange">硬舉大賽</span>
+          </h2>
+          <p class="text-orange-300/80 text-xs font-bold tracking-widest uppercase mb-5">LKK4 · Santa Claus Deadlift Competition</p>
+          <p class="text-white/60 leading-relaxed max-w-xl mx-auto mb-8">
+            辦一場給長輩的比賽，是我們喚起社會意識的方式。每年 12 月舉辦，2026 年邁入第六屆，曾吸引 BBC、Reuters、AFP 等國際媒體到場採訪，是練健康最具代表性的年度品牌活動。
+          </p>
+          <NuxtLink to="/lkk4" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
+            查看 2026 第六屆賽事詳情 →
+          </NuxtLink>
         </div>
       </div>
     </section>
@@ -497,17 +493,17 @@ const programGroups = [
 
     <!-- 分店 -->
     <section id="locations" class="bg-white py-14 lg:py-20 scroll-mt-28">
-      <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
+      <div class="container mx-auto px-4 text-center">
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
           Locations
           <span class="text-navy-700/40 tracking-normal normal-case font-medium">・分店資訊</span>
         </div>
         <p class="text-orange font-bold text-sm mb-1">台北・新北</p>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">四間分店</h2>
-        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl">每一間分店都配置醫療或運動科學背景的教練團隊。第一次來，建議先預約體驗，我們會先做完整的身體評估再談訓練。</p>
+        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl mx-auto">每一間分店都配置醫療或運動科學背景的教練團隊。第一次來，建議先預約體驗，我們會先做完整的身體評估再談訓練。</p>
 
-        <div class="flex flex-wrap gap-3">
+        <div class="flex flex-wrap justify-center gap-3">
           <NuxtLink
             v-for="b in branches"
             :key="b.slug"
@@ -518,7 +514,7 @@ const programGroups = [
           </NuxtLink>
         </div>
 
-        <div class="mt-8 flex flex-wrap gap-4">
+        <div class="mt-8 flex flex-wrap justify-center gap-4">
           <NuxtLink to="/booking" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
             預約體驗與身體評估 →
           </NuxtLink>
@@ -529,20 +525,5 @@ const programGroups = [
       </div>
     </section>
 
-    <!-- CTA -->
-    <section class="bg-orange py-16 lg:py-20 text-center">
-      <div class="container mx-auto px-4">
-        <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">健康，從第一堂課開始練</h2>
-        <p class="text-white/80 mb-8 max-w-md mx-auto">50 歲以上首次體驗完全免費，由專業教練陪你安全開始。</p>
-        <div class="flex flex-wrap justify-center gap-4">
-          <NuxtLink to="/booking" class="inline-flex items-center gap-2 bg-white text-orange font-bold px-8 py-3.5 rounded-full shadow-lg hover:-translate-y-0.5 transition-transform">
-            預約免費體驗 →
-          </NuxtLink>
-          <NuxtLink to="/team-intro/coaches" class="inline-flex items-center gap-2 bg-white/20 text-white font-bold px-8 py-3.5 rounded-full border border-white/30 hover:bg-white/30 transition-colors">
-            認識教練團隊
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
   </div>
 </template>
