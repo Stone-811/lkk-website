@@ -2,55 +2,193 @@
 useHead({
   title: '團體課程報名｜練健康 LKK Wellness',
   meta: [
-    { name: 'description', content: '報名練健康中高齡團體課程。小班制、同儕一起練更有動力，兼顧肌力、平衡與心肺。填寫報名表，專人與你聯繫確認課程時間。' },
+    {
+      name: 'description',
+      content:
+        '練健康團體課程報名：基礎重訓、樂齡肌力、舉重團班，四堂一期、隨時可續課，南京・松江・西門・新店七張四店開課。填表後教練 1 個工作天內主動聯繫確認梯次。',
+    },
   ],
 })
 
-interface Errors { [k: string]: string }
+const LINE_URL = 'https://line.me/R/ti/p/%40201fzruh'
 
 const formData = reactive({
   name: '',
+  gender: '',
+  ageRange: '',
   phone: '',
   email: '',
-  storeId: '',
-  desiredClass: '',
-  age: '',
-  message: '',
+  isFillerSelf: '',
+  fillerName: '',
+  relationship: '',
+  course: '',
+  store: '',
+  preferredTime: '',
+  experience: '',
+  medicalHistory: '',
+  source: [] as string[],
+  note: '',
 })
 
-const stores = ref<{ id: string; name: string }[]>([
-  { id: 'nanjing', name: '南京店' },
-  { id: 'songjiang', name: '松江店' },
-  { id: 'ximending', name: '西門店' },
-  { id: 'xindian', name: '七張店' },
-])
+const genders = ['男', '女', '其他']
+const ageRanges = ['50歲以下', '50–65歲', '65歲以上']
+const courses = [
+  { value: '基礎重訓團班', price: '$2,400' },
+  { value: '樂齡肌力體適能團班', price: '$2,400' },
+  { value: '練健康舉重團班', price: '$3,200' },
+]
+const storeOptions = [
+  '南京店｜台北市中山區南京東路三段29號B1',
+  '松江店｜台北市中山區松江路122號B1',
+  '西門店｜台北市中正區寶慶路39號',
+  '新店七張店｜新北市新店區北新路二段252號B1-2',
+  '不確定，請教練為我推薦',
+]
+const experiences = [
+  { value: '完全新手', label: '完全新手' },
+  { value: '有一些基礎', label: '有一些基礎' },
+  { value: '有規律訓練習慣', label: '規律訓練中' },
+]
+const sourceOptions = [
+  { value: 'Facebook 臉書粉專', label: 'Facebook 粉專' },
+  { value: 'Instagram 視覺社群', label: 'Instagram' },
+  { value: 'YouTube 影片頻道', label: 'YouTube 影片' },
+  { value: '親朋好友推薦分享', label: '親友推薦' },
+  { value: '上過體驗課／一對一課程', label: '上過體驗課' },
+  { value: '門店路過看到', label: '路過看到門店' },
+]
 
-onMounted(async () => {
-  try {
-    const res = await fetch('/api/public/stores')
-    if (res.ok) {
-      const data = await res.json()
-      if (data.data && data.data.length > 0) {
-        stores.value = data.data.map((s: any) => ({ id: s.id, name: s.name }))
-      }
-    }
-  } catch (e) {
-    console.error('Failed to fetch stores:', e)
-  }
-})
+const heroGets = [
+  '四堂學會重訓六大基礎動作',
+  '教練隨堂指導，暖身收操都安排好',
+  '樂齡族群也有專屬強度調整',
+  '南京・松江・西門・新店七張 四店開課',
+]
+const trustLogos = ['大愛新聞', '吳淡如', '動思學院', '高年級不打烊']
+const trustStats = [
+  { n: '3 種', l: '團體課程可選' },
+  { n: '4 間', l: '台北・新北門店' },
+  { n: 'PT', l: '物理治療師教練' },
+  { n: '4 堂', l: '一期，可續課' },
+]
+const reassure = [
+  '沒有重訓基礎也能報名',
+  '不須從月初開始，隨時可報名',
+  '請假最晚提前一週可順延',
+  '教練 1 個工作天內主動聯繫',
+]
+const courseCards = [
+  {
+    title: '基礎重訓團班',
+    price: '$2,400',
+    unit: '4堂／一期',
+    desc: '四堂課循序漸進學會深蹲、硬舉、分腿蹲、胸推、肩推、划船六大基礎動作，從徒手到啞鈴、壺鈴、槓鈴都會用。教練隨堂指導與收操，課後你就能自己上健身房訓練。適合完全沒經驗、想快速脫離新手村的人。',
+    tags: [{ t: '新手友善' }, { t: '4間門店皆有開班' }, { t: '課後可自主訓練' }],
+  },
+  {
+    title: '樂齡肌力體適能團班',
+    price: '$2,400',
+    unit: '4堂／一期',
+    desc: '課程內容與基礎重訓團班相同的動作架構，但教練會依中高齡學員的身體狀況調整強度與節奏，並加強日常生活起居相關的動作模式，目標是預防跌倒臥床，維持晚年自主生活的能力。',
+    tags: [{ t: '中高齡專屬強度' }, { t: '4間門店皆有開班' }],
+  },
+  {
+    title: '練健康舉重團班',
+    price: '$3,200',
+    unit: '4堂／一期',
+    desc: '由具備舉重與運動防護背景的教練帶領，扎穩舉重馬步基本功，教授抓舉、挺舉相關的動作元素，讓你在平日晚間也能體驗舉重的速度與力量。適合想精進運動表現、體驗正規舉重技術的學員。',
+    tags: [{ t: '教練專項指導' }, { t: '目前僅南京店開班', note: true }],
+  },
+]
+const scheduleTabs = [
+  { id: 'nanjing', label: '南京店' },
+  { id: 'songjiang', label: '松江店' },
+  { id: 'ximen', label: '西門店' },
+  { id: 'qizhang', label: '新店七張店' },
+]
+const schedule: Record<string, { addr: string; rows: { day: string; times: string; lift?: string }[] }> = {
+  nanjing: {
+    addr: '台北市中山區南京東路三段29號B1・(02) 2507-4196',
+    rows: [
+      { day: '週一', times: '12:00、18:00' },
+      { day: '週二', times: '20:00' },
+      { day: '週三', times: '12:00、14:00', lift: '另有舉重團班 19:00、20:00' },
+      { day: '週四', times: '09:30、12:00、15:30、18:00、19:00、20:00' },
+      { day: '週五', times: '10:00、15:00、16:00、19:00' },
+      { day: '週六', times: '11:00、13:00、14:00、16:00' },
+      { day: '週日', times: '13:00、17:00' },
+    ],
+  },
+  songjiang: {
+    addr: '台北市中山區松江路122號B1・(02) 2537-1055',
+    rows: [
+      { day: '週一', times: '19:00' },
+      { day: '週二', times: '19:30' },
+      { day: '週三', times: '10:00' },
+      { day: '週四', times: '19:00' },
+      { day: '週五', times: '19:00' },
+      { day: '週六', times: '11:00、13:00、15:00' },
+      { day: '週日', times: '10:00' },
+    ],
+  },
+  ximen: {
+    addr: '台北市中正區寶慶路39號・(02) 2370-3245',
+    rows: [
+      { day: '週一', times: '10:00、11:00、14:00、20:00' },
+      { day: '週二', times: '17:00、19:00' },
+      { day: '週三', times: '13:00、19:00、20:00' },
+      { day: '週四', times: '12:00、18:30' },
+      { day: '週五', times: '10:00、17:00、18:00、19:00' },
+      { day: '週六', times: '10:00、14:00' },
+      { day: '週日', times: '15:00' },
+    ],
+  },
+  qizhang: {
+    addr: '新北市新店區北新路二段252號B1-2・(02) 8914-6428',
+    rows: [
+      { day: '週一', times: '11:00、15:00、19:00、20:00' },
+      { day: '週三', times: '20:00' },
+      { day: '週五', times: '19:00' },
+      { day: '週日', times: '10:00' },
+    ],
+  },
+}
+const activeStore = ref('nanjing')
 
-const errors = ref<Errors>({})
+const steps = [
+  { n: '1', title: '填寫報名表單', desc: '約 1~2 分鐘完成，選好課程與偏好門店即可' },
+  { n: '2', title: '教練主動電話／LINE聯繫', desc: '1 個工作天內確認可開班的梯次日期、名額狀況與繳費方式' },
+  { n: '3', title: '開始上課', desc: '四堂一期，結束後可直接續課，不用等月初重新報名' },
+]
+const faqs = [
+  { q: '一定要先上過體驗課才能報團課嗎？', a: '不用。團體課程可以直接報名，教練會在第一堂課了解你的身體狀況再調整動作強度。' },
+  { q: '完全沒運動過，可以跟上進度嗎？', a: '可以。基礎重訓團班就是為新手設計的，從最基礎的徒手動作開始，四堂循序漸進。' },
+  { q: '上課時間到不了怎麼辦？', a: '最晚提前一週告知教練即可請假，課程會順延一週，不會浪費堂數。' },
+  { q: '四堂上完後一定要續課嗎？', a: '不強迫。四堂結束後你可以自行決定是否續課、換課程，或改上一對一教練課。' },
+]
+
+const errors = ref<Record<string, string>>({})
 const submitting = ref(false)
 const isSuccess = ref(false)
 
 function validate() {
-  const e: Errors = {}
-  if (!formData.name.trim()) e.name = '請輸入姓名'
-  if (!formData.phone.trim()) e.phone = '請輸入聯絡電話'
-  else if (!/^09\d{8}$/.test(formData.phone)) e.phone = '請輸入有效的手機號碼（09 開頭共 10 碼）'
-  if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = 'Email 格式不正確'
-  if (!formData.storeId) e.storeId = '請選擇分店'
-  if (!formData.desiredClass.trim()) e.desiredClass = '請填寫想上的課程或方便時段'
+  const e: Record<string, string> = {}
+  if (!formData.name.trim()) e.name = '請填寫學員姓名'
+  if (!formData.gender) e.gender = '請選擇性別'
+  if (!formData.ageRange) e.ageRange = '請選擇年齡區間'
+  const phone = formData.phone.replace(/[\s-]/g, '')
+  if (!phone) e.phone = '請填寫手機號碼'
+  else if (!/^09\d{8}$/.test(phone)) e.phone = '手機格式不正確（09 開頭共 10 碼）'
+  if (!formData.email.trim()) e.email = '請填寫電子郵件'
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = 'Email 格式不正確'
+  if (!formData.isFillerSelf) e.isFillerSelf = '請選擇'
+  if (formData.isFillerSelf === '否') {
+    if (!formData.fillerName.trim()) e.fillerName = '請填寫報名者姓名'
+    if (!formData.relationship.trim()) e.relationship = '請填寫與學員關係'
+  }
+  if (!formData.course) e.course = '請選擇想報名的課程'
+  if (!formData.store) e.store = '請選擇門店'
+  if (!formData.medicalHistory.trim()) e.medicalHistory = '請填寫（若完全健康請填「無」）'
   errors.value = e
   return Object.keys(e).length === 0
 }
@@ -60,176 +198,384 @@ async function handleSubmit() {
   if (!validate()) return
   submitting.value = true
   try {
-    const res = await fetch('/api/leads/group-class', {
+    const res = await $fetch<{ success: boolean; error?: string }>('/api/leads/group-class', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...formData }),
+      body: { ...formData, sourcePage: '/group-booking' },
     })
-    const data = await res.json()
-    if (res.ok && data.success) {
+    if (res.success) {
       isSuccess.value = true
       await nextTick()
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
-      alert(data.error || '送出失敗，請稍後再試')
+      alert(res.error || '送出失敗，請稍後再試')
     }
-  } catch (e) {
-    alert('送出失敗，請稍後再試')
+  } catch (err: any) {
+    alert(err?.data?.error || '送出失敗，請稍後再試')
   } finally {
     submitting.value = false
   }
 }
 
-const inputClass = 'w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange focus:border-orange transition-colors'
+const inputClass =
+  'w-full px-3.5 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-lg text-[0.95rem] text-ink transition focus:outline-none focus:border-navy-700 focus:bg-white focus:ring-2 focus:ring-navy-700/10'
 </script>
 
 <template>
-  <div class="bg-cream min-h-screen">
-    <!-- Hero -->
-    <section class="relative bg-navy-700 pt-16 overflow-hidden text-white">
-      <div class="absolute inset-0">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_25%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_5%_80%,rgba(58,106,133,0.35)_0%,transparent_45%)]" />
-      </div>
-      <div class="container mx-auto px-4 relative z-10 py-14 lg:py-20 text-center">
-        <div class="inline-flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
-          <span class="w-5 h-0.5 bg-orange" />
-          Group Class
+  <div class="bg-cream text-ink">
+    <!-- ===== SUCCESS ===== -->
+    <section v-if="isSuccess" class="py-16 lg:py-24">
+      <div class="max-w-xl mx-auto px-4 text-center">
+        <div class="w-[76px] h-[76px] rounded-full bg-[#2d8a5e]/12 border-2 border-[#2d8a5e] flex items-center justify-center mx-auto mb-6 text-[#2d8a5e]">
+          <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
         </div>
-        <h1 class="font-serif text-4xl lg:text-5xl font-black leading-tight mb-4">
-          團體課程<span class="text-orange">報名</span>
-        </h1>
-        <p class="text-white/60 text-lg font-light leading-relaxed max-w-xl mx-auto">
-          小班制中高齡團體課，同儕一起練更有動力，兼顧肌力、平衡與心肺。填寫報名表，專人與你聯繫確認課程時間。
+        <h1 class="font-serif text-3xl lg:text-4xl font-black text-[#1a3545] mb-3">團體課程報名已送出！</h1>
+        <p class="text-ink/70 leading-relaxed mb-8">
+          您的報名資料已即時同步後台系統。由於團體課程需依當期名額與人數安排梯次，<strong class="text-ink">請點擊下方按鈕加入「練健康 LINE 官方帳號」</strong>，傳送一則包含學員姓名與想上課程的訊息，教練將以最快速度為您確認開課日期！
         </p>
-      </div>
-    </section>
 
-    <!-- Form / Success -->
-    <section id="form" class="py-12 lg:py-16">
-      <div class="container mx-auto px-4">
-        <div class="max-w-2xl mx-auto">
-          <!-- Success -->
-          <div v-if="isSuccess" class="bg-white rounded-3xl border border-navy-700/10 shadow-sm p-8 lg:p-12 text-center">
-            <div class="w-16 h-16 rounded-full bg-orange/12 flex items-center justify-center mx-auto mb-5">
-              <svg class="w-8 h-8 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h2 class="font-serif text-2xl font-black text-navy-700 mb-3">報名成功！</h2>
-            <p class="text-ink/60 leading-relaxed mb-8">
-              我們已收到你的團體課程報名，專人將盡快與你聯繫，確認課程時間與細節。
-            </p>
-            <div class="flex flex-wrap justify-center gap-3">
-              <NuxtLink to="/services" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-6 py-3 rounded-full hover:bg-orange-400 transition-colors">
-                回服務介紹
-              </NuxtLink>
-              <NuxtLink to="/" class="inline-flex items-center gap-2 border border-navy-700/15 text-navy-700 font-semibold px-6 py-3 rounded-full hover:border-navy-700 transition-colors">
-                回首頁
-              </NuxtLink>
+        <a
+          :href="LINE_URL"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center justify-center gap-2.5 w-full py-4 bg-[#06C755] hover:bg-[#05b34c] text-white font-bold text-lg rounded-xl shadow-lg shadow-[#06C755]/30 transition mb-6"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 5.64 2 10.13c0 4.02 3.55 7.39 8.35 8.03.33.07.77.22.88.5.1.26.07.66.03.92l-.14.85c-.04.26-.2 1.02.89.56 1.1-.46 5.9-3.47 8.05-5.94C21.6 13.42 22 11.83 22 10.13 22 5.64 17.52 2 12 2z" /></svg>
+          點擊加入練健康官方 LINE 帳號（快速排課通道）
+        </a>
+
+        <div class="bg-white rounded-2xl p-6 border border-navy-700/15 shadow-sm text-left mb-6">
+          <div class="font-bold text-[#1a3545] mb-3">接下來的確認流程</div>
+          <div class="space-y-2">
+            <div v-for="(row, i) in ['加入官方 LINE 並傳送姓名與課程後，教練將於 1 個工作天內確認梯次與繳費方式', '若您未加入 LINE，我們也將於 1 個工作天內嘗試撥打您填寫的手機號碼聯繫', '四堂一期，請假最晚提前一週告知可順延一週']" :key="i" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
+              <span class="text-orange flex-shrink-0">→</span><span>{{ row }}</span>
             </div>
           </div>
+        </div>
 
-          <!-- Form -->
-          <div v-else class="bg-white rounded-3xl border border-navy-700/10 shadow-sm p-6 lg:p-10">
-            <form class="space-y-5" @submit.prevent="handleSubmit">
-              <div class="grid sm:grid-cols-2 gap-5">
-                <!-- 姓名 -->
-                <div>
-                  <label class="block text-sm font-medium text-navy-700 mb-1.5">姓名 <span class="text-red-500">*</span></label>
-                  <input
-                    v-model="formData.name"
-                    type="text"
-                    :class="[inputClass, errors.name ? 'border-red-500' : 'border-cream-200']"
-                  />
-                  <p v-if="errors.name" class="text-red-500 text-sm mt-1">{{ errors.name }}</p>
-                </div>
-                <!-- 電話 -->
-                <div>
-                  <label class="block text-sm font-medium text-navy-700 mb-1.5">聯絡電話 <span class="text-red-500">*</span></label>
-                  <input
-                    v-model="formData.phone"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="09xxxxxxxx"
-                    :class="[inputClass, errors.phone ? 'border-red-500' : 'border-cream-200']"
-                  />
-                  <p v-if="errors.phone" class="text-red-500 text-sm mt-1">{{ errors.phone }}</p>
-                </div>
-              </div>
-
-              <div class="grid sm:grid-cols-2 gap-5">
-                <!-- Email -->
-                <div>
-                  <label class="block text-sm font-medium text-navy-700 mb-1.5">Email <span class="text-ink/40 text-xs">（選填）</span></label>
-                  <input
-                    v-model="formData.email"
-                    type="email"
-                    :class="[inputClass, errors.email ? 'border-red-500' : 'border-cream-200']"
-                  />
-                  <p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
-                </div>
-                <!-- 分店 -->
-                <div>
-                  <label class="block text-sm font-medium text-navy-700 mb-1.5">選擇分店 <span class="text-red-500">*</span></label>
-                  <select
-                    v-model="formData.storeId"
-                    :class="[inputClass, errors.storeId ? 'border-red-500' : 'border-cream-200']"
-                  >
-                    <option value="">請選擇分店</option>
-                    <option v-for="s in stores" :key="s.id" :value="s.id">{{ s.name }}</option>
-                  </select>
-                  <p v-if="errors.storeId" class="text-red-500 text-sm mt-1">{{ errors.storeId }}</p>
-                </div>
-              </div>
-
-              <!-- 想上的課程／方便時段 -->
-              <div>
-                <label class="block text-sm font-medium text-navy-700 mb-1.5">想上的課程／方便時段 <span class="text-red-500">*</span></label>
-                <input
-                  v-model="formData.desiredClass"
-                  type="text"
-                  placeholder="例如：銀髮肌力團體班、平日上午、週末皆可"
-                  :class="[inputClass, errors.desiredClass ? 'border-red-500' : 'border-cream-200']"
-                />
-                <p v-if="errors.desiredClass" class="text-red-500 text-sm mt-1">{{ errors.desiredClass }}</p>
-              </div>
-
-              <!-- 年齡 -->
-              <div>
-                <label class="block text-sm font-medium text-navy-700 mb-1.5">年齡 <span class="text-ink/40 text-xs">（選填，方便安排合適課程）</span></label>
-                <input
-                  v-model="formData.age"
-                  type="text"
-                  inputmode="numeric"
-                  placeholder="例如：65"
-                  class="w-full px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange focus:border-orange transition-colors"
-                />
-              </div>
-
-              <!-- 留言 -->
-              <div>
-                <label class="block text-sm font-medium text-navy-700 mb-1.5">留言 <span class="text-ink/40 text-xs">（選填）</span></label>
-                <textarea
-                  v-model="formData.message"
-                  rows="3"
-                  placeholder="想了解的問題、身體狀況、或其他需求…"
-                  class="w-full px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange focus:border-orange transition-colors"
-                />
-              </div>
-
-              <button
-                type="submit"
-                :disabled="submitting"
-                class="w-full bg-orange text-white font-bold py-4 rounded-full shadow-lg shadow-orange/30 hover:bg-orange-400 transition-colors disabled:opacity-60"
-              >
-                {{ submitting ? '送出中…' : '送出報名' }}
-              </button>
-
-              <p class="text-center text-xs text-ink/40">送出即表示同意練健康與你聯繫確認課程資訊。</p>
-            </form>
-          </div>
+        <div class="bg-[#1a3545] rounded-xl p-6 text-center">
+          <div class="text-sm text-white/50 mb-1.5">有任何緊急排課變更？也可直接來電</div>
+          <div class="font-serif text-2xl font-bold text-white"><a href="tel:+886225074196" class="text-orange">(02) 2507-4196</a></div>
         </div>
       </div>
     </section>
+
+    <!-- ===== PAGE ===== -->
+    <template v-else>
+      <!-- HERO -->
+      <section class="relative bg-[#1a3545] pt-16 overflow-hidden text-white">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
+        <div class="relative z-10 max-w-6xl mx-auto px-4 grid lg:grid-cols-[1fr_400px] gap-8 lg:gap-12 items-center py-12 lg:py-20">
+          <div>
+            <div class="inline-flex items-center gap-2 bg-orange/[0.18] border border-orange/40 text-orange text-[0.78rem] font-medium px-3.5 py-1.5 rounded-full mb-5 tracking-wide">
+              <span class="w-1.5 h-1.5 rounded-full bg-orange" />
+              4堂一期 · 隨時可續課
+            </div>
+            <h1 class="font-serif text-3xl lg:text-5xl font-black leading-tight mb-4">
+              找個班一起練<br><span class="text-orange">比自己練更有動力</span>
+            </h1>
+            <p class="text-white/60 font-light leading-relaxed mb-6 max-w-lg">
+              不用預約私人教練，也能有教練在旁指導。三種團體課程，從新手基礎到中高齡肌力、再到舉重技術，總有一班適合你。
+            </p>
+            <div class="flex flex-col gap-2 mb-6">
+              <div v-for="g in heroGets" :key="g" class="flex items-start gap-2.5 text-sm text-white/70">
+                <span class="w-5 h-5 rounded-full bg-orange/20 border border-orange/40 flex items-center justify-center flex-shrink-0 mt-0.5 text-orange">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                </span>
+                {{ g }}
+              </div>
+            </div>
+            <a href="#form" class="inline-block bg-orange hover:bg-orange-400 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-orange/35 transition">立即填寫報名 →</a>
+            <div class="flex items-center gap-1.5 text-xs text-white/40 mt-3">
+              <svg class="w-3.5 h-3.5 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+              <span><strong class="text-orange-300">4堂 $2,400 起</strong>・請假可順延一週・無須綁約長期課程</span>
+            </div>
+          </div>
+
+          <aside class="hidden lg:flex flex-col gap-4 bg-white/[0.07] backdrop-blur border border-white/12 rounded-[18px] p-6">
+            <div>
+              <div class="text-[0.68rem] font-bold tracking-widest uppercase text-white/30 mb-2">媒體報導</div>
+              <div class="flex flex-wrap gap-2">
+                <span v-for="l in trustLogos" :key="l" class="text-xs text-white/50 bg-white/[0.06] border border-white/10 px-2.5 py-1 rounded-full">{{ l }}</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div v-for="s in trustStats" :key="s.l" class="bg-white/5 rounded-[10px] px-3 py-2.5 text-center">
+                <div class="font-serif text-xl font-black text-white leading-none">{{ s.n }}</div>
+                <div class="text-[0.72rem] text-white/40 mt-0.5">{{ s.l }}</div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- REASSURE -->
+      <div class="bg-white border-b border-navy-700/15 py-5">
+        <div class="max-w-6xl mx-auto px-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
+          <div v-for="r in reassure" :key="r" class="flex items-center gap-2 text-[0.83rem] text-ink/70">
+            <svg class="w-4 h-4 text-[#2d8a5e] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+            {{ r }}
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN -->
+      <div class="py-10 lg:py-16">
+        <div class="max-w-6xl mx-auto px-4 grid lg:grid-cols-[520px_1fr] gap-8 lg:gap-14 items-start">
+
+          <!-- FORM -->
+          <div id="form" class="lg:sticky lg:top-20">
+            <div class="bg-white rounded-[20px] border border-navy-700/15 shadow-xl shadow-navy-700/10 overflow-hidden">
+              <div class="bg-[#1a3545] px-6 py-5">
+                <div class="font-serif text-lg font-bold text-white mb-1">團體課程報名</div>
+                <div class="text-sm text-white/50">教練會在 1 個工作天內主動聯繫確認開課梯次</div>
+                <div class="inline-flex items-center gap-1.5 bg-orange/20 border border-orange/35 text-orange text-xs font-semibold px-3 py-1 rounded-full mt-2">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  4堂一期・隨時開放報名
+                </div>
+              </div>
+
+              <div class="px-6 py-6">
+                <form class="space-y-5" novalidate @submit.prevent="handleSubmit">
+                  <!-- 第一部分 -->
+                  <div class="font-serif text-[1.05rem] font-bold text-navy-700 border-b-2 border-navy-700/15 pb-1">第一部分：基本資料</div>
+
+                  <div class="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">學員姓名 <span class="text-orange">*</span></label>
+                      <input v-model="formData.name" type="text" placeholder="學員姓名" :class="inputClass" />
+                      <p v-if="errors.name" class="text-red-500 text-xs mt-1">{{ errors.name }}</p>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">學員性別 <span class="text-orange">*</span></label>
+                      <div class="grid grid-cols-3 gap-1.5">
+                        <label v-for="g in genders" :key="g" class="block cursor-pointer">
+                          <input v-model="formData.gender" type="radio" :value="g" class="peer sr-only" />
+                          <span class="flex items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ g }}</span>
+                        </label>
+                      </div>
+                      <p v-if="errors.gender" class="text-red-500 text-xs mt-1">{{ errors.gender }}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">學員年齡區間 <span class="text-orange">*</span></label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                      <label v-for="a in ageRanges" :key="a" class="block cursor-pointer">
+                        <input v-model="formData.ageRange" type="radio" :value="a" class="peer sr-only" />
+                        <span class="flex items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ a }}</span>
+                      </label>
+                    </div>
+                    <p v-if="errors.ageRange" class="text-red-500 text-xs mt-1">{{ errors.ageRange }}</p>
+                  </div>
+
+                  <div class="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">手機號碼 <span class="text-orange">*</span></label>
+                      <input v-model="formData.phone" type="tel" inputmode="tel" placeholder="0912-345-678" :class="inputClass" />
+                      <p v-if="errors.phone" class="text-red-500 text-xs mt-1">{{ errors.phone }}</p>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">電子郵件 <span class="text-orange">*</span></label>
+                      <input v-model="formData.email" type="email" placeholder="name@email.com" :class="inputClass" />
+                      <p v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">是否為您本人親自填寫？ <span class="text-orange">*</span></label>
+                    <div class="grid grid-cols-2 gap-1.5">
+                      <label v-for="opt in [{ v: '是', l: '是，我是本人' }, { v: '否', l: '否，我是幫家人/朋友填' }]" :key="opt.v" class="block cursor-pointer">
+                        <input v-model="formData.isFillerSelf" type="radio" :value="opt.v" class="peer sr-only" />
+                        <span class="flex items-center justify-center px-2 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ opt.l }}</span>
+                      </label>
+                    </div>
+                    <p v-if="errors.isFillerSelf" class="text-red-500 text-xs mt-1">{{ errors.isFillerSelf }}</p>
+                  </div>
+
+                  <div v-if="formData.isFillerSelf === '否'" class="bg-navy-700/[0.04] border border-dashed border-navy-700 rounded-xl p-4 space-y-3">
+                    <div class="grid sm:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">您（報名者）的姓名 <span class="text-orange">*</span></label>
+                        <input v-model="formData.fillerName" type="text" placeholder="您的姓名" :class="inputClass" />
+                        <p v-if="errors.fillerName" class="text-red-500 text-xs mt-1">{{ errors.fillerName }}</p>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">您與學員的關係 <span class="text-orange">*</span></label>
+                        <input v-model="formData.relationship" type="text" placeholder="例如：女兒、兒子、朋友" :class="inputClass" />
+                        <p v-if="errors.relationship" class="text-red-500 text-xs mt-1">{{ errors.relationship }}</p>
+                      </div>
+                    </div>
+                    <div class="text-xs text-ink/50">提醒：教練後續將會優先聯繫上方填寫的手機號碼。</div>
+                  </div>
+
+                  <!-- 第二部分 -->
+                  <div class="font-serif text-[1.05rem] font-bold text-navy-700 border-b-2 border-navy-700/15 pb-1 pt-2">第二部分：課程資訊</div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">想報名的課程 <span class="text-orange">*</span></label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                      <label v-for="c in courses" :key="c.value" class="block cursor-pointer">
+                        <input v-model="formData.course" type="radio" :value="c.value" class="peer sr-only" />
+                        <span class="flex flex-col items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-[0.82rem] text-ink/70 text-center leading-tight transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">
+                          {{ c.value }}<span class="text-[0.68rem] text-ink/45 font-normal mt-0.5">{{ c.price }}</span>
+                        </span>
+                      </label>
+                    </div>
+                    <p v-if="errors.course" class="text-red-500 text-xs mt-1">{{ errors.course }}</p>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">想去哪一間門店上課？ <span class="text-orange">*</span></label>
+                    <select v-model="formData.store" :class="inputClass">
+                      <option value="" disabled>請選擇偏好的門店地點</option>
+                      <option v-for="s in storeOptions" :key="s" :value="s">{{ s }}</option>
+                    </select>
+                    <p v-if="errors.store" class="text-red-500 text-xs mt-1">{{ errors.store }}</p>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">偏好的上課星期／時段 <span class="text-ink/45 font-normal text-xs">（選填，可參考右側各店開課時段）</span></label>
+                    <input v-model="formData.preferredTime" type="text" placeholder="例如：週四晚上、週六上午皆可" :class="inputClass" />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">過去是否有重訓經驗？ <span class="text-ink/45 font-normal text-xs">（選填）</span></label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                      <label v-for="ex in experiences" :key="ex.value" class="block cursor-pointer">
+                        <input v-model="formData.experience" type="radio" :value="ex.value" class="peer sr-only" />
+                        <span class="flex items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ ex.label }}</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">是否有任何疾病、舊傷或開刀史？ <span class="text-orange">*</span></label>
+                    <textarea v-model="formData.medicalHistory" rows="3" placeholder="例如：高血壓、糖尿病、骨質疏鬆、膝關節退化、心臟病、曾動過何種手術...等。若完全健康，請填寫「無」。" :class="[inputClass, 'resize-y min-h-[80px]']" />
+                    <p v-if="errors.medicalHistory" class="text-red-500 text-xs mt-1">{{ errors.medicalHistory }}</p>
+                  </div>
+
+                  <!-- 第三部分 -->
+                  <div class="font-serif text-[1.05rem] font-bold text-navy-700 border-b-2 border-navy-700/15 pb-1 pt-2">第三部分：其他調查</div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">您是從哪裡得知練健康團體課程資訊的呢？ <span class="text-ink/45 font-normal text-xs">（可複選）</span></label>
+                    <div class="grid grid-cols-2 gap-1.5">
+                      <label v-for="s in sourceOptions" :key="s.value" class="flex items-center gap-1.5 px-2.5 py-2 bg-cream border-[1.5px] border-navy-700/15 rounded-lg text-sm text-ink/70 cursor-pointer transition has-[:checked]:border-navy-700 has-[:checked]:bg-navy-700/[0.07] has-[:checked]:text-[#1a3545] has-[:checked]:font-medium">
+                        <input v-model="formData.source" type="checkbox" :value="s.value" class="peer sr-only" />
+                        <span class="w-[15px] h-[15px] rounded border-[1.5px] border-navy-700/25 bg-white flex-shrink-0 flex items-center justify-center peer-checked:bg-navy-700 peer-checked:border-navy-700 transition">
+                          <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        </span>
+                        {{ s.label }}
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">備註與其他想補充說明的細節 <span class="text-ink/45 font-normal text-xs">（選填）</span></label>
+                    <textarea v-model="formData.note" rows="2" placeholder="例如想找同伴一起上課、特定教練指定需求、或其他特殊身體狀況備忘..." :class="[inputClass, 'resize-y min-h-[60px]']" />
+                  </div>
+
+                  <button type="submit" :disabled="submitting" class="w-full py-3.5 bg-orange hover:bg-orange-400 text-white font-bold text-[1.05rem] rounded-xl shadow-lg shadow-orange/35 transition flex items-center justify-center gap-2 disabled:opacity-60">
+                    {{ submitting ? '送出中…' : '送出團體課程報名' }}
+                    <svg v-if="!submitting" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 5l7 7-7 7" /></svg>
+                  </button>
+                  <p class="text-xs text-ink/50 text-center leading-relaxed">送出即表示同意我們以電話或 LINE 與您聯繫確認開課梯次，個人資料僅用於此報名目的。</p>
+                  <div class="text-center pt-4 border-t border-navy-700/15 text-sm text-ink/70">
+                    不想填表？直接來電也可以<br>
+                    <a href="tel:+886225074196" class="text-navy-700 font-semibold">(02) 2507-4196</a>（南京店）
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div class="space-y-12">
+            <!-- 三種團班 -->
+            <div>
+              <div class="flex items-center gap-2 text-[0.78rem] font-bold tracking-widest uppercase text-orange mb-2"><span class="w-[18px] h-0.5 bg-orange" />課程介紹</div>
+              <h2 class="font-serif text-2xl lg:text-3xl font-black text-[#1a3545] mb-5">三種團班<span class="text-orange">選一個開始</span></h2>
+              <div class="space-y-3.5">
+                <div v-for="cc in courseCards" :key="cc.title" class="bg-white rounded-2xl border border-navy-700/15 shadow-sm p-6">
+                  <div class="flex justify-between items-start gap-4 mb-1.5">
+                    <div class="font-serif text-lg font-bold text-[#1a3545]">{{ cc.title }}</div>
+                    <div class="flex-shrink-0 text-right">
+                      <div class="font-serif text-xl font-black text-orange">{{ cc.price }}</div>
+                      <div class="text-[0.72rem] text-ink/45">{{ cc.unit }}</div>
+                    </div>
+                  </div>
+                  <p class="text-sm text-ink/65 leading-relaxed mb-3">{{ cc.desc }}</p>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span v-for="tag in cc.tags" :key="tag.t" :class="['text-xs px-2.5 py-0.5 rounded-full border', tag.note ? 'bg-orange/[0.08] border-orange/30 text-[#d45c04]' : 'bg-cream border-navy-700/15 text-navy-700']">{{ tag.t }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 各店開課時段 -->
+            <div>
+              <div class="flex items-center gap-2 text-[0.78rem] font-bold tracking-widest uppercase text-orange mb-2"><span class="w-[18px] h-0.5 bg-orange" />開課時段</div>
+              <h2 class="font-serif text-2xl lg:text-3xl font-black text-[#1a3545] mb-5">各店<span class="text-orange">目前開班時段</span></h2>
+              <div class="bg-white rounded-2xl border border-navy-700/15 shadow-sm overflow-hidden">
+                <div class="flex flex-wrap bg-cream border-b border-navy-700/15">
+                  <button
+                    v-for="tab in scheduleTabs"
+                    :key="tab.id"
+                    type="button"
+                    @click="activeStore = tab.id"
+                    :class="['flex-1 min-w-[50%] sm:min-w-0 px-2 py-3 text-[0.86rem] font-semibold border-b-2 transition', activeStore === tab.id ? 'text-[#d45c04] bg-white border-orange' : 'text-ink/60 border-transparent hover:text-ink']"
+                  >{{ tab.label }}</button>
+                </div>
+                <div class="px-6 py-5">
+                  <div class="text-sm text-ink/45 pb-3 mb-3 border-b border-dashed border-navy-700/15">{{ schedule[activeStore].addr }}</div>
+                  <div v-for="row in schedule[activeStore].rows" :key="row.day" class="flex gap-3 py-2 text-sm border-b border-cream-200 last:border-0">
+                    <div class="flex-shrink-0 w-[52px] font-bold text-navy-700">{{ row.day }}</div>
+                    <div class="text-ink/70 leading-relaxed">
+                      {{ row.times }}
+                      <span v-if="row.lift" class="inline-block bg-navy-700/[0.08] text-navy-700 text-[0.72rem] px-2 py-0.5 rounded-lg ml-1">{{ row.lift }}</span>
+                    </div>
+                  </div>
+                  <div class="text-xs text-ink/45 mt-4 leading-relaxed">部分班級已滿班，實際可參加班次請以門市確認為主。</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 三步驟 -->
+            <div>
+              <div class="flex items-center gap-2 text-[0.78rem] font-bold tracking-widest uppercase text-orange mb-2"><span class="w-[18px] h-0.5 bg-orange" />接下來會發生什麼</div>
+              <h2 class="font-serif text-2xl lg:text-3xl font-black text-[#1a3545] mb-5">填完表單後<span class="text-orange">三個步驟</span></h2>
+              <div class="relative flex flex-col">
+                <div class="absolute left-[19px] top-6 bottom-6 w-[1.5px] bg-gradient-to-b from-orange to-orange/15" />
+                <div v-for="st in steps" :key="st.n" class="relative z-10 flex gap-4 items-start py-4">
+                  <div class="w-10 h-10 rounded-full bg-orange text-white font-serif font-black flex items-center justify-center flex-shrink-0 shadow-[0_0_0_4px_rgba(251,114,10,0.12)]">{{ st.n }}</div>
+                  <div>
+                    <div class="font-semibold text-[#1a3545] mb-0.5">{{ st.title }}</div>
+                    <div class="text-sm text-ink/65 leading-relaxed">{{ st.desc }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- FAQ -->
+            <div>
+              <div class="flex items-center gap-2 text-[0.78rem] font-bold tracking-widest uppercase text-orange mb-2"><span class="w-[18px] h-0.5 bg-orange" />你可能在想</div>
+              <h2 class="font-serif text-2xl lg:text-3xl font-black text-[#1a3545] mb-5">先回答你<span class="text-orange">最常問的問題</span></h2>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div v-for="f in faqs" :key="f.q" class="bg-white rounded-2xl border border-navy-700/15 shadow-sm p-5">
+                  <div class="flex items-start gap-1.5 font-bold text-navy-700 mb-2">
+                    <span class="flex-shrink-0 w-[18px] h-[18px] rounded bg-navy-700 text-white text-[0.7rem] font-black flex items-center justify-center mt-0.5">Q</span>
+                    {{ f.q }}
+                  </div>
+                  <div class="text-sm text-ink/65 leading-relaxed">{{ f.a }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </template>
   </div>
 </template>

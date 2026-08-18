@@ -122,6 +122,13 @@ interface LeadNotificationData {
   // Group class specific fields
   desiredClass?: string
   age?: string
+  ageRange?: string
+  courseName?: string
+  experience?: string
+  medicalHistory?: string
+  groupTime?: string
+  isFillerSelf?: string
+  fillerName?: string
 }
 
 // Send lead notification email to admins
@@ -211,20 +218,25 @@ export async function sendLeadNotification(data: LeadNotificationData) {
 
   // Group class specific fields
   if (data.type === 'group_class') {
-    if (data.desiredClass) {
-      content += `
+    const gcRow = (label: string, value?: string) =>
+      value
+        ? `
       <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">想上的課程／時段</td>
-        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${data.desiredClass}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">${label}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd; white-space: pre-wrap;">${value}</td>
       </tr>`
+        : ''
+    content += gcRow('報名課程', data.courseName || data.desiredClass)
+    content += gcRow('學員性別', data.gender)
+    content += gcRow('學員年齡區間', data.ageRange || data.age)
+    if (data.isFillerSelf === '否') {
+      content += gcRow('代填者姓名', data.fillerName)
+      content += gcRow('與學員關係', data.relationship)
     }
-    if (data.age) {
-      content += `
-      <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">年齡</td>
-        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${data.age}</td>
-      </tr>`
-    }
+    content += gcRow('偏好時段', data.groupTime)
+    content += gcRow('重訓經驗', data.experience)
+    content += gcRow('疾病／舊傷／開刀史', data.medicalHistory)
+    if (data.sources && data.sources.length) content += gcRow('得知管道', data.sources.join('、'))
   }
 
   // Booking specific fields

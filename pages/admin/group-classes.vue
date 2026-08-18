@@ -1,6 +1,5 @@
 <script setup lang="ts">
-// 團課預約後台（骨架）：讀取 type=group_class 的名單。
-// ⚠️ 前端團課預約表單尚未建置，目前資料源為空；表單完成後送出的名單（type=group_class）會自動出現在此。
+// 團課預約後台：讀取 type=group_class 的名單（前端 /group-booking 表單送出）
 import { ref, computed, onMounted } from 'vue'
 
 const { statusLabels, statusOptions } = useLeadStatus()
@@ -19,47 +18,61 @@ interface GroupClassLead {
   name: string
   phone: string
   email: string
-  storeName: string
-  desiredClass: string
-  message: string
+  gender: string
+  ageRange: string
+  course: string
+  store: string
+  preferredTime: string
+  experience: string
+  medicalHistory: string
+  source: string[]
+  isFillerSelf: string
+  fillerName: string
+  relationship: string
+  note: string
   status: string
   createdAt: string
 }
 
 const leads = ref<GroupClassLead[]>([])
-const stores = ref<{ id: string; name: string }[]>([])
 const isLoading = ref(true)
 const error = ref('')
 const searchQuery = ref('')
+const expandedId = ref<string | null>(null)
 
-function storeNameOf(id?: string) {
-  if (!id) return ''
-  return stores.value.find((s) => s.id === id)?.name || ''
+function toggleExpand(id: string) {
+  expandedId.value = expandedId.value === id ? null : id
 }
 
 async function fetchData() {
   isLoading.value = true
   error.value = ''
   try {
-    const [leadsRes, storesRes] = await Promise.all([
-      $fetch<{ success: boolean; data: any[] }>('/api/admin/leads?type=group_class'),
-      $fetch<{ success: boolean; data: any[] }>('/api/admin/stores').catch(() => ({ success: false, data: [] as any[] })),
-    ])
-    if (storesRes?.success) {
-      stores.value = storesRes.data.map((s: any) => ({ id: s.id, name: s.name }))
-    }
+    const leadsRes = await $fetch<{ success: boolean; data: any[] }>('/api/admin/leads?type=group_class')
     if (leadsRes.success) {
-      leads.value = leadsRes.data.map((lead: any) => ({
-        id: lead.id,
-        name: lead.name || '',
-        phone: lead.phone || '',
-        email: lead.email || '',
-        storeName: storeNameOf(lead.storeId),
-        desiredClass: lead.payload?.desiredClass || lead.payload?.classType || '',
-        message: lead.message || lead.payload?.message || '',
-        status: lead.status || 'new',
-        createdAt: lead.createdAt,
-      }))
+      leads.value = leadsRes.data.map((lead: any) => {
+        const p = lead.payload || {}
+        return {
+          id: lead.id,
+          name: lead.name || '',
+          phone: lead.phone || '',
+          email: lead.email || '',
+          gender: p.gender || '',
+          ageRange: p.ageRange || p.age || '',
+          course: p.course || p.desiredClass || '',
+          store: p.storeName || p.store || '',
+          preferredTime: p.preferredTime || '',
+          experience: p.experience || '',
+          medicalHistory: p.medicalHistory || '',
+          source: Array.isArray(p.source) ? p.source : [],
+          isFillerSelf: p.isFillerSelf || '',
+          fillerName: p.fillerName || '',
+          relationship: p.relationship || '',
+          note: p.note || lead.message || '',
+          status: lead.status || 'new',
+          createdAt: lead.createdAt,
+        }
+      })
     }
   } catch (e: any) {
     error.value = e?.data?.statusMessage || e?.statusMessage || '載入失敗'
@@ -94,15 +107,7 @@ onMounted(fetchData)
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900">團課預約</h1>
-      <p class="text-sm text-gray-500 mt-1">團體課程預約名單</p>
-    </div>
-
-    <!-- 骨架說明：前端表單尚未建置 -->
-    <div class="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg px-4 py-3 mb-4 flex items-start gap-2">
-      <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <span>團課預約表單建置中；前端表單完成後，送出的名單（<code class="bg-amber-100 px-1 rounded">type=group_class</code>）會自動顯示在此。</span>
+      <p class="text-sm text-gray-500 mt-1">團體課程報名名單（來源：/group-booking）</p>
     </div>
 
     <!-- Search -->
@@ -130,40 +135,84 @@ onMounted(fetchData)
 
     <!-- Table -->
     <div v-else class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-      <table class="w-full min-w-[720px]">
+      <table class="w-full min-w-[820px]">
         <thead class="bg-gray-50">
           <tr>
-            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">姓名</th>
+            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">學員</th>
             <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">聯絡資訊</th>
-            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">想上的課程</th>
-            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">分店</th>
+            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">課程</th>
+            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">門店</th>
             <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">狀態</th>
             <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">時間</th>
+            <th class="px-4 py-3"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
           <tr v-if="filteredLeads.length === 0">
-            <td colspan="6" class="px-6 py-12 text-center text-gray-500">目前沒有團課預約資料</td>
+            <td colspan="7" class="px-6 py-12 text-center text-gray-500">目前沒有團課預約資料</td>
           </tr>
-          <tr v-for="lead in filteredLeads" :key="lead.id" class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ lead.name }}</td>
-            <td class="px-6 py-4">
-              <div class="text-sm text-gray-700">{{ lead.phone }}</div>
-              <div v-if="lead.email" class="text-sm text-gray-500">{{ lead.email }}</div>
-            </td>
-            <td class="px-6 py-4 text-sm text-gray-700">{{ lead.desiredClass || '—' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ lead.storeName || '—' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <select
-                :value="lead.status"
-                @change="handleStatusChange(lead.id, ($event.target as HTMLSelectElement).value)"
-                :class="['text-xs font-medium px-2 py-1 rounded-full border-0 cursor-pointer', statusLabels[lead.status]?.class || 'bg-gray-100 text-gray-600']"
-              >
-                <option v-for="opt in statusOptions.slice(1)" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-              </select>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDateTime(lead.createdAt) }}</td>
-          </tr>
+          <template v-for="lead in filteredLeads" :key="lead.id">
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4">
+                <div class="font-medium text-gray-900">{{ lead.name }}</div>
+                <div class="text-xs text-gray-500 mt-0.5">
+                  <span v-if="lead.gender">{{ lead.gender }}</span>
+                  <span v-if="lead.ageRange"> · {{ lead.ageRange }}</span>
+                  <span v-if="lead.isFillerSelf === '否'" class="ml-1 inline-block bg-amber-100 text-amber-700 px-1.5 rounded">代填</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-700">{{ lead.phone }}</div>
+                <div v-if="lead.email" class="text-sm text-gray-500">{{ lead.email }}</div>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-700">
+                {{ lead.course || '—' }}
+                <div v-if="lead.preferredTime" class="text-xs text-gray-400 mt-0.5">{{ lead.preferredTime }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ lead.store || '—' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <select
+                  :value="lead.status"
+                  @change="handleStatusChange(lead.id, ($event.target as HTMLSelectElement).value)"
+                  :class="['text-xs font-medium px-2 py-1 rounded-full border-0 cursor-pointer', statusLabels[lead.status]?.class || 'bg-gray-100 text-gray-600']"
+                >
+                  <option v-for="opt in statusOptions.slice(1)" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                </select>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDateTime(lead.createdAt) }}</td>
+              <td class="px-4 py-4 whitespace-nowrap text-right">
+                <button @click="toggleExpand(lead.id)" class="text-gray-400 hover:text-orange text-sm">
+                  {{ expandedId === lead.id ? '收合 ▲' : '詳情 ▼' }}
+                </button>
+              </td>
+            </tr>
+            <tr v-if="expandedId === lead.id" class="bg-gray-50/70">
+              <td colspan="7" class="px-6 py-4">
+                <dl class="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                  <div v-if="lead.isFillerSelf === '否'" class="flex gap-2">
+                    <dt class="text-gray-500 flex-shrink-0">代填者／關係</dt>
+                    <dd class="text-gray-800">{{ lead.fillerName }}（{{ lead.relationship }}）</dd>
+                  </div>
+                  <div v-if="lead.experience" class="flex gap-2">
+                    <dt class="text-gray-500 flex-shrink-0">重訓經驗</dt>
+                    <dd class="text-gray-800">{{ lead.experience }}</dd>
+                  </div>
+                  <div v-if="lead.source.length" class="flex gap-2 sm:col-span-2">
+                    <dt class="text-gray-500 flex-shrink-0">得知管道</dt>
+                    <dd class="text-gray-800">{{ lead.source.join('、') }}</dd>
+                  </div>
+                  <div v-if="lead.medicalHistory" class="flex gap-2 sm:col-span-2">
+                    <dt class="text-gray-500 flex-shrink-0">疾病／舊傷史</dt>
+                    <dd class="text-gray-800 whitespace-pre-wrap">{{ lead.medicalHistory }}</dd>
+                  </div>
+                  <div v-if="lead.note" class="flex gap-2 sm:col-span-2">
+                    <dt class="text-gray-500 flex-shrink-0">備註</dt>
+                    <dd class="text-gray-800 whitespace-pre-wrap">{{ lead.note }}</dd>
+                  </div>
+                </dl>
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
     </div>
