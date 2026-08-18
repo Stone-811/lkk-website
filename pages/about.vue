@@ -75,8 +75,8 @@ const managementTeam = [
     nickname: '肥老闆',
     title: '創辦人暨執行長',
     photo: '/images/team/huang-yuanjie.png',
-    description: '練健康創辦人，擁有經濟學碩士背景，曾任職於健身產業行銷與國際產品管理。深知台灣中高齡族群的運動需求，創立練健康，致力打造最專業的中高齡健身品牌。',
-    credentials: ['IHFI 台灣 CPT 國際健康體適能專業人員', 'CPR + AED 認證', '台大農經所碩士'],
+    description: '練健康創辦人，經濟學碩士背景，曾任職於健身產業行銷與國際產品管理。看見台灣中高齡族群的運動需求，創立練健康，投入中高齡健身品牌的經營。',
+    credentials: ['台大農經所碩士', 'IHFI 台灣 CPT 國際健康體適能專業人員', 'CPR + AED 認證'],
   },
   {
     id: '2',
@@ -84,16 +84,16 @@ const managementTeam = [
     nickname: 'Giwane',
     title: '訓練部區域經理・肌力與體能教練',
     photo: '/images/team/tseng-tzuhuan.png',
-    description: '專精於肌力與體能訓練、運動表現提升及中高齡族群訓練。具備豐富的運動員培訓經驗，負責練健康教練團隊的訓練品質把關。',
+    description: '專精肌力與體能訓練、運動表現提升及中高齡族群訓練，具備豐富的運動員培訓經驗，負責教練團隊的訓練品質把關。',
     credentials: ['NSCA-CSCS', 'TSCA-SCC', 'SMA 運動總監認證', 'ASCA-VBT', 'AFAA-WT'],
   },
   {
     id: '3',
     name: '鄭宇劭',
     nickname: 'Bob',
-    title: '總教練',
+    title: '總教練・物理治療師',
     photo: '/images/team/cheng-yushao.png',
-    description: '物理治療師背景，專精於運動傷害防護與中高齡肌力訓練。曾擔任競速滑冰世界盃隨隊體能訓練師，將專業運動員的訓練方法融入中高齡健身課程。',
+    description: '物理治療師背景，專精運動傷害防護與中高齡肌力訓練，曾任競速滑冰世界盃隨隊體能訓練師，將專業運動員的訓練方法轉譯進中高齡課程。',
     credentials: ['物理治療師證照', 'NSCA-CSCS', 'NASM-CES', 'C 級肌力與體能教練'],
   },
 ]
@@ -328,12 +328,13 @@ const branches = [
     <!-- 經營團隊 -->
     <section id="team" class="bg-white py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
+        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
-          Our Team
+          Leadership
+          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・經營團隊</span>
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">經營團隊</h2>
-        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl">由物理治療師與醫療專業人員創立，我們深知中高齡族群的身體需求，致力於打造最安全、最有效的訓練環境。</p>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">核心經營與<span class="text-orange">教練團隊</span></h2>
+        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl">帶領練健康走到今天的核心夥伴，橫跨經營、訓練與物理治療專業。</p>
 
         <div class="grid md:grid-cols-3 gap-6 max-w-5xl">
           <article
