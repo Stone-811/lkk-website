@@ -188,7 +188,7 @@ const closeMobileMenu = () => {
             媒體報導
           </NuxtLink>
 
-          <!-- 異業結盟 -->
+          <!-- 合作洽談 -->
           <NuxtLink
             to="/cooperation"
             :class="[
@@ -196,7 +196,7 @@ const closeMobileMenu = () => {
               isActive('/cooperation') ? 'text-orange font-medium' : 'text-cream-100 hover:text-orange'
             ]"
           >
-            異業結盟
+            合作洽談
           </NuxtLink>
         </div>
 
@@ -357,13 +357,13 @@ const closeMobileMenu = () => {
             媒體報導
           </NuxtLink>
 
-          <!-- 異業結盟 -->
+          <!-- 合作洽談 -->
           <NuxtLink
             to="/cooperation"
             :class="['py-3 px-2 rounded', isActive('/cooperation') ? 'text-orange font-medium bg-navy-600/50' : 'text-cream-100']"
             @click="closeMobileMenu"
           >
-            異業結盟
+            合作洽談
           </NuxtLink>
 
           <!-- 底部區塊 -->
