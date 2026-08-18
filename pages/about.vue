@@ -443,8 +443,8 @@ const programGroups = [
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">被世界看見的台灣故事</h2>
         <p class="text-ink/60 leading-relaxed mb-8 max-w-2xl mx-auto">從台北出發，AP、BBC、Reuters、AFP、CNA Insider 等全球媒體相繼來台採訪，讓台灣的中高齡訓練故事被世界看見。</p>
 
-        <div class="flex flex-wrap justify-center gap-3 mb-8">
-          <span v-for="o in mediaOutlets" :key="o" class="bg-cream-100 border border-navy-700/10 text-navy-700 font-bold text-sm px-5 py-2.5 rounded-full">
+        <div class="flex flex-wrap justify-center gap-2 mb-8">
+          <span v-for="o in mediaOutlets" :key="o" class="bg-cream-100 border border-navy-700/10 text-navy-700/80 font-semibold text-xs px-3.5 py-1.5 rounded-full">
             {{ o }}
           </span>
         </div>
