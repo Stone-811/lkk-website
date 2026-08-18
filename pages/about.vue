@@ -163,17 +163,14 @@ const branches = [
           老化不可逆，但衰退的速度可以被改變。肌力是少數能靠訓練「重新長回來」的能力——即使已經八十、九十歲。這是練健康存在的理由：把運動科學與醫學實證，變成長輩真的做得到的訓練。
         </p>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
-          <div
+        <div class="flex flex-wrap gap-2.5 mb-10">
+          <span
             v-for="pillar in brandPillars"
             :key="pillar"
-            class="flex items-start gap-2.5 bg-white border border-navy-700/10 rounded-xl px-4 py-3.5"
+            class="inline-flex items-center bg-white border border-navy-700/12 rounded-full px-4 py-2 text-sm font-medium text-navy-700"
           >
-            <svg class="w-5 h-5 text-orange flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-            <span class="text-sm font-medium text-navy-700 leading-snug">{{ pillar }}</span>
-          </div>
+            {{ pillar }}
+          </span>
         </div>
 
         <div class="bg-white rounded-3xl border border-navy-700/12 shadow-sm p-5 lg:p-8 overflow-x-auto">
