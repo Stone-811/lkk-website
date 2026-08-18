@@ -18,6 +18,7 @@ const heroPills = [
 const sectionNav = [
   { id: 'brand', label: '品牌主張' },
   { id: 'who', label: '我們是誰' },
+  { id: 'pillars', label: '三個支柱' },
   { id: 'history', label: '發展歷程' },
   { id: 'team', label: '經營團隊' },
   { id: 'lkk4', label: '聖誕硬舉大賽' },
@@ -45,6 +46,12 @@ const brandPillars = [
   '知識科普轉譯平台',
   '醫療背景從業人員把關',
   '安全且有效的訓練環境',
+]
+
+const pillars = [
+  { n: '1', t: '中高齡訓練推廣', d: '來自各領域的教練團隊，協助中高齡與特殊族群重新擁有健康的體能與肌力，把身體的自主權練回來。' },
+  { n: '2', t: '知識科普教育', d: '以深入淺出的方式轉譯專業知識與最新研究，讓正確的訓練觀念真的走進一般家庭，而不只留在論文裡。' },
+  { n: '3', t: '運動醫學為本', d: '以運動科學與醫學為基礎，為中高齡、術後與運動員族群提供專業、量身設計的訓練課表。' },
 ]
 
 const timeline = [
@@ -251,6 +258,32 @@ const branches = [
           <div v-for="s in stats" :key="s.l" class="bg-cream-100 rounded-2xl border border-navy-700/10 p-8 text-center">
             <div class="font-serif text-4xl lg:text-5xl font-black text-navy-700">{{ s.n }}</div>
             <div class="text-sm text-ink/55 mt-2">{{ s.l }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 三個支柱：練健康在做什麼 -->
+    <section id="pillars" class="py-14 lg:py-20 scroll-mt-28">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
+          <span class="w-5 h-0.5 bg-orange" />
+          What We Do
+          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・三個支柱</span>
+        </div>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10">練健康在做什麼</h2>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <div
+            v-for="p in pillars"
+            :key="p.n"
+            class="bg-white rounded-2xl border border-navy-700/10 shadow-sm p-7 lg:p-8"
+          >
+            <div class="w-12 h-12 rounded-full bg-orange/12 flex items-center justify-center mb-6">
+              <span class="w-9 h-9 rounded-full bg-orange text-white font-serif font-black flex items-center justify-center">{{ p.n }}</span>
+            </div>
+            <h3 class="font-serif text-xl font-black text-navy-700 mb-3">{{ p.t }}</h3>
+            <p class="text-ink/60 leading-relaxed text-sm">{{ p.d }}</p>
           </div>
         </div>
       </div>
