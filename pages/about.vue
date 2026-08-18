@@ -33,6 +33,13 @@ const stats = [
   { n: '70%', l: '學員 50 歲以上' },
 ]
 
+const brandPillars = [
+  '中高齡等特殊族群訓練中心',
+  '知識科普轉譯平台',
+  '醫療背景從業人員把關',
+  '安全且有效的訓練環境',
+]
+
 const timeline = [
   { y: '2018', t: '練健康成立', d: '第一間專為中高齡打造的肌力訓練中心在台北誕生，把「長輩也能重訓」變成可能。' },
   { y: '2019–2023', t: '展店台北・新北', d: '陸續成立南京、松江、西門、七張四間直營分店，全部鄰近捷運，讓長輩就近安全訓練。' },
@@ -144,15 +151,30 @@ const branches = [
     <!-- 品牌主張：肌力衰退 vs 持續訓練 -->
     <section id="brand" class="py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
+        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
-          Our Belief
+          Our Thesis
+          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・品牌主張</span>
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">為什麼是「練」出來的？</h2>
-        <p class="text-ink/60 leading-relaxed mb-8 max-w-2xl">
-          肌力會隨年齡自然流失，一旦掉到「日常獨立生活門檻」以下，走路、爬樓梯、抱孫子都會變得吃力。
-          持續訓練，能把這條下滑曲線撐住——這段落差，就是練健康每天在做的事。
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-4 max-w-3xl leading-snug">
+          透過專業訓練，讓每個人<span class="text-orange">在理想狀態老去</span>
+        </h2>
+        <p class="text-ink/70 leading-relaxed mb-8 max-w-2xl">
+          老化不可逆，但衰退的速度可以被改變。肌力是少數能靠訓練「重新長回來」的能力——即使已經八十、九十歲。這是練健康存在的理由：把運動科學與醫學實證，變成長輩真的做得到的訓練。
         </p>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+          <div
+            v-for="pillar in brandPillars"
+            :key="pillar"
+            class="flex items-start gap-2.5 bg-white border border-navy-700/10 rounded-xl px-4 py-3.5"
+          >
+            <svg class="w-5 h-5 text-orange flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span class="text-sm font-medium text-navy-700 leading-snug">{{ pillar }}</span>
+          </div>
+        </div>
 
         <div class="bg-white rounded-3xl border border-navy-700/12 shadow-sm p-5 lg:p-8 overflow-x-auto">
           <svg viewBox="0 0 820 420" class="w-full min-w-[600px] h-auto" role="img" aria-label="肌力隨年齡下滑與持續訓練的對照圖">
