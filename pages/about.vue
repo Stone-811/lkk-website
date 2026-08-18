@@ -304,18 +304,21 @@ const branches = [
           <span class="text-navy-700/40 tracking-normal normal-case font-medium">・發展歷程</span>
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-2">練健康的旅程</h2>
-        <p class="text-ink/40 text-xs mb-6">↓ 可上下滑動看完整歷程</p>
+        <p class="text-ink/40 text-xs mb-6">← 左右滑動看完整歷程 →</p>
 
-        <div class="max-w-3xl max-h-[520px] overflow-y-auto pr-3">
-          <div class="relative">
-            <div class="absolute left-[7px] top-2 bottom-2 w-0.5 bg-navy-700/15" />
-            <div class="space-y-8">
-              <div v-for="item in timeline" :key="item.y" class="relative pl-10">
-                <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-orange border-4 border-cream" />
-                <div class="text-orange font-black font-serif text-lg mb-1">{{ item.y }}</div>
-                <h3 class="font-bold text-navy-700 mb-1">{{ item.t }}</h3>
-                <p class="text-ink/60 text-sm leading-relaxed">{{ item.d }}</p>
-              </div>
+        <div class="overflow-x-auto pb-4">
+          <div class="relative flex gap-8 min-w-max">
+            <!-- 橫向軸線 -->
+            <div class="absolute left-0 right-0 top-2 h-0.5 bg-navy-700/15" />
+            <div
+              v-for="item in timeline"
+              :key="item.y"
+              class="relative w-60 flex-shrink-0"
+            >
+              <div class="w-4 h-4 rounded-full bg-orange ring-4 ring-cream relative z-10 mb-5" />
+              <div class="text-orange font-black font-serif text-lg mb-1">{{ item.y }}</div>
+              <h3 class="font-bold text-navy-700 mb-1">{{ item.t }}</h3>
+              <p class="text-ink/60 text-sm leading-relaxed">{{ item.d }}</p>
             </div>
           </div>
         </div>
