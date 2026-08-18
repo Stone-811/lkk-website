@@ -507,7 +507,7 @@ const programGroups = [
             v-for="b in branches"
             :key="b.slug"
             :to="`/locations/${b.slug}`"
-            class="bg-cream-100 border border-navy-700/10 text-navy-700 font-bold text-base px-6 py-3 rounded-full hover:border-orange/50 hover:text-orange transition-colors"
+            class="bg-cream-100 border border-navy-700/10 text-navy-700 font-bold text-sm px-5 py-2.5 rounded-full hover:border-orange/50 hover:text-orange transition-colors"
           >
             {{ b.name }}
           </NuxtLink>
