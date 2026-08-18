@@ -55,11 +55,17 @@ const pillars = [
 ]
 
 const timeline = [
-  { y: '2018', t: '練健康成立', d: '第一間專為中高齡打造的肌力訓練中心在台北誕生，把「長輩也能重訓」變成可能。' },
-  { y: '2019–2023', t: '展店台北・新北', d: '陸續成立南京、松江、西門、七張四間直營分店，全部鄰近捷運，讓長輩就近安全訓練。' },
-  { y: '2021', t: '首屆聖誕老人硬舉大賽', d: '把中高齡的力量搬上舞台，成為練健康的年度指標賽事，後發展為 LKK4 全齡體能挑戰賽。' },
-  { y: '2024', t: 'BBC・路透社・法新社 國際報導', d: '90 歲帕金森氏症阿嬤參賽的故事登上三大國際通訊社，台灣中高齡訓練被世界看見。' },
-  { y: '2026', t: '美聯社 AP 專題', d: '89 與 91 歲阿嬤持續訓練，獲美聯社影音報導——年齡不是健康的限制。' },
+  { y: '2018', t: '練健康創立', d: '以「中高齡也能安全重訓」為題籌備第一間中心。' },
+  { y: '2019', t: '正式開幕', d: '南京店啟用，提供一對一教練課程。' },
+  { y: '2020', t: '首辦週年講座', d: '百人參與，開始整理可對外分享的知識內容。' },
+  { y: '2021.05', t: '疫情三級警戒', d: '實體課程全面暫停。' },
+  { y: '2021', t: '第一屆聖誕老人硬舉大賽', d: '長輩第一次站上比賽舞台。' },
+  { y: '2022', t: '第二屆賽事', d: '220 人參賽，規模翻倍。' },
+  { y: '2023', t: '西門店開幕', d: '第三屆賽事 225 人參賽，學員突破 2,000 人。' },
+  { y: '2024', t: '第四屆賽事', d: 'IG 突破十萬追蹤，獲走鐘獎「生命貢獻獎」。' },
+  { y: '2025.10', t: '海外第一站', d: '台灣 × 馬來西亞《銀髮動作基礎訓練營》。' },
+  { y: '2025', t: '第五屆賽事・新店七張店開幕', d: '70 歲以上選手超過 60 人參賽。' },
+  { y: '2026', t: '松江加盟店開幕', d: '第六屆聖誕老人硬舉大賽，加盟版圖持續擴大。' },
 ]
 
 const managementTeam = [
@@ -292,20 +298,24 @@ const branches = [
     <!-- 發展歷程 -->
     <section id="history" class="py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
+        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
           Milestones
+          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・發展歷程</span>
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10">一路走來的發展歷程</h2>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-2">練健康的旅程</h2>
+        <p class="text-ink/40 text-xs mb-6">↓ 可上下滑動看完整歷程</p>
 
-        <div class="relative max-w-3xl">
-          <div class="absolute left-[7px] top-2 bottom-2 w-0.5 bg-navy-700/15" />
-          <div class="space-y-8">
-            <div v-for="item in timeline" :key="item.y" class="relative pl-10">
-              <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-orange border-4 border-cream" />
-              <div class="text-orange font-black font-serif text-lg mb-1">{{ item.y }}</div>
-              <h3 class="font-bold text-navy-700 mb-1">{{ item.t }}</h3>
-              <p class="text-ink/60 text-sm leading-relaxed">{{ item.d }}</p>
+        <div class="max-w-3xl max-h-[520px] overflow-y-auto pr-3">
+          <div class="relative">
+            <div class="absolute left-[7px] top-2 bottom-2 w-0.5 bg-navy-700/15" />
+            <div class="space-y-8">
+              <div v-for="item in timeline" :key="item.y" class="relative pl-10">
+                <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-orange border-4 border-cream" />
+                <div class="text-orange font-black font-serif text-lg mb-1">{{ item.y }}</div>
+                <h3 class="font-bold text-navy-700 mb-1">{{ item.t }}</h3>
+                <p class="text-ink/60 text-sm leading-relaxed">{{ item.d }}</p>
+              </div>
             </div>
           </div>
         </div>
