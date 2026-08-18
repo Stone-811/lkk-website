@@ -98,13 +98,44 @@ const managementTeam = [
   },
 ]
 
-const mediaOutlets = ['AP 美聯社', 'BBC', 'Reuters 路透社', 'AFP 法新社', 'CNA Insider', '天下雜誌', '大愛新聞', 'TVBS']
+const mediaOutlets = ['Associated Press', 'BBC', 'Reuters', 'AFP', 'CNA Insider', '天下雜誌', 'TVBS 新聞']
 
 const branches = [
   { name: '南京店', desc: '台北市中山區・松江南京站', slug: 'nanjing' },
   { name: '松江店', desc: '台北市中山區・松江南京站', slug: 'songjiang' },
   { name: '西門店', desc: '台北市中正區・西門站', slug: 'ximending' },
-  { name: '七張店', desc: '新北市新店區・七張站', slug: 'xindian' },
+  { name: '新店七張店', desc: '新北市新店區・七張站', slug: 'xindian' },
+]
+
+const programGroups = [
+  {
+    t: '練健康學院',
+    items: [
+      '中高齡訓練研習：如何帶學員從衰弱恢復健康',
+      '練健康認證講師培訓（Level 1）',
+      '銀髮動作基礎訓練營（含馬來西亞海外場）',
+      '高效指導語與動作拆解實戰課',
+      '舉重工作坊：奧林匹克舉重於肌力體能之應用',
+    ],
+  },
+  {
+    t: '賽事與公益推廣',
+    items: [
+      'LKK4 聖誕老人功能錦標賽',
+      '高齡產業博覽會六角槓體驗',
+      '骨質疏鬆醫學講座與免費骨密度測量',
+      '社區公益長輩硬舉推廣',
+    ],
+  },
+  {
+    t: '產業與機構合作',
+    items: [
+      '國家衛生研究院、草屯療養院合作',
+      '大專校院產學合作',
+      '異業結盟與企業健康方案',
+      '中高齡健康訓練創業與展店說明會',
+    ],
+  },
 ]
 </script>
 
@@ -173,7 +204,7 @@ const branches = [
       <div class="container mx-auto px-4">
         <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
-          Our Thesis
+          Our Belief
           <span class="text-navy-700/40 tracking-normal normal-case font-medium">・品牌主張</span>
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-4 max-w-3xl leading-snug">
@@ -330,7 +361,7 @@ const branches = [
       <div class="container mx-auto px-4">
         <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
-          Leadership
+          Our Team
           <span class="text-navy-700/40 tracking-normal normal-case font-medium">・經營團隊</span>
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">核心經營與<span class="text-orange">教練團隊</span></h2>
@@ -407,9 +438,10 @@ const branches = [
         <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
           <span class="w-5 h-0.5 bg-orange" />
           As Seen In
+          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・媒體報導</span>
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">被世界看見的台灣故事</h2>
-        <p class="text-ink/60 leading-relaxed mb-8 max-w-2xl mx-auto">從台北出發，練健康的故事登上全球主要通訊社與台灣各大媒體。</p>
+        <p class="text-ink/60 leading-relaxed mb-8 max-w-2xl mx-auto">從台北出發，AP、BBC、Reuters、AFP、CNA Insider 等全球媒體相繼來台採訪，讓台灣的中高齡訓練故事被世界看見。</p>
 
         <div class="flex flex-wrap justify-center gap-3 mb-8">
           <span v-for="o in mediaOutlets" :key="o" class="bg-cream-100 border border-navy-700/10 text-navy-700 font-bold text-sm px-5 py-2.5 rounded-full">
@@ -417,39 +449,42 @@ const branches = [
           </span>
         </div>
 
-        <NuxtLink to="/news" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-          查看完整媒體報導 →
-        </NuxtLink>
+        <a href="https://l-kk.tw/category/news/" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
+          查看完整報導清單 →
+        </a>
       </div>
     </section>
 
     <!-- 課程與活動 -->
     <section id="programs" class="py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
+        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
           Programs
+          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・課程與活動</span>
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10">課程與活動</h2>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-4 max-w-2xl leading-snug">把方法，<span class="text-orange">交到更多人手上</span></h2>
+        <p class="text-ink/70 leading-relaxed mb-10 max-w-2xl">除了分店的一對一與團體課程，我們也把六年來的個案經驗整理成教材，對教練、醫療從業人員與一般民眾開課——讓「怎麼教、為什麼這樣教」能被複製出去。</p>
 
         <div class="grid md:grid-cols-3 gap-6">
-          <div class="bg-white rounded-2xl border border-navy-700/12 shadow-sm p-6">
-            <h3 class="font-serif text-lg font-black text-navy-700 mb-2">一對一私人教練</h3>
-            <p class="text-ink/60 text-sm leading-relaxed">依個人身體狀況量身設計，物理治療背景教練全程陪同，最適合第一次接觸重訓的長輩。</p>
-          </div>
-          <div class="bg-white rounded-2xl border border-navy-700/12 shadow-sm p-6">
-            <h3 class="font-serif text-lg font-black text-navy-700 mb-2">中高齡團體課</h3>
-            <p class="text-ink/60 text-sm leading-relaxed">小班制團課，同儕一起練更有動力，兼顧肌力、平衡與心肺，價格更親民。</p>
-          </div>
-          <div class="bg-white rounded-2xl border border-navy-700/12 shadow-sm p-6">
-            <h3 class="font-serif text-lg font-black text-navy-700 mb-2">賽事與社群活動</h3>
-            <p class="text-ink/60 text-sm leading-relaxed">聖誕老人硬舉大賽、LKK4 挑戰賽與各式講座，讓訓練成為一種生活與榮耀。</p>
+          <div
+            v-for="g in programGroups"
+            :key="g.t"
+            class="bg-white rounded-2xl border border-navy-700/12 shadow-sm p-6 lg:p-7"
+          >
+            <h3 class="font-serif text-lg font-black text-navy-700 mb-4 pb-3 border-b border-navy-700/10">{{ g.t }}</h3>
+            <ul class="space-y-2.5">
+              <li v-for="item in g.items" :key="item" class="flex items-start gap-2.5 text-ink/70 text-sm leading-relaxed">
+                <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange flex-shrink-0" />
+                <span>{{ item }}</span>
+              </li>
+            </ul>
           </div>
         </div>
 
         <div class="mt-8">
-          <NuxtLink to="/booking" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-            預約免費體驗 →
+          <NuxtLink to="/lkk-academy" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
+            了解練健康學院 →
           </NuxtLink>
         </div>
       </div>
@@ -458,12 +493,14 @@ const branches = [
     <!-- 分店 -->
     <section id="locations" class="bg-white py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
+        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
           Locations
+          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・分店資訊</span>
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">四間直營分店，都在捷運旁</h2>
-        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl">台北・新北四間直營分店，全部鄰近捷運站，不管刮風下雨都能輕鬆抵達。</p>
+        <p class="text-orange font-bold text-sm mb-1">台北・新北</p>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">四間分店</h2>
+        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl">每一間分店都配置醫療或運動科學背景的教練團隊。第一次來，建議先預約體驗，我們會先做完整的身體評估再談訓練。</p>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <NuxtLink
@@ -475,6 +512,15 @@ const branches = [
             <h3 class="font-serif text-xl font-black text-navy-700 group-hover:text-orange transition-colors mb-1">{{ b.name }}</h3>
             <p class="text-ink/55 text-sm mb-4">{{ b.desc }}</p>
             <span class="text-orange text-sm font-bold">查看分店 →</span>
+          </NuxtLink>
+        </div>
+
+        <div class="mt-8 flex flex-wrap gap-4">
+          <NuxtLink to="/booking" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
+            預約體驗與身體評估 →
+          </NuxtLink>
+          <NuxtLink to="/locations" class="inline-flex items-center gap-2 border border-navy-700/15 text-navy-700 font-bold px-7 py-3 rounded-full hover:border-navy-700 transition-colors">
+            查看分店地址與電話 →
           </NuxtLink>
         </div>
       </div>
