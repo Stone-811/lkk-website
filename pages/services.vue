@@ -406,7 +406,7 @@ const personalFeatures = [
 
         <div class="text-center">
           <NuxtLink
-            to="/booking"
+            to="/group-booking"
             class="inline-flex items-center gap-2 bg-navy-700 hover:bg-navy-800 text-white font-bold px-8 py-4 rounded-full transition-colors"
           >
             查詢團體課時間

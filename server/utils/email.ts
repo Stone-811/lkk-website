@@ -56,6 +56,7 @@ const leadTypeLabels: Record<string, string> = {
   booking: '預約體驗',
   franchise: '加盟洽詢',
   cooperation: '合作洽詢',
+  group_class: '團體課報名',
 }
 
 // 體驗費標示：以「使用者實際勾選的付款方式」為權威依據，信件與表單勾選一致。
@@ -85,7 +86,7 @@ function bookingFeeLabel(birthDate?: string, paymentMethod?: string, company?: s
 }
 
 interface LeadNotificationData {
-  type: 'booking' | 'franchise' | 'cooperation'
+  type: 'booking' | 'franchise' | 'cooperation' | 'group_class'
   name: string
   phone: string
   email?: string
@@ -118,6 +119,9 @@ interface LeadNotificationData {
   companySize?: string
   budgetRange?: string
   lineId?: string
+  // Group class specific fields
+  desiredClass?: string
+  age?: string
 }
 
 // Send lead notification email to admins
@@ -203,6 +207,24 @@ export async function sendLeadNotification(data: LeadNotificationData) {
         <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">選擇分店</td>
         <td style="padding: 10px; border-bottom: 1px solid #ddd;">${data.storeName}</td>
       </tr>`
+  }
+
+  // Group class specific fields
+  if (data.type === 'group_class') {
+    if (data.desiredClass) {
+      content += `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">想上的課程／時段</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${data.desiredClass}</td>
+      </tr>`
+    }
+    if (data.age) {
+      content += `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">年齡</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${data.age}</td>
+      </tr>`
+    }
   }
 
   // Booking specific fields
