@@ -11,7 +11,7 @@ const stores = [
 
 // 團隊介紹子選單
 const teamSubMenu = [
-  { name: '經營團隊', href: '/team-intro' },
+  { name: '關於練健康', href: '/about' },
   { name: '教練團隊', href: '/team-intro/coaches' },
   { name: '練健康講師', href: '/lkk-lecturer' },
   { name: '合作講師', href: '/co-lecturer' },
