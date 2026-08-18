@@ -502,16 +502,14 @@ const programGroups = [
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">四間分店</h2>
         <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl">每一間分店都配置醫療或運動科學背景的教練團隊。第一次來，建議先預約體驗，我們會先做完整的身體評估再談訓練。</p>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="flex flex-wrap gap-3">
           <NuxtLink
             v-for="b in branches"
             :key="b.slug"
             :to="`/locations/${b.slug}`"
-            class="group bg-cream-100 border border-navy-700/10 rounded-2xl p-6 hover:border-orange/40 hover:shadow-md transition-all"
+            class="bg-cream-100 border border-navy-700/10 text-navy-700 font-bold text-base px-6 py-3 rounded-full hover:border-orange/50 hover:text-orange transition-colors"
           >
-            <h3 class="font-serif text-xl font-black text-navy-700 group-hover:text-orange transition-colors mb-1">{{ b.name }}</h3>
-            <p class="text-ink/55 text-sm mb-4">{{ b.desc }}</p>
-            <span class="text-orange text-sm font-bold">查看分店 →</span>
+            {{ b.name }}
           </NuxtLink>
         </div>
 
