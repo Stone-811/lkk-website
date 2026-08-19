@@ -2,7 +2,7 @@
 const navigation = [
   { name: '首頁', href: '/' },
   { name: '服務方案', href: '/services' },
-  { name: '團隊介紹', href: '/team-intro' },
+  { name: '關於練健康', href: '/about' },
   { name: '分店資訊', href: '/locations' },
   { name: '預約體驗', href: '/booking' },
 ]

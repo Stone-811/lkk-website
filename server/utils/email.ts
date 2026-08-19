@@ -56,6 +56,7 @@ const leadTypeLabels: Record<string, string> = {
   booking: '預約體驗',
   franchise: '加盟洽詢',
   cooperation: '合作洽詢',
+  group_class: '團體課報名',
 }
 
 // 體驗費標示：以「使用者實際勾選的付款方式」為權威依據，信件與表單勾選一致。
@@ -85,7 +86,7 @@ function bookingFeeLabel(birthDate?: string, paymentMethod?: string, company?: s
 }
 
 interface LeadNotificationData {
-  type: 'booking' | 'franchise' | 'cooperation'
+  type: 'booking' | 'franchise' | 'cooperation' | 'group_class'
   name: string
   phone: string
   email?: string
@@ -118,6 +119,16 @@ interface LeadNotificationData {
   companySize?: string
   budgetRange?: string
   lineId?: string
+  // Group class specific fields
+  desiredClass?: string
+  age?: string
+  ageRange?: string
+  courseName?: string
+  experience?: string
+  medicalHistory?: string
+  groupTime?: string
+  isFillerSelf?: string
+  fillerName?: string
 }
 
 // Send lead notification email to admins
@@ -200,9 +211,32 @@ export async function sendLeadNotification(data: LeadNotificationData) {
   if (data.storeName) {
     content += `
       <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">選擇分店</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">${data.type === 'group_class' ? '上課門店' : '選擇分店'}</td>
         <td style="padding: 10px; border-bottom: 1px solid #ddd;">${data.storeName}</td>
       </tr>`
+  }
+
+  // Group class specific fields
+  if (data.type === 'group_class') {
+    const gcRow = (label: string, value?: string) =>
+      value
+        ? `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;">${label}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd; white-space: pre-wrap;">${value}</td>
+      </tr>`
+        : ''
+    content += gcRow('報名課程', data.courseName || data.desiredClass)
+    content += gcRow('學員性別', data.gender)
+    content += gcRow('學員年齡區間', data.ageRange || data.age)
+    if (data.isFillerSelf === '否') {
+      content += gcRow('代填者姓名', data.fillerName)
+      content += gcRow('與學員關係', data.relationship)
+    }
+    content += gcRow('偏好時段', data.groupTime)
+    content += gcRow('重訓經驗', data.experience)
+    content += gcRow('疾病／舊傷／開刀史', data.medicalHistory)
+    if (data.sources && data.sources.length) content += gcRow('得知管道', data.sources.join('、'))
   }
 
   // Booking specific fields
@@ -376,7 +410,7 @@ export async function sendLeadNotification(data: LeadNotificationData) {
 
   <div style="padding: 20px; background: #2A5269; color: white; text-align: center;">
     <p style="margin: 0;">
-      <a href="${siteUrl}/admin/leads"
+      <a href="${siteUrl}${data.type === 'group_class' ? '/admin/group-classes' : '/admin/leads'}"
          style="color: #FB720A; text-decoration: none; font-weight: bold;">
         前往後台查看詳情 →
       </a>
@@ -433,10 +467,17 @@ const formConfirmationConfig: Record<string, {
     message: '我們已收到您的加盟洽詢，加盟專員將於 3 個工作天內與您聯繫，提供詳細的加盟說明。',
     closing: '如有任何問題，歡迎直接回覆此信。<br>期待與您攜手共創健康事業！',
   },
+  group_class: {
+    subject: '【練健康】感謝您報名團體課程',
+    title: '團體課程報名確認',
+    greeting: '感謝您報名練健康的團體課程！',
+    message: '我們已收到您的報名資料。由於團體課程需依當期名額與人數安排梯次，教練將於 1 個工作天內主動與您聯繫，確認可開班的梯次日期、名額狀況與繳費方式。',
+    closing: '想更快確認梯次，歡迎加入練健康 LINE 官方帳號 <a href="https://line.me/R/ti/p/%40201fzruh" style="color:#FB720A;">@201fzruh</a>，傳送學員姓名與想上的課程。<br>期待在課堂上見到您！',
+  },
 }
 
 interface FormConfirmationData {
-  type: 'booking' | 'cooperation' | 'franchise'
+  type: 'booking' | 'cooperation' | 'franchise' | 'group_class'
   name: string
   email: string
   details?: Array<{ label: string; value: string }>
@@ -653,5 +694,75 @@ export async function sendFranchiseConfirmation(data: {
     name: data.name,
     email: data.email,
     details: details.length > 0 ? details : undefined,
+  })
+}
+
+// Group class confirmation helper —— 給填單人的確認信，帶完整表單填寫內容（版型對齊 sendBookingConfirmation）
+export async function sendGroupClassConfirmation(data: {
+  name: string
+  email: string
+  phone?: string
+  gender?: string
+  ageRange?: string
+  isFillerSelf?: string
+  fillerName?: string
+  relationship?: string
+  courseName?: string
+  coursePrice?: string
+  storeName?: string
+  preferredTime?: string
+  experience?: string
+  medicalHistory?: string
+  sources?: string[]
+  message?: string
+  company?: string
+}) {
+  // 學員資料
+  const studentRows: Array<{ label: string; value: string }> = [
+    { label: '姓名', value: data.name },
+  ]
+  if (data.phone) studentRows.push({ label: '電話', value: data.phone })
+  if (data.email) studentRows.push({ label: 'Email', value: data.email })
+  if (data.gender) studentRows.push({ label: '性別', value: data.gender })
+  if (data.ageRange) studentRows.push({ label: '年齡區間', value: data.ageRange })
+
+  // 填表人資料（僅代填時顯示）
+  const fillerRows: Array<{ label: string; value: string }> = []
+  if (data.isFillerSelf === '否') {
+    fillerRows.push({ label: '填表人', value: '親友代為填寫' })
+    if (data.fillerName) fillerRows.push({ label: '填表人姓名', value: data.fillerName })
+    if (data.relationship) fillerRows.push({ label: '與學員關係', value: data.relationship })
+  }
+
+  // 健康狀況
+  const healthRows: Array<{ label: string; value: string }> = []
+  if (data.medicalHistory) healthRows.push({ label: '疾病／舊傷／開刀史', value: data.medicalHistory })
+  if (data.experience) healthRows.push({ label: '重訓經驗', value: data.experience })
+
+  // 報名資訊
+  const classRows: Array<{ label: string; value: string }> = []
+  if (data.courseName) {
+    classRows.push({
+      label: '報名課程',
+      value: data.courseName + (data.coursePrice ? `（${data.coursePrice}／4 堂一期）` : ''),
+    })
+  }
+  if (data.storeName) classRows.push({ label: '上課門店', value: data.storeName })
+  if (data.preferredTime) classRows.push({ label: '偏好時段', value: data.preferredTime })
+  if (data.sources && data.sources.length > 0) {
+    classRows.push({ label: '得知管道', value: data.sources.join('、') })
+  }
+  if (data.message) classRows.push({ label: '備註', value: data.message })
+
+  return sendFormConfirmation({
+    type: 'group_class',
+    name: data.name,
+    email: data.email,
+    sections: [
+      { title: '學員資料', rows: studentRows },
+      { title: '填表人資料', rows: fillerRows },
+      { title: '健康狀況', rows: healthRows },
+      { title: '報名資訊', rows: classRows },
+    ],
   })
 }

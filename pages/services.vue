@@ -406,10 +406,10 @@ const personalFeatures = [
 
         <div class="text-center">
           <NuxtLink
-            to="/booking"
+            to="/group-booking"
             class="inline-flex items-center gap-2 bg-navy-700 hover:bg-navy-800 text-white font-bold px-8 py-4 rounded-full transition-colors"
           >
-            查詢團體課時間
+            團體課程報名
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>

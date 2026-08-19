@@ -231,7 +231,7 @@ export interface CoachDoc extends FirestoreDoc {
 }
 
 export interface LeadDoc extends FirestoreDoc {
-  type: 'booking' | 'franchise' | 'cooperation';
+  type: 'booking' | 'franchise' | 'cooperation' | 'group_class';
   name: string;
   phone: string;
   email?: string;

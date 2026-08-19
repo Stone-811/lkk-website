@@ -11,7 +11,7 @@ const stores = [
 
 // 團隊介紹子選單
 const teamSubMenu = [
-  { name: '經營團隊', href: '/team-intro' },
+  { name: '關於練健康', href: '/about' },
   { name: '教練團隊', href: '/team-intro/coaches' },
   { name: '練健康講師', href: '/lkk-lecturer' },
   { name: '合作講師', href: '/co-lecturer' },
@@ -177,7 +177,18 @@ const closeMobileMenu = () => {
             LKK4
           </NuxtLink>
 
-          <!-- 異業結盟 -->
+          <!-- 媒體報導 -->
+          <NuxtLink
+            to="/news"
+            :class="[
+              'text-sm xl:text-base transition-colors',
+              isActive('/news') ? 'text-orange font-medium' : 'text-cream-100 hover:text-orange'
+            ]"
+          >
+            媒體報導
+          </NuxtLink>
+
+          <!-- 合作洽談 -->
           <NuxtLink
             to="/cooperation"
             :class="[
@@ -185,7 +196,7 @@ const closeMobileMenu = () => {
               isActive('/cooperation') ? 'text-orange font-medium' : 'text-cream-100 hover:text-orange'
             ]"
           >
-            異業結盟
+            合作洽談
           </NuxtLink>
         </div>
 
@@ -337,13 +348,22 @@ const closeMobileMenu = () => {
             LKK4
           </NuxtLink>
 
-          <!-- 異業結盟 -->
+          <!-- 媒體報導 -->
+          <NuxtLink
+            to="/news"
+            :class="['py-3 px-2 rounded', isActive('/news') ? 'text-orange font-medium bg-navy-600/50' : 'text-cream-100']"
+            @click="closeMobileMenu"
+          >
+            媒體報導
+          </NuxtLink>
+
+          <!-- 合作洽談 -->
           <NuxtLink
             to="/cooperation"
             :class="['py-3 px-2 rounded', isActive('/cooperation') ? 'text-orange font-medium bg-navy-600/50' : 'text-cream-100']"
             @click="closeMobileMenu"
           >
-            異業結盟
+            合作洽談
           </NuxtLink>
 
           <!-- 底部區塊 -->
