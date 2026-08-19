@@ -39,6 +39,49 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 5. WordPress 代理、reCAPTCHA 皆未實作（CLAUDE.md 有寫）。
 6. **教練卡片 `<button>` 垂直置中 → 圖片下移（2026-08-11 修，已上 prod）**：`pages/team-intro/coaches.vue` 教練卡是 `<button>`（圖 `aspect-[3/4]`＋資訊區 `.p-4`）。grid 同排等高，但各教練專長標籤行數不同→`.p-4` 高度不一→**`<button>` 天生會垂直置中內容**（即使非 flex）、把矮卡多出的空間分到圖片**上方**、圖被下推（實測許雅淇比同排低 13px）。**修法：button class 加 `flex flex-col`**（內容靠上）→ 全教練圖頂端 offset 都 1px、名字橫幅同排對齊。⚠️ 凡「`<button>` 當卡片＋grid 等高拉伸」都可能中招；排查先量 `imgDiv.top - btn.top` 比對同排各卡，別先懷疑圖片本身。**教練圖現況**：全 43 張皆 **500×550**、底部「教練｜姓名」橫幅**燒進圖檔**（與卡片下方 HTML 名字重複）、部分人物構圖偏鬆大小不一。`object-cover` 對此近方形圖**只裁左右不裁上下**→**CSS `object-position` 無法上下移、也無法只靠 CSS 拉齊人物大小差異（除非放大，會連橫幅一起放大變醜）**。根治靠換照片：已請廠商提供「純人像、無橫幅、構圖統一、500×550→建議1000×1100 JPG」，規格文件 `docs/教練照片規格.md`，到時直接覆蓋 `public/images/coaches/<分店>/<檔名>` 不用改程式。
 
+## 團體課報名系統（`/group-booking` + `/admin/group-classes`，2026-08-19 完成）
+
+**架構刻意與客戶預約（booking）一比一對齊**——同一套變體/UTM/寄信/後台版型模式，兩邊改動要一起想。對照表：
+
+| 面向 | 客戶預約（體驗課） | 團體課報名 |
+|---|---|---|
+| 前台頁 | `pages/booking.vue` | `pages/group-booking.vue` |
+| API | `server/api/leads/booking.post.ts` | `server/api/leads/group-class.post.ts` |
+| lead `type` | `booking` | `group_class` |
+| 變體設定 | `config/bookingVariants.ts` | `config/groupClassVariants.ts` |
+| 確認信 | `sendBookingConfirmation()` | `sendGroupClassConfirmation()` |
+| 後台 | `pages/admin/leads.vue` | `pages/admin/group-classes.vue` |
+| CSV 檔名 | `booking_leads_*.csv` | `group_class_leads_*.csv` |
+
+### 表單內容（前台）
+`/group-booking` 是完整 landing page（Hero＋trust bar＋左表單右資訊＋各店開課時段 tabs＋課程卡＋三步驟＋FAQ＋成功畫面）。三段式表單：
+- **第一部分 學員資料**：姓名/性別/年齡區間(50歲以下·50–65歲·65歲以上)/手機/Email/是否本人填寫；選「否」才出現「報名者姓名＋與學員關係」。
+- **第二部分 課程資訊**：課程(基礎重訓團班 $2,400／樂齡肌力體適能團班 $2,400／練健康舉重團班 $3,200，皆 4 堂一期)、門店(南京·松江·西門·新店七張＋「請教練推薦」)、偏好時段(選填)、重訓經驗(選填)、**疾病／舊傷／開刀史（必填，健康請填「無」）**。
+- **第三部分 其他調查**：得知管道(可複選)、備註。
+- **必填**：name/gender/ageRange/phone/**email**/isFillerSelf/course/store/medicalHistory（⚠️ **團課 Email 是必填**，booking 的 email 才是選填）。手機驗 `^09\d{8}$`。
+- 成功畫面主 CTA＝加 LINE 官方帳號 **@201fzruh**（團課要靠 LINE 排梯次）。
+
+### 資料落點（`leads/{id}`）
+頂層 `type/name/phone/email/sourcePage='/group-booking'/message(=note)/status/internalNote`；`storeId` 恆 `null`（團課門店存字串不是 Firestore store id）。`payload`：
+`gender, ageRange, isFillerSelf('是'|'否'), fillerName, relationship, course, store(完整字串「南京店｜台北市…」), storeName(「｜」前的店名), preferredTime, experience, medicalHistory, source[](得知管道), note, utm{}, formVariant, company, leadSource`。
+⚠️ **命名與 booking 不同**，後台/信件取值要注意：得知管道 booking 叫 `sources`、團課叫 `source`；代填 booking 用 `filledBySelf: boolean`＋`bookerName`、團課用 `isFillerSelf: '是'|'否'`＋`fillerName`；健康 booking 用 `hasMedicalCondition`+`medicalConditionNote`、團課用單一 `medicalHistory` 字串。
+
+### 寄信（`server/utils/email.ts`）
+送出後**寄兩封**（皆非阻塞 `.catch`）：
+1. **管理者通知信** `sendLeadNotification({type:'group_class', …})` → 收件人讀 Firestore `settings.emailRecipients`（現為 lkkwellness@gmail.com）。主旨 `【練健康】新團體課報名表單【company】- 姓名`；有 company/leadSource 時加橘色「活動來源」橫幅（與 booking 同一段共用邏輯）。**信內「分店」列標題與頁尾後台連結會依 `data.type` 切換**（團課＝「上課門店」／連 `/admin/group-classes`；其他＝「選擇分店」／`/admin/leads`）。
+2. **填單人確認信** `sendGroupClassConfirmation()` → 只在有 `email` 時寄（團課 email 必填故實務上一定寄）。版型走 `sendFormConfirmation` 的 **sections 分區塊版**，與 `sendBookingConfirmation` 完全同一套：學員資料／填表人資料（僅代填時有列）／健康狀況／報名資訊。`formConfirmationConfig.group_class` 的 closing 內含 LINE @201fzruh 連結。課程價格由 API 的 `COURSE_PRICES` 常數帶入確認信（改價要同步 `group-booking.vue` 的 `courses` 與 API 常數兩處）。
+⚠️ 承襲 booking 的決定：**確認信不標活動來源**（company/leadSource 只進管理者信與後台）。
+
+### 廠商變體 / UTM（`config/groupClassVariants.ts`）
+用法與 booking 一致：`/group-booking?v=<key>&src=<來源>`，**變體 key 與 bookingVariants 刻意同名**（`abbott`/`nanshan`），同檔活動可同時發兩條連結、後台用同一組公司/來源篩選對得起來。可覆蓋欄位：`hero{badge,title,titleHighlight,subtitle,checklist,ctaText}`、**`lockStore`**（填『南京店』即可，比對門店字串開頭→自動帶入並把下拉換成唯讀橘卡）、**`lockCourse`**（填完整課名→唯讀橘卡）、`hideSources`、`company`、`leadSource`。未知 `v` 自動 fallback `default`。送出時一併帶 `formVariant`(=`?v=`)、`company`、`leadSource`(`?src=` 優先於變體預設)、`utm`(`useUtm().getUtm()`，沿用全站 `plugins/utm.client.ts` sessionStorage 機制)。網址規範／`?src=` 七個固定用語見 `docs/廠商表單網址規範.md`（已含 group-booking 章節）。
+⚠️ 團課變體**沒有** `allAgesFree`（團課本來就不分年齡計價），別照抄 booking 的欄位。
+
+### 後台（`pages/admin/group-classes.vue`）
+版型 1:1 比照 `/admin/leads`：匯出 CSV 按鈕、單排可搜尋下拉篩選（搜尋／日期／門店／**課程**／狀態／公司／來源／UTM 來源／UTM 活動）＋已套用 chips＋清除全部＋筆數、可排序表格（學員/門店/狀態/時間）、狀態下拉即時 PATCH、詳情彈窗（學員資料／報名資訊／填寫者資料／健康狀況／活動來源／UTM／學員備註／內部備註可存檔）。
+- 門店與課程的篩選選項**從現有名單自動蒐集**（團課門店不是 Firestore `stores`，不打 `/api/admin/stores`）。
+- 公司選項＝`groupClassVariants` 的 companies ∪ 名單值；來源選項＝`SOURCE_CHANNELS` 常數 ∪ 名單值。**與 leads.vue 同樣刻意不列 UTM 媒介**（勿加回）。
+- 走的是共用 `/api/admin/leads?type=group_class` 與 `/api/admin/leads/{id}` PATCH，沒有專屬 API。
+
 ## 慣例
 - Nitro API：admin 端各檔 inline `const session = await getSession(event)`；寫入類要補角色檢查。
 - 表單 → `server/api/leads/*.post.ts` → 寫 Firestore `leads` + `server/utils/email.ts` 寄信（nodemailer + Gmail SMTP，收件人讀 Firestore `settings`）。
@@ -54,5 +97,5 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - **變體/表單/寄信 技術債 checklist（2026-08-05 體檢；架構健康、無埋雷，以下皆「成長後再處理、現在勿動」）**：① **寄信無重試/告警（中優先）**——`email.ts` 是 fire-and-forget，SMTP 一失敗通知信就**靜默遺失**（只 `console.error`）；營運吃重時加「失敗補記 Firestore / 補寄」。② **`?src=` 未在程式 enforce**——自由字串、一致性只靠 `docs/廠商表單網址規範.md` 紀律；來源寫法亂了再加 normalize/白名單。③ **`booking.vue` 1088 行、變體條件累積**——再堆變體邏輯就抽 `useBookingVariant` composable。④ **`bookingFeeLabel` 吃 3 輸入偏繞** + 變體信件用 `if(company)`——「每家廠商不同信件內容」出現時，像 `pricingCopy` 那樣集中。⑤ 分店 `onMounted` client fetch（非 SSR）→ 兩段式載入。⑥ `paymentMethod='活動免費'` 是 magic string，付款型態變多再收斂。
 - **LKK4 頁（`pages/lkk4.vue`）已全齡改版**：定位「全齡」非中高齡、賽事始於 2021（第六屆＝2026，勿寫 2019），詳見記憶 [[lkk-web-gotchas]]。
 - **後台下拉選單自訂箭頭**（2026-08-05）：`layouts/admin.vue` 根節點掛 `.admin-root`，用**非 scoped 全域 `<style>`** 的 `.admin-root select{appearance:none;background-image:chevron;background-position:right .85rem center;padding-right:2.25rem}` 一次套所有後台 select（原生箭頭改自訂、內縮）。⚠️ layout 用 `scoped`+`:deep()` **無法穩定命中 `<slot/>` 內的頁面 select**（slotted content 屬 page scope）→ 故採「wrapper class＋全域 style」。前台單頁要改 select 箭頭則各頁自己 `<style scoped>`（如 `personal-record.vue`，用 `background-position:right 1rem center`）。
-- **後台版面/表格（2026-08-12）**：後台主內容 wrapper（`layouts/admin.vue` 的 `<div class="flex-1 flex flex-col lg:pl-64">`）已加 **`min-w-0`**——因 `body` 有全域 `overflow-x:hidden`（`assets/css/main.css`），flex 項目預設 `min-width:auto` 會讓寬表格**撐破版面被裁切、無法捲動**；`min-w-0` 讓它收縮、把捲動交回卡片 `overflow-x-auto`（⚠️ **只改卡片 overflow 無效，根因在 wrapper**）。表格頁慣例：卡片 `overflow-x-auto` ＋ 表格 `min-w-[720px]`（或內層 `overflow-x-auto` div ＋ `min-w-full`）。**團課預約後台＝骨架**：`pages/admin/group-classes.vue` 讀 `type=group_class`（前端表單未建、目前恆空、有 amber 說明）、選單在客戶預約下方（icon `usergroup`）、`sales` 可存取；leads type union（`firebase.ts`/`email.ts`）尚未含 `group_class`，之後做前端表單要一併補。**分店後台已移除營業時間/交通/Google Maps 連結欄位**（全改由程式統一維護）。詳見 [[lkk-web-gotchas]] 第 18/19 條。
+- **後台版面/表格（2026-08-12）**：後台主內容 wrapper（`layouts/admin.vue` 的 `<div class="flex-1 flex flex-col lg:pl-64">`）已加 **`min-w-0`**——因 `body` 有全域 `overflow-x:hidden`（`assets/css/main.css`），flex 項目預設 `min-width:auto` 會讓寬表格**撐破版面被裁切、無法捲動**；`min-w-0` 讓它收縮、把捲動交回卡片 `overflow-x-auto`（⚠️ **只改卡片 overflow 無效，根因在 wrapper**）。表格頁慣例：卡片 `overflow-x-auto` ＋ 表格 `min-w-[720px]`（或內層 `overflow-x-auto` div ＋ `min-w-full`）。**團課預約後台已完整**（2026-08-19，見下方「團體課報名系統」段）：`pages/admin/group-classes.vue` 讀 `type=group_class`、版型已比照 `/admin/leads`、選單在客戶預約下方（icon `usergroup`）、`sales` 可存取。**分店後台已移除營業時間/交通/Google Maps 連結欄位**（全改由程式統一維護）。詳見 [[lkk-web-gotchas]] 第 18/19 條。
 - **圖片位/切圖**：業主的切圖規格表多數區塊**還沒有真 `<img>` 位**（Hero、首頁門店卡、LKK4 四項卡=SVG、媒體報導=文字、locations/index 店卡=漸層），「放圖」要先改程式；有真圖位的只有 ServicesSection「我們的服務」、`/services`、單一門店環境照（Firestore `store.images.env1~5`）、Team。比例/尺寸/object-fit 詳見 [[lkk-web-gotchas]] 第 11 條。
