@@ -1,4 +1,12 @@
-// 團體課報名表單 → 寫入 type:'group_class' 名單（後台「團課預約」/admin/group-classes 讀取）＋寄管理者通知信
+// 團體課報名表單 → 寫入 type:'group_class' 名單（後台「團課預約」/admin/group-classes 讀取）
+// ＋寄管理者通知信、填單人確認信（架構比照 /api/leads/booking）
+// 課程價目（確認信顯示用；與 /group-booking 表單一致）
+const COURSE_PRICES: Record<string, string> = {
+  '基礎重訓團班': '$2,400',
+  '樂齡肌力體適能團班': '$2,400',
+  '練健康舉重團班': '$3,200',
+}
+
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
@@ -74,6 +82,10 @@ export default defineEventHandler(async (event) => {
         source: sourceArr,
         note: note || null,
         utm: body.utm || null,
+        // 廠商變體表單（?v=）：來源標記，方便後台辨識活動來源
+        formVariant: body.formVariant || null,
+        company: body.company || null,
+        leadSource: body.leadSource || null,
       },
       status: 'new',
       internalNote: null,
@@ -83,9 +95,10 @@ export default defineEventHandler(async (event) => {
 
     console.log('New group_class lead:', { id: leadRef.id, name, phone: normalizedPhone, course, storeName })
 
-    // 管理者通知信（非阻塞）
+    // 郵件通知（非阻塞）：管理者通知信 ＋ 填單人確認信
     try {
-      const { sendLeadNotification } = await import('~/server/utils/email')
+      const { sendLeadNotification, sendGroupClassConfirmation } = await import('~/server/utils/email')
+
       sendLeadNotification({
         type: 'group_class',
         name,
@@ -103,8 +116,32 @@ export default defineEventHandler(async (event) => {
         fillerName,
         relationship,
         sources: sourceArr,
+        company: body.company,
+        leadSource: body.leadSource,
         createdAt: new Date(),
       }).catch((err) => console.error('Failed to send admin notification:', err))
+
+      if (email) {
+        sendGroupClassConfirmation({
+          name,
+          email,
+          phone: normalizedPhone,
+          gender,
+          ageRange,
+          isFillerSelf,
+          fillerName,
+          relationship,
+          courseName: course,
+          coursePrice: COURSE_PRICES[String(course)],
+          storeName,
+          preferredTime,
+          experience,
+          medicalHistory,
+          sources: sourceArr,
+          message: note,
+          company: body.company,
+        }).catch((err) => console.error('Failed to send group class confirmation:', err))
+      }
     } catch (emailError) {
       console.error('Email module error:', emailError)
     }

@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { getGroupClassVariant } from '~/config/groupClassVariants'
+
+const route = useRoute()
+// 廠商變體表單：?v=<key> 對應 config/groupClassVariants.ts（未知值自動 fallback 成 default）
+const variant = computed(() => getGroupClassVariant(route.query.v))
+
 useHead({
   title: '團體課程報名｜練健康 LKK Wellness',
   meta: [
@@ -155,6 +162,22 @@ const schedule: Record<string, { addr: string; rows: { day: string; times: strin
 }
 const activeStore = ref('nanjing')
 
+// 鎖定門店（?v= 變體）：以門店字串開頭比對，命中就自動帶入並隱藏下拉選單
+const lockedStore = computed(() => {
+  const key = variant.value.lockStore
+  if (!key) return null
+  return storeOptions.find((s) => s === key || s.startsWith(key)) || null
+})
+watch(lockedStore, (s) => { if (s) formData.store = s }, { immediate: true })
+
+// 鎖定課程（?v= 變體）：命中就自動帶入並隱藏課程選項
+const lockedCourse = computed(() => {
+  const key = variant.value.lockCourse
+  if (!key) return null
+  return courses.find((c) => c.value === key) || null
+})
+watch(lockedCourse, (c) => { if (c) formData.course = c.value }, { immediate: true })
+
 const steps = [
   { n: '1', title: '填寫報名表單', desc: '約 1~2 分鐘完成，選好課程與偏好門店即可' },
   { n: '2', title: '教練主動電話／LINE聯繫', desc: '1 個工作天內確認可開班的梯次日期、名額狀況與繳費方式' },
@@ -200,7 +223,15 @@ async function handleSubmit() {
   try {
     const res = await $fetch<{ success: boolean; error?: string }>('/api/leads/group-class', {
       method: 'POST',
-      body: { ...formData, sourcePage: '/group-booking' },
+      body: {
+        ...formData,
+        sourcePage: '/group-booking',
+        // 廠商變體表單標記（?v= / ?src=），與 UTM 一併寫進名單供後台篩選
+        formVariant: (route.query.v as string) || null,
+        company: variant.value.company || null,
+        leadSource: (typeof route.query.src === 'string' ? route.query.src : null) || variant.value.leadSource || null,
+        utm: useUtm().getUtm(),
+      },
     })
     if (res.success) {
       isSuccess.value = true
@@ -270,23 +301,23 @@ const inputClass =
           <div>
             <div class="inline-flex items-center gap-2 bg-orange/[0.18] border border-orange/40 text-orange text-[0.78rem] font-medium px-3.5 py-1.5 rounded-full mb-5 tracking-wide">
               <span class="w-1.5 h-1.5 rounded-full bg-orange" />
-              4堂一期 · 隨時可續課
+              {{ variant.hero?.badge ?? '4堂一期 · 隨時可續課' }}
             </div>
             <h1 class="font-serif text-3xl lg:text-5xl font-black leading-tight mb-4">
-              找個班一起練<br><span class="text-orange">比自己練更有動力</span>
+              {{ variant.hero?.title ?? '找個班一起練' }}<br><span class="text-orange">{{ variant.hero?.titleHighlight ?? '比自己練更有動力' }}</span>
             </h1>
             <p class="text-white/60 font-light leading-relaxed mb-6 max-w-lg">
-              不用預約私人教練，也能有教練在旁指導。三種團體課程，從新手基礎到中高齡肌力、再到舉重技術，總有一班適合你。
+              {{ variant.hero?.subtitle ?? '不用預約私人教練，也能有教練在旁指導。三種團體課程，從新手基礎到中高齡肌力、再到舉重技術，總有一班適合你。' }}
             </p>
             <div class="flex flex-col gap-2 mb-6">
-              <div v-for="g in heroGets" :key="g" class="flex items-start gap-2.5 text-sm text-white/70">
+              <div v-for="g in (variant.hero?.checklist ?? heroGets)" :key="g" class="flex items-start gap-2.5 text-sm text-white/70">
                 <span class="w-5 h-5 rounded-full bg-orange/20 border border-orange/40 flex items-center justify-center flex-shrink-0 mt-0.5 text-orange">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
                 </span>
                 {{ g }}
               </div>
             </div>
-            <a href="#form" class="inline-block bg-orange hover:bg-orange-400 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-orange/35 transition">立即填寫報名 →</a>
+            <a href="#form" class="inline-block bg-orange hover:bg-orange-400 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-orange/35 transition">{{ variant.hero?.ctaText ?? '立即填寫報名 →' }}</a>
             <div class="flex items-center gap-1.5 text-xs text-white/40 mt-3">
               <svg class="w-3.5 h-3.5 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
               <span><strong class="text-orange-300">4堂 $2,400 起</strong>・請假可順延一週・無須綁約長期課程</span>
@@ -414,8 +445,12 @@ const inputClass =
                   <div class="font-serif text-[1.05rem] font-bold text-navy-700 border-b-2 border-navy-700/15 pb-1 pt-2">第二部分：課程資訊</div>
 
                   <div>
-                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">想報名的課程 <span class="text-orange">*</span></label>
-                    <div class="grid grid-cols-3 gap-1.5">
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">想報名的課程 <span v-if="!lockedCourse" class="text-orange">*</span></label>
+                    <div v-if="lockedCourse" class="flex items-center justify-between px-3.5 py-2.5 bg-orange/[0.08] border-[1.5px] border-orange rounded-lg text-[0.95rem] font-semibold text-[#d45c04]">
+                      <span>{{ lockedCourse.value }}</span>
+                      <span class="text-xs font-normal text-ink/45">{{ lockedCourse.price }}</span>
+                    </div>
+                    <div v-else class="grid grid-cols-3 gap-1.5">
                       <label v-for="c in courses" :key="c.value" class="block cursor-pointer">
                         <input v-model="formData.course" type="radio" :value="c.value" class="peer sr-only" />
                         <span class="flex flex-col items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-[0.82rem] text-ink/70 text-center leading-tight transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">
@@ -427,8 +462,11 @@ const inputClass =
                   </div>
 
                   <div>
-                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">想去哪一間門店上課？ <span class="text-orange">*</span></label>
-                    <select v-model="formData.store" :class="inputClass">
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">想去哪一間門店上課？ <span v-if="!lockedStore" class="text-orange">*</span></label>
+                    <div v-if="lockedStore" class="px-3.5 py-2.5 bg-orange/[0.08] border-[1.5px] border-orange rounded-lg text-[0.95rem] font-semibold text-[#d45c04]">
+                      {{ lockedStore }}
+                    </div>
+                    <select v-else v-model="formData.store" :class="inputClass">
                       <option value="" disabled>請選擇偏好的門店地點</option>
                       <option v-for="s in storeOptions" :key="s" :value="s">{{ s }}</option>
                     </select>
@@ -459,7 +497,7 @@ const inputClass =
                   <!-- 第三部分 -->
                   <div class="font-serif text-[1.05rem] font-bold text-navy-700 border-b-2 border-navy-700/15 pb-1 pt-2">第三部分：其他調查</div>
 
-                  <div>
+                  <div v-if="!variant.hideSources">
                     <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">您是從哪裡得知練健康團體課程資訊的呢？ <span class="text-ink/45 font-normal text-xs">（可複選）</span></label>
                     <div class="grid grid-cols-2 gap-1.5">
                       <label v-for="s in sourceOptions" :key="s.value" class="flex items-center gap-1.5 px-2.5 py-2 bg-cream border-[1.5px] border-navy-700/15 rounded-lg text-sm text-ink/70 cursor-pointer transition has-[:checked]:border-navy-700 has-[:checked]:bg-navy-700/[0.07] has-[:checked]:text-[#1a3545] has-[:checked]:font-medium">
