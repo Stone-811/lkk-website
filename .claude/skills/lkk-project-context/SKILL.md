@@ -21,6 +21,7 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - 發 prod＝把 dev 改動帶到 `prod` 分支。**⚠️ `apphosting.yaml` 各分支值不同（dev=`lkkdev`/`l-kk.tw`、prod=`lkkprod`/`lkkwellness.com`），絕不能互蓋**。**最穩＝檔案級帶入（2026-08-11 實測）**：`git checkout -B prod origin/prod` → `git checkout origin/dev -- <只要的檔案…>`（只帶目標檔、**不含 apphosting.yaml**）→ commit 前 `git status --short` 確認 staged 沒有 apphosting.yaml、`grep FIREBASE_PROJECT_ID apphosting.yaml` 仍 `lkkprod` → commit（不加 `-a`，避免帶進工作區雜項如 CLAUDE.md）→ `git push origin prod` → 切回 `git checkout dev`。（整支 `git merge dev` 亦可，但要事後 `git diff origin/prod -- apphosting.yaml` 確認為空；檔案級更不易出錯。）部署：push 分支 → 自動 build；或 `apphosting:rollouts:create <backend> --project <proj> --git-branch <branch> --force`。
 - **prod 現況（2026-07-31）**：已 merge dev→prod、對外 `lkkwellness.com` ＝最新版（含 LKK4 全齡改版等）；**Email 已修好**（有效 lkkwellness App Password，dev/prod 都通）；**prod Auth 尚未開 Google 登入** → 後台用緊急密碼 `lkkwellness@gmail.com`/`lkkwellness-prod`。網域/SMTP/UTM 細節見記憶 [[lkk-web-deploy]]、[[lkk-web-gotchas]]。
 - **hosted.app 已 301 轉到 lkkwellness.com**（`server/middleware/redirect-canonical.ts`，2026-08-03）：正式站醜網址形同停用、SEO 合併。⚠️ **在 App Hosting 上「依網域判斷」要讀 `x-forwarded-host`，不是 `host`**——前面 Envoy CDN 把 `host` 改寫成內部 `…run.app`，原始請求網域落在 `x-forwarded-host`（第一版比對 host 完全沒生效就是踩這個）。middleware 只比對 prod hosted.app 的 xfHost 才轉，故 lkkwellness.com 不迴圈、dev 不受影響。App Hosting 預設 hosted.app 網址無法真正關閉，只能靠轉址。
+- **prod 發佈 2026-08-20**：`/about`、`/news`、`/group-booking` 三個新頁＋團體課系統＋導覽改名（「經營團隊」→「關於練健康」、新增「媒體報導」、「異業結盟」→「合作洽談」）已上正式站，檔案級帶入 23 檔、`apphosting.yaml` 未動（複驗 `lkkprod`/`lkkwellness.com` 原值）。⚠️ **判斷「什麼還沒上 prod」一律用 `git diff --stat origin/prod origin/dev`（檔案級），別看 `git log origin/prod..origin/dev`**——prod 是檔案級帶入、commit 不同但內容可能已同步，commit log 會嚴重高估未上線的量。⚠️ **`/team-intro` 已 301 永久導向 `/about`**（`pages/team-intro/index.vue` 只剩 `navigateTo('/about',{redirectCode:301})`）；`/team-intro/coaches` 子頁不受影響。301 是不可逆的 SEO 訊號（權重併給 `/about`、Google 會逐步從索引移除舊網址），若日後要把「經營團隊」拆回獨立頁會吃虧，要保留彈性就改 `redirectCode: 302`。
 - **gcloud 未安裝**，一律 `npx firebase-tools`（已登入 tingo8320@gmail.com，可存取 lkkdev/lkkprod）。部署 repo（唯一真實來源）：`/Users/stone/4.柚智源/練健康/3. 形象網站翻新`。舊 `Downloads/lkk-new-web` 雙胞胎已棄用。
 - 新環境 setup 血淚點：Firestore 用 `firestore:databases:create --location asia-east1`（別靠 deploy 自動建→會在 nam5）；secrets set 後**務必 `grantaccess --backend`**（否則 Misconfigured Secret）；啟用 Storage；Auth 啟用 Google provider+加該 hosted.app 授權網域。詳見記憶 [[lkk-web-deploy]]。
 
@@ -81,6 +82,26 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - 門店與課程的篩選選項**從現有名單自動蒐集**（團課門店不是 Firestore `stores`，不打 `/api/admin/stores`）。
 - 公司選項＝`groupClassVariants` 的 companies ∪ 名單值；來源選項＝`SOURCE_CHANNELS` 常數 ∪ 名單值。**與 leads.vue 同樣刻意不列 UTM 媒介**（勿加回）。
 - 走的是共用 `/api/admin/leads?type=group_class` 與 `/api/admin/leads/{id}` PATCH，沒有專屬 API。
+
+## 教練資料現況（⚠️ 動 /team-intro/coaches 或教練資料前必看，2026-08-20 盤點）
+
+**線上 43 筆教練資料多為「範本假資料」。** 姓名與分店是對的（28 位同名者分店 100% 吻合，來自真實教練牆照片），但**證照/學歷/經歷是編的**：43 筆 `description` 全空、專長用語是 34 種自創組合（如「骨骼肌肉系統傷害後訓練」），與公司實際 14 種用語（中高齡訓練/肌力訓練/增肌減脂/功能性訓練/體態雕塑/術後訓練/特殊族群訓練/健力三項/壺鈴訓練/專項訓練/拳擊訓練/動作控制/運動傷害防護/運動科學檢測）完全不同。
+
+**⚠️ 最嚴重＝職稱與證照錯標，是合規問題不是資料過期**：以業主 CSV 為準，**14 位非物理治療師的教練在網站上被標成「物理治療師」並列出「物理治療師證照」**，另有 2 位真物治只標「教練」。物理治療師受《物理治療師法》管制。此狀態目前仍在正式站上。**修正這 14 筆 `roleTitle`/`certifications` 應獨立優先，不要等整批資料更新。** 明細見記憶 [[lkk-web-coach-data]]。
+
+**呈現欄位**：卡片＝照片/姓名/`roleTitle`/`specialties` **前 2 個**；彈窗＝照片/姓名/`roleTitle`/分店名/`specialties` **前 3 個**/`description`/`certifications`/`education`/`experiences`。
+
+**資料來源**：業主的 `教練製作物所需資訊_20250826_宗倫`（50 人）。這是**製作物需求表**（名片/名牌/形象照/教練牆/官網進度），不是為官網設計的 → 「官網」欄的進度值與網站現況對不上、**別照那欄做**；且含**個資（電話/Email/Instagram/官方 LINE ID）→ 絕不可上公開網站**；「英文名字」網站無對應欄位。CSV 也**沒有個人簡介** → 更新後彈窗簡介仍會空著。
+
+**匯入注意**：CSV 的「學歷/經歷」是**同一欄**，需拆成 `education[]`+`experiences[]`（38 人有「學歷：／經歷：」標記可自動拆、6 人需人工判讀）。**別用後台一筆筆建**——`pages/admin/coaches/[id].vue` 的「學歷」是**單行輸入、用逗號 `,` 切割成陣列**，CSV 含逗號的學歷會被切壞；49 人手動也要 4–6 小時。照 `server/api/admin/lkk4-records/import.post.ts` 的模式做一支教練 CSV 匯入 API 較穩、日後可重用。
+
+**名冊差異**：28 人更新、21 人待新增（含 1 離職/2 櫃台/2 教育訓練部）、15 人待確認下架、3 組姓名一字之差疑同一人（王均祐/佑、鍾絲沛/緯沛、陳詠侑/佑）。⚠️ 待下架的 15 人中「鄭宇劭」是 CSV 的範例列人物、看起來還在職 → **別一律當離職處理**。
+
+**照片**：現有 43 張按拼音命名於 `public/images/coaches/{nanjing,songjiang,ximending,xindian}/`，21 位新教練無照片、CSV「形象照」欄多數「待拍攝」→ 獨立阻塞項，沒照片先用預設圖上架。照片本身的燒字橫幅/構圖問題見下方「常踩的地雷」第 6 條。
+
+**教育訓練部無對應 store**：`storeId` 在後台是必填，但沒有「教育訓練部」這個 Firestore store → 吳禎明/李柏橋要上架需先決定放哪。
+
+> 2026-08-20 業主表示會再提供正確的教練資訊與照片 → 批次匯入等新資料，合規修正不等。
 
 ## 慣例
 - Nitro API：admin 端各檔 inline `const session = await getSession(event)`；寫入類要補角色檢查。
