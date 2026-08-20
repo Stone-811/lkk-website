@@ -373,9 +373,9 @@ const showMore = computed(() => fMore.value.length > 0)
           <span class="w-5 h-0.5 bg-orange" />
           For Journalists &amp; Editors
         </div>
-        <h2 class="font-serif text-3xl lg:text-4xl font-black mb-4">記者朋友，歡迎<span class="text-orange">聯繫我們</span></h2>
+        <h2 class="font-serif text-3xl lg:text-4xl font-black mb-4">歡迎<span class="text-orange">聯繫我們</span></h2>
         <p class="text-white/60 leading-relaxed mb-8 max-w-2xl mx-auto">
-          如果您正在報導中高齡健康、銀髮健身、或台灣的積極老化故事，我們很樂意協助。創辦人接受中文與英文採訪，競賽影像與品牌資料可提供。
+          如果您正在報導中高齡健康、銀髮健身、或台灣的積極老化故事，我們很樂意協助。
         </p>
         <div class="flex flex-wrap justify-center items-center gap-4">
           <NuxtLink
@@ -384,14 +384,6 @@ const showMore = computed(() => fMore.value.length > 0)
           >
             媒體採訪洽詢 →
           </NuxtLink>
-          <a
-            href="https://l-kk.tw/wp-content/uploads/2024/04/lkklogo2.png"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 border border-white/25 text-white font-semibold px-8 py-3 rounded-full hover:border-white hover:bg-white/5 transition-colors"
-          >
-            下載品牌 Logo
-          </a>
         </div>
       </div>
     </section>
