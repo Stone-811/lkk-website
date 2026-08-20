@@ -263,7 +263,7 @@ const inputClass =
         </div>
         <h1 class="font-serif text-3xl lg:text-4xl font-black text-[#1a3545] mb-3">團體課程報名已送出！</h1>
         <p class="text-ink/70 leading-relaxed mb-8">
-          您的報名資料已即時同步後台系統。由於團體課程需依當期名額與人數安排梯次，<strong class="text-ink">請點擊下方按鈕加入「練健康 LINE 官方帳號」</strong>，傳送一則包含學員姓名與想上課程的訊息，教練將以最快速度為您確認開課日期！
+          你的報名資料已即時同步後台系統。由於團體課程需依當期名額與人數安排梯次，<strong class="text-ink">請點擊下方按鈕加入「練健康 LINE 官方帳號」</strong>，傳送一則包含學員姓名與想上課程的訊息，教練將以最快速度為你確認開課日期！
         </p>
 
         <a
@@ -279,7 +279,7 @@ const inputClass =
         <div class="bg-white rounded-2xl p-6 border border-navy-700/15 shadow-sm text-left mb-6">
           <div class="font-bold text-[#1a3545] mb-3">接下來的確認流程</div>
           <div class="space-y-2">
-            <div v-for="(row, i) in ['加入官方 LINE 並傳送姓名與課程後，教練將於 1 個工作天內確認梯次與繳費方式', '若您未加入 LINE，我們也將於 1 個工作天內嘗試撥打您填寫的手機號碼聯繫', '四堂一期，請假最晚提前一週告知可順延一週']" :key="i" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
+            <div v-for="(row, i) in ['加入官方 LINE 並傳送姓名與課程後，教練將於 1 個工作天內確認梯次與繳費方式', '若你未加入 LINE，我們也將於 1 個工作天內嘗試撥打你填寫的手機號碼聯繫', '四堂一期，請假最晚提前一週告知可順延一週']" :key="i" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
               <span class="text-orange flex-shrink-0">→</span><span>{{ row }}</span>
             </div>
           </div>
@@ -415,7 +415,7 @@ const inputClass =
                   </div>
 
                   <div>
-                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">是否為您本人親自填寫？ <span class="text-orange">*</span></label>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">是否為你本人親自填寫？ <span class="text-orange">*</span></label>
                     <div class="grid grid-cols-2 gap-1.5">
                       <label v-for="opt in [{ v: '是', l: '是，我是本人' }, { v: '否', l: '否，我是幫家人/朋友填' }]" :key="opt.v" class="block cursor-pointer">
                         <input v-model="formData.isFillerSelf" type="radio" :value="opt.v" class="peer sr-only" />
@@ -428,12 +428,12 @@ const inputClass =
                   <div v-if="formData.isFillerSelf === '否'" class="bg-navy-700/[0.04] border border-dashed border-navy-700 rounded-xl p-4 space-y-3">
                     <div class="grid sm:grid-cols-2 gap-3">
                       <div>
-                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">您（報名者）的姓名 <span class="text-orange">*</span></label>
-                        <input v-model="formData.fillerName" type="text" placeholder="您的姓名" :class="inputClass" />
+                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">你（報名者）的姓名 <span class="text-orange">*</span></label>
+                        <input v-model="formData.fillerName" type="text" placeholder="你的姓名" :class="inputClass" />
                         <p v-if="errors.fillerName" class="text-red-500 text-xs mt-1">{{ errors.fillerName }}</p>
                       </div>
                       <div>
-                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">您與學員的關係 <span class="text-orange">*</span></label>
+                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">你與學員的關係 <span class="text-orange">*</span></label>
                         <input v-model="formData.relationship" type="text" placeholder="例如：女兒、兒子、朋友" :class="inputClass" />
                         <p v-if="errors.relationship" class="text-red-500 text-xs mt-1">{{ errors.relationship }}</p>
                       </div>
@@ -498,7 +498,7 @@ const inputClass =
                   <div class="font-serif text-[1.05rem] font-bold text-navy-700 border-b-2 border-navy-700/15 pb-1 pt-2">第三部分：其他調查</div>
 
                   <div v-if="!variant.hideSources">
-                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">您是從哪裡得知練健康團體課程資訊的呢？ <span class="text-ink/45 font-normal text-xs">（可複選）</span></label>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">你是從哪裡得知練健康團體課程資訊的呢？ <span class="text-ink/45 font-normal text-xs">（可複選）</span></label>
                     <div class="grid grid-cols-2 gap-1.5">
                       <label v-for="s in sourceOptions" :key="s.value" class="flex items-center gap-1.5 px-2.5 py-2 bg-cream border-[1.5px] border-navy-700/15 rounded-lg text-sm text-ink/70 cursor-pointer transition has-[:checked]:border-navy-700 has-[:checked]:bg-navy-700/[0.07] has-[:checked]:text-[#1a3545] has-[:checked]:font-medium">
                         <input v-model="formData.source" type="checkbox" :value="s.value" class="peer sr-only" />
@@ -519,7 +519,7 @@ const inputClass =
                     {{ submitting ? '送出中…' : '送出團體課程報名' }}
                     <svg v-if="!submitting" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 5l7 7-7 7" /></svg>
                   </button>
-                  <p class="text-xs text-ink/50 text-center leading-relaxed">送出即表示同意我們以電話或 LINE 與您聯繫確認開課梯次，個人資料僅用於此報名目的。</p>
+                  <p class="text-xs text-ink/50 text-center leading-relaxed">送出即表示同意我們以電話或 LINE 與你聯繫確認開課梯次，個人資料僅用於此報名目的。</p>
                   <div class="text-center pt-4 border-t border-navy-700/15 text-sm text-ink/70">
                     不想填表？直接來電也可以<br>
                     <a href="tel:+886225074196" class="text-navy-700 font-semibold">(02) 2507-4196</a>（南京店）

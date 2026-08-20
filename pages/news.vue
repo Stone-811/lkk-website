@@ -75,7 +75,7 @@ const intl: Report[] = [
     outlet: 'AFP 法新社', lang: 'English', lkk4: true, type: 'video',
     title: 'Taipei hosts Christmas-themed senior deadlift competition',
     excerpt: "Taiwan's capital Taipei hosts a deadlift competition for seniors with a Christmas theme, attracting international attention.",
-    date: 'Dec 2024', image: null,
+    date: 'Dec 2024', image: '/images/news/afp.jpg',
     link: { text: '觀看影片 →', href: 'https://www.facebook.com/AFPnewsenglish/videos/904278765198954/' },
   },
   {
@@ -375,7 +375,7 @@ const showMore = computed(() => fMore.value.length > 0)
         </div>
         <h2 class="font-serif text-3xl lg:text-4xl font-black mb-4">歡迎<span class="text-orange">聯繫我們</span></h2>
         <p class="text-white/60 leading-relaxed mb-8 max-w-2xl mx-auto">
-          如果您正在報導中高齡健康、銀髮健身、或台灣的積極老化故事，我們很樂意協助。
+          如果你正在報導中高齡健康、銀髮健身、或台灣的積極老化故事，我們很樂意協助。
         </p>
         <div class="flex flex-wrap justify-center items-center gap-4">
           <NuxtLink
