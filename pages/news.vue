@@ -26,12 +26,6 @@ interface Report {
   links?: Link[]
 }
 
-const heroStats = [
-  { num: '5', label: '國際通訊社報導' },
-  { num: '36+', label: '媒體報導累計' },
-  { num: '2024–', label: '密集國際關注' },
-]
-
 // 篩選（本站設計原則不使用 emoji，改用文字標籤）
 const filters = [
   { key: 'all', label: '全部' },
@@ -181,15 +175,9 @@ const showMore = computed(() => fMore.value.length > 0)
         <h1 class="font-serif text-4xl lg:text-5xl font-black leading-tight mb-5">
           被<span class="text-orange">世界看見</span>的台灣故事
         </h1>
-        <p class="text-white/60 text-lg font-light leading-relaxed mb-10 max-w-2xl mx-auto">
+        <p class="text-white/60 text-lg font-light leading-relaxed max-w-2xl mx-auto">
           從台北出發，練健康的故事吸引了全球主要通訊社的目光。這裡是我們被報導的完整紀錄，以及給媒體朋友的所有資源。
         </p>
-        <div class="flex flex-wrap justify-center gap-8 sm:gap-12">
-          <div v-for="s in heroStats" :key="s.label" class="text-center">
-            <div class="font-serif text-3xl lg:text-4xl font-black text-orange">{{ s.num }}</div>
-            <div class="text-xs text-white/50 mt-1">{{ s.label }}</div>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -222,7 +210,7 @@ const showMore = computed(() => fMore.value.length > 0)
           International Press
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">國際通訊社的目光</h2>
-        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl">
+        <p class="text-ink/60 leading-relaxed mb-10 lg:whitespace-nowrap">
           2024–2026 年間，全球三大通訊社及新加坡國家電視台相繼來台採訪，讓台灣的中高齡訓練故事傳遍世界。
         </p>
 
