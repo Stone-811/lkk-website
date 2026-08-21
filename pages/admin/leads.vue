@@ -296,15 +296,7 @@ function handleExport() {
     ]
   })
 
-  const csvContent =
-    '\uFEFF' +
-    [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n')
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob)
-  link.download = `booking_leads_${new Date().toISOString().split('T')[0]}.csv`
-  link.click()
+  useCsvExport().exportCsv('booking_leads', headers, rows)
 }
 </script>
 

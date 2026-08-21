@@ -274,15 +274,7 @@ function handleExport() {
     ]
   })
 
-  const csvContent =
-    '﻿' +
-    [headers, ...rows].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n')
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob)
-  link.download = `group_class_leads_${new Date().toISOString().split('T')[0]}.csv`
-  link.click()
+  useCsvExport().exportCsv('group_class_leads', headers, rows)
 }
 </script>
 
