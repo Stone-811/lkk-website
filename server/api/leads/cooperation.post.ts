@@ -53,6 +53,7 @@ export default defineEventHandler(async (event) => {
         lineId: lineId || null,
         companySize: companySize || null,
         budgetRange: budgetRange || null,
+        utm: body.utm || null,
       },
     })
 

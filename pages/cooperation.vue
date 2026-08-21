@@ -138,9 +138,24 @@ const handleSubmit = async () => {
     return
   }
 
-  // 模擬提交（實際需要接 API）
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const res = await $fetch<{ success: boolean; error?: string }>('/api/leads/cooperation', {
+      method: 'POST',
+      body: {
+        ...formData.value,
+        // 洽詢類型取自上方分頁（講座邀約／企業健康促進邀請／媒體採訪與異業合作）
+        cooperationType: enquiryTypes[activeType.value].value,
+        sourcePage: '/cooperation',
+        utm: useUtm().getUtm(),
+      },
+    })
+
+    if (!res.success) {
+      submitStatus.value = 'error'
+      errorMessage.value = res.error || '送出失敗，請稍後再試'
+      return
+    }
+
     submitStatus.value = 'success'
     formData.value = {
       organization: '',
@@ -152,9 +167,9 @@ const handleSubmit = async () => {
       budgetRange: '',
       message: '',
     }
-  } catch (error) {
+  } catch (error: any) {
     submitStatus.value = 'error'
-    errorMessage.value = '網路錯誤，請稍後再試'
+    errorMessage.value = error?.data?.error || '網路錯誤，請稍後再試'
   } finally {
     isSubmitting.value = false
   }
