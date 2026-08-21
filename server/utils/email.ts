@@ -131,30 +131,8 @@ interface LeadNotificationData {
   fillerName?: string
 }
 
-// Send lead notification email to admins
-export async function sendLeadNotification(data: LeadNotificationData) {
-  const transporter = await createTransporter()
-  if (!transporter) {
-    console.log('Email transporter not configured, skipping notification')
-    return false
-  }
-
-  const settings = await getNotificationSettings()
-  if (!settings || !settings.emailOnNewLead || !settings.emailRecipients) {
-    console.log('Email notifications disabled or no recipients configured')
-    return false
-  }
-
-  const recipients = settings.emailRecipients
-    .split(',')
-    .map((email) => email.trim())
-    .filter((email) => email)
-
-  if (recipients.length === 0) {
-    console.log('No valid email recipients')
-    return false
-  }
-
+// 純函式：組管理者通知信的主旨與 HTML（不碰 SMTP/Firestore，供寄信與快照驗證使用）
+export function buildLeadNotificationEmail(data: LeadNotificationData): { subject: string; html: string } {
   const typeLabel = leadTypeLabels[data.type] || data.type
   const subject = `【練健康】新${typeLabel}表單${data.company ? `【${data.company}】` : ''} - ${data.name}`
   const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://l-kk.tw'
@@ -423,12 +401,41 @@ export async function sendLeadNotification(data: LeadNotificationData) {
 </div>
 `
 
+  return { subject, html: content }
+}
+
+// Send lead notification email to admins
+export async function sendLeadNotification(data: LeadNotificationData) {
+  const transporter = await createTransporter()
+  if (!transporter) {
+    console.log('Email transporter not configured, skipping notification')
+    return false
+  }
+
+  const settings = await getNotificationSettings()
+  if (!settings || !settings.emailOnNewLead || !settings.emailRecipients) {
+    console.log('Email notifications disabled or no recipients configured')
+    return false
+  }
+
+  const recipients = settings.emailRecipients
+    .split(',')
+    .map((email) => email.trim())
+    .filter((email) => email)
+
+  if (recipients.length === 0) {
+    console.log('No valid email recipients')
+    return false
+  }
+
+  const { subject, html } = buildLeadNotificationEmail(data)
+
   try {
     await transporter.sendMail({
       from: `"練健康" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
       to: recipients.join(', '),
       subject,
-      html: content,
+      html,
     })
     console.log(`Lead notification email sent to: ${recipients.join(', ')}`)
     return true
