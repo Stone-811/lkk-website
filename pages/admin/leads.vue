@@ -113,7 +113,7 @@ const {
 })
 
 function handleExport() {
-  const headers = ['姓名', '電話', 'Email', '分店', '狀態', '性別', '出生年月', 'LINE ID', '運動目的', '偏好時段', '付款方式', '得知管道', '填寫者', '與學員關係', '預約者姓名', '聯繫電話', '健康狀況', '公司', '來源', '表單變體', 'UTM來源', 'UTM形式', 'UTM活動', 'UTM素材', '備註', '建立時間']
+  const headers = ['姓名', '電話', 'Email', '分店', '狀態', '性別', '出生年月', 'LINE ID', '運動目的', '偏好時段', '付款方式', '得知管道', '填寫者', '與學員關係', '預約者姓名', '聯繫電話', '健康狀況', '公司', '來源', '表單變體', 'UTM來源', 'UTM形式', 'UTM活動', 'UTM素材', '客戶備註', '內部備註', '建立時間']
   const rows = filteredLeads.value.map(lead => {
     // 處理運動目的
     let exerciseGoalsText = ''
@@ -167,6 +167,7 @@ function handleExport() {
       lead.payload?.utm?.medium || '',
       lead.payload?.utm?.campaign || '',
       lead.payload?.utm?.content || '',
+      lead.message || '',
       lead.internalNote || '',
       formatDateTime(lead.createdAt),
     ]
