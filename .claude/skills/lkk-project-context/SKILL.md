@@ -83,6 +83,17 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - 公司選項＝`groupClassVariants` 的 companies ∪ 名單值；來源選項＝`SOURCE_CHANNELS` 常數 ∪ 名單值。**與 leads.vue 同樣刻意不列 UTM 媒介**（勿加回）。
 - 走的是共用 `/api/admin/leads?type=group_class` 與 `/api/admin/leads/{id}` PATCH，沒有專屬 API。
 
+## 共用層／重構現況（2026-08-21 F+D+B+C+A+E 完成，動這些區塊前先讀）
+
+- **CSV 匯出**＝`composables/useCsvExport.ts`（BOM＋引號跳脫＋null 出空字串）。leads/cooperation/group-classes 三頁共用，各頁只留欄位定義。**勿再手寫組 CSV**。
+- **表單寫入**＝`server/utils/leads.ts` 的 `createLead()`。四支 `/api/leads/*.post.ts` 共用；欄位值由呼叫端先正規化好**原樣傳入**（函式內不 || null）。驗證與寄信仍在各 API。
+- **管理者通知信**＝`email.ts` 的純函式 `buildLeadNotificationEmail()`＋`notifRow(label,value,{wide/top/pre/tone:'warn'|'danger'/last})`。**加新表單類型＝加欄位列定義，勿手寫 <tr> HTML**。重構時用快照法驗證（暫時 debug endpoint 吐 fixture HTML 比對逐字元，驗完刪）。
+- **後台名單頁**＝`composables/useAdminLeads.ts`（載入/搜尋/日期/宣告式篩選 `LeadFilterDef`/chips/排序/彈窗/狀態/備註；含 `SOURCE_CHANNELS`、`LEAD_STATUS_FILTER_OPTIONS` 常數）＋`components/admin/` 三元件（LeadFilterBar／LeadDetailModal（body 用 slot）／SortableTh）。leads.vue（717→441）與 group-classes.vue（688→409）已遷移，各頁只留 fetch 映射、篩選定義、表格欄位、詳情 slot、CSV 欄位。⚠️ **公司篩選的選項底要傳各自的變體設定**（leads=bookingVariants、團課=groupClassVariants，兩份 key 同名、寫錯今天看不出來）。**cooperation.vue 未遷**（結構不同：雙 type 合併＋utm 提頂層＋無日期/排序，遷移＝功能升級，需業主確認後才做）。
+- **前台分店基本資料**＝`composables/usePublicStores.ts`（店名/電話/地址/slug 讀 `/api/public/stores`，`server:false`＋fallback 與 Firestore 現值一致、顯示順序南京→松江→西門→七張）。Footer 與首頁 LocationsSection 已用；`pages/locations/index.vue` 本來就有自己的 API 驅動＋fallback。**booking/group-booking 表單選項刻意不用**（避開變體 lockStore 時序）；營業時間/交通仍程式碼維護。⚠️ **業主在後台改分店電話/地址現在會真的全站生效**；七張店自此顯示 Firestore 正式名「新店七張店」（原首頁/Footer 寫死「七張店」與列表頁不一致）。
+- **後台 API 驗證**：可達的 401/403 只有 `admin-api-guard`（statusMessage 與 message 同值）與 auth/* 四支（回應格式勿動，登入頁/路由 middleware 依賴）。**30 支 handler 的 inline 401 在 guard 之後實際不可達**（防禦縱深，勿花力氣統一）。`requireAuth` 已刪（死碼）；角色檢查用 `requireRole`。
+- **本機驗證管線**（無測試框架下的替代）：`npm run build`（⚠️ 不做型別檢查）→ `(set -a; source .env; set +a; unset SMTP_*; NODE_ENV=development ALLOW_DEV_ADMIN=true node .output/server/index.mjs)` → 後台用 dev 後門帳號（見 auth.ts DEV_TEST_USER，須 NODE_ENV≠production 且 ALLOW_DEV_ADMIN=true）→ 瀏覽器 pane 走查＋`javascript_tool` 斷言；表單類改動 curl POST 後用 service account 腳本直讀 Firestore 核對 shape、驗完刪測試文件。unset SMTP_* 可讓寄信乾淨跳過不發真信。
+- ⚠️ **備註存檔競態（已修）**：存檔期間關閉彈窗，舊碼 `selectedLead.value.internalNote` NPE→誤報「儲存失敗」（實際已寫入）。useAdminLeads 已加 null 防護，勿退回。
+
 ## 教練資料現況（⚠️ 動 /team-intro/coaches 或教練資料前必看，2026-08-20 盤點）
 
 **線上 43 筆教練資料多為「範本假資料」。** 姓名與分店是對的（28 位同名者分店 100% 吻合，來自真實教練牆照片），但**證照/學歷/經歷是編的**：43 筆 `description` 全空、專長用語是 34 種自創組合（如「骨骼肌肉系統傷害後訓練」），與公司實際 14 種用語（中高齡訓練/肌力訓練/增肌減脂/功能性訓練/體態雕塑/術後訓練/特殊族群訓練/健力三項/壺鈴訓練/專項訓練/拳擊訓練/動作控制/運動傷害防護/運動科學檢測）完全不同。
