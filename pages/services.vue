@@ -2,7 +2,7 @@
 useHead({
   title: '服務介紹 | 練健康',
   meta: [
-    { name: 'description', content: '練健康提供一對一訓練、團體課程、線上課程等多元服務。50 歲以上首次體驗完全免費，一般首次體驗 $500。' }
+    { name: 'description', content: '練健康提供一對一訓練、團體課程、線上課程等多元服務。50歲以上免費體驗，首次體驗只要 $500。' }
   ]
 })
 
@@ -45,27 +45,27 @@ const groupCourses = [
     title: '基礎重量訓練班',
     target: '適合初學者',
     description: '從零開始學習正確的重量訓練動作模式，包含深蹲、硬舉、推拉等基本動作，建立安全且有效的訓練基礎。',
-    people: '小班制 4-8 人',
-    duration: '每堂 50 分鐘',
-    note: '一次購買四堂',
+    people: '小班制 3-6 人',
+    duration: '每堂 60 分鐘',
+    note: '一期4堂',
   },
   {
     id: 'strength',
     title: '肌力團練班',
     target: '有基礎者適合',
     description: '針對已有基礎動作能力的學員，以提升肌力和體能為目標，訓練強度較高，挑戰自我極限。',
-    people: '小班制 4-8 人',
-    duration: '每堂 50 分鐘',
-    note: '一次購買四堂',
+    people: '小班制 3-6 人',
+    duration: '每堂 60 分鐘',
+    note: '一期4堂',
   },
   {
     id: 'senior',
     title: '樂齡體適能訓練班',
     target: '中高齡專屬',
     description: '專為 50 歲以上設計，低衝擊、安全優先，兼顧肌力、平衡感與柔軟度，讓訓練融入日常生活。',
-    people: '小班制 4-8 人',
-    duration: '每堂 50 分鐘',
-    note: '一次購買四堂',
+    people: '小班制 3-6 人',
+    duration: '每堂 60 分鐘',
+    note: '一期4堂',
   },
 ]
 
@@ -81,7 +81,7 @@ const onlineFeatures = [
 const comparisonData = [
   { item: '個人化程度', personal: '★★★', group: '★★', online: '★' },
   { item: '教練即時指導', personal: '✓', group: '✓', online: '—' },
-  { item: '小班人數', personal: '1 人（純個人）', group: '4-8 人', online: '自主學習' },
+  { item: '小班人數', personal: '1 人（純個人）', group: '3-6 人', online: '自主學習' },
   { item: '適合特殊族群', personal: '✓ 最適合', group: '部分課程', online: '—' },
   { item: '時間彈性', personal: '依約定排課', group: '依固定時段', online: '✓ 完全彈性' },
   { item: '需要到分店', personal: '✓', group: '✓', online: '不需要' },
@@ -165,7 +165,7 @@ const personalFeatures = [
           練健康提供三種上課形式，不管你是第一次接觸重訓、希望有同伴一起練，還是想在家自主訓練，都有對應的選擇。
         </p>
         <p class="text-orange text-lg md:text-xl font-semibold mb-10">
-          50 歲以上完全免費 · 一般首次體驗 $500
+          50歲以上免費體驗 · 首次體驗只要 $500
         </p>
 
         <!-- 快速導航按鈕 -->
@@ -193,7 +193,7 @@ const personalFeatures = [
               </svg>
             </div>
             <h3 class="font-bold text-lg mb-1">團體課程</h3>
-            <p class="text-cream-300 text-sm">小班制 · 4-8 人</p>
+            <p class="text-cream-300 text-sm">小班制 · 3-6 人</p>
           </button>
 
           <button
@@ -266,7 +266,7 @@ const personalFeatures = [
               由專業教練全程陪伴，根據你的身體狀況、健康目標與生活習慣，量身打造個人訓練計畫。一週一次，持續進步。
             </p>
             <p class="text-orange font-semibold mb-6">
-              首次體驗 $500 · 50歲以上免費
+              50歲以上免費體驗 · 首次體驗只要 $500
             </p>
 
             <!-- 特色列表 -->
@@ -352,7 +352,7 @@ const personalFeatures = [
             團體課程
           </h2>
           <p class="text-ink-600 max-w-2xl mx-auto leading-relaxed">
-            一次買四堂，與志同道合的夥伴一起訓練，互相激勵。小班制（4-8 人）確保教練能顧到每個人的動作品質。
+            一期4堂，與志同道合的夥伴一起訓練，互相激勵。小班制（3-6 人）確保教練能顧到每個人的動作品質。
           </p>
         </div>
 
@@ -597,7 +597,7 @@ const personalFeatures = [
             </svg>
           </NuxtLink>
           <p class="text-cream-200 text-sm mt-6">
-            50歲以上完全免費 · 一般首次體驗 $500 · 無隱藏費用
+            50歲以上免費體驗 · 首次體驗只要 $500 · 無隱藏費用
           </p>
         </div>
       </div>

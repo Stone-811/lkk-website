@@ -4,7 +4,7 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: '練健康在大台北地區有 4 間分店，新店七張、南京、松江、西門，每間都鄰近捷運站。50歲以上首次體驗完全免費。'
+      content: '練健康在大台北地區有 4 間分店，新店七張、南京、松江、西門，每間都鄰近捷運站。50歲以上免費體驗。'
     }
   ]
 })
@@ -108,7 +108,7 @@ const reasons = [
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12" />
           </svg>
-          <span><strong class="text-orange-300">50歲以上免費</strong>・一般首次 $500・不強迫買課</span>
+          <span><strong class="text-orange-300">50歲以上免費體驗</strong>・首次體驗只要 $500・不強迫買課</span>
         </div>
       </div>
     </section>
@@ -344,7 +344,7 @@ const reasons = [
           立即預約體驗 →
         </NuxtLink>
         <div class="mt-4 text-white/60 text-sm">
-          50歲以上完全免費・不強迫買課
+          50歲以上免費體驗・不強迫買課
         </div>
       </div>
     </section>
