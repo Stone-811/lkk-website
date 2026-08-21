@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
   const session = await getSession(event)
 
   if (!session) {
-    throw createError({ statusCode: 401, statusMessage: '未登入' })
+    throw createError({ statusCode: 401, statusMessage: '未登入', message: '未登入' })
   }
 
   const role = session.role
@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
     path.startsWith('/api/admin/seed') ||
     path.startsWith('/api/admin/debug')
   ) {
-    throw createError({ statusCode: 403, statusMessage: '權限不足' })
+    throw createError({ statusCode: 403, statusMessage: '權限不足', message: '權限不足' })
   }
 
   // 自訂權限帳號：依勾選頁面鎖 API
@@ -65,7 +65,7 @@ export default defineEventHandler(async (event) => {
     const { hasPagePermission } = await import('~/utils/adminAccess')
     const ok = required.some((p) => hasPagePermission(session, p))
     if (!ok) {
-      throw createError({ statusCode: 403, statusMessage: '權限不足' })
+      throw createError({ statusCode: 403, statusMessage: '權限不足', message: '權限不足' })
     }
     return
   }
@@ -76,7 +76,7 @@ export default defineEventHandler(async (event) => {
       path.startsWith('/api/admin/leads') ||
       (path.startsWith('/api/admin/stores') && method === 'GET')
     if (!salesAllowed) {
-      throw createError({ statusCode: 403, statusMessage: '權限不足' })
+      throw createError({ statusCode: 403, statusMessage: '權限不足', message: '權限不足' })
     }
     return
   }
