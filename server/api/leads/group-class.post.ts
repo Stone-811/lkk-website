@@ -52,13 +52,8 @@ export default defineEventHandler(async (event) => {
     // store 為完整字串（如「南京店｜台北市...」），取「｜」前的店名供後台/通知信顯示
     const storeName = String(store).split('｜')[0].trim()
 
-    const { getDb, getTimestamp } = await import('~/server/utils/firebase')
-    const db = await getDb()
-    const Timestamp = await getTimestamp()
-
-    const now = Timestamp.now()
-    const leadRef = db.collection('leads').doc()
-    await leadRef.set({
+    const { createLead } = await import('~/server/utils/leads')
+    const leadId = await createLead({
       type: 'group_class',
       name,
       phone: normalizedPhone,
@@ -87,13 +82,9 @@ export default defineEventHandler(async (event) => {
         company: body.company || null,
         leadSource: body.leadSource || null,
       },
-      status: 'new',
-      internalNote: null,
-      createdAt: now,
-      updatedAt: now,
     })
 
-    console.log('New group_class lead:', { id: leadRef.id, name, phone: normalizedPhone, course, storeName })
+    console.log('New group_class lead:', { id: leadId, name, phone: normalizedPhone, course, storeName })
 
     // 郵件通知（非阻塞）：管理者通知信 ＋ 填單人確認信
     try {

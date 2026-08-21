@@ -34,14 +34,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // Dynamic import to avoid bundling issues
-    const { getDb, getTimestamp } = await import('~/server/utils/firebase')
-    const db = await getDb()
-    const Timestamp = await getTimestamp()
-
     // Create lead in Firestore
-    const now = Timestamp.now()
-    const leadRef = db.collection('leads').doc()
-    const leadData = {
+    const { createLead } = await import('~/server/utils/leads')
+    const leadId = await createLead({
       type: 'franchise',
       name,
       phone,
@@ -56,16 +51,10 @@ export default defineEventHandler(async (event) => {
         cooperationType: cooperationType || null,
         utm: body.utm || null,
       },
-      status: 'new',
-      internalNote: null,
-      createdAt: now,
-      updatedAt: now,
-    }
-
-    await leadRef.set(leadData)
+    })
 
     console.log('New franchise lead:', {
-      id: leadRef.id,
+      id: leadId,
       name,
       organization,
       region,
