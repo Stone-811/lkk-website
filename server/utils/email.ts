@@ -59,16 +59,20 @@ const leadTypeLabels: Record<string, string> = {
   group_class: '團體課報名',
 }
 
-// 體驗費標示：以「使用者實際勾選的付款方式」為權威依據，信件與表單勾選一致。
+// 體驗費標示：一律以「使用者實際勾選的付款方式」為權威依據，信件與表單勾選一致。
 // （50 歲以上仍可自行選擇臨櫃付款；未勾選時才退回用出生年月的年齡推算。）
-function bookingFeeLabel(birthDate?: string, paymentMethod?: string, company?: string): string | null {
-  // 帶公司參數的變體活動（全齡免費）→ 不顯示付款方式（避免誤標臨櫃 $500）
-  if (company) return null
+//
+// ⚠️ 不可再用 company 當「免費」的判斷依據（2026-08-21 移除該特例）：
+// company 只代表「這筆來自廠商連結」，不代表免費——例如 abbott(亞培) 沒有
+// allAgesFree、走標準 50 歲條件，未滿 50 歲是真的要付 $500。全齡免費的變體
+// （如 nanshan）在 booking.vue 會自動把 paymentMethod 設成「活動免費」，
+// 因此靠 paymentMethod 就能正確分辨，不需要也不應該再看 company。
+function bookingFeeLabel(birthDate?: string, paymentMethod?: string): string | null {
   // 優先依使用者勾選的付款方式
   if (paymentMethod) {
     if (paymentMethod === '臨櫃付款') return '臨櫃付款 $500'
     if (paymentMethod === '50歲以上免費') return '50 歲以上免費體驗'
-    if (paymentMethod === '活動免費') return null
+    if (paymentMethod === '活動免費') return '活動免費'
     return paymentMethod // 其他未知值：原樣顯示
   }
   // 沒帶付款方式時（保險）才退回用年齡推算
@@ -215,7 +219,7 @@ export function buildLeadNotificationEmail(data: LeadNotificationData): { subjec
     if (data.preferredTime && data.preferredTime.length > 0) {
       rows += notifRow('方便聯繫時段', data.preferredTime.join('、'))
     }
-    rows += opt('付款方式', bookingFeeLabel(data.birthDate, data.paymentMethod, data.company))
+    rows += opt('付款方式', bookingFeeLabel(data.birthDate, data.paymentMethod))
     if (data.exerciseGoals && data.exerciseGoals.length > 0) {
       let goalsText = data.exerciseGoals.join('、')
       if (data.exerciseGoalOther) {
@@ -513,7 +517,7 @@ export async function sendBookingConfirmation(data: {
   if (data.preferredTime && data.preferredTime.length > 0) {
     bookingRows.push({ label: '方便聯繫時段', value: data.preferredTime.join('、') })
   }
-  const feeLabel = bookingFeeLabel(data.birthDate, data.paymentMethod, data.company)
+  const feeLabel = bookingFeeLabel(data.birthDate, data.paymentMethod)
   if (feeLabel) bookingRows.push({ label: '付款方式', value: feeLabel })
   if (data.exerciseGoals && data.exerciseGoals.length > 0) {
     let goalsText = data.exerciseGoals.join('、')
