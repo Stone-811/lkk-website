@@ -10,12 +10,14 @@ export interface PublicStore {
   address: string
 }
 
-// fallback 值與 Firestore 現值一致（含空格格式），API 載入後切換無視覺跳動
+// fallback 值必須與「線上 Firestore 現值」一致（含空格格式），API 載入後切換才無跳動。
+// ⚠️ 校對來源＝線上 API（https://lkkwellness.com/api/public/stores），
+// 不要照本機 .env 的舊專案 lkk-website-dev（該專案名稱為「新店七張店」，與線上不同）。
 const FALLBACK_STORES: PublicStore[] = [
   { slug: 'nanjing', name: '南京店', phone: '(02) 2507-4196', address: '台北市中山區南京東路三段 29 號 B1' },
   { slug: 'songjiang', name: '松江店', phone: '(02) 2537-1055', address: '台北市中山區松江路 122 號 B1' },
   { slug: 'ximending', name: '西門店', phone: '(02) 2370-3245', address: '台北市中正區寶慶路 39 號' },
-  { slug: 'xindian', name: '新店七張店', phone: '(02) 8914-6428', address: '新北市新店區北新路二段 252 號 B1-2' },
+  { slug: 'xindian', name: '七張店', phone: '(02) 8914-6428', address: '新北市新店區北新路二段 252 號 B1-2' },
 ]
 
 // 前台慣用的顯示順序（南京→松江→西門→七張；API 的 sortOrder 是分店總覽用）

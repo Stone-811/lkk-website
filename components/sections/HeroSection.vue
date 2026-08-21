@@ -127,7 +127,7 @@ const pressOutlets = [
           <div
             v-for="stat in dataStats"
             :key="stat.num"
-            class="bg-navy-800 px-2 py-5 sm:p-6 lg:p-8 hover:bg-white/[0.04] transition-colors"
+            class="bg-navy-800 px-2 py-5 sm:p-6 lg:p-8 text-center hover:bg-white/[0.04] transition-colors"
           >
             <div class="font-serif text-2xl sm:text-3xl lg:text-5xl font-black text-orange leading-none mb-2">
               {{ stat.num }}

@@ -107,9 +107,8 @@ const scheduleTabs = [
   { id: 'ximen', label: '西門店' },
   { id: 'qizhang', label: '七張店' },
 ]
-const schedule: Record<string, { addr: string; rows: { day: string; times: string; lift?: string }[] }> = {
+const schedule: Record<string, { rows: { day: string; times: string; lift?: string }[] }> = {
   nanjing: {
-    addr: '台北市中山區南京東路三段29號B1・(02) 2507-4196',
     rows: [
       { day: '週一', times: '12:00、18:00' },
       { day: '週二', times: '20:00' },
@@ -121,7 +120,6 @@ const schedule: Record<string, { addr: string; rows: { day: string; times: strin
     ],
   },
   songjiang: {
-    addr: '台北市中山區松江路122號B1・(02) 2537-1055',
     rows: [
       { day: '週一', times: '19:00' },
       { day: '週二', times: '19:30' },
@@ -133,7 +131,6 @@ const schedule: Record<string, { addr: string; rows: { day: string; times: strin
     ],
   },
   ximen: {
-    addr: '台北市中正區寶慶路39號・(02) 2370-3245',
     rows: [
       { day: '週一', times: '10:00、11:00、14:00、20:00' },
       { day: '週二', times: '17:00、19:00' },
@@ -145,7 +142,6 @@ const schedule: Record<string, { addr: string; rows: { day: string; times: strin
     ],
   },
   qizhang: {
-    addr: '新北市新店區北新路二段252號B1-2・(02) 8914-6428',
     rows: [
       { day: '週一', times: '11:00、15:00、19:00、20:00' },
       { day: '週三', times: '20:00' },
@@ -554,8 +550,7 @@ const inputClass =
                   >{{ tab.label }}</button>
                 </div>
                 <div class="px-6 py-5">
-                  <div class="text-sm text-ink/45 pb-3 mb-3 border-b border-dashed border-navy-700/15">{{ schedule[activeStore].addr }}</div>
-                  <div v-for="row in schedule[activeStore].rows" :key="row.day" class="flex gap-3 py-2 text-sm border-b border-cream-200 last:border-0">
+                        <div v-for="row in schedule[activeStore].rows" :key="row.day" class="flex gap-3 py-2 text-sm border-b border-cream-200 last:border-0">
                     <div class="flex-shrink-0 w-[52px] font-bold text-navy-700">{{ row.day }}</div>
                     <div class="text-ink/70 leading-relaxed">
                       {{ row.times }}
