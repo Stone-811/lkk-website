@@ -71,13 +71,6 @@ const heroGets = [
   '樂齡族群也有專屬強度調整',
   '南京・松江・西門・新店七張 四店開課',
 ]
-const trustLogos = ['大愛新聞', '吳淡如', '動思學院', '高年級不打烊']
-const trustStats = [
-  { n: '3 種', l: '團體課程可選' },
-  { n: '4 間', l: '台北・新北門店' },
-  { n: 'PT', l: '物理治療師教練' },
-  { n: '4 堂', l: '一期，可續課' },
-]
 const reassure = [
   '沒有重訓基礎也能報名',
   '不須從月初開始，隨時可報名',
@@ -297,47 +290,30 @@ const inputClass =
       <!-- HERO -->
       <section class="relative bg-[#1a3545] pt-16 overflow-hidden text-white">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
-        <div class="relative z-10 max-w-6xl mx-auto px-4 grid lg:grid-cols-[1fr_400px] gap-8 lg:gap-12 items-center py-12 lg:py-20">
-          <div>
-            <div class="inline-flex items-center gap-2 bg-orange/[0.18] border border-orange/40 text-orange text-[0.78rem] font-medium px-3.5 py-1.5 rounded-full mb-5 tracking-wide">
-              <span class="w-1.5 h-1.5 rounded-full bg-orange" />
-              {{ variant.hero?.badge ?? '4堂一期 · 隨時可續課' }}
-            </div>
-            <h1 class="font-serif text-3xl lg:text-5xl font-black leading-tight mb-4">
-              {{ variant.hero?.title ?? '找個班一起練' }}<br><span class="text-orange">{{ variant.hero?.titleHighlight ?? '比自己練更有動力' }}</span>
-            </h1>
-            <p class="text-white/60 font-light leading-relaxed mb-6 max-w-lg">
-              {{ variant.hero?.subtitle ?? '不用預約私人教練，也能有教練在旁指導。三種團體課程，從新手基礎到中高齡肌力、再到舉重技術，總有一班適合你。' }}
-            </p>
-            <div class="flex flex-col gap-2 mb-6">
-              <div v-for="g in (variant.hero?.checklist ?? heroGets)" :key="g" class="flex items-start gap-2.5 text-sm text-white/70">
-                <span class="w-5 h-5 rounded-full bg-orange/20 border border-orange/40 flex items-center justify-center flex-shrink-0 mt-0.5 text-orange">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                </span>
-                {{ g }}
-              </div>
-            </div>
-            <a href="#form" class="inline-block bg-orange hover:bg-orange-400 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-orange/35 transition">{{ variant.hero?.ctaText ?? '立即填寫報名 →' }}</a>
-            <div class="flex items-center gap-1.5 text-xs text-white/40 mt-3">
-              <svg class="w-3.5 h-3.5 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-              <span><strong class="text-orange-300">4堂 $2,400 起</strong>・請假可順延一週・無須綁約長期課程</span>
+        <div class="relative z-10 max-w-3xl mx-auto px-4 text-center py-12 lg:py-20">
+          <div class="inline-flex items-center gap-2 bg-orange/[0.18] border border-orange/40 text-orange text-[0.78rem] font-medium px-3.5 py-1.5 rounded-full mb-5 tracking-wide">
+            <span class="w-1.5 h-1.5 rounded-full bg-orange" />
+            {{ variant.hero?.badge ?? '一期4堂 · 隨時可續課' }}
+          </div>
+          <h1 class="font-serif text-3xl lg:text-5xl font-black leading-tight mb-6">
+            {{ variant.hero?.title ?? '自己練沒有動力嗎？' }}<br><span class="text-orange">{{ variant.hero?.titleHighlight ?? '找個班一起練' }}</span>
+          </h1>
+          <!-- 清單本身靠左對齊（勾勾切齊），整塊在置中版面中置中 -->
+          <div class="inline-flex flex-col items-start gap-2 mb-6 text-left">
+            <div v-for="g in (variant.hero?.checklist ?? heroGets)" :key="g" class="flex items-start gap-2.5 text-sm text-white/70">
+              <span class="w-5 h-5 rounded-full bg-orange/20 border border-orange/40 flex items-center justify-center flex-shrink-0 mt-0.5 text-orange">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+              </span>
+              {{ g }}
             </div>
           </div>
-
-          <aside class="hidden lg:flex flex-col gap-4 bg-white/[0.07] backdrop-blur border border-white/12 rounded-[18px] p-6">
-            <div>
-              <div class="text-[0.68rem] font-bold tracking-widest uppercase text-white/30 mb-2">媒體報導</div>
-              <div class="flex flex-wrap gap-2">
-                <span v-for="l in trustLogos" :key="l" class="text-xs text-white/50 bg-white/[0.06] border border-white/10 px-2.5 py-1 rounded-full">{{ l }}</span>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div v-for="s in trustStats" :key="s.l" class="bg-white/5 rounded-[10px] px-3 py-2.5 text-center">
-                <div class="font-serif text-xl font-black text-white leading-none">{{ s.n }}</div>
-                <div class="text-[0.72rem] text-white/40 mt-0.5">{{ s.l }}</div>
-              </div>
-            </div>
-          </aside>
+          <div>
+            <a href="#form" class="inline-block bg-orange hover:bg-orange-400 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-orange/35 transition">{{ variant.hero?.ctaText ?? '團體課報名' }}</a>
+          </div>
+          <div class="flex items-center justify-center gap-1.5 text-xs text-white/40 mt-3">
+            <svg class="w-3.5 h-3.5 text-orange-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+            <span><strong class="text-orange-300">4堂 $2,400 起</strong>・請假可順延一週・無須綁約長期課程</span>
+          </div>
         </div>
       </section>
 
@@ -363,7 +339,7 @@ const inputClass =
                 <div class="text-sm text-white/50">教練會在 1 個工作天內主動聯繫確認開課梯次</div>
                 <div class="inline-flex items-center gap-1.5 bg-orange/20 border border-orange/35 text-orange text-xs font-semibold px-3 py-1 rounded-full mt-2">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  4堂一期・隨時開放報名
+                  一期4堂・隨時開放報名
                 </div>
               </div>
 
