@@ -77,9 +77,9 @@ const toggleFaq = (id: string) => {
 }
 
 const cases = [
-  { name: '林阿嬤', info: '70歲・膝關節退化', quote: '以前膝蓋痛到走不了路，現在可以自己爬山、帶孫子去公園。' },
-  { name: '王先生', info: '62歲・腦中風後', quote: '以為這輩子就這樣了，沒想到可以自己走路去買東西。' },
-  { name: '陳小姐', info: '55歲・乳癌術後', quote: '醫生說我的恢復狀況比預期好很多。' },
+  { name: '雪莉', info: '72歲・氣喘與心臟病', quote: '不讓先天性氣喘與心臟病影響我的生活，我現在可以自信地站上聖誕老人硬舉大賽的舞台！' },
+  { name: '黃阿公', info: '85歲・訓練三年多', quote: '教練都會針對我的狀況隨時調整教學課表，連我的老婆都開始在這裡運動！' },
+  { name: '保羅', info: '69歲・原發性顫抖症', quote: '當初手抖到連倒水、吃飯都有問題，在開始重訓後，不僅藥量減半，我還能輕鬆抱起孫子玩耍！' },
 ]
 
 const steps = computed(() => [
@@ -1058,13 +1058,13 @@ const handleSubmit = async () => {
             <div class="bg-white rounded-[20px] p-6 shadow-sm">
               <div class="text-[0.82rem] font-bold tracking-widest uppercase text-navy-700/50 mb-4">他們也是這樣開始的</div>
               <div class="flex flex-col gap-3">
-                <div v-for="c in cases" :key="c.name" class="flex gap-3 items-center">
+                <div v-for="c in cases" :key="c.name" class="flex gap-3 items-start">
                   <div class="w-10 h-10 rounded-full bg-orange/20 flex items-center justify-center text-orange font-bold text-sm flex-shrink-0">
                     {{ c.name.charAt(0) }}
                   </div>
                   <div class="flex-1 min-w-0">
                     <div class="text-[0.88rem] font-semibold text-navy-800">{{ c.name }}・{{ c.info }}</div>
-                    <div class="text-[0.88rem] text-ink/60 italic line-clamp-2">「{{ c.quote }}」</div>
+                    <div class="text-[0.88rem] text-ink/60 italic">「{{ c.quote }}」</div>
                   </div>
                 </div>
               </div>
