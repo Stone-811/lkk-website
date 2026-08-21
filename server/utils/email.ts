@@ -190,8 +190,9 @@ export function buildLeadNotificationEmail(data: LeadNotificationData): { subjec
     rows += opt('學員性別', data.gender, { pre: true })
     rows += opt('學員年齡區間', data.ageRange || data.age, { pre: true })
     if (data.isFillerSelf === '否') {
-      rows += opt('代填者姓名', data.fillerName, { pre: true })
-      rows += opt('與學員關係', data.relationship, { pre: true })
+      rows += opt('與學員的關係', data.relationship, { pre: true })
+      rows += opt('報名者姓名', data.fillerName, { pre: true })
+      rows += opt('方便聯繫的電話', data.contactPhone, { pre: true })
     }
     rows += opt('偏好時段', data.groupTime, { pre: true })
     rows += opt('重訓經驗', data.experience, { pre: true })
@@ -591,6 +592,7 @@ export async function sendGroupClassConfirmation(data: {
   isFillerSelf?: string
   fillerName?: string
   relationship?: string
+  contactPhone?: string
   courseName?: string
   coursePrice?: string
   storeName?: string
@@ -614,8 +616,9 @@ export async function sendGroupClassConfirmation(data: {
   const fillerRows: Array<{ label: string; value: string }> = []
   if (data.isFillerSelf === '否') {
     fillerRows.push({ label: '填表人', value: '親友代為填寫' })
-    if (data.fillerName) fillerRows.push({ label: '填表人姓名', value: data.fillerName })
-    if (data.relationship) fillerRows.push({ label: '與學員關係', value: data.relationship })
+    if (data.relationship) fillerRows.push({ label: '與學員的關係', value: data.relationship })
+    if (data.fillerName) fillerRows.push({ label: '報名者姓名', value: data.fillerName })
+    if (data.contactPhone) fillerRows.push({ label: '方便聯繫的電話', value: data.contactPhone })
   }
 
   // 健康狀況

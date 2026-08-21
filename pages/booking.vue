@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, watch } from 'vue'
 import { getBookingVariant } from '~/config/bookingVariants'
+import { relationshipOptions } from '~/config/formOptions'
 
 useHead({
   title: '預約體驗 | 練健康',
@@ -119,14 +120,6 @@ const sourceOptions = [
 ]
 
 // 與學員關係選項
-const relationshipOptions = [
-  '配偶',
-  '子女',
-  '父母',
-  '兄弟姊妹',
-  '朋友',
-  '其他',
-]
 
 // 運動目的選項（可複選）
 const exerciseGoalOptions = [

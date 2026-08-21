@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { getGroupClassVariant } from '~/config/groupClassVariants'
+import { relationshipOptions } from '~/config/formOptions'
 
 const route = useRoute()
 // 廠商變體表單：?v=<key> 對應 config/groupClassVariants.ts（未知值自動 fallback 成 default）
@@ -12,7 +13,7 @@ useHead({
     {
       name: 'description',
       content:
-        '練健康團體課程報名：基礎重訓、樂齡肌力、舉重團班，四堂一期、隨時可續課，南京・松江・西門・新店七張四店開課。填表後教練 1 個工作天內主動聯繫確認梯次。',
+        '練健康團體課程報名：基礎重訓、樂齡肌力、舉重團班，四堂一期、隨時可續課，南京・松江・西門・七張四店開課。填表後教練 2-3 個工作天內主動聯繫確認梯次。',
     },
   ],
 })
@@ -28,6 +29,7 @@ const formData = reactive({
   isFillerSelf: '',
   fillerName: '',
   relationship: '',
+  contactPhone: '',
   course: '',
   store: '',
   preferredTime: '',
@@ -37,7 +39,7 @@ const formData = reactive({
   note: '',
 })
 
-const genders = ['男', '女', '其他']
+const genders = ['男', '女']
 const ageRanges = ['50歲以下', '50–65歲', '65歲以上']
 const courses = [
   { value: '基礎重訓團班', price: '$2,400' },
@@ -48,8 +50,7 @@ const storeOptions = [
   '南京店｜台北市中山區南京東路三段29號B1',
   '松江店｜台北市中山區松江路122號B1',
   '西門店｜台北市中正區寶慶路39號',
-  '新店七張店｜新北市新店區北新路二段252號B1-2',
-  '不確定，請教練為我推薦',
+  '七張店｜新北市新店區北新路二段252號B1-2',
 ]
 const experiences = [
   { value: '完全新手', label: '完全新手' },
@@ -69,13 +70,13 @@ const heroGets = [
   '四堂學會重訓六大基礎動作',
   '教練隨堂指導，暖身收操都安排好',
   '樂齡族群也有專屬強度調整',
-  '南京・松江・西門・新店七張 四店開課',
+  '南京・松江・西門・七張 四店開課',
 ]
 const reassure = [
   '沒有重訓基礎也能報名',
   '不須從月初開始，隨時可報名',
   '請假最晚提前一週可順延',
-  '教練 1 個工作天內主動聯繫',
+  '教練 2-3 個工作天內主動聯繫',
 ]
 const courseCards = [
   {
@@ -104,7 +105,7 @@ const scheduleTabs = [
   { id: 'nanjing', label: '南京店' },
   { id: 'songjiang', label: '松江店' },
   { id: 'ximen', label: '西門店' },
-  { id: 'qizhang', label: '新店七張店' },
+  { id: 'qizhang', label: '七張店' },
 ]
 const schedule: Record<string, { addr: string; rows: { day: string; times: string; lift?: string }[] }> = {
   nanjing: {
@@ -113,10 +114,10 @@ const schedule: Record<string, { addr: string; rows: { day: string; times: strin
       { day: '週一', times: '12:00、18:00' },
       { day: '週二', times: '20:00' },
       { day: '週三', times: '12:00、14:00', lift: '另有舉重團班 19:00、20:00' },
-      { day: '週四', times: '09:30、12:00、15:30、18:00、19:00、20:00' },
+      { day: '週四', times: '09:30、12:00、18:00、19:00、20:00' },
       { day: '週五', times: '10:00、15:00、16:00、19:00' },
       { day: '週六', times: '11:00、13:00、14:00、16:00' },
-      { day: '週日', times: '13:00、17:00' },
+      { day: '週日', times: '17:00' },
     ],
   },
   songjiang: {
@@ -173,7 +174,7 @@ watch(lockedCourse, (c) => { if (c) formData.course = c.value }, { immediate: tr
 
 const steps = [
   { n: '1', title: '填寫報名表單', desc: '約 1~2 分鐘完成，選好課程與偏好門店即可' },
-  { n: '2', title: '教練主動電話／LINE聯繫', desc: '1 個工作天內確認可開班的梯次日期、名額狀況與繳費方式' },
+  { n: '2', title: '教練主動電話／LINE聯繫', desc: '2-3 個工作天內確認可開班的梯次日期、名額狀況與繳費方式' },
   { n: '3', title: '開始上課', desc: '四堂一期，結束後可直接續課，不用等月初重新報名' },
 ]
 const faqs = [
@@ -199,8 +200,11 @@ function validate() {
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = 'Email 格式不正確'
   if (!formData.isFillerSelf) e.isFillerSelf = '請選擇'
   if (formData.isFillerSelf === '否') {
-    if (!formData.fillerName.trim()) e.fillerName = '請填寫報名者姓名'
-    if (!formData.relationship.trim()) e.relationship = '請填寫與學員關係'
+    if (!formData.relationship) e.relationship = '請選擇與學員的關係'
+    if (!formData.fillerName.trim()) e.fillerName = '請輸入報名者姓名'
+    const cp = formData.contactPhone.replace(/[\s-]/g, '')
+    if (!cp) e.contactPhone = '請輸入方便聯繫的電話'
+    else if (!/^09\d{8}$/.test(cp)) e.contactPhone = '請輸入有效的手機號碼'
   }
   if (!formData.course) e.course = '請選擇想報名的課程'
   if (!formData.store) e.store = '請選擇門店'
@@ -272,7 +276,7 @@ const inputClass =
         <div class="bg-white rounded-2xl p-6 border border-navy-700/15 shadow-sm text-left mb-6">
           <div class="font-bold text-[#1a3545] mb-3">接下來的確認流程</div>
           <div class="space-y-2">
-            <div v-for="(row, i) in ['加入官方 LINE 並傳送姓名與課程後，教練將於 1 個工作天內確認梯次與繳費方式', '若你未加入 LINE，我們也將於 1 個工作天內嘗試撥打你填寫的手機號碼聯繫', '四堂一期，請假最晚提前一週告知可順延一週']" :key="i" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
+            <div v-for="(row, i) in ['加入官方 LINE 並傳送姓名與課程後，教練將於 2-3 個工作天內確認梯次與繳費方式', '若你未加入 LINE，我們也將於 2-3 個工作天內嘗試撥打你填寫的手機號碼聯繫', '四堂一期，請假最晚提前一週告知可順延一週']" :key="i" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
               <span class="text-orange flex-shrink-0">→</span><span>{{ row }}</span>
             </div>
           </div>
@@ -336,7 +340,7 @@ const inputClass =
             <div class="bg-white rounded-[20px] border border-navy-700/15 shadow-xl shadow-navy-700/10 overflow-hidden">
               <div class="bg-[#1a3545] px-6 py-5">
                 <div class="font-serif text-lg font-bold text-white mb-1">團體課程報名</div>
-                <div class="text-sm text-white/50">教練會在 1 個工作天內主動聯繫確認開課梯次</div>
+                <div class="text-sm text-white/50">教練會在 2-3 個工作天內主動聯繫確認開課梯次</div>
                 <div class="inline-flex items-center gap-1.5 bg-orange/20 border border-orange/35 text-orange text-xs font-semibold px-3 py-1 rounded-full mt-2">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
                   一期4堂・隨時開放報名
@@ -402,19 +406,26 @@ const inputClass =
                   </div>
 
                   <div v-if="formData.isFillerSelf === '否'" class="bg-navy-700/[0.04] border border-dashed border-navy-700 rounded-xl p-4 space-y-3">
+                    <div>
+                      <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">與學員的關係 <span class="text-orange">*</span></label>
+                      <select v-model="formData.relationship" :class="inputClass">
+                        <option value="">請選擇</option>
+                        <option v-for="r in relationshipOptions" :key="r" :value="r">{{ r }}</option>
+                      </select>
+                      <p v-if="errors.relationship" class="text-red-500 text-xs mt-1">{{ errors.relationship }}</p>
+                    </div>
                     <div class="grid sm:grid-cols-2 gap-3">
                       <div>
-                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">你（報名者）的姓名 <span class="text-orange">*</span></label>
-                        <input v-model="formData.fillerName" type="text" placeholder="你的姓名" :class="inputClass" />
+                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">報名者姓名 <span class="text-orange">*</span></label>
+                        <input v-model="formData.fillerName" type="text" placeholder="請輸入你的姓名" :class="inputClass" />
                         <p v-if="errors.fillerName" class="text-red-500 text-xs mt-1">{{ errors.fillerName }}</p>
                       </div>
                       <div>
-                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">你與學員的關係 <span class="text-orange">*</span></label>
-                        <input v-model="formData.relationship" type="text" placeholder="例如：女兒、兒子、朋友" :class="inputClass" />
-                        <p v-if="errors.relationship" class="text-red-500 text-xs mt-1">{{ errors.relationship }}</p>
+                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">方便聯繫的電話 <span class="text-orange">*</span></label>
+                        <input v-model="formData.contactPhone" type="tel" placeholder="0912345678" :class="inputClass" />
+                        <p v-if="errors.contactPhone" class="text-red-500 text-xs mt-1">{{ errors.contactPhone }}</p>
                       </div>
                     </div>
-                    <div class="text-xs text-ink/50">提醒：教練後續將會優先聯繫上方填寫的手機號碼。</div>
                   </div>
 
                   <!-- 第二部分 -->

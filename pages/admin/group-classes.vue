@@ -113,7 +113,7 @@ const {
 })
 
 function handleExport() {
-  const headers = ['姓名', '電話', 'Email', '性別', '年齡區間', '課程', '門店', '偏好時段', '重訓經驗', '疾病／舊傷史', '狀態', '填寫者', '代填者姓名', '與學員關係', '得知管道', '公司', '來源', '表單變體', 'UTM來源', 'UTM形式', 'UTM活動', 'UTM素材', '學員備註', '內部備註', '建立時間']
+  const headers = ['姓名', '電話', 'Email', '性別', '年齡區間', '課程', '門店', '偏好時段', '重訓經驗', '疾病／舊傷史', '狀態', '填寫者', '代填者姓名', '與學員關係', '代填聯繫電話', '得知管道', '公司', '來源', '表單變體', 'UTM來源', 'UTM形式', 'UTM活動', 'UTM素材', '學員備註', '內部備註', '建立時間']
   const rows = filteredLeads.value.map((lead) => {
     const p = lead.payload || {}
     const sources = Array.isArray(p.source) ? p.source.join('、') : p.source || ''
@@ -133,6 +133,7 @@ function handleExport() {
       isProxy ? '親友代填' : '本人填寫',
       isProxy ? p.fillerName || '' : '',
       isProxy ? p.relationship || '' : '',
+      isProxy ? p.contactPhone || '' : '',
       sources,
       p.company || '',
       p.leadSource || '',
@@ -343,6 +344,10 @@ function handleExport() {
             <div v-if="lead.payload?.isFillerSelf === '否' && lead.payload?.relationship">
               <p class="text-xs text-gray-500 mb-0.5">與學員關係</p>
               <p class="font-medium text-gray-900">{{ lead.payload.relationship }}</p>
+            </div>
+            <div v-if="lead.payload?.isFillerSelf === '否' && lead.payload?.contactPhone">
+              <p class="text-xs text-gray-500 mb-0.5">方便聯繫的電話</p>
+              <p class="font-medium text-gray-900">{{ lead.payload.contactPhone }}</p>
             </div>
           </div>
         </section>
