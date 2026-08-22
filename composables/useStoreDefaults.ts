@@ -3,6 +3,17 @@
  * 用於後台編輯時自動帶入、前端顯示時補充缺失資料
  */
 
+/**
+ * 把「捷運七張站 2 號出口，步行 5 分鐘」轉成「鄰近捷運七張站」。
+ * 分店總覽與分店詳情的 Hero 只講鄰近哪一站，出口與步行時間留給詳情頁的交通區塊。
+ * 註：`pages/locations/[store].vue` 另有一份自己的 storeExtraData，兩邊都吃這個函式，
+ *     所以規則只有一處，不會各改各的。
+ */
+export function toNearestMrt(desc?: string): string {
+  const station = (desc || '').match(/捷運(.+?)站/)?.[1]
+  return station ? `鄰近捷運${station}站` : ''
+}
+
 export interface StoreDefaultData {
   phone?: string
   googleMapUrl?: string

@@ -30,14 +30,6 @@ const { getStoreDefaults } = useStoreDefaults()
 // 非阻塞載入：先渲染 fallback（SSR 不卡、無白屏），抓到後台資料後即更新
 const { data: storeRes } = useLazyFetch<{ data?: any[] }>('/api/public/stores', { key: 'public-stores-overview' })
 
-// 總覽頁只顯示「鄰近某某捷運站」，不列出口與步行時間（詳細交通留在分店詳情頁）。
-// useStoreDefaults 的 description 格式為「捷運七張站 2 號出口，步行 5 分鐘」，取站名即可。
-function nearestMrt(slug: string) {
-  const desc = getStoreDefaults(slug)?.description || ''
-  const station = desc.match(/捷運(.+?)站/)?.[1]
-  return station ? `鄰近捷運${station}站` : ''
-}
-
 const stores = computed(() => {
   const list = storeRes.value?.data
   if (!Array.isArray(list) || list.length === 0) return FALLBACK_STORES
@@ -46,7 +38,7 @@ const stores = computed(() => {
     name: s.name,
     district: `${s.city || ''}${s.district || ''}`,
     address: `${s.city || ''}${s.district || ''}${s.address || ''}`,
-    mrt: nearestMrt(s.slug),
+    mrt: toNearestMrt(getStoreDefaults(s.slug)?.description),
     features: FEATURES_BY_SLUG[s.slug] || ['一對一訓練'],
   }))
 })

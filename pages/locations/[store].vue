@@ -126,7 +126,7 @@ const storeExtraData: Record<string, any> = {
 const extraData = computed(() => storeExtraData[storeSlug] || {})
 // Google Maps 連結：優先用程式碼裡的真連結（Firestore 部分分店存的是佔位字串）
 const mapLink = computed(() => extraData.value?.googleMapUrl || store.value?.googleMapUrl || '')
-const storeDescription = computed(() => extraData.value?.description || store.value?.name + ' 專業訓練中心')
+const storeDescription = computed(() => toNearestMrt(extraData.value?.description) || store.value?.name + ' 專業訓練中心')
 const phoneRaw = computed(() => extraData.value?.phoneRaw || store.value?.phone?.replace(/[^0-9+]/g, '') || '')
 const businessHours = computed(() => {
   if (store.value?.businessHours && typeof store.value.businessHours === 'object') {
@@ -246,7 +246,6 @@ const photos = computed(() => {
 
           <!-- District badge -->
           <div class="inline-flex items-center gap-2 bg-orange/15 border border-orange/30 text-orange text-xs font-medium px-3 py-1 rounded-full mb-4 tracking-wide">
-            <span class="w-1.5 h-1.5 bg-orange rounded-full" />
             {{ store.city }}{{ store.district }}
           </div>
 
@@ -282,7 +281,7 @@ const photos = computed(() => {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            <span><strong class="text-orange">50歲以上免費體驗</strong>・首次體驗只要 $500</span>
+            <span><strong class="text-orange">50歲以上首次免費體驗</strong>・首次體驗只要 $500</span>
           </div>
         </div>
       </div>
