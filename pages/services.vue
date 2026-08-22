@@ -85,8 +85,17 @@ const comparisonData = [
   { item: '適合特殊族群', personal: '✓ 最適合', group: '部分課程', online: '—' },
   { item: '時間彈性', personal: '依約定排課', group: '依固定時段', online: '✓ 完全彈性' },
   { item: '需要到分店', personal: '✓', group: '✓', online: '不需要' },
-  { item: '開始方式', personal: '預約體驗課', group: '預約體驗課', online: '線上報名' },
+  // 開始方式：兩種到店課程直接連到預約體驗表單（to 有值即渲染成連結）
+  { item: '開始方式', personal: '預約體驗課', personalTo: '/booking', group: '預約體驗課', groupTo: '/booking', online: '線上報名' },
 ]
+
+// 比較表儲存格文字樣式（★ 橘、✓ 橘粗體、— 淡出、其餘一般）
+function cellClass(v: string) {
+  if (v.includes('★')) return 'text-orange text-sm'
+  if (v.includes('✓')) return 'text-orange font-bold text-sm'
+  if (v === '—') return 'text-white/20 text-sm'
+  return 'text-white/70 text-sm'
+}
 
 const tabs = [
   { id: 'personal', label: '一對一訓練' },
@@ -551,34 +560,28 @@ const personalFeatures = [
                 >
                   <td class="py-4 px-4 text-white/70 text-left text-sm">{{ row.item }}</td>
                   <td class="py-4 px-4 text-center bg-orange/[0.08]">
-                    <span :class="[
-                      row.personal.includes('★') ? 'text-orange' :
-                      row.personal === '✓' || row.personal.includes('✓') ? 'text-orange font-bold' :
-                      row.personal === '—' ? 'text-white/20' : 'text-white/70',
-                      'text-sm'
-                    ]">
-                      {{ row.personal }}
-                    </span>
+                    <NuxtLink
+                      v-if="row.personalTo"
+                      :to="row.personalTo"
+                      :class="[cellClass(row.personal), 'underline underline-offset-4 decoration-orange/50 hover:text-orange-300 transition-colors']"
+                    >{{ row.personal }}</NuxtLink>
+                    <span v-else :class="cellClass(row.personal)">{{ row.personal }}</span>
                   </td>
                   <td class="py-4 px-4 text-center">
-                    <span :class="[
-                      row.group.includes('★') ? 'text-orange' :
-                      row.group === '✓' || row.group.includes('✓') ? 'text-orange font-bold' :
-                      row.group === '—' ? 'text-white/20' : 'text-white/70',
-                      'text-sm'
-                    ]">
-                      {{ row.group }}
-                    </span>
+                    <NuxtLink
+                      v-if="row.groupTo"
+                      :to="row.groupTo"
+                      :class="[cellClass(row.group), 'underline underline-offset-4 decoration-orange/50 hover:text-orange-300 transition-colors']"
+                    >{{ row.group }}</NuxtLink>
+                    <span v-else :class="cellClass(row.group)">{{ row.group }}</span>
                   </td>
                   <td class="py-4 px-4 text-center">
-                    <span :class="[
-                      row.online.includes('★') ? 'text-orange' :
-                      row.online === '✓' || row.online.includes('✓') ? 'text-orange font-bold' :
-                      row.online === '—' ? 'text-white/20' : 'text-white/70',
-                      'text-sm'
-                    ]">
-                      {{ row.online }}
-                    </span>
+                    <NuxtLink
+                      v-if="row.onlineTo"
+                      :to="row.onlineTo"
+                      :class="[cellClass(row.online), 'underline underline-offset-4 decoration-orange/50 hover:text-orange-300 transition-colors']"
+                    >{{ row.online }}</NuxtLink>
+                    <span v-else :class="cellClass(row.online)">{{ row.online }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -586,20 +589,6 @@ const personalFeatures = [
           </div>
         </div>
 
-        <div class="text-center mt-10">
-          <NuxtLink
-            to="/booking"
-            class="inline-flex items-center gap-2 bg-orange hover:bg-orange-400 text-white font-bold px-10 py-4 rounded-full transition-colors text-lg"
-          >
-            立即預約體驗課
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </NuxtLink>
-          <p class="text-cream-200 text-sm mt-6">
-            50歲以上免費體驗 · 首次體驗只要 $500 · 無隱藏費用
-          </p>
-        </div>
       </div>
     </section>
 
