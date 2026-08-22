@@ -2,13 +2,14 @@
 // 學員見證。photo 填入路徑後，卡片頂端會顯示學員照片（4:3）；
 // 留空則沿用原本的引號符號 + 首字圓形頭像，版面不會開天窗。
 // 圖檔放置位置：public/images/cases/  →  路徑寫成 '/images/cases/檔名.jpg'
+// 卡片照片為 1:1（現有素材皆為接近正方形的人像特寫，用 4:3 會裁到頭頂）
 const cases = [
   {
     id: 1,
     name: '雪莉',
     avatar: '雪',
     detail: '72歲・氣喘與心臟病',
-    photo: '', // 例：'/images/cases/shirley.jpg'
+    photo: '/images/cases/shirley.jpg',
     quote:
       '因為患有先天性氣喘與心臟病，原本以為疾病會一直影響我的生活。但在堅持重訓六年之後，我不僅重新找回健康，還能自信地站上舞台參加聖誕老人硬舉大賽！',
   },
@@ -17,7 +18,7 @@ const cases = [
     name: '黃阿公',
     avatar: '黃',
     detail: '85歲・訓練三年多',
-    photo: '', // 例：'/images/cases/huang.jpg'
+    photo: '/images/cases/huang.jpg',
     quote:
       '年過八十，最怕的就是生病增加家人的負擔，在這裡訓練多年，教練都會針對我的狀況隨時調整教學課表，讓我不僅保持體力、照顧好自己，連我的老婆都開始在這裡運動！',
   },
@@ -26,7 +27,7 @@ const cases = [
     name: '保羅',
     avatar: '保',
     detail: '69歲・原發性顫抖症',
-    photo: '', // 例：'/images/cases/paul.jpg'
+    photo: '/images/cases/paul.jpg',
     quote:
       '因為原發性顫抖症，當初手抖到連倒水、吃飯都有問題，在開始重訓後，不僅藥量減半，我還能硬舉到120公斤，更能輕鬆抱起孫子玩耍！',
   },
@@ -56,7 +57,7 @@ const cases = [
           class="bg-cream-100 rounded-3xl p-6 lg:p-8 border border-navy-700/15 hover:shadow-lg transition-shadow flex flex-col"
         >
           <!-- 學員照片（有填 photo 才顯示；4:3、object-cover） -->
-          <div v-if="item.photo" class="aspect-[4/3] rounded-2xl overflow-hidden mb-5 bg-navy-700/5">
+          <div v-if="item.photo" class="aspect-square rounded-2xl overflow-hidden mb-5 bg-navy-700/5">
             <img
               :src="item.photo"
               :alt="`${item.name}・${item.detail}`"
