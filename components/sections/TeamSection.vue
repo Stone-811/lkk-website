@@ -7,7 +7,7 @@ const coaches = [
     avatar: '鄭',
     description: '國家高考物理治療師，NSCA-CSCS 美國肌力體能訓練專家，曾任世大運運動傷害防護組場館經理、競速滑冰世界盃隨隊物理治療師，深耕中高齡訓練與術後訓練多年。',
     creds: ['物理治療師', '中高齡訓練', '術後訓練'],
-    photo: '/images/team/cheng-yushao.png',
+    photo: '/images/team/cheng-yushao.webp',
   },
   {
     id: '2',
@@ -16,7 +16,7 @@ const coaches = [
     avatar: '吳',
     description: '國家高考營養師，ACE-CPT 美國運動協會私人教練，專精增肌減脂與銀髮族訓練，曾任三鐵選手合作營養師。',
     creds: ['營養師', '增肌減脂', '銀髮族訓練'],
-    photo: '/images/lecturers/lkk/wu-haoyu.png',
+    photo: '/images/team/wu-haoyu.webp',
   },
   {
     id: '3',
@@ -25,7 +25,7 @@ const coaches = [
     avatar: '蕭',
     description: '高雄醫學大學運動醫學系畢業，ACSM-EP 認證教練，具教育部體育署運動防護員與 EMT-1 資格，專精大重量訓練與健力三項，協助學員安全有效地達成訓練目標。',
     creds: ['肌力與體能教練', '舉重訓練', '中高齡訓練'],
-    photo: '/images/lecturers/lkk/xiao-yanrong.png',
+    photo: '/images/team/xiao-yanrong.webp',
   },
 ]
 </script>
@@ -58,7 +58,7 @@ const coaches = [
               v-if="coach.photo"
               :src="coach.photo"
               :alt="coach.name"
-              class="w-full h-full object-cover"
+              class="w-full h-full object-cover object-top"
             />
             <span v-else>{{ coach.avatar }}</span>
           </div>

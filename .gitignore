@@ -62,3 +62,6 @@ next-env.d.ts
 *firebase-adminsdk*.json
 *-sa.json
 service-account*.json
+
+# 原始素材（未壓縮攝影檔，不進 git、不進 build）
+_raw-assets/

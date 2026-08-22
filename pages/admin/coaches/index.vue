@@ -306,7 +306,7 @@ async function moveCoach(coach: Coach, direction: 'up' | 'down') {
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center gap-3">
-                <img v-if="coach.photo" :src="coach.photo" :alt="coach.name" class="w-10 h-10 rounded-full object-cover" />
+                <img v-if="coach.photo" :src="coach.photo" :alt="coach.name" class="w-10 h-10 rounded-full object-cover object-top" />
                 <div v-else class="w-10 h-10 bg-navy rounded-full flex items-center justify-center text-white font-bold">{{ coach.name?.charAt(0) }}</div>
                 <span class="font-medium text-gray-900">{{ coach.name }}</span>
               </div>

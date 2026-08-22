@@ -380,7 +380,7 @@ function setActiveStore(storeSlug: string | null) {
                     v-if="selectedCoach.photo"
                     :src="selectedCoach.photo"
                     :alt="selectedCoach.name"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-cover object-top"
                   />
                   <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-navy to-navy/80">
                     <span class="font-serif text-3xl font-black text-white/20">{{ selectedCoach.name.charAt(0) }}</span>
