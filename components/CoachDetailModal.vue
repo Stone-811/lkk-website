@@ -32,7 +32,10 @@ onUnmounted(() => { document.body.style.overflow = '' })
 
 <template>
   <Teleport to="body">
-    <Transition name="bottom-sheet">
+    <!-- :duration 一定要給：離場時若元素的 opacity 已經是 0（enter-from 殘留過的情況），
+         就不會觸發 transitionend，Vue 便永遠不會把元素移除 → 留下一層看不見、
+         但 pointer-events:auto 的全螢幕遮罩，整頁點不動。給了 duration 就改用計時器收尾。 -->
+    <Transition name="bottom-sheet" :duration="300">
       <div
         v-if="coach"
         class="fixed inset-0 z-[60] flex items-end justify-center"
@@ -185,6 +188,11 @@ onUnmounted(() => { document.body.style.overflow = '' })
 .bottom-sheet-enter-active,
 .bottom-sheet-leave-active {
   transition: opacity 0.3s ease;
+}
+/* 離場中的遮罩不接點擊：正在關閉的彈窗本來就不該可互動，
+   同時也是「萬一元素沒被移除」時的保險，避免整頁被擋住。 */
+.bottom-sheet-leave-active {
+  pointer-events: none;
 }
 .bottom-sheet-enter-active > div:last-child,
 .bottom-sheet-leave-active > div:last-child {
