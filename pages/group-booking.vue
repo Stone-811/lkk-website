@@ -13,7 +13,7 @@ useHead({
     {
       name: 'description',
       content:
-        '練健康團體課程報名：基礎重訓、樂齡肌力、舉重團班，四堂一期、隨時可續課，南京・松江・西門・七張四店開課。填表後教練 2-3 個工作天內主動聯繫確認梯次。',
+        '練健康團體課程報名：基礎重訓、樂齡肌力、舉重團班，一期4堂、隨時可續課，南京・松江・西門・七張四店開課。填表後教練 2-3 個工作天內主動聯繫確認梯次。',
     },
   ],
 })
@@ -171,7 +171,7 @@ watch(lockedCourse, (c) => { if (c) formData.course = c.value }, { immediate: tr
 const steps = [
   { n: '1', title: '填寫報名表單', desc: '約 1~2 分鐘完成，選好課程與偏好門店即可' },
   { n: '2', title: '教練主動電話／LINE聯繫', desc: '2-3 個工作天內確認可開班的梯次日期、名額狀況與繳費方式' },
-  { n: '3', title: '開始上課', desc: '四堂一期，結束後可直接續課，不用等月初重新報名' },
+  { n: '3', title: '開始上課', desc: '一期4堂，結束後可直接續課，不用等月初重新報名' },
 ]
 const faqs = [
   { q: '一定要先上過體驗課才能報團課嗎？', a: '不用。團體課程可以直接報名，教練會在第一堂課了解你的身體狀況再調整動作強度。' },
@@ -272,7 +272,7 @@ const inputClass =
         <div class="bg-white rounded-2xl p-6 border border-navy-700/15 shadow-sm text-left mb-6">
           <div class="font-bold text-[#1a3545] mb-3">接下來的確認流程</div>
           <div class="space-y-2">
-            <div v-for="(row, i) in ['加入官方 LINE 並傳送姓名與課程後，教練將於 2-3 個工作天內確認梯次與繳費方式', '若你未加入 LINE，我們也將於 2-3 個工作天內嘗試撥打你填寫的手機號碼聯繫', '四堂一期，請假最晚提前一週告知可順延一週']" :key="i" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
+            <div v-for="(row, i) in ['加入官方 LINE 並傳送姓名與課程後，教練將於 2-3 個工作天內確認梯次與繳費方式', '若你未加入 LINE，我們也將於 2-3 個工作天內嘗試撥打你填寫的手機號碼聯繫', '一期4堂，請假最晚提前一週告知可順延一週']" :key="i" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
               <span class="text-orange flex-shrink-0">→</span><span>{{ row }}</span>
             </div>
           </div>
@@ -291,8 +291,7 @@ const inputClass =
       <section class="relative bg-[#1a3545] pt-16 overflow-hidden text-white">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
         <div class="relative z-10 max-w-3xl mx-auto px-4 text-center py-12 lg:py-20">
-          <div class="inline-flex items-center gap-2 bg-orange/[0.18] border border-orange/40 text-orange text-[0.78rem] font-medium px-3.5 py-1.5 rounded-full mb-5 tracking-wide">
-            <span class="w-1.5 h-1.5 rounded-full bg-orange" />
+          <div class="inline-flex items-center bg-orange/[0.18] border border-orange/40 text-orange text-[0.78rem] font-medium px-3.5 py-1.5 rounded-full mb-5 tracking-wide">
             {{ variant.hero?.badge ?? '一期4堂 · 隨時可續課' }}
           </div>
           <h1 class="font-serif text-3xl lg:text-5xl font-black leading-tight mb-6">
