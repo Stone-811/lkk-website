@@ -356,9 +356,9 @@ const inputClass =
                     <div>
                       <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">學員性別 <span class="text-orange">*</span></label>
                       <div class="grid grid-cols-3 gap-1.5">
-                        <label v-for="g in genders" :key="g" class="block cursor-pointer">
+                        <label v-for="g in genders" :key="g" class="flex cursor-pointer">
                           <input v-model="formData.gender" type="radio" :value="g" class="peer sr-only" />
-                          <span class="flex items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ g }}</span>
+                          <span class="flex-1 flex items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ g }}</span>
                         </label>
                       </div>
                       <p v-if="errors.gender" class="text-red-500 text-xs mt-1">{{ errors.gender }}</p>
@@ -368,9 +368,9 @@ const inputClass =
                   <div>
                     <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">學員年齡區間 <span class="text-orange">*</span></label>
                     <div class="grid grid-cols-3 gap-1.5">
-                      <label v-for="a in ageRanges" :key="a" class="block cursor-pointer">
+                      <label v-for="a in ageRanges" :key="a" class="flex cursor-pointer">
                         <input v-model="formData.ageRange" type="radio" :value="a" class="peer sr-only" />
-                        <span class="flex items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ a }}</span>
+                        <span class="flex-1 flex items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ a }}</span>
                       </label>
                     </div>
                     <p v-if="errors.ageRange" class="text-red-500 text-xs mt-1">{{ errors.ageRange }}</p>
@@ -379,7 +379,7 @@ const inputClass =
                   <div class="grid sm:grid-cols-2 gap-3">
                     <div>
                       <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">手機號碼 <span class="text-orange">*</span></label>
-                      <input v-model="formData.phone" type="tel" inputmode="tel" placeholder="0912-345-678" :class="inputClass" />
+                      <input v-model="formData.phone" type="tel" inputmode="tel" placeholder="0987654321" :class="inputClass" />
                       <p v-if="errors.phone" class="text-red-500 text-xs mt-1">{{ errors.phone }}</p>
                     </div>
                     <div>
@@ -392,9 +392,9 @@ const inputClass =
                   <div>
                     <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">是否為你本人親自填寫？ <span class="text-orange">*</span></label>
                     <div class="grid grid-cols-2 gap-1.5">
-                      <label v-for="opt in [{ v: '是', l: '是，我是本人' }, { v: '否', l: '否，我是幫家人/朋友填' }]" :key="opt.v" class="block cursor-pointer">
+                      <label v-for="opt in [{ v: '是', l: '是，我是本人' }, { v: '否', l: '否，我是幫家人/朋友填' }]" :key="opt.v" class="flex cursor-pointer">
                         <input v-model="formData.isFillerSelf" type="radio" :value="opt.v" class="peer sr-only" />
-                        <span class="flex items-center justify-center px-2 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ opt.l }}</span>
+                        <span class="flex-1 flex items-center justify-center px-2 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ opt.l }}</span>
                       </label>
                     </div>
                     <p v-if="errors.isFillerSelf" class="text-red-500 text-xs mt-1">{{ errors.isFillerSelf }}</p>
@@ -432,11 +432,14 @@ const inputClass =
                       <span>{{ lockedCourse.value }}</span>
                       <span class="text-xs font-normal text-ink/45">{{ lockedCourse.price }}</span>
                     </div>
-                    <div v-else class="grid grid-cols-3 gap-1.5">
-                      <label v-for="c in courses" :key="c.value" class="block cursor-pointer">
+                    <div v-else class="grid grid-cols-3 gap-1.5 items-stretch">
+                      <!-- label 用 flex 讓卡片撐滿格高；課名字數不同（窄螢幕會折成 2 行）時
+                           三張卡仍等高，價格也固定貼底、對齊在同一條水平線上 -->
+                      <label v-for="c in courses" :key="c.value" class="flex cursor-pointer">
                         <input v-model="formData.course" type="radio" :value="c.value" class="peer sr-only" />
-                        <span class="flex flex-col items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-[0.82rem] text-ink/70 text-center leading-tight transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">
-                          {{ c.value }}<span class="text-[0.68rem] text-ink/45 font-normal mt-0.5">{{ c.price }}</span>
+                        <span class="flex-1 flex flex-col px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-[0.82rem] text-ink/70 text-center leading-tight transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">
+                          <span class="flex-1 flex items-center justify-center">{{ c.value }}</span>
+                          <span class="block text-[0.68rem] text-ink/45 font-normal mt-1">{{ c.price }}</span>
                         </span>
                       </label>
                     </div>
@@ -463,9 +466,9 @@ const inputClass =
                   <div>
                     <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">過去是否有重訓經驗？ <span class="text-ink/45 font-normal text-xs">（選填）</span></label>
                     <div class="grid grid-cols-3 gap-1.5">
-                      <label v-for="ex in experiences" :key="ex.value" class="block cursor-pointer">
+                      <label v-for="ex in experiences" :key="ex.value" class="flex cursor-pointer">
                         <input v-model="formData.experience" type="radio" :value="ex.value" class="peer sr-only" />
-                        <span class="flex items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ ex.label }}</span>
+                        <span class="flex-1 flex items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ ex.label }}</span>
                       </label>
                     </div>
                   </div>
