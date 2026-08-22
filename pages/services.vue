@@ -85,9 +85,14 @@ const comparisonData = [
   { item: '適合特殊族群', personal: '✓ 最適合', group: '部分課程', online: '—' },
   { item: '時間彈性', personal: '依約定排課', group: '依固定時段', online: '✓ 完全彈性' },
   { item: '需要到分店', personal: '✓', group: '✓', online: '不需要' },
-  // 開始方式：兩種到店課程直接連到預約體驗表單（to 有值即渲染成連結）
-  { item: '開始方式', personal: '預約體驗課', personalTo: '/booking', group: '預約體驗課', groupTo: '/booking', online: '線上報名' },
+  // 開始方式：各自連到對應的報名入口（to 有值即渲染成連結，http 開頭自動開新分頁）
+  { item: '開始方式', personal: '預約體驗課', personalTo: '/booking', group: '報名團課', groupTo: '/group-booking', online: '線上報名', onlineTo: 'https://sat.cool/course/97' },
 ]
+
+// 外部連結（http 開頭）另開分頁；站內連結維持同分頁
+function isExternal(to: string) {
+  return /^https?:\/\//.test(to)
+}
 
 // 比較表儲存格文字樣式（★ 橘、✓ 橘粗體、— 淡出、其餘一般）
 function cellClass(v: string) {
@@ -563,6 +568,7 @@ const personalFeatures = [
                     <NuxtLink
                       v-if="row.personalTo"
                       :to="row.personalTo"
+                      :target="isExternal(row.personalTo) ? '_blank' : undefined"
                       :class="[cellClass(row.personal), 'underline underline-offset-4 decoration-orange/50 hover:text-orange-300 transition-colors']"
                     >{{ row.personal }}</NuxtLink>
                     <span v-else :class="cellClass(row.personal)">{{ row.personal }}</span>
@@ -571,6 +577,7 @@ const personalFeatures = [
                     <NuxtLink
                       v-if="row.groupTo"
                       :to="row.groupTo"
+                      :target="isExternal(row.groupTo) ? '_blank' : undefined"
                       :class="[cellClass(row.group), 'underline underline-offset-4 decoration-orange/50 hover:text-orange-300 transition-colors']"
                     >{{ row.group }}</NuxtLink>
                     <span v-else :class="cellClass(row.group)">{{ row.group }}</span>
@@ -579,6 +586,7 @@ const personalFeatures = [
                     <NuxtLink
                       v-if="row.onlineTo"
                       :to="row.onlineTo"
+                      :target="isExternal(row.onlineTo) ? '_blank' : undefined"
                       :class="[cellClass(row.online), 'underline underline-offset-4 decoration-orange/50 hover:text-orange-300 transition-colors']"
                     >{{ row.online }}</NuxtLink>
                     <span v-else :class="cellClass(row.online)">{{ row.online }}</span>
