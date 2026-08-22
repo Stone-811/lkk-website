@@ -336,7 +336,7 @@ function handleExport() {
             </div>
             <div v-if="lead.payload?.paymentMethod">
               <p class="text-xs text-gray-500 mb-0.5">付款方式</p>
-              <p class="font-medium text-gray-900">{{ lead.payload.paymentMethod === '50歲以上免費' ? '50歲以上免費體驗' : lead.payload.paymentMethod === '臨櫃付款' ? '臨櫃付款 $500' : lead.payload.paymentMethod }}</p>
+              <p class="font-medium text-gray-900">{{ lead.payload.paymentMethod === '50歲以上免費' ? '50歲以上首次體驗免費' : lead.payload.paymentMethod === '臨櫃付款' ? '臨櫃付款 $500' : lead.payload.paymentMethod }}</p>
             </div>
             <div v-if="lead.payload?.preferredTime" class="col-span-2">
               <p class="text-xs text-gray-500 mb-0.5">偏好時段</p>

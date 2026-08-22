@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const dataStats = [
   { num: '1%', text: ['40歲後每年流失的肌肉量', '不訓練，就是被動老化'] },
-  { num: '50+歲', text: ['以上免費體驗', '零門檻開始第一堂課'] },
+  { num: '50+歲', text: ['以上首次體驗免費', '零門檻開始第一堂課'] },
   { num: '90+歲', text: ['學員也能做訓練', '年齡不是限制，方法才是'] },
 ]
 
@@ -67,7 +67,7 @@ const pressOutlets = [
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span><strong class="text-orange">50歲以上免費體驗</strong>，首次體驗只要 $500</span>
+              <span><strong class="text-orange">50歲以上首次體驗免費</strong>，首次體驗只要 $500</span>
             </div>
           </div>
 

@@ -6,7 +6,7 @@ import { relationshipOptions } from '~/config/formOptions'
 useHead({
   title: '預約體驗 | 練健康',
   meta: [
-    { name: 'description', content: '預約練健康首次體驗課程。50歲以上免費體驗，首次體驗只要 $500。由專業教練帶領，安全有效。' }
+    { name: 'description', content: '預約練健康首次體驗課程。50歲以上首次體驗免費，首次體驗只要 $500。由專業教練帶領，安全有效。' }
   ]
 })
 
@@ -36,11 +36,11 @@ const pricingCopy = computed(() => variant.value.allAgesFree
   : {
       badge: '50歲以下，體驗課$500元',
       title: '50 歲以上',
-      titleHighlight: '體驗課完全免費',
-      note: '50歲以上免費體驗・首次體驗只要 $500・無隱藏費用・不強迫買課',
-      faqFee: '50歲以上免費體驗；未滿50歲酌收 $500 檢測與體驗費用。若為一對二且皆未滿50歲，兩位皆需收取 $500。',
+      titleHighlight: '首次體驗免費',
+      note: '50歲以上首次體驗免費・首次體驗只要 $500・無隱藏費用・不強迫買課',
+      faqFee: '50歲以上首次體驗免費；未滿50歲酌收 $500 檢測與體驗費用。若為一對二且皆未滿50歲，兩位皆需收取 $500。',
       faqPay: '體驗結束後至櫃台臨櫃繳費即可。',
-      cardBadges: ['50歲以上 免費體驗', '首次體驗 $500'],
+      cardBadges: ['50歲以上 首次體驗免費', '首次體驗 $500'],
     })
 
 // FAQ 分類資料（費用/付款兩題讀 pricingCopy，其餘固定）
@@ -580,7 +580,7 @@ const handleSubmit = async () => {
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        50歲以上體驗免費
+                        50歲以上首次體驗免費
                       </p>
                       <p v-if="errors.birthDate" class="text-red-500 text-sm mt-1">{{ errors.birthDate }}</p>
                     </div>
@@ -897,7 +897,7 @@ const handleSubmit = async () => {
                       :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange focus:border-orange', errors.paymentMethod ? 'border-red-500' : 'border-cream-200']"
                     >
                       <option value="">請選擇</option>
-                      <option v-if="isFreeEligible" value="50歲以上免費">50 歲以上免費（首次體驗完全免費）</option>
+                      <option v-if="isFreeEligible" value="50歲以上免費">50 歲以上（首次體驗免費）</option>
                       <option value="臨櫃付款">臨櫃付款（首次體驗 $500）</option>
                     </select>
                     <p v-if="errors.paymentMethod" class="text-red-500 text-sm mt-2">{{ errors.paymentMethod }}</p>

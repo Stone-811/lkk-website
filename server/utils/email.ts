@@ -71,7 +71,7 @@ function bookingFeeLabel(birthDate?: string, paymentMethod?: string): string | n
   // 優先依使用者勾選的付款方式
   if (paymentMethod) {
     if (paymentMethod === '臨櫃付款') return '臨櫃付款 $500'
-    if (paymentMethod === '50歲以上免費') return '50 歲以上免費體驗'
+    if (paymentMethod === '50歲以上免費') return '50 歲以上首次體驗免費'
     if (paymentMethod === '活動免費') return '活動免費'
     return paymentMethod // 其他未知值：原樣顯示
   }
@@ -83,7 +83,7 @@ function bookingFeeLabel(birthDate?: string, paymentMethod?: string): string | n
       let age = now.getFullYear() - b.getFullYear()
       const m = now.getMonth() - b.getMonth()
       if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age--
-      return age >= 50 ? '50 歲以上免費體驗' : '臨櫃付款 $500'
+      return age >= 50 ? '50 歲以上首次體驗免費' : '臨櫃付款 $500'
     }
   }
   return null
