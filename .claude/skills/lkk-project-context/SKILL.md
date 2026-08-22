@@ -22,6 +22,7 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - **prod 現況（2026-07-31）**：已 merge dev→prod、對外 `lkkwellness.com` ＝最新版（含 LKK4 全齡改版等）；**Email 已修好**（有效 lkkwellness App Password，dev/prod 都通）；**prod Auth 尚未開 Google 登入** → 後台用緊急密碼 `lkkwellness@gmail.com`/`lkkwellness-prod`。網域/SMTP/UTM 細節見記憶 [[lkk-web-deploy]]、[[lkk-web-gotchas]]。
 - **hosted.app 已 301 轉到 lkkwellness.com**（`server/middleware/redirect-canonical.ts`，2026-08-03）：正式站醜網址形同停用、SEO 合併。⚠️ **在 App Hosting 上「依網域判斷」要讀 `x-forwarded-host`，不是 `host`**——前面 Envoy CDN 把 `host` 改寫成內部 `…run.app`，原始請求網域落在 `x-forwarded-host`（第一版比對 host 完全沒生效就是踩這個）。middleware 只比對 prod hosted.app 的 xfHost 才轉，故 lkkwellness.com 不迴圈、dev 不受影響。App Hosting 預設 hosted.app 網址無法真正關閉，只能靠轉址。
 - **prod 發佈 2026-08-20**：`/about`、`/news`、`/group-booking` 三個新頁＋團體課系統＋導覽改名（「經營團隊」→「關於練健康」、新增「媒體報導」、「異業結盟」→「合作洽談」）已上正式站，檔案級帶入 23 檔、`apphosting.yaml` 未動（複驗 `lkkprod`/`lkkwellness.com` 原值）。⚠️ **判斷「什麼還沒上 prod」一律用 `git diff --stat origin/prod origin/dev`（檔案級），別看 `git log origin/prod..origin/dev`**——prod 是檔案級帶入、commit 不同但內容可能已同步，commit log 會嚴重高估未上線的量。⚠️ **`/team-intro` 已 301 永久導向 `/about`**（`pages/team-intro/index.vue` 只剩 `navigateTo('/about',{redirectCode:301})`）；`/team-intro/coaches` 子頁不受影響。301 是不可逆的 SEO 訊號（權重併給 `/about`、Google 會逐步從索引移除舊網址），若日後要把「經營團隊」拆回獨立頁會吃虧，要保留彈性就改 `redirectCode: 302`。
+- **⭐ 讀寫 lkkdev/lkkprod 的 Firestore（2026-08-22 打通）**：本機 `.env` 的 `FIREBASE_PROJECT_ID` 是 **`lkk-website-dev`＝另一個舊專案**，不是 dev 站（`lkkdev`）也不是正式站（`lkkprod`）——**用 .env 讀到的資料不代表線上**（曾因此把 fallback 店名寫成舊專案的「新店七張店」，線上其實是「七張店」）。正解：firebase-tools 已登入 tingo8320@gmail.com，把 `~/.config/configstore/firebase-tools.json` 的 `tokens.refresh_token` ＋ firebase-tools `lib/api.js` 裡的公開 clientId/clientSecret，組成 `{client_id,client_secret,refresh_token,type:'authorized_user'}` 存成 adc.json（權限 600、放 scratchpad、不進版控），再 `GOOGLE_APPLICATION_CREDENTIALS=adc.json node script.cjs`（firebase-admin 用 `applicationDefault()`）。⚠️ 取 secret 的正規表示式要抓 `envOverride("<ENV名>", "<值>")` 的**第二個**參數，抓錯會 `invalid_client`；⚠️ **腳本要放專案目錄執行**（scratchpad 無 node_modules）。firebase-tools 本體在 `~/.npm-cache-new/_npx/*/node_modules/firebase-tools`。
 - **gcloud 未安裝**，一律 `npx firebase-tools`（已登入 tingo8320@gmail.com，可存取 lkkdev/lkkprod）。部署 repo（唯一真實來源）：`/Users/stone/4.柚智源/練健康/3. 形象網站翻新`。舊 `Downloads/lkk-new-web` 雙胞胎已棄用。
 - 新環境 setup 血淚點：Firestore 用 `firestore:databases:create --location asia-east1`（別靠 deploy 自動建→會在 nam5）；secrets set 後**務必 `grantaccess --backend`**（否則 Misconfigured Secret）；啟用 Storage；Auth 啟用 Google provider+加該 hosted.app 授權網域。詳見記憶 [[lkk-web-deploy]]。
 
@@ -94,25 +95,31 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - **本機驗證管線**（無測試框架下的替代）：`npm run build`（⚠️ 不做型別檢查）→ `(set -a; source .env; set +a; unset SMTP_*; NODE_ENV=development ALLOW_DEV_ADMIN=true node .output/server/index.mjs)` → 後台用 dev 後門帳號（見 auth.ts DEV_TEST_USER，須 NODE_ENV≠production 且 ALLOW_DEV_ADMIN=true）→ 瀏覽器 pane 走查＋`javascript_tool` 斷言；表單類改動 curl POST 後用 service account 腳本直讀 Firestore 核對 shape、驗完刪測試文件。unset SMTP_* 可讓寄信乾淨跳過不發真信。
 - ⚠️ **備註存檔競態（已修）**：存檔期間關閉彈窗，舊碼 `selectedLead.value.internalNote` NPE→誤報「儲存失敗」（實際已寫入）。useAdminLeads 已加 null 防護，勿退回。
 
-## 教練資料現況（⚠️ 動 /team-intro/coaches 或教練資料前必看，2026-08-20 盤點）
+## 教練資料現況（⚠️ 動 /team-intro/coaches 或教練資料前必看，2026-08-22 更新）
 
-**線上 43 筆教練資料多為「範本假資料」。** 姓名與分店是對的（28 位同名者分店 100% 吻合，來自真實教練牆照片），但**證照/學歷/經歷是編的**：43 筆 `description` 全空、專長用語是 34 種自創組合（如「骨骼肌肉系統傷害後訓練」），與公司實際 14 種用語（中高齡訓練/肌力訓練/增肌減脂/功能性訓練/體態雕塑/術後訓練/特殊族群訓練/健力三項/壺鈴訓練/專項訓練/拳擊訓練/動作控制/運動傷害防護/運動科學檢測）完全不同。
+| 分店 | 人數 | 狀態 |
+|---|---|---|
+| 西門店 | 17 | ✅ 已用業主 CSV 更新（2026-08-22，dev＋prod） |
+| 七張店 | 11 | ✅ 已用業主 CSV 更新 |
+| 南京店 | 14 | ⏳ **仍為範本假資料**，9 人誤標物理治療師 |
+| 松江店 | 5 | ⏳ **仍為範本假資料**，3 人誤標物理治療師 |
 
-**⚠️ 最嚴重＝職稱與證照錯標，是合規問題不是資料過期**：以業主 CSV 為準，**14 位非物理治療師的教練在網站上被標成「物理治療師」並列出「物理治療師證照」**，另有 2 位真物治只標「教練」。物理治療師受《物理治療師法》管制。此狀態目前仍在正式站上。**修正這 14 筆 `roleTitle`/`certifications` 應獨立優先，不要等整批資料更新。** 明細見記憶 [[lkk-web-coach-data]]。
+**原始問題**：教練資料是「照教練牆照片建檔、內容用範本填」——姓名與分店對，但證照/學歷/經歷是編的、`description` 全空、專長是自創詞彙。最嚴重的是**非物理治療師被標成「物理治療師」並列出「物理治療師證照」**（受《物理治療師法》管制＝合規問題，非資料過期）。西門＋七張的 12 人已修正；**南京、松江的 12 人仍掛在正式站上**。業主 2026-08-22 表示南京/松江 CSV 與新照片後續補上。
 
-**呈現欄位**：卡片＝照片/姓名/`roleTitle`/`specialties` **前 2 個**；彈窗＝照片/姓名/`roleTitle`/分店名/`specialties` **前 3 個**/`description`/`certifications`/`education`/`experiences`。
+**業主的分店 CSV 格式**（正確資料源）：`姓名, 英文名字, 分店, 職稱, 學歷/經歷, 證照, 專長1~3`。
+⚠️ 早期那份 `教練製作物所需資訊_20250826` 是**製作物追蹤表**（含個資與名片/名牌進度欄），**不可**當官網資料源。
 
-**資料來源**：業主的 `教練製作物所需資訊_20250826_宗倫`（50 人）。這是**製作物需求表**（名片/名牌/形象照/教練牆/官網進度），不是為官網設計的 → 「官網」欄的進度值與網站現況對不上、**別照那欄做**；且含**個資（電話/Email/Instagram/官方 LINE ID）→ 絕不可上公開網站**；「英文名字」網站無對應欄位。CSV 也**沒有個人簡介** → 更新後彈窗簡介仍會空著。
+**匯入作法（腳本，不要用後台 UI）**：憑證取得見下方部署段／[[lkk-web-deploy]]。流程＝解析 CSV→**先印出每人拆欄結果人工檢視**→產生 dry-run 變更計畫→備份→套用→dev 驗證→prod。
+- **只覆寫 CSV 提供的 6 欄**（name/roleTitle/storeId/education/experiences/certifications/specialties）；`photo`/`sortOrder`/`isActive`/`description` **沿用既有值不覆寫**
+- 「學歷/經歷」是同一欄要拆：`學歷：` 後連續非空行＝學歷，**遇空行後**＝經歷；有 `經歷：`／`證照與研習：` 標記則以標記為準（6 人無標記，靠空行分界）
+- 職稱的 `/`（含 `/／`）正規化成 `・`；證照去掉開頭 `•` 與「證照與研習：」標題列
+- ⚠️ **別用後台逐筆建**：`pages/admin/coaches/[id].vue` 的「學歷」是單行輸入、用逗號切割，CSV 含逗號的學歷會被切壞
 
-**匯入注意**：CSV 的「學歷/經歷」是**同一欄**，需拆成 `education[]`+`experiences[]`（38 人有「學歷：／經歷：」標記可自動拆、6 人需人工判讀）。**別用後台一筆筆建**——`pages/admin/coaches/[id].vue` 的「學歷」是**單行輸入、用逗號 `,` 切割成陣列**，CSV 含逗號的學歷會被切壞；49 人手動也要 4–6 小時。照 `server/api/admin/lkk4-records/import.post.ts` 的模式做一支教練 CSV 匯入 API 較穩、日後可重用。
+**姓名錯字**（已於 2026-08-22 改名並保留照片）：陳詠**佑**→陳詠**侑**、鍾**緯**沛→鍾**絲**沛。松江店另有「王均**佑**→王均**祐**」待處理。
 
-**名冊差異**：28 人更新、21 人待新增（含 1 離職/2 櫃台/2 教育訓練部）、15 人待確認下架、3 組姓名一字之差疑同一人（王均祐/佑、鍾絲沛/緯沛、陳詠侑/佑）。⚠️ 待下架的 15 人中「鄭宇劭」是 CSV 的範例列人物、看起來還在職 → **別一律當離職處理**。
+**照片**：`public/images/coaches/{nanjing,songjiang,ximending,xindian}/`（拼音檔名）。2026-08-22 新建的 4 人**尚無照片**（林稚荃/林承緯/盧立軒＝西門、陳存灝＝七張），頁面顯示姓名首字替代圖、不破版。
 
-**照片**：現有 43 張按拼音命名於 `public/images/coaches/{nanjing,songjiang,ximending,xindian}/`，21 位新教練無照片、CSV「形象照」欄多數「待拍攝」→ 獨立阻塞項，沒照片先用預設圖上架。照片本身的燒字橫幅/構圖問題見下方「常踩的地雷」第 6 條。
-
-**教育訓練部無對應 store**：`storeId` 在後台是必填，但沒有「教育訓練部」這個 Firestore store → 吳禎明/李柏橋要上架需先決定放哪。
-
-> 2026-08-20 業主表示會再提供正確的教練資訊與照片 → 批次匯入等新資料，合規修正不等。
+**`server/utils/fallback-data.ts`** 內含 43 筆與舊資料相同的假教練，Firestore 掛掉會頂替顯示＝對外露出已修正掉的錯誤職稱；四店都更新完後要一併處理。
 
 ## 慣例
 - Nitro API：admin 端各檔 inline `const session = await getSession(event)`；寫入類要補角色檢查。
