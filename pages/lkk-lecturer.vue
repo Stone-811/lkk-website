@@ -128,11 +128,12 @@ const courses = [
           <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-8">
             練健康<span class="text-orange">認證講師</span>
           </h2>
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          <!-- 每列三位講師；flex + justify-center 讓最後一列不足三位時也會置中 -->
+          <div class="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto">
             <article
               v-for="lecturer in lecturers"
               :key="lecturer.id"
-              class="bg-white rounded-2xl overflow-hidden shadow-lg border border-navy/10 hover:-translate-y-1 transition-transform"
+              class="bg-white rounded-2xl overflow-hidden shadow-lg border border-navy/10 hover:-translate-y-1 transition-transform w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
             >
               <div class="aspect-square bg-gradient-to-br from-navy to-navy/80 relative">
                 <img

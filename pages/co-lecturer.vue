@@ -128,11 +128,12 @@ const benefits = [
             練健康<span class="text-orange">合作講師</span>
           </h2>
           <!-- auto-fit + justify-center：人數少於欄數時卡片會置中，卡片寬度上限 195px 與練健康認證講師頁一致 -->
-          <div class="grid grid-cols-[repeat(auto-fit,minmax(150px,195px))] justify-center gap-4">
+          <!-- 每列三位講師；flex + justify-center 讓最後一列不足三位時也會置中 -->
+          <div class="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto">
           <article
             v-for="lecturer in partnerLecturers"
             :key="lecturer.id"
-            class="bg-white rounded-2xl overflow-hidden shadow-lg border border-navy/10 hover:-translate-y-1 transition-transform"
+            class="bg-white rounded-2xl overflow-hidden shadow-lg border border-navy/10 hover:-translate-y-1 transition-transform w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
           >
             <div class="aspect-square bg-gradient-to-br from-navy to-navy/80 relative">
               <img
