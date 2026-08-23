@@ -190,7 +190,7 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: `練健康${store.value?.name}，位於${store.value?.city || ''}${store.value?.district || ''}${store.value?.address || ''}。專業物理治療師背景教練，50歲以上首次體驗免費。`
+      content: `練健康${store.value?.name}，位於${store.value?.city || ''}${store.value?.district || ''}${store.value?.address || ''}。專業物理治療師背景教練，第一堂體驗課，50歲以上免費。`
     }
   ]
 })
@@ -281,7 +281,7 @@ const photos = computed(() => {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            <span><strong class="text-orange">50歲以上首次體驗免費</strong>・首次體驗只要 $500</span>
+            <span><strong class="text-orange">第一堂體驗課，50歲以上免費</strong>・未滿50歲 $500</span>
           </div>
         </div>
       </div>
@@ -432,7 +432,7 @@ const photos = computed(() => {
           {{ store.name }}，等你來
         </h2>
         <p class="text-white/70 mb-8">
-          從捷運站走過來只要幾分鐘，第一堂 50歲以上首次體驗免費。
+          從捷運站走過來只要幾分鐘，第一堂體驗課 50歲以上免費。
         </p>
         <NuxtLink
           to="/booking"

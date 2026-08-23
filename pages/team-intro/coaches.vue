@@ -325,7 +325,7 @@ function setActiveStore(storeSlug: string | null) {
           找到適合你的教練了嗎？
         </h2>
         <p class="text-white/80 mb-8 max-w-md mx-auto">
-          預約免費體驗，讓專業教練為你評估並制定訓練計畫。50歲以上首次體驗免費。
+          預約免費體驗，讓專業教練為你評估並制定訓練計畫。第一堂體驗課，50歲以上免費。
         </p>
         <NuxtLink
           to="/booking"
@@ -334,7 +334,7 @@ function setActiveStore(storeSlug: string | null) {
           立即預約體驗 →
         </NuxtLink>
         <div class="mt-4 text-white/60 text-sm">
-          50歲以上首次體驗免費・不強迫買課
+          第一堂體驗課 50歲以上免費・不強迫買課
         </div>
       </div>
     </section>

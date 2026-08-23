@@ -297,7 +297,7 @@ const getGroupDisplayName = (group: string) => {
           </NuxtLink>
         </div>
         <div class="mt-4 text-ink/50 text-sm">
-          50歲以上首次體驗免費・首次體驗只要 $500
+          第一堂體驗課，50歲以上免費・未滿50歲 $500
         </div>
       </div>
     </section>
