@@ -152,17 +152,28 @@ const courses = [
                   <p class="text-orange font-semibold text-sm">{{ lecturer.title }}</p>
                 </div>
 
-                <div v-if="lecturer.specialties?.length" class="flex flex-wrap gap-1.5 mb-3">
-                  <span
+                <div v-if="lecturer.specialties?.length" class="mb-3">
+                  <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">專長領域</div>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span
                     v-for="spec in lecturer.specialties"
                     :key="spec"
                     class="text-xs font-medium text-white bg-orange px-2.5 py-1 rounded-full"
-                  >
+                    >
                     {{ spec }}
-                  </span>
+                    </span>
+                  </div>
+                </div>
+
+                <div v-if="lecturer.education?.length" class="pt-3 border-t border-navy/10 mb-3">
+                  <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">學歷背景</div>
+                  <ul class="space-y-0.5">
+                    <li v-for="edu in lecturer.education" :key="edu" class="text-xs text-ink/60 leading-relaxed">{{ edu }}</li>
+                  </ul>
                 </div>
 
                 <div v-if="lecturer.certifications?.length" class="pt-3 border-t border-navy/10">
+                  <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">專業證照</div>
                   <div class="flex flex-wrap gap-1.5">
                     <span
                       v-for="cert in lecturer.certifications"
