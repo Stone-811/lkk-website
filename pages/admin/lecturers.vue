@@ -56,7 +56,7 @@ function toggleSort(column: 'sortOrder' | 'name' | 'type') {
 }
 
 const typeLabels: Record<string, string> = {
-  lkk: '練健康授權講師',
+  lkk: '練健康認證講師',
   partner: '合作講師',
   overseas: '海外授權講師',
 }
@@ -344,7 +344,7 @@ const filteredLecturers = computed(() => {
     <div class="flex items-center justify-between mb-8">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">講師管理</h1>
-        <p class="text-gray-500 mt-1">管理練健康授權講師、合作講師、海外授權講師</p>
+        <p class="text-gray-500 mt-1">管理練健康認證講師、合作講師、海外授權講師</p>
       </div>
       <button
         @click="openEditModal()"
@@ -381,7 +381,7 @@ const filteredLecturers = computed(() => {
           class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
         >
           <option value="">全部類型</option>
-          <option value="lkk">練健康授權講師</option>
+          <option value="lkk">練健康認證講師</option>
           <option value="partner">合作講師</option>
           <option value="overseas">海外授權講師</option>
         </select>
@@ -587,7 +587,7 @@ const filteredLecturers = computed(() => {
             <div>
               <label class="block text-sm font-medium mb-1">講師類型 <span class="text-red-500">*</span></label>
               <select v-model="formData.type" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                <option value="lkk">練健康授權講師</option>
+                <option value="lkk">練健康認證講師</option>
                 <option value="partner">合作講師</option>
                 <option value="overseas">海外授權講師</option>
               </select>

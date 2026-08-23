@@ -260,7 +260,7 @@ async function handlePhotoUpload(event: Event) {
               v-model="formData.type"
               class="w-full border border-gray-300 rounded-lg px-3 py-2"
             >
-              <option value="lkk">練健康授權講師</option>
+              <option value="lkk">練健康認證講師</option>
               <option value="partner">合作講師</option>
               <option value="overseas">海外授權講師</option>
             </select>
