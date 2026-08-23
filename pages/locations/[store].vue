@@ -46,84 +46,9 @@ if (storeError.value || !storeResponse.value?.success) {
 const store = computed(() => storeResponse.value?.data)
 const coaches = computed(() => store.value?.coaches || [])
 
-// 分店硬編碼資料（用於補充 API 沒有的資料，如電話格式、交通資訊等）
-const storeExtraData: Record<string, any> = {
-  'xindian': {
-    phoneRaw: '+886289146428',
-    googleMapUrl: 'https://maps.app.goo.gl/HtbnehGKnShnHsiB7',
-    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.5428873!3d24.9784213!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x346801fa0764a755%3A0x29042ff770880f40!2z%E7%B7%B4%E5%81%A5%E5%BA%B7%EF%BC%8D%E6%96%B0%E5%BA%97%E4%B8%83%E5%BC%B5%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
-    description: '捷運七張站 2 號出口，步行 5 分鐘',
-    businessHours: {
-      weekday: '10:00–22:00',
-      saturday: '10:00–18:00',
-      sunday: '10:00–18:00',
-    },
-    transport: {
-      mrt: { station: '七張站 2 號出口', desc: '出站後沿北新路方向直行，約步行 5 分鐘，大樓入口在便利商店旁，下樓梯至 B1-2。' },
-      bus: { stop: '公車站：新店郵局', desc: '' },
-      car: { desc: '停車場：歐特儀-中興低碳立體停車場、寶橋停車場' },
-      parking: { desc: '七張捷運站旁有公共停車場（收費），或北新路沿線路邊停車格。地下室停車空間有限，請提前確認。' },
-    },
-    geo: { lat: 24.9784213, lng: 121.5428873 },
-  },
-  'nanjing': {
-    phoneRaw: '+886225074196',
-    googleMapUrl: 'https://maps.app.goo.gl/Px5LAT6LC9Q8KvAA7',
-    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.537984!3d25.052245!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442ab59356317d7%3A0xbd4e3d04026121fe!2z%E7%B7%B4%E5%81%A5%E5%BA%B7%EF%BC%8D%E5%8D%97%E4%BA%AC%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
-    description: '捷運松江南京站 6 號出口，步行 6 分鐘',
-    businessHours: {
-      weekday: '09:30–22:00',
-      saturday: '09:30–18:00',
-      sunday: '09:30–18:00',
-    },
-    transport: {
-      mrt: { station: '松江南京站 6 號出口', desc: '出站後沿南京東路方向步行約 6 分鐘。' },
-      bus: { stop: '公車站：中山女高、長春國小、南京建國路口', desc: '' },
-      car: { desc: '停車場：建國北路高架下、台灣聯通停車場(首都場)' },
-      parking: { desc: '附近有公共停車場，或路邊停車格。' },
-    },
-    geo: { lat: 25.052245, lng: 121.537984 },
-  },
-  'songjiang': {
-    phoneRaw: '+886225371055',
-    googleMapUrl: 'https://maps.app.goo.gl/giFuLHGz4pMwAnpFA',
-    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.5327347!3d25.0525134!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a95792149a0f%3A0x3883ae1ade5dc5c7!2z%E7%B7%B4%E5%81%A5%E5%BA%B7-%E6%9D%BE%E6%B1%9F%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
-    description: '捷運松江南京站 8 號出口，步行 1 分鐘',
-    businessHours: {
-      weekday: '10:00–22:00',
-      saturday: '10:00–18:00',
-      sunday: '10:00–18:00',
-    },
-    transport: {
-      mrt: { station: '松江南京站 8 號出口', desc: '出站後沿松江路方向步行約 1 分鐘。' },
-      bus: { stop: '公車站：捷運松江南京站、松江長春路口', desc: '' },
-      car: { desc: '停車場：建國北路高架下、台灣聯通停車場-將捷一場' },
-      parking: { desc: '附近有公共停車場。' },
-    },
-    geo: { lat: 25.0525134, lng: 121.5327347 },
-  },
-  'ximending': {
-    phoneRaw: '+886223703245',
-    googleMapUrl: 'https://maps.app.goo.gl/b4z2D4XECCsi7zsy7',
-    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1808.5!2d121.5101882!3d25.0416063!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a96d8303852b%3A0x8c919512ed52b425!2z%E7%B7%B4%E5%81%A5%E5%BA%B7%EF%BC%8D%E8%A5%BF%E9%96%80%E5%BA%97!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw',
-    description: '捷運西門站 3 號出口，步行 3 分鐘',
-    businessHours: {
-      weekday: '10:00–22:00',
-      saturday: '10:00–18:00',
-      sunday: '10:00–18:00',
-    },
-    transport: {
-      mrt: { station: '西門站 3 號出口', desc: '出站後沿寶慶路方向步行約 3 分鐘。' },
-      bus: { stop: '公車站：寶慶路', desc: '' },
-      car: { desc: '停車場：歐特儀-中山地下停車場、嘟嘟房中華西門1號、中山堂' },
-      parking: { desc: '附近有多處公共停車場。' },
-    },
-    geo: { lat: 25.0416063, lng: 121.5101882 },
-  },
-}
-
-// 合併 API 資料與本地補充資料
-const extraData = computed(() => storeExtraData[storeSlug] || {})
+// 分店營業時間／交通／地圖來自 composables/useStoreDefaults.ts（全站唯一來源）
+const { getStoreDefaults } = useStoreDefaults()
+const extraData = computed(() => getStoreDefaults(storeSlug) || {})
 // Google Maps 連結：優先用程式碼裡的真連結（Firestore 部分分店存的是佔位字串）
 const mapLink = computed(() => extraData.value?.googleMapUrl || store.value?.googleMapUrl || '')
 const storeDescription = computed(() => toNearestMrt(extraData.value?.description) || store.value?.name + ' 專業訓練中心')
