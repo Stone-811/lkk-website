@@ -86,7 +86,7 @@ const cases = [
 const steps = computed(() => [
   { title: '填寫預約表單', desc: '約 1~2 分鐘完成，提供必要資訊' },
   { title: '教練主動電話聯繫', desc: '2~3天內，我們會打電話給你安排時間' },
-  { title: '到店體驗課（60–75 分鐘）', desc: '身體評估 + 基礎動作訓練 + 教練諮詢', badges: pricingCopy.value.cardBadges },
+  { title: '到店體驗課（60 分鐘）', desc: '身體評估 + 基礎動作訓練 + 教練諮詢', badges: pricingCopy.value.cardBadges },
   { title: '客製化訓練建議', desc: '教練提供最適合你的訓練規劃' },
 ])
 

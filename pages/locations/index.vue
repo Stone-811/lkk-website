@@ -4,7 +4,7 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: '練健康在大台北地區有 4 間分店，新店七張、南京、松江、西門，每間都鄰近捷運站。50歲以上首次體驗免費。'
+      content: '練健康在大台北地區有 4 間分店，七張、南京、松江、西門，每間都鄰近捷運站。50歲以上首次體驗免費。'
     }
   ]
 })
@@ -48,7 +48,7 @@ const heroTags = ['鄰近捷運站', '專業教練帶領', '中高齡及特殊�
 
 const stats = [
   { num: '4', label: '間分店' },
-  { num: '1,000+', label: '服務學員' },
+  { num: '10,000+', label: '服務學員' },
   { num: '7 年', label: '深耕中高齡' },
   { num: '100%', label: '鄰近捷運' },
 ]
@@ -67,7 +67,7 @@ const reasons = [
   {
     iconType: 'free',
     title: '50歲以上首次體驗免費',
-    desc: '不是試課，是真正完整的 60-75 分鐘體驗課，讓我們先了解你。',
+    desc: '不是試課，是真正完整的 60 分鐘體驗課，讓我們先了解你。',
   },
 ]
 </script>
@@ -262,7 +262,7 @@ const reasons = [
             <!-- Right: Stats -->
             <div class="bg-navy/[0.03] p-8 lg:p-10 flex flex-col justify-center gap-4">
               <div class="bg-white rounded-xl p-5 border border-navy/10">
-                <div class="font-serif text-3xl lg:text-4xl font-black text-orange">1,000+</div>
+                <div class="font-serif text-3xl lg:text-4xl font-black text-orange">10,000+</div>
                 <div class="text-ink/60 text-sm mt-1">服務學員</div>
               </div>
               <div class="bg-white rounded-xl p-5 border border-navy/10">
@@ -286,7 +286,7 @@ const reasons = [
           找到離你最近的分店了嗎？
         </h2>
         <p class="text-white/80 mb-8 max-w-md mx-auto">
-          立即預約免費體驗，由我們的專業教練帶領你開始第一步。
+          立即預約體驗，由我們的專業教練帶領你開始第一步。
         </p>
         <NuxtLink
           to="/booking"

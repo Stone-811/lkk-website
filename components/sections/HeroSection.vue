@@ -44,7 +44,7 @@ const pressOutlets = [
             </h1>
 
             <p class="text-white/65 text-lg font-light leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
-              60分鐘專屬體驗，10,000位學員的共同選擇<br />
+              60分鐘專屬體驗，10,000+ 位學員的共同選擇<br />
               安心啟動你的肌力人生
             </p>
 
@@ -75,7 +75,7 @@ const pressOutlets = [
           <aside class="hidden lg:block bg-white/[0.06] backdrop-blur-md border border-white/12 rounded-3xl p-8">
             <!-- Title -->
             <h2 class="text-center text-white font-serif text-2xl font-bold mb-6">
-              用心服務超過 <span class="text-orange">10,000+</span> 學員
+              用心服務 <span class="text-orange">10,000+</span> 位學員
             </h2>
 
             <!-- Main Stats - 2 cards -->

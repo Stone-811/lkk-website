@@ -4,13 +4,13 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: '練健康是一間專注於中高齡、術後及特殊健康族群的肌力訓練中心。2018 年成立於台北，四間直營分店，故事登上 BBC、路透社、法新社與美聯社。健康，是練出來的。',
+      content: '練健康是一間專注於中高齡、術後及特殊健康族群的肌力訓練中心。2019 年成立於台北，四間直營分店，故事登上 BBC、路透社、法新社與美聯社。健康，是練出來的。',
     },
   ],
 })
 
 const heroPills = [
-  { k: '成立', v: '2018 年 6 月' },
+  { k: '成立', v: '2019 年' },
   { k: '分店', v: '台北・新北 4 間' },
   { k: '國際報導', v: 'BBC・Reuters・AFP' },
 ]
@@ -55,8 +55,8 @@ const pillars = [
 ]
 
 const timeline = [
-  { y: '2018', t: '練健康創立', d: '以「中高齡也能安全重訓」為題籌備第一間中心。' },
-  { y: '2019', t: '正式開幕', d: '南京店啟用，提供一對一教練課程。' },
+  { y: '2018', t: '品牌籌備', d: '以「中高齡也能安全重訓」為題籌備第一間中心。' },
+  { y: '2019', t: '練健康創立', d: '南京店啟用，提供一對一教練課程。' },
   { y: '2020', t: '首辦週年講座', d: '百人參與，開始整理可對外分享的知識內容。' },
   { y: '2021.05', t: '疫情三級警戒', d: '實體課程全面暫停。' },
   { y: '2021', t: '第一屆聖誕老人硬舉大賽', d: '長輩第一次站上比賽舞台。' },
@@ -64,7 +64,7 @@ const timeline = [
   { y: '2023', t: '西門店開幕', d: '第三屆賽事 225 人參賽，學員突破 2,000 人。' },
   { y: '2024', t: '第四屆賽事', d: 'IG 突破十萬追蹤，獲走鐘獎「生命貢獻獎」。' },
   { y: '2025.10', t: '海外第一站', d: '台灣 × 馬來西亞《銀髮動作基礎訓練營》。' },
-  { y: '2025', t: '第五屆賽事・新店七張店開幕', d: '70 歲以上選手超過 60 人參賽。' },
+  { y: '2025', t: '第五屆賽事・七張店開幕', d: '70 歲以上選手超過 60 人參賽。' },
   { y: '2026', t: '松江加盟店開幕', d: '第六屆聖誕老人硬舉大賽，加盟版圖持續擴大。' },
 ]
 
@@ -104,7 +104,7 @@ const branches = [
   { name: '南京店', desc: '台北市中山區・松江南京站', slug: 'nanjing' },
   { name: '松江店', desc: '台北市中山區・松江南京站', slug: 'songjiang' },
   { name: '西門店', desc: '台北市中正區・西門站', slug: 'ximending' },
-  { name: '新店七張店', desc: '新北市新店區・七張站', slug: 'xindian' },
+  { name: '七張店', desc: '新北市新店區・七張站', slug: 'xindian' },
 ]
 
 const programGroups = [
@@ -158,7 +158,7 @@ const programGroups = [
         <div class="flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
           <span class="w-5 h-0.5 bg-orange" />
           About LKK Wellness
-          <span class="text-white/30 tracking-normal normal-case font-medium">・Est. 2018</span>
+          <span class="text-white/30 tracking-normal normal-case font-medium">・Est. 2019</span>
         </div>
 
         <h1 class="font-serif text-5xl lg:text-6xl font-black leading-tight mb-2">
@@ -465,7 +465,7 @@ const programGroups = [
           <span class="text-navy-700/40 tracking-normal normal-case font-medium">・課程與活動</span>
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-4 max-w-2xl leading-snug">把方法，<span class="text-orange">交到更多人手上</span></h2>
-        <p class="text-ink/70 leading-relaxed mb-10 max-w-2xl">除了分店的一對一與團體課程，我們也把六年來的個案經驗整理成教材，對教練、醫療從業人員與一般民眾開課——讓「怎麼教、為什麼這樣教」能被複製出去。</p>
+        <p class="text-ink/70 leading-relaxed mb-10 max-w-2xl">除了分店的一對一與團體課程，我們也把七年來的個案經驗整理成教材，對教練、醫療從業人員與一般民眾開課——讓「怎麼教、為什麼這樣教」能被複製出去。</p>
 
         <div class="grid md:grid-cols-3 gap-6">
           <div

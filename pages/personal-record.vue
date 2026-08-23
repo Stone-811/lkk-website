@@ -280,7 +280,7 @@ const getGroupDisplayName = (group: string) => {
           還沒參加過 LKK4？
         </h2>
         <p class="text-ink/60 mb-6 max-w-md mx-auto">
-          50 歲以上即可報名參賽，先從免費體驗開始，讓教練評估你的實力！
+          50 歲以上即可報名參賽，先從一堂體驗課開始，讓教練評估你的實力！
         </p>
         <div class="flex flex-wrap justify-center gap-4">
           <NuxtLink
@@ -293,8 +293,11 @@ const getGroupDisplayName = (group: string) => {
             to="/booking"
             class="inline-flex items-center gap-2 bg-orange text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-orange/25 hover:bg-orange-400 transition-colors"
           >
-            預約免費體驗 →
+            預約體驗 →
           </NuxtLink>
+        </div>
+        <div class="mt-4 text-ink/50 text-sm">
+          50歲以上首次體驗免費・首次體驗只要 $500
         </div>
       </div>
     </section>
