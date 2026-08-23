@@ -587,36 +587,6 @@ const mediaReports = [
       </div>
     </section>
 
-    <!-- Commercial CTA -->
-    <section class="py-16 lg:py-20 bg-gradient-to-br from-[#1a3545] to-[#0e2230] text-white">
-      <div class="container mx-auto px-4">
-        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
-          商業與公關洽詢
-        </div>
-        <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3 text-center">
-          攜手 LKK4，共同開創<span class="text-orange">銀髮健康新經濟</span>
-        </h2>
-        <p class="text-white/60 text-lg max-w-2xl mx-auto text-center mb-10">
-          LKK4 是全台規模最大的中高齡全能體能挑戰賽，我們誠摯歡迎企業贊助、加盟通路、技術研究或媒體採訪，共同發揮品牌影響力：
-        </p>
-
-        <div class="max-w-2xl mx-auto">
-          <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-6 text-center">
-            <h3 class="font-serif text-xl font-black text-white mb-2">
-              企業贊助與<span class="text-orange">品牌合作</span>
-            </h3>
-            <p class="text-white/60 text-sm leading-relaxed mb-5">
-              我們為重視大健康、高齡福祉、運動醫療與永續社會責任（ESG）的企業夥伴提供多元的賽事贊助方案，包含現場常駐 logo 牆露出、媒體聯合行銷等機會。
-            </p>
-            <NuxtLink to="/cooperation" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-6 py-2.5 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors text-sm">
-              洽談贊助與合作 →
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- CTA Banner -->
     <section class="py-16 lg:py-20 bg-cream">
       <div class="container mx-auto px-4 text-center">
@@ -624,14 +594,19 @@ const mediaReports = [
           準備好挑戰自己了嗎？
         </h2>
         <p class="text-ink/60 mb-8 max-w-xl mx-auto">
-          無論你現在的程度如何，LKK4 歡迎所有熱愛運動的人。先從一堂體驗課開始，讓教練幫你評估實力！
+          無論你現在的程度如何，LKK4 歡迎所有熱愛運動的人。
         </p>
-        <NuxtLink to="/booking" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-          預約體驗 →
-        </NuxtLink>
-        <div class="mt-4 text-ink/50 text-sm">
-          第一堂體驗課，50歲以上免費・未滿50歲 $500
-        </div>
+        <a
+          :href="ACCUPASS_URL"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5h14a2 2 0 012 2v3a2 2 0 000 4v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a2 2 0 000-4V7a2 2 0 012-2z" />
+          </svg>
+          立即報名 LKK4
+        </a>
       </div>
     </section>
   </div>

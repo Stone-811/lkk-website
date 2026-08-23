@@ -6,7 +6,7 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: '從台北出發，練健康的中高齡訓練故事吸引 AP 美聯社、BBC、路透社、法新社與 CNA 等全球主要媒體報導。這裡是完整的媒體報導紀錄，以及給媒體朋友的採訪資源。',
+      content: '從台北出發，練健康陪伴中高齡學員重新練出肌力與自信的故事，登上 AP 美聯社、BBC、路透社、法新社與 CNA 等國際媒體。一起看看，這些真實的力量如何被全世界看見。',
     },
   ],
 })
@@ -45,7 +45,7 @@ const apFeatured: Report = {
   outlet: 'Associated Press · 美聯社 · 2026',
   title: 'Taiwanese grandmothers aged 89 and 91 train at the gym to stay healthy',
   excerpt:
-    '美聯社影音報導：89 歲與 91 歲的台灣阿嬤在練健康持續訓練，向全球展示年齡不是健康的限制。這是繼 2024 年 BBC／Reuters／AFP 後，國際媒體對練健康的最新一次關注。',
+    '89 歲與 91 歲的台灣阿嬤，每週固定到練健康報到、持續訓練。美聯社用鏡頭記錄下這一幕，告訴全世界：年齡從來不是健康的限制。',
   image: '/images/news/ap.jpg',
   type: 'video',
   lkk4: false,
@@ -176,7 +176,7 @@ const showMore = computed(() => fMore.value.length > 0)
           被<span class="text-orange">世界看見</span>的台灣故事
         </h1>
         <p class="text-white/60 text-lg font-light leading-relaxed max-w-2xl mx-auto">
-          從台北出發，練健康的故事吸引了全球主要通訊社的目光。這裡是我們被報導的完整紀錄，以及給媒體朋友的所有資源。
+          這裡收錄了一群相信「幾歲開始肌力訓練都不嫌晚」的故事，讓全球看見了台灣中高齡的力量。
         </p>
       </div>
     </section>
@@ -209,16 +209,13 @@ const showMore = computed(() => fMore.value.length > 0)
           <span class="w-5 h-0.5 bg-orange" />
           International Press
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">國際通訊社的目光</h2>
-        <p class="text-ink/60 leading-relaxed mb-10 lg:whitespace-nowrap">
-          2024–2026 年間，全球三大通訊社及新加坡國家電視台相繼來台採訪，讓台灣的中高齡訓練故事傳遍世界。
-        </p>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10">國際媒體報導</h2>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- AP featured (big) -->
           <article
             v-if="apShown"
-            class="md:col-span-2 lg:col-span-3 grid md:grid-cols-2 bg-white rounded-3xl overflow-hidden border border-navy-700/12 shadow-sm"
+            class="sm:col-span-2 lg:col-span-4 grid md:grid-cols-2 bg-white rounded-3xl overflow-hidden border border-navy-700/12 shadow-sm"
           >
             <div class="aspect-video md:aspect-auto md:min-h-[280px] overflow-hidden bg-navy-700/5">
               <img :src="apFeatured.image!" :alt="apFeatured.title" loading="lazy" class="w-full h-full object-cover" />
@@ -270,13 +267,10 @@ const showMore = computed(() => fMore.value.length > 0)
             <div class="p-5 flex flex-col flex-1">
               <div class="flex items-center gap-2 flex-wrap mb-2">
                 <span class="text-xs font-bold text-orange">{{ item.outlet }}</span>
-                <span v-if="item.lang" class="text-[10px] font-medium bg-navy-700/8 text-navy-700 px-1.5 py-0.5 rounded">{{ item.lang }}</span>
-                <span v-if="item.lkk4" class="text-[10px] font-bold bg-orange/12 text-orange px-1.5 py-0.5 rounded">LKK4</span>
               </div>
               <h3 class="font-serif text-lg font-black text-navy-700 mb-2 leading-snug">{{ item.title }}</h3>
               <p class="text-sm text-ink/60 leading-relaxed mb-4 flex-1">{{ item.excerpt }}</p>
-              <div class="flex items-center justify-between mt-auto pt-2">
-                <span class="text-xs text-ink/40">{{ item.date }}</span>
+              <div class="flex items-center justify-end mt-auto pt-2">
                 <a :href="item.link.href" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-orange hover:text-orange-400 transition-colors">{{ item.link.text }}</a>
               </div>
             </div>
@@ -313,8 +307,7 @@ const showMore = computed(() => fMore.value.length > 0)
               </div>
               <h3 class="font-serif text-base font-black text-navy-700 mb-2 leading-snug">{{ item.title }}</h3>
               <p class="text-sm text-ink/60 leading-relaxed mb-4 flex-1">{{ item.excerpt }}</p>
-              <div class="flex items-center justify-between mt-auto pt-2">
-                <span class="text-xs text-ink/40">{{ item.date }}</span>
+              <div class="flex items-center justify-end mt-auto pt-2">
                 <a :href="item.link.href" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-orange hover:text-orange-400 transition-colors">{{ item.link.text }}</a>
               </div>
             </div>
@@ -348,7 +341,6 @@ const showMore = computed(() => fMore.value.length > 0)
             <div class="flex-1 min-w-0">
               <div class="text-sm font-medium text-navy-700 group-hover:text-orange transition-colors leading-snug">{{ item.title }}</div>
             </div>
-            <div class="text-xs text-ink/40 sm:shrink-0 sm:text-right">{{ item.date }}</div>
             <span class="text-orange text-sm font-bold sm:shrink-0 whitespace-nowrap">{{ item.link.text }}</span>
           </a>
         </div>

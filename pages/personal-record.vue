@@ -93,7 +93,7 @@ const getGroupDisplayName = (group: string) => {
         </NuxtLink>
 
         <h1 class="font-serif text-4xl lg:text-5xl font-black text-white tracking-tight mb-4">
-          LKK4 <span class="text-orange">參賽成績查詢</span>
+          聖誕老人硬舉大賽 <span class="text-orange">參賽成績查詢</span>
         </h1>
         <p class="text-white/60 text-lg max-w-xl mx-auto">
           選擇參賽年度並輸入姓名，即可查詢你的參賽成績紀錄
@@ -274,33 +274,6 @@ const getGroupDisplayName = (group: string) => {
     </section>
 
     <!-- CTA -->
-    <section class="py-12 lg:py-16 bg-white">
-      <div class="container mx-auto px-4 text-center">
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-4">
-          還沒參加過 LKK4？
-        </h2>
-        <p class="text-ink/60 mb-6 max-w-md mx-auto">
-          50 歲以上即可報名參賽，先從一堂體驗課開始，讓教練評估你的實力！
-        </p>
-        <div class="flex flex-wrap justify-center gap-4">
-          <NuxtLink
-            to="/lkk4"
-            class="inline-flex items-center gap-2 bg-navy text-white font-bold px-6 py-3 rounded-full hover:bg-navy-800 transition-colors"
-          >
-            了解 LKK4 賽事
-          </NuxtLink>
-          <NuxtLink
-            to="/booking"
-            class="inline-flex items-center gap-2 bg-orange text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-orange/25 hover:bg-orange-400 transition-colors"
-          >
-            預約體驗 →
-          </NuxtLink>
-        </div>
-        <div class="mt-4 text-ink/50 text-sm">
-          第一堂體驗課，50歲以上免費・未滿50歲 $500
-        </div>
-      </div>
-    </section>
   </div>
 </template>
 
