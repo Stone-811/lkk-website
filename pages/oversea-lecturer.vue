@@ -130,14 +130,10 @@ const steps = [
           目前沒有海外授權講師資料
         </div>
         <template v-else>
-          <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
-            <span class="w-5 h-0.5 bg-orange" />
-            授權講師
-          </div>
           <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-8">
             海外<span class="text-orange">授權講師</span>
           </h2>
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
           <article
             v-for="lecturer in overseasLecturers"
             :key="lecturer.id"

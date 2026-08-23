@@ -125,10 +125,6 @@ const courses = [
           目前沒有講師資料
         </div>
         <div v-else>
-          <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
-            <span class="w-5 h-0.5 bg-orange" />
-            授權講師
-          </div>
           <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-8">
             練健康<span class="text-orange">認證講師</span>
           </h2>
