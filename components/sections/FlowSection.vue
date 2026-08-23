@@ -70,7 +70,7 @@ const steps = [
           立即預約 &rarr;
         </NuxtLink>
         <p class="text-white/45 text-sm mt-4">
-          <strong class="text-orange">50歲以上免費</strong>・一般首次體驗 $500・無隱藏費用
+          <strong class="text-orange">第一堂體驗課，50歲以上免費</strong>・未滿50歲 $500・無隱藏費用
         </p>
       </div>
     </div>

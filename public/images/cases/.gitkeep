@@ -1,0 +1,4 @@
+學員見證照片放這裡。
+命名與路徑對應 components/sections/CasesSection.vue 的 cases[].photo，
+例如放入 shirley.jpg 後，把 photo 改成 '/images/cases/shirley.jpg'。
+建議規格：4:3、1200×900、JPG。

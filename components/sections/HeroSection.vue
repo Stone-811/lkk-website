@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const dataStats = [
   { num: '1%', text: ['40歲後每年流失的肌肉量', '不訓練，就是被動老化'] },
-  { num: '50+歲', text: ['以上首次體驗完全免費', '零門檻開始第一堂課'] },
+  { num: '50+歲', text: ['以上第一堂體驗課免費', '零門檻開始第一堂課'] },
   { num: '90+歲', text: ['學員也能做訓練', '年齡不是限制，方法才是'] },
 ]
 
@@ -44,7 +44,7 @@ const pressOutlets = [
             </h1>
 
             <p class="text-white/65 text-lg font-light leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
-              60分鐘專屬體驗，10,000位學員的共同選擇<br />
+              60分鐘專屬體驗，10,000+ 位學員的共同選擇<br />
               安心啟動你的肌力人生
             </p>
 
@@ -67,7 +67,7 @@ const pressOutlets = [
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span><strong class="text-orange">50歲以上完全免費</strong>，一般首次體驗僅需 $500</span>
+              <span><strong class="text-orange">第一堂體驗課，50歲以上免費</strong>・未滿50歲 $500</span>
             </div>
           </div>
 
@@ -75,7 +75,7 @@ const pressOutlets = [
           <aside class="hidden lg:block bg-white/[0.06] backdrop-blur-md border border-white/12 rounded-3xl p-8">
             <!-- Title -->
             <h2 class="text-center text-white font-serif text-2xl font-bold mb-6">
-              用心服務超過 <span class="text-orange">10,000+</span> 學員
+              用心服務 <span class="text-orange">10,000+</span> 位學員
             </h2>
 
             <!-- Main Stats - 2 cards -->
@@ -127,7 +127,7 @@ const pressOutlets = [
           <div
             v-for="stat in dataStats"
             :key="stat.num"
-            class="bg-navy-800 px-2 py-5 sm:p-6 lg:p-8 hover:bg-white/[0.04] transition-colors"
+            class="bg-navy-800 px-2 py-5 sm:p-6 lg:p-8 text-center hover:bg-white/[0.04] transition-colors"
           >
             <div class="font-serif text-2xl sm:text-3xl lg:text-5xl font-black text-orange leading-none mb-2">
               {{ stat.num }}

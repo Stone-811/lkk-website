@@ -9,7 +9,6 @@ export interface GroupClassVariant {
     badge?: string          // 頂端小標籤
     title?: string          // 主標第一行
     titleHighlight?: string // 主標第二行（橘色）
-    subtitle?: string       // 副標說明
     checklist?: string[]    // 「立即擁有」清單
     ctaText?: string        // CTA 按鈕文字
   }
@@ -35,7 +34,6 @@ export const groupClassVariants: Record<string, GroupClassVariant> = {
     hero: {
       title: '亞培 × 練健康',
       titleHighlight: '專屬團體課程',
-      subtitle: '不用預約私人教練，也能有教練在旁指導。填寫報名後，教練將於 1 個工作天內與您聯繫確認梯次。',
       ctaText: '立即填寫專屬報名 →',
     },
     hideSources: true,
@@ -48,7 +46,6 @@ export const groupClassVariants: Record<string, GroupClassVariant> = {
     hero: {
       title: '南山 × 練健康',
       titleHighlight: '專屬團體課程',
-      subtitle: '三種團體課程，從新手基礎到中高齡肌力、再到舉重技術，總有一班適合你。',
       ctaText: '立即填寫專屬報名 →',
     },
     hideSources: true,

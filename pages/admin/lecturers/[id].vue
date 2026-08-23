@@ -27,6 +27,7 @@ interface FormData {
   specialties: string[]
   courses: string[]
   certifications: string[]
+  education: string[]
   sortOrder: number
   isActive: boolean
 }
@@ -49,6 +50,7 @@ const formData = ref<FormData>({
   specialties: [],
   courses: [],
   certifications: [],
+  education: [],
   sortOrder: 0,
   isActive: true,
 })
@@ -57,6 +59,7 @@ const formData = ref<FormData>({
 const specialtyInput = ref('')
 const courseInput = ref('')
 const certInput = ref('')
+const eduInput = ref('')
 const countryInput = ref('')
 
 onMounted(async () => {
@@ -94,6 +97,7 @@ onMounted(async () => {
         specialties: data.specialties || [],
         courses: data.courses || [],
         certifications: data.certifications || [],
+        education: data.education || [],
         sortOrder: data.sortOrder || 0,
         isActive: data.isActive ?? true,
       }
@@ -106,13 +110,13 @@ onMounted(async () => {
   }
 })
 
-function addToArray(field: 'specialties' | 'courses' | 'certifications' | 'countries', value: string) {
+function addToArray(field: 'specialties' | 'courses' | 'certifications' | 'countries' | 'education', value: string) {
   if (value.trim()) {
     formData.value[field].push(value.trim())
   }
 }
 
-function removeFromArray(field: 'specialties' | 'courses' | 'certifications' | 'countries', index: number) {
+function removeFromArray(field: 'specialties' | 'courses' | 'certifications' | 'countries' | 'education', index: number) {
   formData.value[field].splice(index, 1)
 }
 
@@ -351,7 +355,7 @@ async function handlePhotoUpload(event: Event) {
         <h2 class="font-bold text-lg border-b pb-2">照片</h2>
         <div class="flex items-center gap-4">
           <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-            <img v-if="formData.photo" :src="formData.photo" :alt="formData.name" class="w-full h-full object-cover" />
+            <img v-if="formData.photo" :src="formData.photo" :alt="formData.name" class="w-full h-full object-cover object-top" />
             <svg v-else class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
@@ -445,6 +449,36 @@ async function handlePhotoUpload(event: Event) {
       </div>
 
       <!-- Certifications -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+        <h2 class="font-bold text-lg border-b pb-2">學歷背景</h2>
+        <div class="flex gap-2">
+          <input
+            type="text"
+            v-model="eduInput"
+            class="flex-1 border border-gray-300 rounded-lg px-3 py-2"
+            placeholder="輸入學歷後按 Enter"
+            @keydown.enter.prevent="addToArray('education', eduInput); eduInput = ''"
+          />
+          <button
+            type="button"
+            @click="addToArray('education', eduInput); eduInput = ''"
+            class="bg-gray-100 text-gray-700 font-medium px-4 py-2 rounded-lg hover:bg-gray-200"
+          >
+            新增
+          </button>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span
+            v-for="(e, i) in formData.education"
+            :key="i"
+            class="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+          >
+            {{ e }}
+            <button type="button" @click="removeFromArray('education', i)" class="hover:text-gray-900">×</button>
+          </span>
+        </div>
+      </div>
+
       <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 class="font-bold text-lg border-b pb-2">專業認證</h2>
         <div class="flex gap-2">

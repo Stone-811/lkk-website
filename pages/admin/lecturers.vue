@@ -443,7 +443,7 @@ const filteredLecturers = computed(() => {
                 v-if="lecturer.photo"
                 :src="lecturer.photo"
                 :alt="lecturer.name"
-                class="w-full h-full object-cover"
+                class="w-full h-full object-cover object-top"
               />
               <div v-else class="w-full h-full bg-navy flex items-center justify-center text-white font-bold text-xl">
                 {{ lecturer.name?.charAt(0) }}
@@ -631,7 +631,7 @@ const filteredLecturers = computed(() => {
             <div class="flex items-start gap-4">
               <!-- Preview -->
               <div v-if="formData.photo" class="relative group">
-                <img :src="formData.photo" alt="講師照片" class="w-24 h-24 rounded-lg object-cover border" />
+                <img :src="formData.photo" alt="講師照片" class="w-24 h-24 rounded-lg object-cover object-top border" />
                 <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity flex items-center justify-center">
                   <button type="button" @click="removePhoto" class="text-white text-sm hover:underline">移除</button>
                 </div>

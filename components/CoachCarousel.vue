@@ -6,6 +6,7 @@ interface Coach {
   name: string
   roleTitle: string
   photo?: string
+  description?: string
   education?: string[]
   experiences?: string[]
   certifications?: string[]
@@ -14,6 +15,8 @@ interface Coach {
 
 const props = defineProps<{
   coaches: Coach[]
+  /** 所屬分店：帶進彈窗顯示分店名，並讓「預約體驗」CTA 自動帶分店參數 */
+  store?: { name?: string; slug?: string } | null
 }>()
 
 const scrollRef = ref<HTMLElement | null>(null)
@@ -31,6 +34,17 @@ const autoScroll = ref(false) // 啟用後會複製一組卡片做無縫循環
 let rafId: number | null = null
 let paused = false
 const SPEED = 0.6 // px / frame（約 36px/s，順順地滑）
+
+// 教練詳情彈窗（與 /team-intro/coaches 共用 CoachDetailModal）
+const selectedCoach = ref<(Coach & { store?: { name?: string; slug?: string } | null }) | null>(null)
+function openCoach(coach: Coach) {
+  selectedCoach.value = { ...coach, store: props.store ?? null }
+  paused = true          // 彈窗開著時停住自動輪播，關掉才繼續
+}
+function closeCoach() {
+  selectedCoach.value = null
+  paused = false
+}
 
 // Update active index on scroll（複製組會超出，用 mod 對回第一組）
 const handleScroll = () => {
@@ -134,10 +148,11 @@ onUnmounted(() => {
         v-for="coach in coaches"
         :key="`a-${coach.id}`"
         :coach="coach"
+        @select="openCoach(coach)"
       />
       <NuxtLink
         to="/team-intro/coaches"
-        class="flex-shrink-0 w-[200px] sm:w-[240px] bg-white/50 border-2 border-dashed border-navy/20 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-orange/50 hover:bg-orange/5 transition-colors min-h-[300px]"
+        class="flex-shrink-0 w-[200px] sm:w-[240px] self-stretch bg-white/50 border-2 border-dashed border-navy/20 rounded-xl flex flex-col items-center justify-center gap-3 hover:border-orange/50 hover:bg-orange/5 transition-colors"
       >
         <div class="w-12 h-12 rounded-full bg-orange/15 flex items-center justify-center">
           <svg class="w-6 h-6 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,12 +169,13 @@ onUnmounted(() => {
           :key="`b-${coach.id}`"
           :coach="coach"
           aria-hidden="true"
+          @select="openCoach(coach)"
         />
         <NuxtLink
           to="/team-intro/coaches"
           aria-hidden="true"
           tabindex="-1"
-          class="flex-shrink-0 w-[200px] sm:w-[240px] bg-white/50 border-2 border-dashed border-navy/20 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-orange/50 hover:bg-orange/5 transition-colors min-h-[300px]"
+          class="flex-shrink-0 w-[200px] sm:w-[240px] self-stretch bg-white/50 border-2 border-dashed border-navy/20 rounded-xl flex flex-col items-center justify-center gap-3 hover:border-orange/50 hover:bg-orange/5 transition-colors"
         >
           <div class="w-12 h-12 rounded-full bg-orange/15 flex items-center justify-center">
             <svg class="w-6 h-6 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,6 +242,8 @@ onUnmounted(() => {
         {{ activePage + 1 }}/{{ totalPages }}
       </span>
     </div>
+
+    <CoachDetailModal :coach="selectedCoach" @close="closeCoach" />
   </div>
 </template>
 

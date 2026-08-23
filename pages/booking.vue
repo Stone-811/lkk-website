@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, watch } from 'vue'
 import { getBookingVariant } from '~/config/bookingVariants'
+import { relationshipOptions } from '~/config/formOptions'
 
 useHead({
   title: '預約體驗 | 練健康',
   meta: [
-    { name: 'description', content: '預約練健康首次體驗課程。50 歲以上完全免費，一般首次體驗 $500。由專業教練帶領，安全有效。' }
+    { name: 'description', content: '預約練健康首次體驗課程。第一堂體驗課，50歲以上免費、未滿50歲 $500。由專業教練帶領，安全有效。' }
   ]
 })
 
@@ -35,11 +36,11 @@ const pricingCopy = computed(() => variant.value.allAgesFree
   : {
       badge: '50歲以下，體驗課$500元',
       title: '50 歲以上',
-      titleHighlight: '體驗課完全免費',
-      note: '50歲以上免費・一般首次 $500・無隱藏費用・不強迫買課',
-      faqFee: '50歲以上免費體驗；未滿50歲酌收 $500 檢測與體驗費用。若為一對二且皆未滿50歲，兩位皆需收取 $500。',
+      titleHighlight: '第一堂體驗課免費',
+      note: '第一堂體驗課，50歲以上免費・未滿50歲 $500・無隱藏費用・不強迫買課',
+      faqFee: '第一堂體驗課 50歲以上免費；未滿50歲酌收 $500 檢測與體驗費用。若為一對二且皆未滿50歲，兩位皆需收取 $500。',
       faqPay: '體驗結束後至櫃台臨櫃繳費即可。',
-      cardBadges: ['50歲以上 免費', '一般首次 $500'],
+      cardBadges: ['50歲以上 免費', '未滿50歲 $500'],
     })
 
 // FAQ 分類資料（費用/付款兩題讀 pricingCopy，其餘固定）
@@ -77,15 +78,15 @@ const toggleFaq = (id: string) => {
 }
 
 const cases = [
-  { name: '林阿嬤', info: '70歲・膝關節退化', quote: '以前膝蓋痛到走不了路，現在可以自己爬山、帶孫子去公園。' },
-  { name: '王先生', info: '62歲・腦中風後', quote: '以為這輩子就這樣了，沒想到可以自己走路去買東西。' },
-  { name: '陳小姐', info: '55歲・乳癌術後', quote: '醫生說我的恢復狀況比預期好很多。' },
+  { name: '雪莉', info: '72歲・氣喘與心臟病', quote: '不讓先天性氣喘與心臟病影響我的生活，我現在可以自信地站上聖誕老人硬舉大賽的舞台！' },
+  { name: '黃阿公', info: '85歲・訓練三年多', quote: '教練都會針對我的狀況隨時調整教學課表，連我的老婆都開始在這裡運動！' },
+  { name: '保羅', info: '69歲・原發性顫抖症', quote: '當初手抖到連倒水、吃飯都有問題，在開始重訓後，不僅藥量減半，我還能輕鬆抱起孫子玩耍！' },
 ]
 
 const steps = computed(() => [
   { title: '填寫預約表單', desc: '約 1~2 分鐘完成，提供必要資訊' },
   { title: '教練主動電話聯繫', desc: '2~3天內，我們會打電話給你安排時間' },
-  { title: '到店體驗課（60–75 分鐘）', desc: '身體評估 + 基礎動作訓練 + 教練諮詢', badges: pricingCopy.value.cardBadges },
+  { title: '到店體驗課（60 分鐘）', desc: '身體評估 + 基礎動作訓練 + 教練諮詢', badges: pricingCopy.value.cardBadges },
   { title: '客製化訓練建議', desc: '教練提供最適合你的訓練規劃' },
 ])
 
@@ -119,14 +120,6 @@ const sourceOptions = [
 ]
 
 // 與學員關係選項
-const relationshipOptions = [
-  '配偶',
-  '子女',
-  '父母',
-  '兄弟姊妹',
-  '朋友',
-  '其他',
-]
 
 // 運動目的選項（可複選）
 const exerciseGoalOptions = [
@@ -587,7 +580,7 @@ const handleSubmit = async () => {
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        50歲以上體驗免費
+                        第一堂體驗課 50歲以上免費
                       </p>
                       <p v-if="errors.birthDate" class="text-red-500 text-sm mt-1">{{ errors.birthDate }}</p>
                     </div>
@@ -904,8 +897,8 @@ const handleSubmit = async () => {
                       :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange focus:border-orange', errors.paymentMethod ? 'border-red-500' : 'border-cream-200']"
                     >
                       <option value="">請選擇</option>
-                      <option v-if="isFreeEligible" value="50歲以上免費">50 歲以上免費（首次體驗完全免費）</option>
-                      <option value="臨櫃付款">臨櫃付款（首次體驗 $500）</option>
+                      <option v-if="isFreeEligible" value="50歲以上免費">50 歲以上（第一堂免費）</option>
+                      <option value="臨櫃付款">臨櫃付款（第一堂 $500）</option>
                     </select>
                     <p v-if="errors.paymentMethod" class="text-red-500 text-sm mt-2">{{ errors.paymentMethod }}</p>
                   </div>
@@ -1058,13 +1051,13 @@ const handleSubmit = async () => {
             <div class="bg-white rounded-[20px] p-6 shadow-sm">
               <div class="text-[0.82rem] font-bold tracking-widest uppercase text-navy-700/50 mb-4">他們也是這樣開始的</div>
               <div class="flex flex-col gap-3">
-                <div v-for="c in cases" :key="c.name" class="flex gap-3 items-center">
+                <div v-for="c in cases" :key="c.name" class="flex gap-3 items-start">
                   <div class="w-10 h-10 rounded-full bg-orange/20 flex items-center justify-center text-orange font-bold text-sm flex-shrink-0">
                     {{ c.name.charAt(0) }}
                   </div>
                   <div class="flex-1 min-w-0">
                     <div class="text-[0.88rem] font-semibold text-navy-800">{{ c.name }}・{{ c.info }}</div>
-                    <div class="text-[0.88rem] text-ink/60 italic line-clamp-2">「{{ c.quote }}」</div>
+                    <div class="text-[0.88rem] text-ink/60 italic">「{{ c.quote }}」</div>
                   </div>
                 </div>
               </div>

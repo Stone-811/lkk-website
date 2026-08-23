@@ -100,7 +100,7 @@ const steps = [
             to="/lkk-lecturer"
             class="px-4 py-2 rounded-full whitespace-nowrap font-medium bg-cream-200 text-ink hover:bg-cream-300 transition-colors"
           >
-            練健康授權講師
+            練健康認證講師
           </NuxtLink>
           <NuxtLink
             to="/co-lecturer"
@@ -130,18 +130,16 @@ const steps = [
           目前沒有海外授權講師資料
         </div>
         <template v-else>
-          <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
-            <span class="w-5 h-0.5 bg-orange" />
-            授權講師
-          </div>
           <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-8">
             海外<span class="text-orange">授權講師</span>
           </h2>
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <!-- auto-fit + justify-center：人數少於欄數時卡片會置中，卡片寬度上限 195px 與練健康認證講師頁一致 -->
+          <!-- 每列三位講師；flex + justify-center 讓最後一列不足三位時也會置中 -->
+          <div class="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto">
           <article
             v-for="lecturer in overseasLecturers"
             :key="lecturer.id"
-            class="bg-white rounded-2xl overflow-hidden shadow-lg border border-navy/10 hover:-translate-y-1 transition-transform"
+            class="bg-white rounded-2xl overflow-hidden shadow-lg border border-navy/10 hover:-translate-y-1 transition-transform w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
           >
             <div class="aspect-square bg-gradient-to-br from-navy to-navy/80 relative">
               <img
@@ -164,17 +162,28 @@ const steps = [
 
               <p v-if="lecturer.description" class="text-ink/60 text-sm leading-relaxed mb-3">{{ lecturer.description }}</p>
 
-              <div v-if="lecturer.specialties?.length" class="flex flex-wrap gap-1.5 mb-3">
-                <span
+              <div v-if="lecturer.specialties?.length" class="mb-3">
+                <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">專長領域</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <span
                   v-for="spec in lecturer.specialties"
                   :key="spec"
                   class="text-xs font-medium text-white bg-orange px-2.5 py-1 rounded-full"
-                >
+                  >
                   {{ spec }}
-                </span>
+                  </span>
+                </div>
+              </div>
+
+              <div v-if="lecturer.education?.length" class="pt-3 border-t border-navy/10 mb-3">
+                <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">學歷背景</div>
+                <ul class="space-y-0.5">
+                  <li v-for="edu in lecturer.education" :key="edu" class="text-xs text-ink/60 leading-relaxed">{{ edu }}</li>
+                </ul>
               </div>
 
               <div v-if="lecturer.certifications?.length" class="pt-3 border-t border-navy/10">
+                <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">專業證照</div>
                 <div class="flex flex-wrap gap-1.5">
                   <span
                     v-for="cert in lecturer.certifications"
@@ -242,7 +251,7 @@ const steps = [
           to="/cooperation"
           class="inline-flex items-center gap-2 bg-white text-orange font-bold px-8 py-3.5 rounded-full shadow-lg hover:-translate-y-0.5 transition-transform"
         >
-          申請授權 →
+          與我們聯繫 →
         </NuxtLink>
       </div>
     </section>

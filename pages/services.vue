@@ -2,7 +2,7 @@
 useHead({
   title: '服務介紹 | 練健康',
   meta: [
-    { name: 'description', content: '練健康提供一對一訓練、團體課程、線上課程等多元服務。50 歲以上首次體驗完全免費，一般首次體驗 $500。' }
+    { name: 'description', content: '練健康提供一對一訓練、團體課程、線上課程等多元服務。第一堂體驗課，50歲以上免費、未滿50歲 $500。' }
   ]
 })
 
@@ -45,27 +45,27 @@ const groupCourses = [
     title: '基礎重量訓練班',
     target: '適合初學者',
     description: '從零開始學習正確的重量訓練動作模式，包含深蹲、硬舉、推拉等基本動作，建立安全且有效的訓練基礎。',
-    people: '小班制 4-8 人',
-    duration: '每堂 50 分鐘',
-    note: '一次購買四堂',
+    people: '小班制 3-6 人',
+    duration: '每堂 60 分鐘',
+    note: '一期4堂',
   },
   {
     id: 'strength',
     title: '肌力團練班',
     target: '有基礎者適合',
     description: '針對已有基礎動作能力的學員，以提升肌力和體能為目標，訓練強度較高，挑戰自我極限。',
-    people: '小班制 4-8 人',
-    duration: '每堂 50 分鐘',
-    note: '一次購買四堂',
+    people: '小班制 3-6 人',
+    duration: '每堂 60 分鐘',
+    note: '一期4堂',
   },
   {
     id: 'senior',
     title: '樂齡體適能訓練班',
     target: '中高齡專屬',
     description: '專為 50 歲以上設計，低衝擊、安全優先，兼顧肌力、平衡感與柔軟度，讓訓練融入日常生活。',
-    people: '小班制 4-8 人',
-    duration: '每堂 50 分鐘',
-    note: '一次購買四堂',
+    people: '小班制 3-6 人',
+    duration: '每堂 60 分鐘',
+    note: '一期4堂',
   },
 ]
 
@@ -81,12 +81,26 @@ const onlineFeatures = [
 const comparisonData = [
   { item: '個人化程度', personal: '★★★', group: '★★', online: '★' },
   { item: '教練即時指導', personal: '✓', group: '✓', online: '—' },
-  { item: '小班人數', personal: '1 人（純個人）', group: '4-8 人', online: '自主學習' },
+  { item: '小班人數', personal: '1 人（純個人）', group: '3-6 人', online: '自主學習' },
   { item: '適合特殊族群', personal: '✓ 最適合', group: '部分課程', online: '—' },
   { item: '時間彈性', personal: '依約定排課', group: '依固定時段', online: '✓ 完全彈性' },
   { item: '需要到分店', personal: '✓', group: '✓', online: '不需要' },
-  { item: '開始方式', personal: '預約體驗課', group: '預約體驗課', online: '線上報名' },
+  // 開始方式：各自連到對應的報名入口（to 有值即渲染成連結，http 開頭自動開新分頁）
+  { item: '開始方式', personal: '預約體驗課', personalTo: '/booking', group: '報名團課', groupTo: '/group-booking', online: '線上報名', onlineTo: 'https://sat.cool/course/97' },
 ]
+
+// 外部連結（http 開頭）另開分頁；站內連結維持同分頁
+function isExternal(to: string) {
+  return /^https?:\/\//.test(to)
+}
+
+// 比較表儲存格文字樣式（★ 橘、✓ 橘粗體、— 淡出、其餘一般）
+function cellClass(v: string) {
+  if (v.includes('★')) return 'text-orange text-sm'
+  if (v.includes('✓')) return 'text-orange font-bold text-sm'
+  if (v === '—') return 'text-white/20 text-sm'
+  return 'text-white/70 text-sm'
+}
 
 const tabs = [
   { id: 'personal', label: '一對一訓練' },
@@ -146,7 +160,7 @@ onMounted(() => {
 const personalFeatures = [
   '物理治療師或呼吸治療師背景教練指導',
   '訓練前進行身體評估，建立安全個人課表',
-  '每堂課 50 分鐘，動作示範與即時糾正',
+  '每堂課 60 分鐘，動作示範與即時糾正',
   '定期追蹤進度，課表隨狀況調整',
   '必要時提供營養與生活習慣建議',
   '彈性排課，配合你的時間',
@@ -165,7 +179,7 @@ const personalFeatures = [
           練健康提供三種上課形式，不管你是第一次接觸重訓、希望有同伴一起練，還是想在家自主訓練，都有對應的選擇。
         </p>
         <p class="text-orange text-lg md:text-xl font-semibold mb-10">
-          50 歲以上完全免費 · 一般首次體驗 $500
+          第一堂體驗課，50歲以上免費 · 未滿50歲 $500
         </p>
 
         <!-- 快速導航按鈕 -->
@@ -193,7 +207,7 @@ const personalFeatures = [
               </svg>
             </div>
             <h3 class="font-bold text-lg mb-1">團體課程</h3>
-            <p class="text-cream-300 text-sm">小班制 · 4-8 人</p>
+            <p class="text-cream-300 text-sm">小班制 · 3-6 人</p>
           </button>
 
           <button
@@ -266,7 +280,7 @@ const personalFeatures = [
               由專業教練全程陪伴，根據你的身體狀況、健康目標與生活習慣，量身打造個人訓練計畫。一週一次，持續進步。
             </p>
             <p class="text-orange font-semibold mb-6">
-              首次體驗 $500 · 50歲以上免費
+              第一堂體驗課，50歲以上免費 · 未滿50歲 $500
             </p>
 
             <!-- 特色列表 -->
@@ -352,7 +366,7 @@ const personalFeatures = [
             團體課程
           </h2>
           <p class="text-ink-600 max-w-2xl mx-auto leading-relaxed">
-            一次買四堂，與志同道合的夥伴一起訓練，互相激勵。小班制（4-8 人）確保教練能顧到每個人的動作品質。
+            一期4堂，與志同道合的夥伴一起訓練，互相激勵。小班制（3-6 人）確保教練能顧到每個人的動作品質。
           </p>
         </div>
 
@@ -551,34 +565,31 @@ const personalFeatures = [
                 >
                   <td class="py-4 px-4 text-white/70 text-left text-sm">{{ row.item }}</td>
                   <td class="py-4 px-4 text-center bg-orange/[0.08]">
-                    <span :class="[
-                      row.personal.includes('★') ? 'text-orange' :
-                      row.personal === '✓' || row.personal.includes('✓') ? 'text-orange font-bold' :
-                      row.personal === '—' ? 'text-white/20' : 'text-white/70',
-                      'text-sm'
-                    ]">
-                      {{ row.personal }}
-                    </span>
+                    <NuxtLink
+                      v-if="row.personalTo"
+                      :to="row.personalTo"
+                      :target="isExternal(row.personalTo) ? '_blank' : undefined"
+                      :class="[cellClass(row.personal), 'underline underline-offset-4 decoration-orange/50 hover:text-orange-300 transition-colors']"
+                    >{{ row.personal }}</NuxtLink>
+                    <span v-else :class="cellClass(row.personal)">{{ row.personal }}</span>
                   </td>
                   <td class="py-4 px-4 text-center">
-                    <span :class="[
-                      row.group.includes('★') ? 'text-orange' :
-                      row.group === '✓' || row.group.includes('✓') ? 'text-orange font-bold' :
-                      row.group === '—' ? 'text-white/20' : 'text-white/70',
-                      'text-sm'
-                    ]">
-                      {{ row.group }}
-                    </span>
+                    <NuxtLink
+                      v-if="row.groupTo"
+                      :to="row.groupTo"
+                      :target="isExternal(row.groupTo) ? '_blank' : undefined"
+                      :class="[cellClass(row.group), 'underline underline-offset-4 decoration-orange/50 hover:text-orange-300 transition-colors']"
+                    >{{ row.group }}</NuxtLink>
+                    <span v-else :class="cellClass(row.group)">{{ row.group }}</span>
                   </td>
                   <td class="py-4 px-4 text-center">
-                    <span :class="[
-                      row.online.includes('★') ? 'text-orange' :
-                      row.online === '✓' || row.online.includes('✓') ? 'text-orange font-bold' :
-                      row.online === '—' ? 'text-white/20' : 'text-white/70',
-                      'text-sm'
-                    ]">
-                      {{ row.online }}
-                    </span>
+                    <NuxtLink
+                      v-if="row.onlineTo"
+                      :to="row.onlineTo"
+                      :target="isExternal(row.onlineTo) ? '_blank' : undefined"
+                      :class="[cellClass(row.online), 'underline underline-offset-4 decoration-orange/50 hover:text-orange-300 transition-colors']"
+                    >{{ row.online }}</NuxtLink>
+                    <span v-else :class="cellClass(row.online)">{{ row.online }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -586,20 +597,6 @@ const personalFeatures = [
           </div>
         </div>
 
-        <div class="text-center mt-10">
-          <NuxtLink
-            to="/booking"
-            class="inline-flex items-center gap-2 bg-orange hover:bg-orange-400 text-white font-bold px-10 py-4 rounded-full transition-colors text-lg"
-          >
-            立即預約體驗課
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </NuxtLink>
-          <p class="text-cream-200 text-sm mt-6">
-            50歲以上完全免費 · 一般首次體驗 $500 · 無隱藏費用
-          </p>
-        </div>
       </div>
     </section>
 

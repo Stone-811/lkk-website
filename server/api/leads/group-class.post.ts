@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
       isFillerSelf,
       fillerName,
       relationship,
+      contactPhone,
       course,
       store,
       preferredTime,
@@ -43,22 +44,17 @@ export default defineEventHandler(async (event) => {
       setResponseStatus(event, 400)
       return { success: false, error: 'Email 格式不正確' }
     }
-    if (isFillerSelf === '否' && (!fillerName || !relationship)) {
+    if (isFillerSelf === '否' && (!fillerName || !relationship || !contactPhone)) {
       setResponseStatus(event, 400)
-      return { success: false, error: '請填寫報名者姓名與學員關係' }
+      return { success: false, error: '請填寫與學員的關係、報名者姓名與方便聯繫的電話' }
     }
 
     const sourceArr = Array.isArray(source) ? source : source ? [source] : []
     // store 為完整字串（如「南京店｜台北市...」），取「｜」前的店名供後台/通知信顯示
     const storeName = String(store).split('｜')[0].trim()
 
-    const { getDb, getTimestamp } = await import('~/server/utils/firebase')
-    const db = await getDb()
-    const Timestamp = await getTimestamp()
-
-    const now = Timestamp.now()
-    const leadRef = db.collection('leads').doc()
-    await leadRef.set({
+    const { createLead } = await import('~/server/utils/leads')
+    const leadId = await createLead({
       type: 'group_class',
       name,
       phone: normalizedPhone,
@@ -73,6 +69,7 @@ export default defineEventHandler(async (event) => {
         isFillerSelf: isFillerSelf || null,
         fillerName: isFillerSelf === '否' ? fillerName || null : null,
         relationship: isFillerSelf === '否' ? relationship || null : null,
+        contactPhone: isFillerSelf === '否' ? String(contactPhone || '').replace(/[\s-]/g, '') || null : null,
         course: course || null,
         store: store || null,
         storeName: storeName || null,
@@ -87,13 +84,9 @@ export default defineEventHandler(async (event) => {
         company: body.company || null,
         leadSource: body.leadSource || null,
       },
-      status: 'new',
-      internalNote: null,
-      createdAt: now,
-      updatedAt: now,
     })
 
-    console.log('New group_class lead:', { id: leadRef.id, name, phone: normalizedPhone, course, storeName })
+    console.log('New group_class lead:', { id: leadId, name, phone: normalizedPhone, course, storeName })
 
     // 郵件通知（非阻塞）：管理者通知信 ＋ 填單人確認信
     try {
@@ -115,6 +108,7 @@ export default defineEventHandler(async (event) => {
         isFillerSelf,
         fillerName,
         relationship,
+        contactPhone,
         sources: sourceArr,
         company: body.company,
         leadSource: body.leadSource,
@@ -131,6 +125,7 @@ export default defineEventHandler(async (event) => {
           isFillerSelf,
           fillerName,
           relationship,
+          contactPhone,
           courseName: course,
           coursePrice: COURSE_PRICES[String(course)],
           storeName,

@@ -281,24 +281,6 @@ export function validatePasswordStrength(pw: string): string | null {
   return null;
 }
 
-// Require authentication middleware helper
-export async function requireAuth(
-  event: H3Event,
-  allowedRoles?: UserSession['role'][]
-): Promise<{ authorized: boolean; user?: UserSession; redirect?: string }> {
-  const session = await getSession(event);
-
-  if (!session) {
-    return { authorized: false, redirect: '/admin/login' };
-  }
-
-  if (allowedRoles && !allowedRoles.includes(session.role)) {
-    return { authorized: false, redirect: '/admin/dashboard' };
-  }
-
-  return { authorized: true, user: session };
-}
-
 // Require a session with one of the allowedRoles, else throw 401/403.
 // For use at the top of admin API handlers (defense-in-depth alongside the
 // server middleware in server/middleware/admin-api-guard.ts).

@@ -21,6 +21,8 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - 發 prod＝把 dev 改動帶到 `prod` 分支。**⚠️ `apphosting.yaml` 各分支值不同（dev=`lkkdev`/`l-kk.tw`、prod=`lkkprod`/`lkkwellness.com`），絕不能互蓋**。**最穩＝檔案級帶入（2026-08-11 實測）**：`git checkout -B prod origin/prod` → `git checkout origin/dev -- <只要的檔案…>`（只帶目標檔、**不含 apphosting.yaml**）→ commit 前 `git status --short` 確認 staged 沒有 apphosting.yaml、`grep FIREBASE_PROJECT_ID apphosting.yaml` 仍 `lkkprod` → commit（不加 `-a`，避免帶進工作區雜項如 CLAUDE.md）→ `git push origin prod` → 切回 `git checkout dev`。（整支 `git merge dev` 亦可，但要事後 `git diff origin/prod -- apphosting.yaml` 確認為空；檔案級更不易出錯。）部署：push 分支 → 自動 build；或 `apphosting:rollouts:create <backend> --project <proj> --git-branch <branch> --force`。
 - **prod 現況（2026-07-31）**：已 merge dev→prod、對外 `lkkwellness.com` ＝最新版（含 LKK4 全齡改版等）；**Email 已修好**（有效 lkkwellness App Password，dev/prod 都通）；**prod Auth 尚未開 Google 登入** → 後台用緊急密碼 `lkkwellness@gmail.com`/`lkkwellness-prod`。網域/SMTP/UTM 細節見記憶 [[lkk-web-deploy]]、[[lkk-web-gotchas]]。
 - **hosted.app 已 301 轉到 lkkwellness.com**（`server/middleware/redirect-canonical.ts`，2026-08-03）：正式站醜網址形同停用、SEO 合併。⚠️ **在 App Hosting 上「依網域判斷」要讀 `x-forwarded-host`，不是 `host`**——前面 Envoy CDN 把 `host` 改寫成內部 `…run.app`，原始請求網域落在 `x-forwarded-host`（第一版比對 host 完全沒生效就是踩這個）。middleware 只比對 prod hosted.app 的 xfHost 才轉，故 lkkwellness.com 不迴圈、dev 不受影響。App Hosting 預設 hosted.app 網址無法真正關閉，只能靠轉址。
+- **prod 發佈 2026-08-20**：`/about`、`/news`、`/group-booking` 三個新頁＋團體課系統＋導覽改名（「經營團隊」→「關於練健康」、新增「媒體報導」、「異業結盟」→「合作洽談」）已上正式站，檔案級帶入 23 檔、`apphosting.yaml` 未動（複驗 `lkkprod`/`lkkwellness.com` 原值）。⚠️ **判斷「什麼還沒上 prod」一律用 `git diff --stat origin/prod origin/dev`（檔案級），別看 `git log origin/prod..origin/dev`**——prod 是檔案級帶入、commit 不同但內容可能已同步，commit log 會嚴重高估未上線的量。⚠️ **`/team-intro` 已 301 永久導向 `/about`**（`pages/team-intro/index.vue` 只剩 `navigateTo('/about',{redirectCode:301})`）；`/team-intro/coaches` 子頁不受影響。301 是不可逆的 SEO 訊號（權重併給 `/about`、Google 會逐步從索引移除舊網址），若日後要把「經營團隊」拆回獨立頁會吃虧，要保留彈性就改 `redirectCode: 302`。
+- **⭐ 讀寫 lkkdev/lkkprod 的 Firestore（2026-08-22 打通）**：本機 `.env` 的 `FIREBASE_PROJECT_ID` 是 **`lkk-website-dev`＝另一個舊專案**，不是 dev 站（`lkkdev`）也不是正式站（`lkkprod`）——**用 .env 讀到的資料不代表線上**（曾因此把 fallback 店名寫成舊專案的「新店七張店」，線上其實是「七張店」）。正解：firebase-tools 已登入 tingo8320@gmail.com，把 `~/.config/configstore/firebase-tools.json` 的 `tokens.refresh_token` ＋ firebase-tools `lib/api.js` 裡的公開 clientId/clientSecret，組成 `{client_id,client_secret,refresh_token,type:'authorized_user'}` 存成 adc.json（權限 600、放 scratchpad、不進版控），再 `GOOGLE_APPLICATION_CREDENTIALS=adc.json node script.cjs`（firebase-admin 用 `applicationDefault()`）。⚠️ 取 secret 的正規表示式要抓 `envOverride("<ENV名>", "<值>")` 的**第二個**參數，抓錯會 `invalid_client`；⚠️ **腳本要放專案目錄執行**（scratchpad 無 node_modules）。firebase-tools 本體在 `~/.npm-cache-new/_npx/*/node_modules/firebase-tools`。
 - **gcloud 未安裝**，一律 `npx firebase-tools`（已登入 tingo8320@gmail.com，可存取 lkkdev/lkkprod）。部署 repo（唯一真實來源）：`/Users/stone/4.柚智源/練健康/3. 形象網站翻新`。舊 `Downloads/lkk-new-web` 雙胞胎已棄用。
 - 新環境 setup 血淚點：Firestore 用 `firestore:databases:create --location asia-east1`（別靠 deploy 自動建→會在 nam5）；secrets set 後**務必 `grantaccess --backend`**（否則 Misconfigured Secret）；啟用 Storage；Auth 啟用 Google provider+加該 hosted.app 授權網域。詳見記憶 [[lkk-web-deploy]]。
 
@@ -82,13 +84,55 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - 公司選項＝`groupClassVariants` 的 companies ∪ 名單值；來源選項＝`SOURCE_CHANNELS` 常數 ∪ 名單值。**與 leads.vue 同樣刻意不列 UTM 媒介**（勿加回）。
 - 走的是共用 `/api/admin/leads?type=group_class` 與 `/api/admin/leads/{id}` PATCH，沒有專屬 API。
 
+## 共用層／重構現況（2026-08-21 F+D+B+C+A+E 完成，動這些區塊前先讀）
+
+- **CSV 匯出**＝`composables/useCsvExport.ts`（BOM＋引號跳脫＋null 出空字串）。leads/cooperation/group-classes 三頁共用，各頁只留欄位定義。**勿再手寫組 CSV**。
+- **表單寫入**＝`server/utils/leads.ts` 的 `createLead()`。四支 `/api/leads/*.post.ts` 共用；欄位值由呼叫端先正規化好**原樣傳入**（函式內不 || null）。驗證與寄信仍在各 API。
+- **管理者通知信**＝`email.ts` 的純函式 `buildLeadNotificationEmail()`＋`notifRow(label,value,{wide/top/pre/tone:'warn'|'danger'/last})`。**加新表單類型＝加欄位列定義，勿手寫 <tr> HTML**。重構時用快照法驗證（暫時 debug endpoint 吐 fixture HTML 比對逐字元，驗完刪）。
+- **後台名單頁**＝`composables/useAdminLeads.ts`（載入/搜尋/日期/宣告式篩選 `LeadFilterDef`/chips/排序/彈窗/狀態/備註；含 `SOURCE_CHANNELS`、`LEAD_STATUS_FILTER_OPTIONS` 常數）＋`components/admin/` 三元件（LeadFilterBar／LeadDetailModal（body 用 slot）／SortableTh）。leads.vue（717→441）與 group-classes.vue（688→409）已遷移，各頁只留 fetch 映射、篩選定義、表格欄位、詳情 slot、CSV 欄位。⚠️ **公司篩選的選項底要傳各自的變體設定**（leads=bookingVariants、團課=groupClassVariants，兩份 key 同名、寫錯今天看不出來）。**cooperation.vue 未遷**（結構不同：雙 type 合併＋utm 提頂層＋無日期/排序，遷移＝功能升級，需業主確認後才做）。
+- **前台分店基本資料**＝`composables/usePublicStores.ts`（店名/電話/地址/slug 讀 `/api/public/stores`，`server:false`＋fallback 與 Firestore 現值一致、顯示順序南京→松江→西門→七張）。Footer 與首頁 LocationsSection 已用；`pages/locations/index.vue` 本來就有自己的 API 驅動＋fallback。**booking/group-booking 表單選項刻意不用**（避開變體 lockStore 時序）；營業時間/交通仍程式碼維護。⚠️ **業主在後台改分店電話/地址現在會真的全站生效**；七張店自此顯示 Firestore 正式名「新店七張店」（原首頁/Footer 寫死「七張店」與列表頁不一致）。
+- **後台 API 驗證**：可達的 401/403 只有 `admin-api-guard`（statusMessage 與 message 同值）與 auth/* 四支（回應格式勿動，登入頁/路由 middleware 依賴）。**30 支 handler 的 inline 401 在 guard 之後實際不可達**（防禦縱深，勿花力氣統一）。`requireAuth` 已刪（死碼）；角色檢查用 `requireRole`。
+- **本機驗證管線**（無測試框架下的替代）：`npm run build`（⚠️ 不做型別檢查）→ `(set -a; source .env; set +a; unset SMTP_*; NODE_ENV=development ALLOW_DEV_ADMIN=true node .output/server/index.mjs)` → 後台用 dev 後門帳號（見 auth.ts DEV_TEST_USER，須 NODE_ENV≠production 且 ALLOW_DEV_ADMIN=true）→ 瀏覽器 pane 走查＋`javascript_tool` 斷言；表單類改動 curl POST 後用 service account 腳本直讀 Firestore 核對 shape、驗完刪測試文件。unset SMTP_* 可讓寄信乾淨跳過不發真信。
+- ⚠️ **備註存檔競態（已修）**：存檔期間關閉彈窗，舊碼 `selectedLead.value.internalNote` NPE→誤報「儲存失敗」（實際已寫入）。useAdminLeads 已加 null 防護，勿退回。
+
+## 教練資料現況（⚠️ 動 /team-intro/coaches 或教練資料前必看，2026-08-22 更新）
+
+| 分店 | 人數 | 狀態 |
+|---|---|---|
+| 西門店 | 17 | ✅ 已用業主 CSV 更新（2026-08-22，dev＋prod） |
+| 七張店 | 11 | ✅ 已用業主 CSV 更新 |
+| 南京店 | 14 | ⏳ **仍為範本假資料**，9 人誤標物理治療師 |
+| 松江店 | 5 | ⏳ **仍為範本假資料**，3 人誤標物理治療師 |
+
+**原始問題**：教練資料是「照教練牆照片建檔、內容用範本填」——姓名與分店對，但證照/學歷/經歷是編的、`description` 全空、專長是自創詞彙。最嚴重的是**非物理治療師被標成「物理治療師」並列出「物理治療師證照」**（受《物理治療師法》管制＝合規問題，非資料過期）。西門＋七張的 12 人已修正；**南京、松江的 12 人仍掛在正式站上**。業主 2026-08-22 表示南京/松江 CSV 與新照片後續補上。
+
+**業主的分店 CSV 格式**（正確資料源）：`姓名, 英文名字, 分店, 職稱, 學歷/經歷, 證照, 專長1~3`。
+⚠️ 早期那份 `教練製作物所需資訊_20250826` 是**製作物追蹤表**（含個資與名片/名牌進度欄），**不可**當官網資料源。
+
+**匯入作法（腳本，不要用後台 UI）**：憑證取得見下方部署段／[[lkk-web-deploy]]。流程＝解析 CSV→**先印出每人拆欄結果人工檢視**→產生 dry-run 變更計畫→備份→套用→dev 驗證→prod。
+- **只覆寫 CSV 提供的 6 欄**（name/roleTitle/storeId/education/experiences/certifications/specialties）；`photo`/`sortOrder`/`isActive`/`description` **沿用既有值不覆寫**
+- 「學歷/經歷」是同一欄要拆：`學歷：` 後連續非空行＝學歷，**遇空行後**＝經歷；有 `經歷：`／`證照與研習：` 標記則以標記為準（6 人無標記，靠空行分界）
+- 職稱的 `/`（含 `/／`）正規化成 `・`；證照去掉開頭 `•` 與「證照與研習：」標題列
+- ⚠️ **別用後台逐筆建**：`pages/admin/coaches/[id].vue` 的「學歷」是單行輸入、用逗號切割，CSV 含逗號的學歷會被切壞
+
+**姓名錯字**（已於 2026-08-22 改名並保留照片）：陳詠**佑**→陳詠**侑**、鍾**緯**沛→鍾**絲**沛。松江店另有「王均**佑**→王均**祐**」待處理。
+
+**照片（2026-08-22 全面換新，dev＋prod 皆已套用）**：業主交付 44 張正式棚拍**去背照**，統一裁成 **3:4 / 750×1000 / WebP 保留透明**（單檔 35–60KB），放 `public/images/coaches/{nanjing,songjiang,ximending,xindian}/<拼音>.webp`。舊照底部「職稱｜姓名」燒字橫幅已全部消失，職稱一律由 `roleTitle` 呈現。
+- ⚠️ **方形／圓形容器一定要加 `object-top`**：新照 3:4、頭部靠上，`object-cover` 置中裁切會切到頭頂。首頁 TeamSection 圓形頭像、教練彈窗 `w-24 h-24`、後台列表/表單都已補上；日後新增放照片的方形容器記得比照。
+- 首頁 TeamSection 三人（鄭宇劭/吳皓宇/蕭彥嶸）走 `public/images/team/`（硬編碼路徑）；講師走 `public/images/lecturers/lkk/`（鄭健寬在講師是 `cheng-jiankuan`、教練是 `zheng-jiankuan`）。
+- **原始未壓縮檔（139MB）移到 repo 根 `_raw-assets/`，已 gitignore**——留在 `public/` 會被打包進 build。裁切腳本在 scratchpad `imgtool/`（sharp：掃 alpha 求主體 bbox → 頭頂留 10% → 3:4 置中）。
+- **改副檔名時**：photo 路徑同時在 Firestore（coaches + lecturers）與 `server/utils/fallback-data.ts`，兩邊都要改；且**先部署再改 Firestore**，否則舊 build 找不到新檔會有一段 404 空窗。
+- **尚無新照片**：林稚荃/林承緯/盧立軒（西門）、陳存灝（七張）→ 顯示姓名首字替代圖、不破版；劉育銘（松江）沿用舊 `songjiang/liu-yuming.jpg` 未刪；`team/huang-yuanjie.png` 仍是舊的 700×500 橫幅照，在 3:4 容器裡裁切明顯。
+
+**`server/utils/fallback-data.ts`** 內含 43 筆與舊資料相同的假教練，Firestore 掛掉會頂替顯示＝對外露出已修正掉的錯誤職稱；四店都更新完後要一併處理。
+
 ## 慣例
 - Nitro API：admin 端各檔 inline `const session = await getSession(event)`；寫入類要補角色檢查。
 - 表單 → `server/api/leads/*.post.ts` → 寫 Firestore `leads` + `server/utils/email.ts` 寄信（nodemailer + Gmail SMTP，收件人讀 Firestore `settings`）。
 - UTM 追蹤（已實作）：`composables/useUtm.ts` + `plugins/utm.client.ts` 進站擷取 `utm_*` 存 sessionStorage；booking/franchise 送出帶 `utm`，存進 lead `payload.utm`（`{source,medium,campaign,content,term,referrer}`）；後台 `leads.vue`（booking）與 `cooperation.vue`（franchise/cooperation）詳情+CSV 顯示；**⚠️ 2026-08-12 現況：`leads.vue` 篩選欄含 UTM 來源＋UTM 活動（可搜尋下拉），但刻意不含 UTM 媒介**（媒介對本站區隔性低：來源＋活動已足夠、媒介的跨來源彙總少用到；已從篩選移除、**勿加回**，仍存 `payload`、詳情/CSV 看得到。見下方名單欄位對照與 [[lkk-web-gotchas]] 第 16 條）。分店建議放 `utm_campaign`。cooperation 前台仍是假送出（未接 API），故其 UTM 尚未實際寫入。
 - **GA4 已安裝（2026-08-11，正式站）**：`plugins/gtag.client.ts`（評估 ID `G-DSQC1NTPJ3`，公開碼 hardcode），**只在正式網域 `lkkwellness.com`/`www.` 啟用**（`window.location.hostname` gate）→ dev/預覽/hosted.app 完全不追蹤、不污染數據。**站上原本沒裝任何分析工具，這是第一次裝** → 廠商連結的 `utm_*` 現在才真的有 GA 在收（先前只存進 lead `payload.utm`）。無新增套件、不動 apphosting.yaml。⚠️ GA4 明細資料保留預設 2 個月（資料設定→資料保留可改 14 個月）；尚未加自訂轉換事件（form_submit/click_cta）。細節見 [[lkk-web-deploy]]。
 - 根目錄 `npm install`（**需 `.npmrc` 的 `legacy-peer-deps=true`**，否則 npm 10.9 arborist 會崩）；build 用 `npm run build`（=`nuxt build`）。`firebase-tools` 已非依賴，CLI 用 `npx firebase-tools`。
-- **改 → 發 → 驗證流程**：改在 `dev` 分支 → `npm run build` 確認過 → `git push origin dev`（觸發 lkkdev rollout，約 4–7 分鐘）→ **背景輪詢 `lkk-website-dev--lkkdev.asia-east1.hosted.app` 抓該次改動的新內容標記確認真的上線**再回報（別只看 push 成功）→ 使用者確認後才 merge `dev`→`prod` 發正式站。**驗版面/CSS 類改動**：內建瀏覽器 pane 的 screenshot 偶爾會卡在頂部或整片空白、`computer scroll` 逾時（pane hidden）；此時改用 `javascript_tool` 直接量渲染結果最可靠——`getComputedStyle`/`getBoundingClientRect`（如比對同排卡片 `img.top - btn.top`）、canvas `drawImage`+`getImageData` 掃像素（量燒進圖的橫幅位置）、或 `document.body.style.zoom='0.3'`+把 `loading=lazy` 改 `eager` 讓整頁擠進一張截圖。輪詢部署則 grep `/_nuxt/*.js` chunk 內該次改動獨有字串（如新 class `flex flex-col bg-white`）。
+- **改 → 發 → 驗證流程**（⚠️ 2026-08-22 業主要求：**不要開 localhost 本機測試環境**，一律推 dev 再看——本機 `.env` 指向的 `lkk-website-dev` 是第三個舊專案，資料過期會誤導判斷）：改在 `dev` 分支 → `npm run build` 確認過 → `git push origin dev`（觸發 lkkdev rollout，約 4–7 分鐘）→ **背景輪詢 `lkk-website-dev--lkkdev.asia-east1.hosted.app` 抓該次改動的新內容標記確認真的上線**再回報（別只看 push 成功）→ 使用者確認後才 merge `dev`→`prod` 發正式站。**驗版面/CSS 類改動**：內建瀏覽器 pane 的 screenshot 偶爾會卡在頂部或整片空白、`computer scroll` 逾時（pane hidden）；此時改用 `javascript_tool` 直接量渲染結果最可靠——`getComputedStyle`/`getBoundingClientRect`（如比對同排卡片 `img.top - btn.top`）、canvas `drawImage`+`getImageData` 掃像素（量燒進圖的橫幅位置）、或 `document.body.style.zoom='0.3'`+把 `loading=lazy` 改 `eager` 讓整頁擠進一張截圖。輪詢部署則 grep `/_nuxt/*.js` chunk 內該次改動獨有字串（如新 class `flex flex-col bg-white`）。
 - **預約表單變體系統（2026-08-05，廠商 UTM 活動用）**：`/booking?v=<key>` 對應 `config/bookingVariants.ts` 的設定驅動變體——**加廠商＝在該檔加一段設定、不改 `booking.vue`**（未知 `v` 自動 fallback default）。變體可覆蓋：Hero(badge/title/titleHighlight/subtitle/checklist/ctaText)、`lockStoreId`(以 id/slug/name 命中→預選+隱藏分店選單)、`hideSources`、`allAgesFree`、`company`(公司)、`leadSource`(來源)。**`allAgesFree`**：隱藏付款方式、自動 `paymentMethod='活動免費'`、解除「未滿50歲清掉免費」年齡邏輯；**所有價格文案集中在 `pricingCopy` computed**（Hero badge/標題、底部說明、FAQ f1/f2、服務卡 `steps[2].badges` 全讀它，改價只動一處）。**來源可用網址參數 `?src=` 覆蓋**（同公司不同來源共用同一變體，如 `?v=nanshan&src=LINE`）。送出時 `formVariant`/`company`/`leadSource` 一起寫進 `leads/{id}.payload`（已實測寫入 Firestore ✅），後台 `leads.vue` 清單「來源」欄＋詳情「活動來源」區塊顯示。`?src=` 用語規範見 `docs/廠商表單網址規範.md`。meta description 維持通用（SEO 不收 `?v=` 版本）。現有變體：`abbott`(亞培/LINE)、`nanshan`(南山/網站)，皆全齡免費、不鎖店、**顯示**得知管道（`hideSources` 是能力，但這兩家不設）。**改 `booking.vue` 勿把 SSR 分店改成 client fetch 以外的問題**：分店目前是 `onMounted` client fetch（非 SSR），會兩段式載入。
 - **廠商完整連結配方（2026-08-11 確立）**：`booking?v={公司代號}&src={通路}&utm_source=&utm_medium=&utm_campaign=` —— **`v`/`src` 給後台名單（公司/來源）、`utm_*` 給 GA**，兩套獨立、同一條連結可並存（各讀各的、互不干擾）。**`v=` 放英文代號**（nanshan/abbott，**不是**中文「南山」，業主/行銷常搞錯）。全部欄位皆選配（要後台分類就 `v`+`src`、要 GA 算廣告就 `utm_*`、全都要就全放）。`src` 規範 7 值＝網站/LINE/Facebook/Instagram/Email/傳單/Google。`payload.leadSource`(Facebook) 與 `payload.utm.source`(facebook) 重複是**刻意的**（前者給後台篩選、後者存底/GA），後台篩選只讀 `leadSource`、不會重複計算。現有代號：`nanshan`、`abbott`。
 - **名單「來源」欄位對照（主來源約定，2026-08-05）**：一筆 lead 有多個來源相關欄位、各司其職，**勿硬合成一個**——**① 廠商活動來源（分析主依據）**：`payload.company`(公司)＋`payload.leadSource`(來源)，來自 `?v=`/`?src=`。**② GA 追蹤**：`payload.utm.{source,medium,campaign,content,term,referrer}`，來自 `?utm_*`，只給 Google Analytics（後台 UTM 欄另顯示）。**③ 使用者自填「得知管道」**：`payload.sources`(陣列)＋頂層 `sourceChannel`(=sources join)，是使用者在表單勾的，**與 ①② 不同概念、勿混用**。`payload.formVariant`＝`?v=` 值。**`sourceTag` 已於 2026-08-05 移除**（曾與 company/leadSource 重疊，退役清除）。清單「來源」欄＋詳情「活動來源」區以 chips 顯示 company+leadSource。**後台名單篩選（2026-08-12 現況）＝單排、全部可搜尋下拉（`components/SearchableSelect.vue`）＋已套用 chips＋清除全部＋筆數**：搜尋(姓名/電話/Email 關鍵字)、日期(`createdAt` 起訖)、分店、狀態、公司(`payload.company`；選項＝`bookingVariants` companies ∪ 名單值)、來源(`payload.leadSource`；選項＝常數 `SOURCE_CHANNELS`=[網站/LINE/Facebook/Instagram/Email/傳單/Google] ∪ 名單值)、UTM 來源(`payload.utm.source`)、UTM 活動(`payload.utm.campaign`)——各下拉選項皆自名單去重自動蒐集。**公司與來源各比各的欄位、不混（業主明確要求分開，勿再 union）**。**UTM 媒介刻意不列（區隔性低，勿加回）**；UTM 仍存 payload、詳情/CSV 顯示。

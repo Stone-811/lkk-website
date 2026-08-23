@@ -6,7 +6,7 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: '從台北出發，練健康的中高齡訓練故事吸引 AP 美聯社、BBC、路透社、法新社與 CNA 等全球主要媒體報導。這裡是完整的媒體報導紀錄，以及給媒體朋友的採訪資源。',
+      content: '從台北出發，練健康陪伴中高齡學員重新練出肌力與自信的故事，登上 AP 美聯社、BBC、路透社、法新社與 CNA 等國際媒體。一起看看，這些真實的力量如何被全世界看見。',
     },
   ],
 })
@@ -25,12 +25,6 @@ interface Report {
   link: Link
   links?: Link[]
 }
-
-const heroStats = [
-  { num: '5', label: '國際通訊社報導' },
-  { num: '36+', label: '媒體報導累計' },
-  { num: '2024–', label: '密集國際關注' },
-]
 
 // 篩選（本站設計原則不使用 emoji，改用文字標籤）
 const filters = [
@@ -51,7 +45,7 @@ const apFeatured: Report = {
   outlet: 'Associated Press · 美聯社 · 2026',
   title: 'Taiwanese grandmothers aged 89 and 91 train at the gym to stay healthy',
   excerpt:
-    '美聯社影音報導：89 歲與 91 歲的台灣阿嬤在練健康持續訓練，向全球展示年齡不是健康的限制。這是繼 2024 年 BBC／Reuters／AFP 後，國際媒體對練健康的最新一次關注。',
+    '89 歲與 91 歲的台灣阿嬤，每週固定到練健康報到、持續訓練。美聯社用鏡頭記錄下這一幕，告訴全世界：年齡從來不是健康的限制。',
   image: '/images/news/ap.jpg',
   type: 'video',
   lkk4: false,
@@ -81,7 +75,7 @@ const intl: Report[] = [
     outlet: 'AFP 法新社', lang: 'English', lkk4: true, type: 'video',
     title: 'Taipei hosts Christmas-themed senior deadlift competition',
     excerpt: "Taiwan's capital Taipei hosts a deadlift competition for seniors with a Christmas theme, attracting international attention.",
-    date: 'Dec 2024', image: null,
+    date: 'Dec 2024', image: '/images/news/afp.jpg',
     link: { text: '觀看影片 →', href: 'https://www.facebook.com/AFPnewsenglish/videos/904278765198954/' },
   },
   {
@@ -124,8 +118,11 @@ const tw: Report[] = [
   },
 ]
 
+// 完整報導紀錄清單只顯示年份，date 內含月日與記者名的部分不呈現
+const yearOf = (d?: string) => (d || '').match(/\d{4}/)?.[0] || ''
+
 const more: Report[] = [
-  { outlet: '強者我朋友 Podcast', cat: 'Podcast', type: 'video', lkk4: false, date: '2026-05-08',
+  { outlet: '志祺七七', cat: 'Podcast', type: 'video', lkk4: false, date: '2026-05-08',
     title: '90 歲阿嬤也能硬舉！要怎麼說服爸媽去運動？ft. 練健康鄭宇劭總教練《強者我朋友》EP 054',
     link: { text: '閱讀全文 →', href: 'https://l-kk.tw/90%e6%ad%b2%e9%98%bf%e5%ac%a4%e4%b9%9f%e8%83%bd%e7%a1%ac%e8%88%89%ef%bc%81%e8%a6%81%e6%80%8e%e9%ba%bc%e8%aa%aa%e6%9c%8d%e7%88%b8%e5%aa%bd%e5%8e%bb%e9%81%8b%e5%8b%95%ef%bc%9f%e9%87%8d%e8%a8%93%e6%9c%80/' } },
   { outlet: '高年級不打烊 Podcast', cat: 'Podcast', type: 'video', lkk4: true, date: '2026-05-08',
@@ -134,9 +131,6 @@ const more: Report[] = [
   { outlet: 'TVBS 新聞', cat: '電視新聞', type: 'video', lkk4: false, date: '2026-03-21',
     title: '影音／專家揭心理健康 3 警訊！功能喪失、關係疏離，恐失去生命意義',
     link: { text: '閱讀全文 →', href: 'https://l-kk.tw/%e5%bd%b1%e9%9f%b3%ef%bc%8f%e5%b0%88%e5%ae%b6%e6%8f%ad%e5%bf%83%e7%90%86%e5%81%a5%e5%ba%b73%e8%ad%a6%e8%a8%8a%ef%bc%81%e5%8a%9f%e8%83%bd%e5%96%aa%e5%a4%b1%e3%80%80-%e9%97%9c%e4%bf%82%e7%96%8f%e9%9b%a2/' } },
-  { outlet: '初一十五練健康 Podcast', cat: 'Podcast', type: 'video', lkk4: false, date: '2025-12-04',
-    title: '肌肉流失比你想的更早！亞洲肌少症診斷指引更新（自製內容）',
-    link: { text: '閱讀全文 →', href: 'https://l-kk.tw/sarcopenia-6/' } },
   { outlet: '科技新報 TechNews', cat: '科技・健康', type: 'print', lkk4: false, date: '2025-10-02',
     title: '北榮結合運動科學與醫學，創滑雪運動員全方位檢測體系',
     link: { text: '閱讀全文 →', href: 'https://l-kk.tw/ski/' } },
@@ -181,15 +175,9 @@ const showMore = computed(() => fMore.value.length > 0)
         <h1 class="font-serif text-4xl lg:text-5xl font-black leading-tight mb-5">
           被<span class="text-orange">世界看見</span>的台灣故事
         </h1>
-        <p class="text-white/60 text-lg font-light leading-relaxed mb-10 max-w-2xl mx-auto">
-          從台北出發，練健康的故事吸引了全球主要通訊社的目光。這裡是我們被報導的完整紀錄，以及給媒體朋友的所有資源。
+        <p class="text-white/60 text-lg font-light leading-relaxed max-w-2xl mx-auto">
+          這裡收錄了一群相信「幾歲開始肌力訓練都不嫌晚」的故事，讓全球看見了台灣中高齡的力量。
         </p>
-        <div class="flex flex-wrap justify-center gap-8 sm:gap-12">
-          <div v-for="s in heroStats" :key="s.label" class="text-center">
-            <div class="font-serif text-3xl lg:text-4xl font-black text-orange">{{ s.num }}</div>
-            <div class="text-xs text-white/50 mt-1">{{ s.label }}</div>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -221,16 +209,13 @@ const showMore = computed(() => fMore.value.length > 0)
           <span class="w-5 h-0.5 bg-orange" />
           International Press
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">國際通訊社的目光</h2>
-        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl">
-          2024–2026 年間，全球三大通訊社及新加坡國家電視台相繼來台採訪，讓台灣的中高齡訓練故事傳遍世界。
-        </p>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10">國際媒體報導</h2>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- AP featured (big) -->
           <article
             v-if="apShown"
-            class="md:col-span-2 lg:col-span-3 grid md:grid-cols-2 bg-white rounded-3xl overflow-hidden border border-navy-700/12 shadow-sm"
+            class="sm:col-span-2 lg:col-span-4 grid md:grid-cols-2 bg-white rounded-3xl overflow-hidden border border-navy-700/12 shadow-sm"
           >
             <div class="aspect-video md:aspect-auto md:min-h-[280px] overflow-hidden bg-navy-700/5">
               <img :src="apFeatured.image!" :alt="apFeatured.title" loading="lazy" class="w-full h-full object-cover" />
@@ -282,13 +267,10 @@ const showMore = computed(() => fMore.value.length > 0)
             <div class="p-5 flex flex-col flex-1">
               <div class="flex items-center gap-2 flex-wrap mb-2">
                 <span class="text-xs font-bold text-orange">{{ item.outlet }}</span>
-                <span v-if="item.lang" class="text-[10px] font-medium bg-navy-700/8 text-navy-700 px-1.5 py-0.5 rounded">{{ item.lang }}</span>
-                <span v-if="item.lkk4" class="text-[10px] font-bold bg-orange/12 text-orange px-1.5 py-0.5 rounded">LKK4</span>
               </div>
               <h3 class="font-serif text-lg font-black text-navy-700 mb-2 leading-snug">{{ item.title }}</h3>
               <p class="text-sm text-ink/60 leading-relaxed mb-4 flex-1">{{ item.excerpt }}</p>
-              <div class="flex items-center justify-between mt-auto pt-2">
-                <span class="text-xs text-ink/40">{{ item.date }}</span>
+              <div class="flex items-center justify-end mt-auto pt-2">
                 <a :href="item.link.href" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-orange hover:text-orange-400 transition-colors">{{ item.link.text }}</a>
               </div>
             </div>
@@ -325,8 +307,7 @@ const showMore = computed(() => fMore.value.length > 0)
               </div>
               <h3 class="font-serif text-base font-black text-navy-700 mb-2 leading-snug">{{ item.title }}</h3>
               <p class="text-sm text-ink/60 leading-relaxed mb-4 flex-1">{{ item.excerpt }}</p>
-              <div class="flex items-center justify-between mt-auto pt-2">
-                <span class="text-xs text-ink/40">{{ item.date }}</span>
+              <div class="flex items-center justify-end mt-auto pt-2">
                 <a :href="item.link.href" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-orange hover:text-orange-400 transition-colors">{{ item.link.text }}</a>
               </div>
             </div>
@@ -355,13 +336,12 @@ const showMore = computed(() => fMore.value.length > 0)
           >
             <div class="flex items-center gap-2 flex-wrap sm:w-48 sm:shrink-0">
               <span class="text-xs font-bold text-orange">{{ item.outlet }}</span>
-              <span v-if="item.lkk4" class="text-[10px] font-bold bg-orange/12 text-orange px-1.5 py-0.5 rounded">LKK4</span>
             </div>
             <div class="flex-1 min-w-0">
               <div class="text-sm font-medium text-navy-700 group-hover:text-orange transition-colors leading-snug">{{ item.title }}</div>
             </div>
-            <div class="text-xs text-ink/40 sm:shrink-0 sm:text-right">{{ item.date }}</div>
-            <span class="text-orange text-sm font-bold sm:shrink-0 whitespace-nowrap">{{ item.link.text }}</span>
+            <div class="text-xs text-ink/40 sm:shrink-0 sm:text-right">{{ yearOf(item.date) }}</div>
+            <span class="text-orange text-sm font-bold sm:shrink-0 whitespace-nowrap">閱讀全文 →</span>
           </a>
         </div>
 
@@ -372,7 +352,7 @@ const showMore = computed(() => fMore.value.length > 0)
             rel="noopener noreferrer"
             class="inline-flex items-center gap-2 text-navy-700 border border-navy-700/15 px-6 py-2.5 rounded-full hover:border-navy-700 transition-colors font-medium"
           >
-            查看全部 36+ 篇報導（舊網站）→
+            查看全部報導 →
           </a>
         </div>
       </div>
@@ -385,9 +365,9 @@ const showMore = computed(() => fMore.value.length > 0)
           <span class="w-5 h-0.5 bg-orange" />
           For Journalists &amp; Editors
         </div>
-        <h2 class="font-serif text-3xl lg:text-4xl font-black mb-4">記者朋友，歡迎<span class="text-orange">聯繫我們</span></h2>
+        <h2 class="font-serif text-3xl lg:text-4xl font-black mb-4">歡迎<span class="text-orange">聯繫我們</span></h2>
         <p class="text-white/60 leading-relaxed mb-8 max-w-2xl mx-auto">
-          如果您正在報導中高齡健康、銀髮健身、或台灣的積極老化故事，我們很樂意協助。創辦人接受中文與英文採訪，競賽影像與品牌資料可提供。
+          如果你正在報導中高齡健康、銀髮健身、或台灣的積極老化故事，我們很樂意協助。
         </p>
         <div class="flex flex-wrap justify-center items-center gap-4">
           <NuxtLink
@@ -396,14 +376,6 @@ const showMore = computed(() => fMore.value.length > 0)
           >
             媒體採訪洽詢 →
           </NuxtLink>
-          <a
-            href="https://l-kk.tw/wp-content/uploads/2024/04/lkklogo2.png"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 border border-white/25 text-white font-semibold px-8 py-3 rounded-full hover:border-white hover:bg-white/5 transition-colors"
-          >
-            下載品牌 Logo
-          </a>
         </div>
       </div>
     </section>

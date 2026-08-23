@@ -48,18 +48,12 @@ export default defineEventHandler(async (event) => {
       return { success: false, error: 'Email 格式不正確' }
     }
 
-    // Dynamic import to avoid bundling issues
-    const { getDb, getTimestamp, docToObject } = await import('~/server/utils/firebase')
-    const db = await getDb()
-    const Timestamp = await getTimestamp()
-
     // Normalize preferredTime to array
     const preferredTimeArray = Array.isArray(preferredTime) ? preferredTime : [preferredTime]
 
     // Create lead in Firestore
-    const now = Timestamp.now()
-    const leadRef = db.collection('leads').doc()
-    const leadData = {
+    const { createLead } = await import('~/server/utils/leads')
+    const leadId = await createLead({
       type: 'booking',
       name,
       phone,
@@ -93,17 +87,13 @@ export default defineEventHandler(async (event) => {
         company: body.company || null,
         leadSource: body.leadSource || null,
       },
-      status: 'new',
-      internalNote: null,
-      createdAt: now,
-      updatedAt: now,
-    }
-
-    await leadRef.set(leadData)
+    })
 
     // Get store name for logging
     let storeName = ''
     try {
+      const { getDb } = await import('~/server/utils/firebase')
+      const db = await getDb()
       const storeDoc = await db.collection('stores').doc(storeId).get()
       if (storeDoc.exists) {
         storeName = storeDoc.data()?.name || ''
@@ -113,7 +103,7 @@ export default defineEventHandler(async (event) => {
     }
 
     console.log('New booking lead:', {
-      id: leadRef.id,
+      id: leadId,
       name,
       phone,
       email,

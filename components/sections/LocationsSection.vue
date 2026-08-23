@@ -1,34 +1,6 @@
 <script setup lang="ts">
-const stores = [
-  {
-    id: 'nanjing',
-    num: 1,
-    name: '南京店',
-    address: '台北市中山區南京東路三段 29 號 B1',
-    phone: '(02) 2507-4196',
-  },
-  {
-    id: 'songjiang',
-    num: 2,
-    name: '松江店',
-    address: '台北市中山區松江路 122 號 B1',
-    phone: '(02) 2537-1055',
-  },
-  {
-    id: 'ximending',
-    num: 3,
-    name: '西門店',
-    address: '台北市中正區寶慶路 39 號',
-    phone: '(02) 2370-3245',
-  },
-  {
-    id: 'xindian',
-    num: 4,
-    name: '七張店',
-    address: '新北市新店區北新路二段 252 號 B1-2',
-    phone: '(02) 8914-6428',
-  },
-]
+// 分店名稱/電話/地址：後台分店管理驅動（composables/usePublicStores，含 fallback）
+const { stores } = usePublicStores()
 </script>
 
 <template>
@@ -46,14 +18,14 @@ const stores = [
       <!-- Stores grid -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <NuxtLink
-          v-for="store in stores"
-          :key="store.id"
-          :to="`/locations/${store.id}`"
+          v-for="(store, i) in stores"
+          :key="store.slug"
+          :to="`/locations/${store.slug}`"
           class="bg-white border border-navy-700/15 rounded-2xl p-5 hover:border-navy-700/30 hover:shadow-lg transition-all"
         >
           <!-- Number badge -->
           <div class="w-8 h-8 rounded-full bg-navy-700 text-white text-sm font-bold flex items-center justify-center mb-3">
-            {{ store.num }}
+            {{ i + 1 }}
           </div>
 
           <!-- Store name -->

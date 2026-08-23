@@ -95,7 +95,7 @@ const courses = [
             to="/lkk-lecturer"
             class="px-4 py-2 rounded-full whitespace-nowrap font-medium bg-navy text-white"
           >
-            練健康授權講師
+            練健康認證講師
           </NuxtLink>
           <NuxtLink
             to="/co-lecturer"
@@ -125,18 +125,15 @@ const courses = [
           目前沒有講師資料
         </div>
         <div v-else>
-          <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
-            <span class="w-5 h-0.5 bg-orange" />
-            授權講師
-          </div>
           <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-8">
             練健康<span class="text-orange">認證講師</span>
           </h2>
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          <!-- 每列三位講師；flex + justify-center 讓最後一列不足三位時也會置中 -->
+          <div class="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto">
             <article
               v-for="lecturer in lecturers"
               :key="lecturer.id"
-              class="bg-white rounded-2xl overflow-hidden shadow-lg border border-navy/10 hover:-translate-y-1 transition-transform"
+              class="bg-white rounded-2xl overflow-hidden shadow-lg border border-navy/10 hover:-translate-y-1 transition-transform w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
             >
               <div class="aspect-square bg-gradient-to-br from-navy to-navy/80 relative">
                 <img
@@ -156,17 +153,28 @@ const courses = [
                   <p class="text-orange font-semibold text-sm">{{ lecturer.title }}</p>
                 </div>
 
-                <div v-if="lecturer.specialties?.length" class="flex flex-wrap gap-1.5 mb-3">
-                  <span
+                <div v-if="lecturer.specialties?.length" class="mb-3">
+                  <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">專長領域</div>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span
                     v-for="spec in lecturer.specialties"
                     :key="spec"
                     class="text-xs font-medium text-white bg-orange px-2.5 py-1 rounded-full"
-                  >
+                    >
                     {{ spec }}
-                  </span>
+                    </span>
+                  </div>
+                </div>
+
+                <div v-if="lecturer.education?.length" class="pt-3 border-t border-navy/10 mb-3">
+                  <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">學歷背景</div>
+                  <ul class="space-y-0.5">
+                    <li v-for="edu in lecturer.education" :key="edu" class="text-xs text-ink/60 leading-relaxed">{{ edu }}</li>
+                  </ul>
                 </div>
 
                 <div v-if="lecturer.certifications?.length" class="pt-3 border-t border-navy/10">
+                  <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">專業證照</div>
                   <div class="flex flex-wrap gap-1.5">
                     <span
                       v-for="cert in lecturer.certifications"

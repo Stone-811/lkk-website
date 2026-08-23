@@ -231,7 +231,7 @@ const coursesByLevel = [
 
           <div class="bg-white rounded-2xl p-8 border border-navy/10 shadow-sm">
             <p class="text-ink/80 leading-relaxed mb-6">
-              練健康自成立以來，累積服務超過 <strong class="text-navy">6,000 位學員</strong>，其中近 50% 為中高齡及特殊族群個案。在實務現場，我們看見了許多教練（與想成為教練的人）面臨的共同困境：
+              練健康自成立以來，累積服務 <strong class="text-navy">10,000+ 位學員</strong>，其中近 50% 為中高齡及特殊族群個案。在實務現場，我們看見了許多教練（與想成為教練的人）面臨的共同困境：
             </p>
 
             <div class="grid md:grid-cols-2 gap-4 mb-6">

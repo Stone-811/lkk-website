@@ -38,7 +38,7 @@ const pressCases = [
   { badge: '學術專案', org: '國家衛生研究院', title: '「中高齡訓練者訓練頻率與肌肉增長關係」共同研究', quote: '練健康引進專業級 InBody 770 與 Body Go 體適能檢測系統，協助學員透過數據精準掌握身體組成狀態，並透過博覽會展出為長輩進行科學化動作檢測。', image: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=800&h=400&fit=crop&q=80' },
   { badge: '跨國培訓', org: '馬來西亞 PhysioGym', title: '輸出成熟「銀髮動作基礎訓練營」培訓海外在機種子師資', quote: '跨國聯手將台灣成熟的銀髮訓練系統帶向國際。透過輸出系統化教學與實戰經驗，協助馬來西亞當地教練提升專業技術，讓正確的肌力訓練觀念跨越國界。', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=400&fit=crop&q=80' },
   { badge: '醫療教育訓練', org: '衛生福利部草屯療養院', title: '院內治療師內部培訓與病友團體訓練', quote: '合作包含團體訓練與內部教育訓練。除了親自接觸個案了解狀況外，更透過授課讓院內治療師帶回肌力訓練的專業知識，讓院內的運動訓練日後能夠持之以恆。', image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=400&fit=crop&q=80' },
-  { badge: '跨界講座與運動推廣', org: '慈濟醫院教育訓練 & 包大人推廣', title: '肌力訓練課程、內容行銷分享與團體健康促進項目', quote: '應嘉義慈濟邀請開設科學化肌力課程與社群經營行銷講座；並應「包大人」邀請，為長輩量身打造團體可以進行的趣味運動課程，協助長輩順利踏出運動第一步。', image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&h=400&fit=crop&q=80' },
+  { badge: '跨界講座與運動推廣', org: '慈濟醫院教育訓練', title: '肌力訓練課程、內容行銷分享與團體健康促進項目', quote: '應嘉義慈濟邀請開設科學化肌力課程與社群經營行銷講座，為長輩量身打造團體可以進行的趣味運動課程，協助長輩順利踏出運動第一步。', image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&h=400&fit=crop&q=80' },
 ]
 
 const pressStats = [
@@ -138,9 +138,24 @@ const handleSubmit = async () => {
     return
   }
 
-  // 模擬提交（實際需要接 API）
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const res = await $fetch<{ success: boolean; error?: string }>('/api/leads/cooperation', {
+      method: 'POST',
+      body: {
+        ...formData.value,
+        // 洽詢類型取自上方分頁（講座邀約／企業健康促進邀請／媒體採訪與異業合作）
+        cooperationType: enquiryTypes[activeType.value].value,
+        sourcePage: '/cooperation',
+        utm: useUtm().getUtm(),
+      },
+    })
+
+    if (!res.success) {
+      submitStatus.value = 'error'
+      errorMessage.value = res.error || '送出失敗，請稍後再試'
+      return
+    }
+
     submitStatus.value = 'success'
     formData.value = {
       organization: '',
@@ -152,9 +167,9 @@ const handleSubmit = async () => {
       budgetRange: '',
       message: '',
     }
-  } catch (error) {
+  } catch (error: any) {
     submitStatus.value = 'error'
-    errorMessage.value = '網路錯誤，請稍後再試'
+    errorMessage.value = error?.data?.error || '網路錯誤，請稍後再試'
   } finally {
     isSubmitting.value = false
   }

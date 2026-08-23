@@ -1,28 +1,35 @@
 <script setup lang="ts">
+// 學員見證。photo 填入路徑後，卡片頂端會顯示學員照片（4:3）；
+// 留空則沿用原本的引號符號 + 首字圓形頭像，版面不會開天窗。
+// 圖檔放置位置：public/images/cases/  →  路徑寫成 '/images/cases/檔名.jpg'
+// 卡片照片為 1:1（現有素材皆為接近正方形的人像特寫，用 4:3 會裁到頭頂）
 const cases = [
   {
     id: 1,
-    quote: '70歲開始重訓，現在可以自己爬山、帶孫子去公園玩。以前膝蓋痛到走不了路，現在根本不是問題。',
-    name: '林阿嬤',
-    avatar: '林',
-    detail: '70歲，膝關節退化',
-    badge: '訓練 8 個月',
+    name: '雪莉',
+    avatar: '雪',
+    detail: '72歲・氣喘與心臟病',
+    photo: '/images/cases/shirley.jpg',
+    quote:
+      '因為患有先天性氣喘與心臟病，原本以為疾病會一直影響我的生活。但在堅持重訓六年之後，我不僅重新找回健康，還能自信地站上舞台參加聖誕老人硬舉大賽！',
   },
   {
     id: 2,
-    quote: '中風之後以為這輩子就這樣了。練健康的教練讓我重新相信身體的可能性，現在我可以自己走路去買東西。',
-    name: '王先生',
-    avatar: '王',
-    detail: '62歲，腦中風後復健',
-    badge: '訓練 1 年',
+    name: '黃阿公',
+    avatar: '黃',
+    detail: '85歲・訓練三年多',
+    photo: '/images/cases/huang.jpg',
+    quote:
+      '年過八十，最怕的就是生病增加家人的負擔，在這裡訓練多年，教練都會針對我的狀況隨時調整教學課表，讓我不僅保持體力、照顧好自己，連我的老婆都開始在這裡運動！',
   },
   {
     id: 3,
-    quote: '癌症治療結束後體力虛弱，肌肉大量流失。在這裡重建體能，回診時醫生說我的恢復狀況比預期好很多。',
-    name: '陳小姐',
-    avatar: '陳',
-    detail: '55歲，乳癌術後',
-    badge: '訓練 6 個月',
+    name: '保羅',
+    avatar: '保',
+    detail: '69歲・原發性顫抖症',
+    photo: '/images/cases/paul.jpg',
+    quote:
+      '因為原發性顫抖症，當初手抖到連倒水、吃飯都有問題，在開始重訓後，不僅藥量減半，我還能硬舉到120公斤，更能輕鬆抱起孫子玩耍！',
   },
 ]
 </script>
@@ -47,22 +54,34 @@ const cases = [
         <article
           v-for="item in cases"
           :key="item.id"
-          class="bg-cream-100 rounded-3xl p-6 lg:p-8 border border-navy-700/15 hover:shadow-lg transition-shadow"
+          class="bg-cream-100 rounded-3xl p-6 lg:p-8 border border-navy-700/15 hover:shadow-lg transition-shadow flex flex-col"
         >
-          <!-- Quote mark -->
-          <span class="font-serif text-7xl font-black text-orange/20 leading-none block mb-2">
+          <!-- 學員照片（有填 photo 才顯示；4:3、object-cover） -->
+          <div v-if="item.photo" class="aspect-square rounded-2xl overflow-hidden mb-5 bg-navy-700/5">
+            <img
+              :src="item.photo"
+              :alt="`${item.name}・${item.detail}`"
+              loading="lazy"
+              class="w-full h-full object-cover"
+            />
+          </div>
+          <!-- 未提供照片時的引號符號 -->
+          <span v-else class="font-serif text-7xl font-black text-orange/20 leading-none block mb-2">
             "
           </span>
 
-          <!-- Quote text -->
-          <p class="text-ink/60 leading-relaxed italic mb-6">
+          <!-- Quote text（flex-1 讓等高卡片的姓名列對齊底部） -->
+          <p class="text-ink/60 leading-relaxed italic mb-6 flex-1">
             {{ item.quote }}
           </p>
 
           <!-- Meta -->
           <div class="flex items-center gap-3">
-            <!-- Avatar -->
-            <div class="w-11 h-11 rounded-full bg-navy-700 flex items-center justify-center text-white font-bold flex-shrink-0">
+            <!-- 首字頭像（已有照片時不重複顯示） -->
+            <div
+              v-if="!item.photo"
+              class="w-11 h-11 rounded-full bg-navy-700 flex items-center justify-center text-white font-bold flex-shrink-0"
+            >
               {{ item.avatar }}
             </div>
 
@@ -71,11 +90,6 @@ const cases = [
               <div class="font-bold text-navy-700">{{ item.name }}</div>
               <div class="text-xs text-ink/50">{{ item.detail }}</div>
             </div>
-
-            <!-- Badge -->
-            <span class="bg-orange/12 text-orange text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
-              {{ item.badge }}
-            </span>
           </div>
         </article>
       </div>

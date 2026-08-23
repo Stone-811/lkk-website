@@ -7,12 +7,8 @@ const navigation = [
   { name: '預約體驗', href: '/booking' },
 ]
 
-const stores = [
-  { name: '南京店', phone: '(02) 2507-4196', href: '/locations/nanjing' },
-  { name: '松江店', phone: '(02) 2537-1055', href: '/locations/songjiang' },
-  { name: '西門店', phone: '(02) 2370-3245', href: '/locations/ximending' },
-  { name: '七張店', phone: '(02) 8914-6428', href: '/locations/xindian' },
-]
+// 分店名稱/電話：後台分店管理驅動（composables/usePublicStores，含 fallback）
+const { stores } = usePublicStores()
 
 // 聯絡資訊與社群連結：由後台系統設定驅動（settings/general + settings/social）。
 // 非阻塞載入，先以預設值渲染（後台未設定時就用這些預設），抓到後台值後更新。
@@ -150,7 +146,7 @@ const currentYear = new Date().getFullYear()
           <ul class="space-y-2 sm:space-y-3">
             <li v-for="store in stores" :key="store.name">
               <NuxtLink
-                :to="store.href"
+                :to="`/locations/${store.slug}`"
                 class="text-cream-200 hover:text-white transition-colors text-xs sm:text-sm block"
               >
                 {{ store.name }}

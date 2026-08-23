@@ -4,7 +4,7 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: 'LKK4 聖誕老人功能錦標賽是練健康主辦的年度全齡體能賽事，不限年齡皆可依組別參加。四大項目——六角槓硬舉、推雪橇、單側農夫走路、風扇車，分別對應肌力、爆發力、核心與有氧能力，證明體能是支撐日常生活的重要能力。'
+      content: '「聖誕老人六角槓硬舉大賽」今年全面升級為「LKK4 聖誕老人功能錦標賽」！保留經典六角槓硬舉，全新加入推雪橇、單側農夫走與風扇車。全齡友善賽制，打造日常實用體能舞台，立即看最新賽制說明與報名資訊。'
     }
   ]
 })
@@ -42,20 +42,95 @@ const disciplines = [
 
 const milestones = [
   {
-    year: '2026',
-    title: '第六屆 LKK4 聖誕老人功能錦標賽',
-    desc: '不只是比賽，這是一場為所有年齡打造的訓練舞台！安全、直覺、全齡友善，所有年齡皆可參加。現場熱血歡樂、親友加油不間斷，打破你對年齡的想像，保證嗨翻整天！',
-  },
-  {
-    year: '2022–2025',
-    title: '第二屆至第五屆 聖誕老人硬舉大賽',
-    desc: '聖誕老人硬舉大賽開始獲得公眾關注，參賽總人數屢次創新高，甚至報名開放後秒殺額滿。場地擴及華山文創、松山文創等指標場域，並獲華視、中央社、BBC、路透社、法新社、新加坡電視台 CNA 等海內外媒體報導。',
-  },
-  {
     year: '2021',
     title: '第一屆 聖誕老人硬舉邀請賽',
     desc: '由練健康團隊內部發起，數十位阿公阿嬤首度披上聖誕戰袍參賽，顛覆社會大眾對高齡重訓危險的偏見。',
   },
+  {
+    year: '2022',
+    title: '第二屆 聖誕老人硬舉大賽',
+    desc: '220 人參賽，規模較首屆翻倍，開始獲得公眾與媒體關注。',
+  },
+  {
+    year: '2023',
+    title: '第三屆 聖誕老人硬舉大賽',
+    desc: '225 人參賽，中高齡訓練的風氣逐漸打開，賽事規模持續擴大。',
+  },
+  {
+    year: '2024',
+    title: '第四屆 聖誕老人硬舉大賽',
+    desc: '場地擴及華山文創、松山文創等指標場域，報名開放後屢次秒殺額滿。',
+  },
+  {
+    year: '2025',
+    title: '第五屆 聖誕老人硬舉大賽',
+    desc: '70 歲以上選手超過 60 人參賽，並獲華視、中央社、BBC、路透社、法新社、新加坡電視台 CNA 等海內外媒體報導。',
+  },
+  {
+    year: '2026',
+    title: '第六屆 LKK4 聖誕老人功能錦標賽',
+    desc: '全面進化為涵蓋肌力、爆發力、核心能力與心肺有氧能力四大面向的功能錦標賽。安全、直覺、全齡友善，所有年齡皆可參加。',
+  },
+]
+
+// 官方報名頁（Accupass）
+const ACCUPASS_URL = 'https://www.accupass.com/event/2606231002373711869520?utm_source=google&utm_medium=Direct&utm_campaign=accu_260702a6zestso'
+
+// ── 以下賽制資訊來源：Accupass 官方活動頁 ──
+const competitionGroups = [
+  { key: 'female', label: '女子組', count: '共五組', items: ['39 歲以下', '40–49 歲', '50–59 歲', '60–69 歲', '70–79 歲'] },
+  { key: 'male', label: '男子組', count: '共五組', items: ['39 歲以下', '40–49 歲', '50–59 歲', '60–69 歲', '70–79 歲'] },
+  { key: 'senior', label: '長者推廣組', count: '不分性別', items: ['80 歲以上，一同挑戰！'] },
+]
+
+const entryFees = [
+  { name: '早鳥優惠價', price: '2,700', period: '2026/6/29 12:00 – 2026/7/12 23:55' },
+  { name: '一般報名費', price: '3,000', period: '2026/7/13 00:00 – 2026/10/30 23:55', current: true },
+]
+
+const raceRules = [
+  '比賽開始後，每 5 分鐘會響鈴一次，每一次響鈴會安排 5 位選手入場比賽。',
+  '請選手依出場序提前至預備區準備，並依響鈴聲與工作人員引導入場比賽。',
+  '每位選手入場後，需依序完成 3 個關卡。',
+  '每位選手比賽總時間為 20 分鐘。',
+  '成績計算方式為三個關卡完成時間加總，總時間越短，名次越前面。',
+]
+
+const stations = [
+  {
+    n: '第一關',
+    name: '六角槓硬舉',
+    limit: '限時 1 分鐘',
+    points: ['依序完成「輕、中、重」三種重量', '未於限時內完成，本關成績以 1:00 計算'],
+  },
+  {
+    n: '第二關',
+    name: '推雪橇 ＋ 單側農夫走路',
+    limit: '限時 3 分鐘',
+    points: ['先完成推雪橇，再換手完成農夫走路', '兩項皆需來回共 25 公尺，於 12.5 公尺處折返回起點才算完成', '未於限時內完成，本關成績以 3:00 計算'],
+  },
+  {
+    n: '第三關',
+    name: '風扇車',
+    limit: '限時 10 分鐘',
+    points: ['完成風扇車 3 公里', '未於限時內完成，本關成績以 10:00 計算'],
+  },
+]
+
+const weightTable = [
+  { group: '69 歲（含）以下・男', light: '80', mid: '100', heavy: '120', sled: '100', farmer: '28', bike: '3' },
+  { group: '69 歲（含）以下・女', light: '50', mid: '60', heavy: '80', sled: '75', farmer: '20', bike: '3' },
+  { group: '70 歲（含）以上・男', light: '40', mid: '50', heavy: '60', sled: '60', farmer: '20', bike: '3' },
+  { group: '70 歲（含）以上・女', light: '30', mid: '40', heavy: '50', sled: '40', farmer: '12', bike: '3' },
+]
+
+const tshirtFits = [
+  { body: '生理男', height: '183 cm', weight: '90 kg', size: 'L', fit: '合身' },
+  { body: '生理男', height: '171 cm', weight: '70 kg', size: 'M', fit: '合身' },
+  { body: '生理男', height: '177 cm', weight: '90 kg', size: 'XL', fit: '略寬鬆' },
+  { body: '生理女', height: '153.5 cm', weight: '46 kg', size: 'S', fit: '略寬鬆' },
+  { body: '生理女', height: '163 cm', weight: '68 kg', size: 'S', fit: '合身' },
+  { body: '生理女', height: '165 cm', weight: '58 kg', size: 'M', fit: '略寬鬆' },
 ]
 
 const highlights = [
@@ -176,6 +251,17 @@ const mediaReports = [
               <span class="inline-flex items-center gap-2 bg-orange text-white rounded-full px-5 py-2 text-sm font-bold shadow-lg shadow-orange/30">
                 報名截止 2026/10/30
               </span>
+              <a
+                :href="ACCUPASS_URL"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 bg-white text-navy rounded-full px-6 py-2.5 text-sm font-bold shadow-lg hover:-translate-y-0.5 transition-transform"
+              >
+                前往 Accupass 報名
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
             </div>
           </div>
         </div>
@@ -268,6 +354,163 @@ const mediaReports = [
       </div>
     </section>
 
+
+    <!-- 賽制與報名資訊（資料來源：Accupass 官方活動頁）-->
+    <section class="py-16 lg:py-20 bg-white">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
+          <span class="w-5 h-0.5 bg-orange" />
+          賽制與報名
+        </div>
+        <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-10 leading-tight">
+          比賽組別與<span class="text-orange">賽制說明</span>
+        </h2>
+
+        <!-- 比賽組別與預計選手人數 -->
+        <h3 class="font-serif text-2xl font-black text-navy mb-2">比賽組別與預計選手人數</h3>
+        <p class="text-ink/60 leading-relaxed mb-6">
+          39 歲以下、40–49 歲、50–59 歲、60–69 歲、70–79 歲，各分男女組共十組，另特別加開 80 歲以上不分性別的長者推廣組。
+        </p>
+        <div class="grid md:grid-cols-3 gap-4 mb-14">
+          <div
+            v-for="g in competitionGroups"
+            :key="g.key"
+            class="bg-cream rounded-2xl p-6 border border-navy/10"
+          >
+            <div class="flex items-baseline gap-2 mb-4">
+              <h4 class="font-serif text-xl font-black text-navy">{{ g.label }}</h4>
+              <span class="text-xs font-bold text-orange bg-orange/10 rounded-full px-2.5 py-0.5">{{ g.count }}</span>
+            </div>
+            <ul class="space-y-1.5">
+              <li v-for="item in g.items" :key="item" class="flex items-center gap-2 text-sm text-ink/70">
+                <span class="w-1.5 h-1.5 rounded-full bg-orange shrink-0" />
+                {{ item }}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 報名費用 -->
+        <h3 class="font-serif text-2xl font-black text-navy mb-6">報名費用</h3>
+        <div class="grid sm:grid-cols-2 gap-4 mb-6">
+          <div
+            v-for="fee in entryFees"
+            :key="fee.name"
+            :class="[
+              'rounded-2xl p-6 border',
+              fee.current ? 'bg-orange/[0.06] border-orange/40' : 'bg-cream border-navy/10',
+            ]"
+          >
+            <div class="text-sm font-bold mb-1" :class="fee.current ? 'text-orange' : 'text-ink/50'">{{ fee.name }}</div>
+            <div class="font-serif text-3xl font-black text-navy mb-2">
+              NT$ {{ fee.price }}<span class="text-base font-bold text-ink/50"> / 人</span>
+            </div>
+            <div class="text-sm text-ink/60">{{ fee.period }}</div>
+          </div>
+        </div>
+        <div class="bg-navy/[0.04] rounded-xl px-5 py-3.5 text-sm text-ink/70 mb-14">
+          賽程預計於 <strong class="text-navy">2026/11/6（星期五）前</strong>公佈。
+        </div>
+
+        <!-- 比賽方式與計分說明 -->
+        <h3 class="font-serif text-2xl font-black text-navy mb-6">比賽方式與計分說明</h3>
+        <ol class="space-y-3 mb-8">
+          <li v-for="(rule, i) in raceRules" :key="i" class="flex items-start gap-3">
+            <span class="w-6 h-6 rounded-full bg-orange/12 text-orange text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+              {{ i + 1 }}
+            </span>
+            <span class="text-ink/70 leading-relaxed">{{ rule }}</span>
+          </li>
+        </ol>
+
+        <div class="grid md:grid-cols-3 gap-4 mb-14">
+          <div
+            v-for="st in stations"
+            :key="st.n"
+            class="bg-cream rounded-2xl p-6 border border-navy/10"
+          >
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-bold text-white bg-navy rounded-full px-2.5 py-0.5">{{ st.n }}</span>
+              <span class="text-xs font-bold text-orange bg-orange/10 rounded-full px-2.5 py-0.5">{{ st.limit }}</span>
+            </div>
+            <h4 class="font-serif text-xl font-black text-navy mb-3">{{ st.name }}</h4>
+            <ul class="space-y-1.5">
+              <li v-for="pt in st.points" :key="pt" class="flex items-start gap-2 text-sm text-ink/65 leading-relaxed">
+                <span class="text-orange mt-0.5">・</span>{{ pt }}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 重量與距離說明 -->
+        <h3 class="font-serif text-2xl font-black text-navy mb-6">重量與距離說明</h3>
+        <div class="overflow-x-auto mb-14 rounded-2xl border border-navy/10">
+          <table class="w-full min-w-[640px] text-sm bg-white">
+            <thead>
+              <tr class="bg-navy text-white">
+                <th rowspan="2" class="text-left font-bold px-4 py-3 align-middle">組別</th>
+                <th colspan="3" class="font-bold px-4 py-2 border-l border-white/15">第一關｜六角槓硬舉 (kg)</th>
+                <th rowspan="2" class="font-bold px-4 py-3 align-middle border-l border-white/15">第二關<br />推雪橇 (kg)</th>
+                <th rowspan="2" class="font-bold px-4 py-3 align-middle border-l border-white/15">第二關<br />單側農夫走路 (kg)</th>
+                <th rowspan="2" class="font-bold px-4 py-3 align-middle border-l border-white/15">第三關<br />風扇車 (km)</th>
+              </tr>
+              <tr class="bg-navy/90 text-white">
+                <th class="font-medium px-4 py-1.5 border-l border-white/15">輕</th>
+                <th class="font-medium px-4 py-1.5">中</th>
+                <th class="font-medium px-4 py-1.5">重</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(row, i) in weightTable"
+                :key="row.group"
+                :class="i % 2 ? 'bg-cream/50' : 'bg-white'"
+              >
+                <td class="px-4 py-3 font-semibold text-navy whitespace-nowrap">{{ row.group }}</td>
+                <td class="px-4 py-3 text-center text-ink/70">{{ row.light }}</td>
+                <td class="px-4 py-3 text-center text-ink/70">{{ row.mid }}</td>
+                <td class="px-4 py-3 text-center text-ink/70">{{ row.heavy }}</td>
+                <td class="px-4 py-3 text-center text-ink/70">{{ row.sled }}</td>
+                <td class="px-4 py-3 text-center text-ink/70">{{ row.farmer }}</td>
+                <td class="px-4 py-3 text-center text-ink/70">{{ row.bike }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 選手 T 尺寸表 -->
+        <h3 class="font-serif text-2xl font-black text-navy mb-2">選手 T 尺寸表</h3>
+        <p class="text-ink/60 leading-relaxed mb-6">Model 試穿狀況，提供你挑選尺寸時參考。</p>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-10">
+          <div
+            v-for="(f, i) in tshirtFits"
+            :key="i"
+            class="flex items-center gap-4 bg-cream rounded-xl px-5 py-4 border border-navy/10"
+          >
+            <div class="font-serif text-2xl font-black text-orange w-10 shrink-0">{{ f.size }}</div>
+            <div class="text-sm text-ink/70 leading-relaxed">
+              {{ f.body }}／{{ f.height }}／{{ f.weight }}<br />
+              <span class="text-ink/50">穿著感受{{ f.fit }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <a
+            :href="ACCUPASS_URL"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3.5 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors"
+          >
+            前往 Accupass 報名
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- Origin & Milestones -->
     <section class="py-16 lg:py-20 bg-white">
       <div class="container mx-auto px-4">
@@ -278,13 +521,6 @@ const mediaReports = [
         <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-8">
           賽事緣起與<span class="text-orange">里程碑</span>
         </h2>
-
-        <!-- 緣起內文 -->
-        <div class="max-w-3xl mx-auto space-y-4 text-ink/70 leading-relaxed mb-14">
-          <p>LKK 聖誕老人硬舉大賽誕生於 2021 年，起源於練健康發現許多中高齡學員自從開始訓練後，雖然有明顯的進步，卻苦於全台灣沒有可以讓他們展現成果的舞台。</p>
-          <p>第一屆賽事以極具趣味性的「聖誕老人硬舉邀請賽」出發，成功引發大眾及媒體熱烈迴響。隨後數年間，隨著中高齡訓練的風氣逐漸打開，賽事規模逐年擴大。</p>
-          <p>演進至今年，更全面進化為涵蓋<strong class="text-navy">肌力、爆發力、核心能力與心肺有氧能力</strong>四大面向的 LKK4 聖誕老人功能錦標賽。</p>
-        </div>
 
         <!-- 里程碑時間軸 -->
         <div class="max-w-3xl mx-auto mb-12">
@@ -318,7 +554,7 @@ const mediaReports = [
           </div>
           <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-3">歷年參賽成績搜尋</h2>
           <p class="text-ink/60 max-w-xl mx-auto mb-6 leading-relaxed">
-            查詢歷屆 LKK4 選手的個人參賽成績與排名紀錄。
+            查詢歷屆選手的參賽成績與排名紀錄
           </p>
           <NuxtLink to="/personal-record" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -351,36 +587,6 @@ const mediaReports = [
       </div>
     </section>
 
-    <!-- Commercial CTA -->
-    <section class="py-16 lg:py-20 bg-gradient-to-br from-[#1a3545] to-[#0e2230] text-white">
-      <div class="container mx-auto px-4">
-        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
-          商業與公關洽詢
-        </div>
-        <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3 text-center">
-          攜手 LKK4，共同開創<span class="text-orange">銀髮健康新經濟</span>
-        </h2>
-        <p class="text-white/60 text-lg max-w-2xl mx-auto text-center mb-10">
-          LKK4 是全台規模最大的中高齡全能體能挑戰賽，我們誠摯歡迎企業贊助、加盟通路、技術研究或媒體採訪，共同發揮品牌影響力：
-        </p>
-
-        <div class="max-w-2xl mx-auto">
-          <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-6 text-center">
-            <h3 class="font-serif text-xl font-black text-white mb-2">
-              企業贊助與<span class="text-orange">品牌合作</span>
-            </h3>
-            <p class="text-white/60 text-sm leading-relaxed mb-5">
-              我們為重視大健康、高齡福祉、運動醫療與永續社會責任（ESG）的企業夥伴提供多元的賽事贊助方案，包含現場常駐 logo 牆露出、媒體聯合行銷等機會。
-            </p>
-            <NuxtLink to="/cooperation" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-6 py-2.5 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors text-sm">
-              洽談贊助與合作 →
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- CTA Banner -->
     <section class="py-16 lg:py-20 bg-cream">
       <div class="container mx-auto px-4 text-center">
@@ -388,11 +594,19 @@ const mediaReports = [
           準備好挑戰自己了嗎？
         </h2>
         <p class="text-ink/60 mb-8 max-w-xl mx-auto">
-          無論你現在的程度如何，LKK4 歡迎所有熱愛運動的人。先從免費體驗開始，讓教練幫你評估實力！
+          無論你現在的程度如何，LKK4 歡迎所有熱愛運動的人。
         </p>
-        <NuxtLink to="/booking" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-          預約免費體驗 →
-        </NuxtLink>
+        <a
+          :href="ACCUPASS_URL"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5h14a2 2 0 012 2v3a2 2 0 000 4v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a2 2 0 000-4V7a2 2 0 012-2z" />
+          </svg>
+          立即報名 LKK4
+        </a>
       </div>
     </section>
   </div>
