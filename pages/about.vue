@@ -148,8 +148,8 @@ const programGroups = [
         />
       </div>
 
-      <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
+      <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 text-center">
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
           <span class="w-5 h-0.5 bg-orange" />
           About LKK Wellness
         </div>
@@ -157,13 +157,13 @@ const programGroups = [
         <h1 class="font-serif text-5xl lg:text-6xl font-black leading-tight mb-2">
           健康，<span class="text-orange">是練出來的</span>
         </h1>
-        <div class="w-16 h-1 bg-orange rounded-full mb-6" />
+        <div class="w-16 h-1 bg-orange rounded-full mb-6 mx-auto" />
 
-        <p class="text-white/60 text-lg font-light leading-relaxed max-w-4xl mb-8">
+        <p class="text-white/60 text-lg font-light leading-relaxed max-w-4xl mx-auto mb-8">
           練健康是一間專注於中高齡及特殊族群的肌力訓練中心。我們相信年齡不是限制，而是開始——期望每一個人，都能擁有獨立自主、有尊嚴的健康晚年生活。
         </p>
 
-        <div class="flex flex-wrap gap-3">
+        <div class="flex flex-wrap justify-center gap-3">
           <div
             v-for="p in heroPills"
             :key="p.k"
