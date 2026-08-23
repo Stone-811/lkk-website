@@ -27,18 +27,12 @@ const sectionNav = [
   { id: 'locations', label: '分店' },
 ]
 
-const stats = [
-  { n: '10', u: '萬', l: 'Instagram 追蹤' },
-  { n: '2.85', u: '萬', l: 'YouTube 訂閱' },
-  { n: '2.4', u: '萬', l: 'Facebook 追蹤' },
-  { n: '290', u: '萬次', l: '單支影片最高觸及' },
-]
-
+// 社群：帳號、追蹤數與連結合併成一組卡片（數字來源＝業主 2026-08-23 提供的截圖）
 const socials = [
-  { name: 'Facebook', href: 'https://www.facebook.com/LKKWellnessCenter/', path: 'M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z' },
-  { name: 'Instagram', href: 'https://www.instagram.com/lkk_wellness/', path: 'M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z' },
-  { name: 'YouTube', href: 'https://www.youtube.com/c/LKKWellness', path: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z' },
-  { name: 'Podcast', href: 'https://open.spotify.com/show/1NeH1kghKxKkmOCftRGuVG', path: 'M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z' },
+  { name: 'Facebook', handle: '練健康', n: '7.3', u: '萬', href: 'https://www.facebook.com/LKKWellnessCenter/', path: 'M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z' },
+  { name: 'YouTube', handle: '練健康', n: '8', u: '萬', href: 'https://www.youtube.com/c/LKKWellness', path: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z' },
+  { name: 'Instagram', handle: '@lkk_wellness', n: '16', u: '萬', href: 'https://www.instagram.com/lkk_wellness/', path: 'M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z' },
+  { name: 'Podcast', handle: '初一十五練健康', href: 'https://open.spotify.com/show/1NeH1kghKxKkmOCftRGuVG', path: 'M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z' },
 ]
 
 const brandPillars = [
@@ -51,7 +45,7 @@ const brandPillars = [
 const pillars = [
   { n: '1', t: '中高齡訓練推廣', d: '來自各領域的教練團隊，協助中高齡與特殊族群重新擁有健康的體能與肌力，把身體的自主權練回來。' },
   { n: '2', t: '知識科普教育', d: '以深入淺出的方式轉譯專業知識與最新研究，讓正確的訓練觀念真的走進一般家庭，而不只留在論文裡。' },
-  { n: '3', t: '運動醫學為本', d: '以運動科學與醫學為基礎，為中高齡、術後與運動員族群提供專業、量身設計的訓練課表。' },
+  { n: '3', t: '永續經營', d: '透過系統化的知識與人才培育，讓練健康的影響力不侷限在場館中，而能持續複製、傳承、擴散，讓健康遍地開花。' },
 ]
 
 const timeline = [
@@ -75,16 +69,16 @@ const managementTeam = [
     nickname: '肥老闆',
     title: '創辦人暨執行長',
     photo: '/images/team/huang-yuanjie.png',
-    description: '練健康創辦人，經濟學碩士背景，曾任職於健身產業行銷與國際產品管理。看見台灣中高齡族群的運動需求，創立練健康，投入中高齡健身品牌的經營。',
-    credentials: ['台大農經所碩士', 'IHFI 台灣 CPT 國際健康體適能專業人員', 'CPR + AED 認證'],
+    description: '練健康創辦人，經濟學碩士背景，曾跨足健身產業行銷與海外業務開發。看見台灣中高齡族群的運動需求，創立練健康，投入中高齡健身品牌的經營。',
+    credentials: ['台大農經所碩士', 'IHFI 台灣 CPT 國際健康體適能專業人員'],
   },
   {
     id: '2',
     name: '曾子桓',
-    nickname: 'Giwane',
-    title: '訓練部區域經理・肌力與體能教練',
+    nickname: 'Michael',
+    title: '訓練部區經理・肌力與體能教練',
     photo: '/images/team/tseng-tzuhuan.webp',
-    description: '專精肌力與體能訓練、運動表現提升及中高齡族群訓練，具備豐富的運動員培訓經驗，負責教練團隊的訓練品質把關。',
+    description: '專精肌力與體能訓練、運動表現提升及中高齡族群訓練。現任訓練部區經理，統籌門市營運與教練團隊管理，把關訓練與服務品質。',
     credentials: ['NSCA-CSCS', 'TSCA-SCC', 'SMA 運動總監認證', 'ASCA-VBT', 'AFAA-WT'],
   },
   {
@@ -158,7 +152,6 @@ const programGroups = [
         <div class="flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
           <span class="w-5 h-0.5 bg-orange" />
           About LKK Wellness
-          <span class="text-white/30 tracking-normal normal-case font-medium">・Est. 2019</span>
         </div>
 
         <h1 class="font-serif text-5xl lg:text-6xl font-black leading-tight mb-2">
@@ -166,8 +159,8 @@ const programGroups = [
         </h1>
         <div class="w-16 h-1 bg-orange rounded-full mb-6" />
 
-        <p class="text-white/60 text-lg font-light leading-relaxed max-w-2xl mb-8">
-          練健康是一間專注於中高齡、術後及特殊健康族群的肌力訓練中心。我們相信年齡不是限制，而是開始——期望每一個人，都能擁有獨立自主、有尊嚴的健康晚年生活。
+        <p class="text-white/60 text-lg font-light leading-relaxed max-w-4xl mb-8">
+          練健康是一間專注於中高齡及特殊族群的肌力訓練中心。我們相信年齡不是限制，而是開始——期望每一個人，都能擁有獨立自主、有尊嚴的健康晚年生活。
         </p>
 
         <div class="flex flex-wrap gap-3">
@@ -224,38 +217,15 @@ const programGroups = [
           </span>
         </div>
 
-        <div class="bg-white rounded-2xl border border-navy-700/12 shadow-sm p-4 lg:p-6 overflow-x-auto max-w-3xl mx-auto">
-          <svg viewBox="0 0 820 420" class="w-full min-w-[520px] h-auto" role="img" aria-label="肌力隨年齡下滑與持續訓練的對照圖">
-            <!-- 軸 -->
-            <line x1="90" y1="40" x2="90" y2="360" stroke="#2A5269" stroke-opacity="0.25" stroke-width="2" />
-            <line x1="90" y1="360" x2="790" y2="360" stroke="#2A5269" stroke-opacity="0.25" stroke-width="2" />
-            <text x="70" y="60" text-anchor="end" font-size="14" fill="#2A5269" fill-opacity="0.5">高</text>
-            <text x="70" y="352" text-anchor="end" font-size="14" fill="#2A5269" fill-opacity="0.5">低</text>
-            <text x="30" y="210" font-size="13" fill="#2A5269" fill-opacity="0.5" transform="rotate(-90 30 210)" text-anchor="middle">身體功能</text>
-            <text x="120" y="392" font-size="13" fill="#2A5269" fill-opacity="0.5">40 歲</text>
-            <text x="760" y="392" font-size="13" fill="#2A5269" fill-opacity="0.5" text-anchor="end">90 歲</text>
-
-            <!-- 落差陰影 -->
-            <path d="M120,95 C330,120 540,175 770,250 L770,368 C540,300 330,160 120,95 Z" fill="#FB720A" fill-opacity="0.13" />
-
-            <!-- 日常獨立生活門檻 -->
-            <line x1="90" y1="300" x2="790" y2="300" stroke="#2A5269" stroke-opacity="0.5" stroke-width="1.5" stroke-dasharray="6 6" />
-            <text x="784" y="292" text-anchor="end" font-size="13" fill="#2A5269" fill-opacity="0.6">日常獨立生活門檻</text>
-
-            <!-- 自然老化 -->
-            <path d="M120,95 C330,160 540,300 770,368" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
-            <circle cx="770" cy="368" r="6" fill="#94a3b8" />
-            <text x="470" y="332" font-size="16" font-weight="bold" fill="#64748b">自然老化</text>
-
-            <!-- 持續訓練 -->
-            <path d="M120,95 C330,120 540,175 770,250" fill="none" stroke="#FB720A" stroke-width="5" stroke-linecap="round" />
-            <circle cx="120" cy="95" r="6" fill="#FB720A" />
-            <circle cx="770" cy="250" r="6" fill="#FB720A" />
-            <text x="612" y="203" font-size="16" font-weight="bold" fill="#FB720A">持續訓練</text>
-
-            <!-- 落差標籤 -->
-            <text x="404" y="243" font-size="17" font-weight="bold" fill="#2A5269">這段落差，是練出來的</text>
-          </svg>
+        <div class="max-w-4xl mx-auto">
+          <img
+            src="/images/about/belief-chart.webp"
+            alt="提升肌力是延緩失能的關鍵：有在訓練與沒在訓練的身體活動功能隨年齡變化對照圖"
+            loading="lazy"
+            width="1600"
+            height="904"
+            class="w-full h-auto rounded-2xl border border-navy-700/12 shadow-sm"
+          />
         </div>
       </div>
     </section>
@@ -273,35 +243,30 @@ const programGroups = [
         </h2>
         <div class="space-y-4 text-ink/70 leading-relaxed max-w-3xl mx-auto mb-8">
           <p>中高齡訓練的難處，從來不只是「怎麼練」。它牽涉到疾病史、用藥、關節限制、營養、心理與家庭支持，單一專業無法涵蓋。我們深知中高齡族群的身體需求，也知道錯誤的訓練會造成什麼後果——因此從評估、課表到現場指導，都由具備醫療或運動科學專業的教練把關，讓每一堂課都建立在專業與安全之上。</p>
-          <p>現場教學之外，練健康也是一個運動科學科普平台：把正確知識轉譯成一般人聽得懂的語言，並分享中高齡與特殊族群真實的訓練紀錄，鼓勵每一個人加入訓練的行列。</p>
+          <p>現場教學之外，練健康也是一個運動科學科普平台，把正確知識轉譯成一般人聽得懂的語言，並定期分享中高齡與特殊族群真實的訓練紀錄，鼓勵每一個人加入訓練的行列。</p>
         </div>
 
-        <!-- 社群 -->
-        <div class="flex flex-wrap justify-center gap-2.5 mb-10">
+        <!-- 社群帳號與追蹤數 -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <a
             v-for="s in socials"
             :key="s.name"
             :href="s.href"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center gap-2.5 bg-white border border-navy-700/12 rounded-full pl-1.5 pr-5 py-1.5 hover:border-orange/40 hover:shadow-sm transition-all"
+            class="group bg-cream-100 rounded-2xl border border-navy-700/10 p-5 text-center hover:border-orange/40 hover:shadow-sm transition-all"
           >
-            <span class="w-8 h-8 rounded-full bg-[#16202b] text-white flex items-center justify-center flex-shrink-0">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path :d="s.path" /></svg>
+            <span class="w-10 h-10 rounded-full bg-[#16202b] text-white flex items-center justify-center mx-auto mb-3 group-hover:bg-orange transition-colors">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path :d="s.path" /></svg>
             </span>
-            <span class="text-sm font-medium text-navy-700">{{ s.name }}</span>
-          </a>
-        </div>
-
-        <!-- 社群數據 -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div v-for="s in stats" :key="s.l" class="bg-cream-100 rounded-2xl border border-navy-700/10 p-5 text-center">
-            <div class="font-serif text-navy-700 leading-none">
+            <div class="text-xs text-ink/55 leading-snug mb-1.5 truncate">{{ s.handle }}</div>
+            <div v-if="s.n" class="font-serif text-navy-700 leading-none">
               <span class="text-3xl font-black">{{ s.n }}</span><span class="text-base font-bold text-navy-700/60 ml-0.5">{{ s.u }}</span>
             </div>
-            <div class="text-xs text-ink/55 mt-2 leading-snug">{{ s.l }}</div>
-          </div>
+            <div v-else class="text-sm font-bold text-navy-700 leading-none py-1.5">前往收聽 →</div>
+          </a>
         </div>
+        <p class="text-xs text-ink/45 mt-4">單支影片最高觸及 290 萬次</p>
       </div>
     </section>
 
