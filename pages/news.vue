@@ -118,8 +118,11 @@ const tw: Report[] = [
   },
 ]
 
+// 完整報導紀錄清單只顯示年份，date 內含月日與記者名的部分不呈現
+const yearOf = (d?: string) => (d || '').match(/\d{4}/)?.[0] || ''
+
 const more: Report[] = [
-  { outlet: '強者我朋友 Podcast', cat: 'Podcast', type: 'video', lkk4: false, date: '2026-05-08',
+  { outlet: '志祺七七', cat: 'Podcast', type: 'video', lkk4: false, date: '2026-05-08',
     title: '90 歲阿嬤也能硬舉！要怎麼說服爸媽去運動？ft. 練健康鄭宇劭總教練《強者我朋友》EP 054',
     link: { text: '閱讀全文 →', href: 'https://l-kk.tw/90%e6%ad%b2%e9%98%bf%e5%ac%a4%e4%b9%9f%e8%83%bd%e7%a1%ac%e8%88%89%ef%bc%81%e8%a6%81%e6%80%8e%e9%ba%bc%e8%aa%aa%e6%9c%8d%e7%88%b8%e5%aa%bd%e5%8e%bb%e9%81%8b%e5%8b%95%ef%bc%9f%e9%87%8d%e8%a8%93%e6%9c%80/' } },
   { outlet: '高年級不打烊 Podcast', cat: 'Podcast', type: 'video', lkk4: true, date: '2026-05-08',
@@ -128,9 +131,6 @@ const more: Report[] = [
   { outlet: 'TVBS 新聞', cat: '電視新聞', type: 'video', lkk4: false, date: '2026-03-21',
     title: '影音／專家揭心理健康 3 警訊！功能喪失、關係疏離，恐失去生命意義',
     link: { text: '閱讀全文 →', href: 'https://l-kk.tw/%e5%bd%b1%e9%9f%b3%ef%bc%8f%e5%b0%88%e5%ae%b6%e6%8f%ad%e5%bf%83%e7%90%86%e5%81%a5%e5%ba%b73%e8%ad%a6%e8%a8%8a%ef%bc%81%e5%8a%9f%e8%83%bd%e5%96%aa%e5%a4%b1%e3%80%80-%e9%97%9c%e4%bf%82%e7%96%8f%e9%9b%a2/' } },
-  { outlet: '初一十五練健康 Podcast', cat: 'Podcast', type: 'video', lkk4: false, date: '2025-12-04',
-    title: '肌肉流失比你想的更早！亞洲肌少症診斷指引更新（自製內容）',
-    link: { text: '閱讀全文 →', href: 'https://l-kk.tw/sarcopenia-6/' } },
   { outlet: '科技新報 TechNews', cat: '科技・健康', type: 'print', lkk4: false, date: '2025-10-02',
     title: '北榮結合運動科學與醫學，創滑雪運動員全方位檢測體系',
     link: { text: '閱讀全文 →', href: 'https://l-kk.tw/ski/' } },
@@ -336,12 +336,12 @@ const showMore = computed(() => fMore.value.length > 0)
           >
             <div class="flex items-center gap-2 flex-wrap sm:w-48 sm:shrink-0">
               <span class="text-xs font-bold text-orange">{{ item.outlet }}</span>
-              <span v-if="item.lkk4" class="text-[10px] font-bold bg-orange/12 text-orange px-1.5 py-0.5 rounded">LKK4</span>
             </div>
             <div class="flex-1 min-w-0">
               <div class="text-sm font-medium text-navy-700 group-hover:text-orange transition-colors leading-snug">{{ item.title }}</div>
             </div>
-            <span class="text-orange text-sm font-bold sm:shrink-0 whitespace-nowrap">{{ item.link.text }}</span>
+            <div class="text-xs text-ink/40 sm:shrink-0 sm:text-right">{{ yearOf(item.date) }}</div>
+            <span class="text-orange text-sm font-bold sm:shrink-0 whitespace-nowrap">閱讀全文 →</span>
           </a>
         </div>
 
@@ -352,7 +352,7 @@ const showMore = computed(() => fMore.value.length > 0)
             rel="noopener noreferrer"
             class="inline-flex items-center gap-2 text-navy-700 border border-navy-700/15 px-6 py-2.5 rounded-full hover:border-navy-700 transition-colors font-medium"
           >
-            查看全部 36+ 篇報導（舊網站）→
+            查看全部報導 →
           </a>
         </div>
       </div>
