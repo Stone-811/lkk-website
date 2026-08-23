@@ -95,7 +95,7 @@ const courses = [
             to="/lkk-lecturer"
             class="px-4 py-2 rounded-full whitespace-nowrap font-medium bg-navy text-white"
           >
-            練健康授權講師
+            練健康認證講師
           </NuxtLink>
           <NuxtLink
             to="/co-lecturer"

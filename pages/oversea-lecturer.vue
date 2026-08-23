@@ -100,7 +100,7 @@ const steps = [
             to="/lkk-lecturer"
             class="px-4 py-2 rounded-full whitespace-nowrap font-medium bg-cream-200 text-ink hover:bg-cream-300 transition-colors"
           >
-            練健康授權講師
+            練健康認證講師
           </NuxtLink>
           <NuxtLink
             to="/co-lecturer"
@@ -133,7 +133,8 @@ const steps = [
           <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-8">
             海外<span class="text-orange">授權講師</span>
           </h2>
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          <!-- auto-fit + justify-center：人數少於欄數時卡片會置中，卡片寬度上限 195px 與練健康認證講師頁一致 -->
+          <div class="grid grid-cols-[repeat(auto-fit,minmax(150px,195px))] justify-center gap-4">
           <article
             v-for="lecturer in overseasLecturers"
             :key="lecturer.id"
