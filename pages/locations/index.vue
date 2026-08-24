@@ -10,20 +10,13 @@ useHead({
 })
 
 // 分店資料：由後台分店管理（Firestore /api/public/stores）驅動；抓不到時用 fallback，頁面永不空白。
-// 註：mrt 敘述與行銷標籤 features 在 DB 沒有欄位，以 slug 對應補上。
+// 註：mrt 敘述在 DB 沒有欄位，以 slug 對應由 useStoreDefaults 補上。
 const FALLBACK_STORES = [
-  { id: 'xindian', name: '七張店', district: '新北市新店區', address: '新北市新店區北新路二段 252 號 B1-2', mrt: '鄰近捷運七張站', features: ['一對一訓練', '寬敞空間'] },
-  { id: 'nanjing', name: '南京店', district: '台北市中山區', address: '台北市中山區南京東路三段 29 號 B1', mrt: '鄰近捷運松江南京站', features: ['一對一訓練', '團體課程'] },
-  { id: 'songjiang', name: '松江店', district: '台北市中山區', address: '台北市中山區松江路 122 號 B1', mrt: '鄰近捷運松江南京站', features: ['一對一訓練'] },
-  { id: 'ximending', name: '西門店', district: '台北市中正區', address: '台北市中正區寶慶路 39 號', mrt: '鄰近捷運西門站', features: ['一對一訓練', '團體課程'] },
+  { id: 'xindian', name: '七張店', district: '新北市新店區', address: '新北市新店區北新路二段 252 號 B1-2', mrt: '鄰近捷運七張站' },
+  { id: 'nanjing', name: '南京店', district: '台北市中山區', address: '台北市中山區南京東路三段 29 號 B1', mrt: '鄰近捷運松江南京站' },
+  { id: 'songjiang', name: '松江店', district: '台北市中山區', address: '台北市中山區松江路 122 號 B1', mrt: '鄰近捷運松江南京站' },
+  { id: 'ximending', name: '西門店', district: '台北市中正區', address: '台北市中正區寶慶路 39 號', mrt: '鄰近捷運西門站' },
 ]
-
-const FEATURES_BY_SLUG: Record<string, string[]> = {
-  xindian: ['一對一訓練', '寬敞空間'],
-  nanjing: ['一對一訓練', '團體課程'],
-  songjiang: ['一對一訓練'],
-  ximending: ['一對一訓練', '團體課程'],
-}
 
 const { getStoreDefaults } = useStoreDefaults()
 
@@ -39,7 +32,6 @@ const stores = computed(() => {
     district: `${s.city || ''}${s.district || ''}`,
     address: `${s.city || ''}${s.district || ''}${s.address || ''}`,
     mrt: toNearestMrt(getStoreDefaults(s.slug)?.description),
-    features: FEATURES_BY_SLUG[s.slug] || ['一對一訓練'],
   }))
 })
 
@@ -50,7 +42,6 @@ const stats = [
   { num: '4', label: '間分店' },
   { num: '10,000+', label: '服務學員' },
   { num: '7 年', label: '深耕中高齡' },
-  { num: '100%', label: '鄰近捷運' },
 ]
 
 const reasons = [
@@ -118,7 +109,7 @@ const reasons = [
     <!-- Stats Bar -->
     <div class="bg-white border-b border-navy/15">
       <div class="container mx-auto px-4">
-        <div class="grid grid-cols-2 lg:grid-cols-4 divide-x divide-navy/15">
+        <div class="grid grid-cols-3 divide-x divide-navy/15">
           <div v-for="stat in stats" :key="stat.label" class="py-5 text-center">
             <div class="font-serif text-2xl lg:text-3xl font-black text-navy">{{ stat.num }}</div>
             <div class="text-xs text-ink/50 mt-0.5">{{ stat.label }}</div>
@@ -168,17 +159,6 @@ const reasons = [
                   </svg>
                   <span>{{ store.mrt }}</span>
                 </div>
-              </div>
-
-              <!-- Features -->
-              <div class="flex flex-wrap gap-1.5 mb-4">
-                <span
-                  v-for="feature in store.features"
-                  :key="feature"
-                  class="text-xs font-medium text-navy bg-navy/[0.08] px-2.5 py-0.5 rounded-full"
-                >
-                  {{ feature }}
-                </span>
               </div>
 
               <!-- CTA -->

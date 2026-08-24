@@ -81,12 +81,12 @@ const onlineFeatures = [
 const comparisonData = [
   { item: '個人化程度', personal: '★★★', group: '★★', online: '★' },
   { item: '教練即時指導', personal: '✓', group: '✓', online: '—' },
-  { item: '小班人數', personal: '1 人（純個人）', group: '3-6 人', online: '自主學習' },
+  { item: '小班人數', personal: '1-2人', group: '3-6 人', online: '自主學習' },
   { item: '適合特殊族群', personal: '✓ 最適合', group: '部分課程', online: '—' },
   { item: '時間彈性', personal: '依約定排課', group: '依固定時段', online: '✓ 完全彈性' },
   { item: '需要到分店', personal: '✓', group: '✓', online: '不需要' },
   // 開始方式：各自連到對應的報名入口（to 有值即渲染成連結，http 開頭自動開新分頁）
-  { item: '開始方式', personal: '預約體驗課', personalTo: '/booking', group: '報名團課', groupTo: '/group-booking', online: '線上報名', onlineTo: 'https://sat.cool/course/97' },
+  { item: '開始方式', personal: '預約體驗課', personalTo: '/booking', group: '報名團課', groupTo: '/group-booking', online: '線上購課', onlineTo: 'https://sat.cool/course/97' },
 ]
 
 // 外部連結（http 開頭）另開分頁；站內連結維持同分頁
@@ -535,12 +535,9 @@ const personalFeatures = [
     <!-- 比較表 -->
     <section id="compare" class="py-16 md:py-24 bg-[#1a3545] text-white">
       <div class="container mx-auto px-4">
-        <h2 class="text-3xl md:text-4xl font-bold text-center font-serif mb-4">
+        <h2 class="text-3xl md:text-4xl font-bold text-center font-serif mb-12">
           怎麼選？三種上課形式<span class="text-orange">快速比較</span>
         </h2>
-        <p class="text-center text-cream-200 mb-12 max-w-2xl mx-auto">
-          不確定適合哪一種？先來一堂體驗課，教練會評估你的狀況再建議最適合的方式。
-        </p>
 
         <div class="overflow-x-auto">
           <div class="bg-white/5 rounded-[14px] max-w-4xl mx-auto">
@@ -593,6 +590,10 @@ const personalFeatures = [
           </div>
         </div>
 
+        <!-- 說明文字放在表格下方（看完比較再給建議，順序才合理） -->
+        <p class="text-center text-cream-200 mt-8 max-w-2xl mx-auto">
+          不確定適合哪一種？先來一堂體驗課，教練會評估你的狀況再建議最適合的方式。
+        </p>
       </div>
     </section>
 
