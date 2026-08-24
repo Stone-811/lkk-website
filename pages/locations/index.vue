@@ -11,11 +11,19 @@ useHead({
 
 // 分店資料：由後台分店管理（Firestore /api/public/stores）驅動；抓不到時用 fallback，頁面永不空白。
 // 註：mrt 敘述在 DB 沒有欄位，以 slug 對應由 useStoreDefaults 補上。
+// 門市實景照：DB 沒有這個欄位，以 slug 對應由程式提供
+const STORE_PHOTOS: Record<string, string> = {
+  xindian: '/images/locations/xindian.webp',
+  nanjing: '/images/locations/nanjing.webp',
+  songjiang: '/images/locations/songjiang.webp',
+  ximending: '/images/locations/ximending.webp',
+}
+
 const FALLBACK_STORES = [
-  { id: 'xindian', name: '七張店', district: '新北市新店區', address: '新北市新店區北新路二段 252 號 B1-2', mrt: '鄰近捷運七張站' },
-  { id: 'nanjing', name: '南京店', district: '台北市中山區', address: '台北市中山區南京東路三段 29 號 B1', mrt: '鄰近捷運松江南京站' },
-  { id: 'songjiang', name: '松江店', district: '台北市中山區', address: '台北市中山區松江路 122 號 B1', mrt: '鄰近捷運松江南京站' },
-  { id: 'ximending', name: '西門店', district: '台北市中正區', address: '台北市中正區寶慶路 39 號', mrt: '鄰近捷運西門站' },
+  { id: 'xindian', photo: STORE_PHOTOS.xindian, name: '七張店', district: '新北市新店區', address: '新北市新店區北新路二段 252 號 B1-2', mrt: '鄰近捷運七張站' },
+  { id: 'nanjing', photo: STORE_PHOTOS.nanjing, name: '南京店', district: '台北市中山區', address: '台北市中山區南京東路三段 29 號 B1', mrt: '鄰近捷運松江南京站' },
+  { id: 'songjiang', photo: STORE_PHOTOS.songjiang, name: '松江店', district: '台北市中山區', address: '台北市中山區松江路 122 號 B1', mrt: '鄰近捷運松江南京站' },
+  { id: 'ximending', photo: STORE_PHOTOS.ximending, name: '西門店', district: '台北市中正區', address: '台北市中正區寶慶路 39 號', mrt: '鄰近捷運西門站' },
 ]
 
 const { getStoreDefaults } = useStoreDefaults()
@@ -32,6 +40,7 @@ const stores = computed(() => {
     district: `${s.city || ''}${s.district || ''}`,
     address: `${s.city || ''}${s.district || ''}${s.address || ''}`,
     mrt: toNearestMrt(getStoreDefaults(s.slug)?.description),
+    photo: STORE_PHOTOS[s.slug] || '',
   }))
 })
 
@@ -68,14 +77,27 @@ const reasons = [
     <!-- Hero Section -->
     <section class="relative bg-navy pt-16 overflow-hidden">
       <div class="absolute inset-0">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
-        <div
-          class="absolute inset-0 opacity-[0.022]"
-          :style="{
-            backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)',
-            backgroundSize: '55px 55px',
-          }"
+        <!--
+          分店實景底圖。brightness(.4) + opacity-60 疊在 bg-navy 上是量測後選定的：
+          文字區域最亮 5% 的相對亮度 L=0.077，與原本純 navy 的 0.075 幾乎相同，
+          因此 Hero 上白字（8.3:1）與 orange-300（4.9:1）的對比都維持不變。
+          若不壓暗、只調 opacity，白字會掉到 2.97:1、orange-300 掉到 1.76:1，
+          完全看不清楚——所以 brightness 這層是必要的，不能省。
+
+          brightness 寫成 inline style 是為了讓數值直接出現在產出的 HTML 裡、
+          好驗證；Tailwind 的 [filter:brightness(0.4)] 同樣可用（實測會編譯成
+          .\[filter\:brightness\(0\.4\)\]{filter:brightness(.4)}），兩種都行。
+          ⚠️ 查證 Nuxt 有沒有產出某條 CSS 時，別只 grep _nuxt/*.css——critical CSS
+             會被內嵌進 HTML 的 <style>，只看 .css 檔會誤判成「沒編譯」。
+        -->
+        <img
+          src="/images/locations/overview.webp"
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover opacity-60"
+          style="filter: brightness(0.4)"
         />
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
       </div>
 
       <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 text-center">
@@ -129,8 +151,15 @@ const reasons = [
             class="group bg-white rounded-2xl overflow-hidden border border-navy/15 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1"
           >
             <!-- Store image placeholder -->
-            <div class="aspect-video bg-gradient-to-br from-navy to-navy/80 relative">
-              <div class="absolute inset-0 flex items-center justify-center">
+            <div class="aspect-video bg-gradient-to-br from-navy to-navy/80 relative overflow-hidden">
+              <img
+                v-if="store.photo"
+                :src="store.photo"
+                :alt="`練健康${store.name} 門市環境`"
+                loading="lazy"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div v-else class="absolute inset-0 flex items-center justify-center">
                 <span class="font-serif text-5xl font-black text-white/20">{{ store.name.charAt(0) }}</span>
               </div>
               <!-- District badge -->
