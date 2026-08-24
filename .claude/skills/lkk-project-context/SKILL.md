@@ -146,6 +146,7 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 | 內容 | 唯一來源 | 後台可編？ |
 |---|---|---|
 | 分店營業時間／交通／地圖／電話 | `composables/useStoreDefaults.ts` | ❌ 2026-08-12 起後台已移除此區塊 |
+| 分店頁門市實景照／Hero 底圖 | `pages/locations/index.vue` 的 `STORE_PHOTOS` ＋ `public/images/locations/` | ❌ 程式碼維護（與後台上傳的單店環境照 `store.images.env1~5` 是**兩套不同東西**） |
 | 分店名稱／地址／照片／上架 | Firestore `stores` | ✅ |
 | 教練 | Firestore `coaches` | ✅ |
 | 講師（含 2026-08-23 新增的 `education` 學歷背景） | Firestore `lecturers` | ✅ |
@@ -189,4 +190,27 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - **LKK4 頁（`pages/lkk4.vue`）已全齡改版**：定位「全齡」非中高齡、賽事始於 2021（第六屆＝2026，勿寫 2019），詳見記憶 [[lkk-web-gotchas]]。
 - **後台下拉選單自訂箭頭**（2026-08-05）：`layouts/admin.vue` 根節點掛 `.admin-root`，用**非 scoped 全域 `<style>`** 的 `.admin-root select{appearance:none;background-image:chevron;background-position:right .85rem center;padding-right:2.25rem}` 一次套所有後台 select（原生箭頭改自訂、內縮）。⚠️ layout 用 `scoped`+`:deep()` **無法穩定命中 `<slot/>` 內的頁面 select**（slotted content 屬 page scope）→ 故採「wrapper class＋全域 style」。前台單頁要改 select 箭頭則各頁自己 `<style scoped>`（如 `personal-record.vue`，用 `background-position:right 1rem center`）。
 - **後台版面/表格（2026-08-12）**：後台主內容 wrapper（`layouts/admin.vue` 的 `<div class="flex-1 flex flex-col lg:pl-64">`）已加 **`min-w-0`**——因 `body` 有全域 `overflow-x:hidden`（`assets/css/main.css`），flex 項目預設 `min-width:auto` 會讓寬表格**撐破版面被裁切、無法捲動**；`min-w-0` 讓它收縮、把捲動交回卡片 `overflow-x-auto`（⚠️ **只改卡片 overflow 無效，根因在 wrapper**）。表格頁慣例：卡片 `overflow-x-auto` ＋ 表格 `min-w-[720px]`（或內層 `overflow-x-auto` div ＋ `min-w-full`）。**團課預約後台已完整**（2026-08-19，見下方「團體課報名系統」段）：`pages/admin/group-classes.vue` 讀 `type=group_class`、版型已比照 `/admin/leads`、選單在客戶預約下方（icon `usergroup`）、`sales` 可存取。**分店後台已移除營業時間/交通/Google Maps 連結欄位**（全改由程式統一維護）。詳見 [[lkk-web-gotchas]] 第 18/19 條。
-- **圖片位/切圖**：業主的切圖規格表多數區塊**還沒有真 `<img>` 位**（Hero、首頁門店卡、LKK4 四項卡=SVG、媒體報導=文字、locations/index 店卡=漸層），「放圖」要先改程式；有真圖位的只有 ServicesSection「我們的服務」、`/services`、單一門店環境照（Firestore `store.images.env1~5`）、Team。比例/尺寸/object-fit 詳見 [[lkk-web-gotchas]] 第 11 條。
+- **圖片位/切圖**：業主的切圖規格表多數區塊**還沒有真 `<img>` 位**（首頁 Hero、首頁門店卡、LKK4 四項卡=SVG；**LKK4 媒體報導區塊已於 2026-08-24 移除**；**`locations/index` 已於 2026-08-24 加上真圖**＝Hero 底圖＋四張門市照），「放圖」要先改程式；有真圖位的只有 ServicesSection「我們的服務」、`/services`、單一門店環境照（Firestore `store.images.env1~5`）、Team。比例/尺寸/object-fit 詳見 [[lkk-web-gotchas]] 第 11 條。
+
+---
+
+## 驗證與量測的三個教訓（2026-08-24 實際踩到）
+
+**1. 查「Nuxt 有沒有產出某條 CSS」不能只 grep `_nuxt/*.css`** —— critical CSS 會被**內嵌進 HTML 的 `<style>`**。我因此誤判 Tailwind 的 `[filter:brightness(0.4)]` 沒編譯、做了不必要的「修復」還把錯誤結論寫進 commit message，事後翻舊版 HTML 才發現規則一直都在。**要 grep 整份 HTML，或直接量渲染結果。** 附帶：**Tailwind JIT 會掃原始檔純文字，連註解裡的 class 字串也會編出 CSS**。
+
+**2. 部署輪詢的標記要「先看實際產出再挑」，且要同時驗新出現＋舊消失**。同一批改動連錯三次：
+   (a) 拿區塊內文字當標記，但**別處也有同一串字**（LKK4「新加坡電視台 CNA」在賽事緣起描述裡也有一份）；
+   (b) 新舊字面重疊——舊版 class 名稱 `[filter:brightness(0.4)]` 本身就含 `brightness(0.4)` → 第一次輪詢就假陽性；
+   (c) **Vue SSR 會正規化 style**，輸出 `style="filter:brightness(0.4);"` 沒有空格，我卻 grep 有空格的版本 → 跑滿逾時但其實早就上線。
+   **作法**：先 `curl` 抓 dev 的 HTML、用 `grep -o '<img[^>]*keyword[^>]*>'` 看清原文長相再決定標記 → 條件寫成「新標記 >0 **且** 舊標記 =0」→ 優先選**全新檔案路徑**這種不可能與舊版重疊的東西 → 輪詢前先確認該標記 prod=0、dev=1，證明真的能區分。
+   ⚠️ **第一次輪詢就命中通常是假陽性**（rollout 要 4–7 分鐘），遇到就當標記有問題去複查。
+
+**3. 深色 Hero 換照片底圖要先量對比再選參數**（`pages/locations/index.vue`）。門市實景照偏亮（白天花板＋燈具），直接鋪會把原本合格的文字弄壞：
+
+| 處理 | 白字 | orange-300 |
+|---|---|---|
+| 原本純 navy | 8.37:1 ✅ | 4.96:1 ✅ |
+| 只加 `opacity-60` | 2.97:1 ❌ | 1.76:1 ❌ |
+| `brightness(.4)` + `opacity-60` | 8.30:1 ✅ | 4.92:1 ✅ |
+
+**關鍵是先壓暗再降透明度**，只調 opacity 不夠（亮部仍會穿透）。選定值讓文字區最亮 5% 的相對亮度 L=0.077 ≈ 原本純 navy 的 0.075 ＝**對比完全不變**。量法：Pillow 讀圖 → 取文字所在區塊（垂直 20–90%、水平 15–85%）→ sRGB 線性化算相對亮度 → 取 95 百分位（最壞情況）→ 套 WCAG 對比公式。⚠️ 該 Hero 有一行 `text-white/40` 小字**本來就只有 2.75:1**（既有問題，非這次造成）。
