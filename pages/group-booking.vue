@@ -195,15 +195,16 @@ const isSuccess = ref(false)
 const lineMessage = computed(() => {
   // formData.store 的格式是「南京店｜台北市…」，只取店名
   const store = (formData.store.split('｜')[0] || '').trim()
-  const storeText = store ? `${store} ` : ''
+  // 門店是必填，沒值只是防禦；用整段組字避免退化成「練健康 的課程」多一個空格
+  const venue = store ? `練健康 ${store} ` : '練健康'
   const course = formData.course.trim() || '團體課程'
   const student = formData.name.trim()
   const filler = formData.fillerName.trim()
 
   if (formData.isFillerSelf === '否' && filler) {
-    return `你好，我是 ${filler}，我替 ${student} 報名練健康 ${storeText}的${course}，請協助確認開課梯次。`
+    return `你好，我是 ${filler}，我替 ${student} 報名${venue}的${course}，請協助確認開課梯次。`
   }
-  return `你好，我是 ${student}，我已報名練健康 ${storeText}的${course}，請協助確認開課梯次。`
+  return `你好，我是 ${student}，我已報名${venue}的${course}，請協助確認開課梯次。`
 })
 
 const lineMessageUrl = computed(
