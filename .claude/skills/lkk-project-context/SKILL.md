@@ -95,36 +95,50 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - **本機驗證管線**（無測試框架下的替代）：`npm run build`（⚠️ 不做型別檢查）→ `(set -a; source .env; set +a; unset SMTP_*; NODE_ENV=development ALLOW_DEV_ADMIN=true node .output/server/index.mjs)` → 後台用 dev 後門帳號（見 auth.ts DEV_TEST_USER，須 NODE_ENV≠production 且 ALLOW_DEV_ADMIN=true）→ 瀏覽器 pane 走查＋`javascript_tool` 斷言；表單類改動 curl POST 後用 service account 腳本直讀 Firestore 核對 shape、驗完刪測試文件。unset SMTP_* 可讓寄信乾淨跳過不發真信。
 - ⚠️ **備註存檔競態（已修）**：存檔期間關閉彈窗，舊碼 `selectedLead.value.internalNote` NPE→誤報「儲存失敗」（實際已寫入）。useAdminLeads 已加 null 防護，勿退回。
 
-## 教練資料現況（⚠️ 動 /team-intro/coaches 或教練資料前必看，2026-08-22 更新）
+## 教練資料現況（⚠️ 動 /team-intro/coaches 或教練資料前必看，2026-08-24 更新）
 
-| 分店 | 人數 | 狀態 |
-|---|---|---|
-| 西門店 | 17 | ✅ 已用業主 CSV 更新（2026-08-22，dev＋prod） |
-| 七張店 | 11 | ✅ 已用業主 CSV 更新 |
-| 南京店 | 14 | ⏳ **仍為範本假資料**，9 人誤標物理治療師 |
-| 松江店 | 5 | ⏳ **仍為範本假資料**，3 人誤標物理治療師 |
+| 分店 | 人數 | 狀態 | 缺形象照 |
+|---|---|---|---|
+| 松江店 | **7** | ✅ 業主 CSV（2026-08-24，dev＋prod） | 楊君澤／蔡侑儒／張子誼 |
+| 七張店 | **11** | ✅ 業主 CSV（2026-08-24 重新上傳） | 陳存灝 |
+| 西門店 | **17** | ✅ 業主 CSV（2026-08-24 重新上傳） | 林稚荃／林承緯／盧立軒 |
+| **南京店** | **14** | ❌ **仍是樣板假資料**，多人誤標物理治療師 | — |
 
-**原始問題**：教練資料是「照教練牆照片建檔、內容用範本填」——姓名與分店對，但證照/學歷/經歷是編的、`description` 全空、專長是自創詞彙。最嚴重的是**非物理治療師被標成「物理治療師」並列出「物理治療師證照」**（受《物理治療師法》管制＝合規問題，非資料過期）。西門＋七張的 12 人已修正；**南京、松江的 12 人仍掛在正式站上**。業主 2026-08-22 表示南京/松江 CSV 與新照片後續補上。
+**全站 49 位。南京是最後一塊，等業主給 CSV。**
+
+**原始問題**：教練資料是「照教練牆照片建檔、內容用範本填」——姓名與分店對，但證照/學歷/經歷是編的、`description` 全空。最嚴重的是**非物理治療師被標成「物理治療師」並列出「物理治療師證照」**（受《物理治療師法》管制＝合規問題）。
+
+**怎麼量化判斷某店是不是假資料**（別用肉眼）：比對該店 experiences 的重複率。真資料＝筆數多且幾乎不重複（西門 17 人 69 筆／66 種不重複），假資料＝筆數少且字串重複、**沒有年份沒有具體單位**（南京 14 人只有 29 筆，「健身中心 私人教練」重複 5 次）。
+
+**業主的資料政策（2026-08-24 確認）**：**不在 CSV 清單上的教練就刪除**（松江劉育銘據此刪除，備份留存）。
 
 **業主的分店 CSV 格式**（正確資料源）：`姓名, 英文名字, 分店, 職稱, 學歷/經歷, 證照, 專長1~3`。
 ⚠️ 早期那份 `教練製作物所需資訊_20250826` 是**製作物追蹤表**（含個資與名片/名牌進度欄），**不可**當官網資料源。
 
-**匯入作法（腳本，不要用後台 UI）**：憑證取得見下方部署段／[[lkk-web-deploy]]。流程＝解析 CSV→**先印出每人拆欄結果人工檢視**→產生 dry-run 變更計畫→備份→套用→dev 驗證→prod。
-- **只覆寫 CSV 提供的 6 欄**（name/roleTitle/storeId/education/experiences/certifications/specialties）；`photo`/`sortOrder`/`isActive`/`description` **沿用既有值不覆寫**
-- 「學歷/經歷」是同一欄要拆：`學歷：` 後連續非空行＝學歷，**遇空行後**＝經歷；有 `經歷：`／`證照與研習：` 標記則以標記為準（6 人無標記，靠空行分界）
-- 職稱的 `/`（含 `/／`）正規化成 `・`；證照去掉開頭 `•` 與「證照與研習：」標題列
+**CSV 有兩種格式**：松江版多了官方LINE/電話/Instagram/Email 與製作物進度欄；七張/西門版只有 `姓名, 英文名字, 分店, 職稱, 學歷/經歷, 證照, 專長1~3`。⚠️ **電話／Email／IG／個人 LINE 一律不匯入**（個資，collection 也無此欄位）；英文名字同樣沒有對應欄位。
+
+**匯入作法（腳本，不要用後台 UI）**：憑證取得見下方部署段／[[lkk-web-deploy]]。流程＝解析 CSV→**先 dry-run 印出每人拆欄結果人工檢視**→備份該店現有資料→以**姓名**對應既有文件→更新/新建→刪除不在名單者→dev 驗證→prod。
+- **腳本要放專案目錄執行**（scratchpad 無 node_modules）；**firebase-admin v14 要用模組化 API**（`require('firebase-admin/app')` 的 `initializeApp/applicationDefault` ＋ `firebase-admin/firestore` 的 `getFirestore`），舊的 `admin.credential.applicationDefault()` 會噴 undefined
+- **`photo` 沿用線上既有值**（CSV 沒有照片路徑）；`description` 維持空字串
+- **更名要放對照表**（如 王均佑→王均祐），否則會被判定「不在 CSV」而誤刪
+- **兩道保險**：刪除前完整備份 ＋ 腳本內建「一次刪超過 3 筆就中止」的安全閥；刪除條件要同時限定 `storeId` 與姓名不在該店名單
+- 解析地雷：`•` 項目符號要去除；「證照與研習：」是標題列不是證照；**證照的階層** `-` 開頭＝前一項子項，**前導空白但無破折號者是新的機構標題**；職稱 `/／` 正規化為 `／`
+- **「學歷/經歷」同一欄要拆**：有 `經歷：` 標記就以標記為準；**缺標記時依空行分段**把第 2 段當經歷（28 人裡只有林稚荃一筆需要這樣推測）。⚠️ 判斷「哪些需要人工確認」的警告條件要寫成「**下一段不是以經歷標記開頭**」才警告，否則會 28 人全部誤報
+- **無法確認歸屬的內容 → 業主指示「不確定的就刪掉」**
 - ⚠️ **別用後台逐筆建**：`pages/admin/coaches/[id].vue` 的「學歷」是單行輸入、用逗號切割，CSV 含逗號的學歷會被切壞
 
-**姓名錯字**（已於 2026-08-22 改名並保留照片）：陳詠**佑**→陳詠**侑**、鍾**緯**沛→鍾**絲**沛。松江店另有「王均**佑**→王均**祐**」待處理。
+**姓名錯字**（皆已改名並保留照片）：陳詠**佑**→陳詠**侑**、鍾**緯**沛→鍾**絲**沛（2026-08-22）、王均**佑**→王均**祐**（2026-08-24，松江）。
 
 **照片（2026-08-22 全面換新，dev＋prod 皆已套用）**：業主交付 44 張正式棚拍**去背照**，統一裁成 **3:4 / 750×1000 / WebP 保留透明**（單檔 35–60KB），放 `public/images/coaches/{nanjing,songjiang,ximending,xindian}/<拼音>.webp`。舊照底部「職稱｜姓名」燒字橫幅已全部消失，職稱一律由 `roleTitle` 呈現。
 - ⚠️ **方形／圓形容器一定要加 `object-top`**：新照 3:4、頭部靠上，`object-cover` 置中裁切會切到頭頂。首頁 TeamSection 圓形頭像、教練彈窗 `w-24 h-24`、後台列表/表單都已補上；日後新增放照片的方形容器記得比照。
 - 首頁 TeamSection 三人（鄭宇劭/吳皓宇/蕭彥嶸）走 `public/images/team/`（硬編碼路徑）；講師走 `public/images/lecturers/lkk/`（鄭健寬在講師是 `cheng-jiankuan`、教練是 `zheng-jiankuan`）。
 - **原始未壓縮檔（139MB）移到 repo 根 `_raw-assets/`，已 gitignore**——留在 `public/` 會被打包進 build。裁切腳本在 scratchpad `imgtool/`（sharp：掃 alpha 求主體 bbox → 頭頂留 10% → 3:4 置中）。
 - **改副檔名時**：photo 路徑同時在 Firestore（coaches + lecturers）與 `server/utils/fallback-data.ts`，兩邊都要改；且**先部署再改 Firestore**，否則舊 build 找不到新檔會有一段 404 空窗。
-- **尚無新照片**：林稚荃/林承緯/盧立軒（西門）、陳存灝（七張）→ 顯示姓名首字替代圖、不破版；劉育銘（松江）沿用舊 `songjiang/liu-yuming.jpg` 未刪；`team/huang-yuanjie.png` 仍是舊的 700×500 橫幅照，在 3:4 容器裡裁切明顯。
+- **尚無新照片**：林稚荃/林承緯/盧立軒（西門）、陳存灝（七張）、楊君澤/蔡侑儒/張子誼（松江，CSV 標「待拍攝」）→ 顯示姓名首字替代圖、不破版。`liu-yuming.jpg` 已隨劉育銘刪除一併移除（dev/prod 皆 404）。`team/huang-yuanjie.png` 仍是舊的 700×500 橫幅照，在 3:4 容器裡裁切明顯。
 
-**`server/utils/fallback-data.ts`** 內含 43 筆與舊資料相同的假教練，Firestore 掛掉會頂替顯示＝對外露出已修正掉的錯誤職稱；四店都更新完後要一併處理。
+**`server/utils/fallback-data.ts` 必須跟著改**：Firestore 掛掉時會頂替顯示，**只改 Firestore 不改它＝留了一份假資料隨時可能對外**。松江/七張/西門三店已於 2026-08-24 重建為真實資料，**南京 14 筆仍是假的**。更新時也要檢查人數（原本七張只有 10 筆缺陳存灝、西門只有 14 筆缺 3 人）。
+
+**🔴 石峻瑋的講師照是錯的**：`/images/lecturers/lkk/liuchang.png`（檔名對不上人），內容是**戴全罩安全帽、看不到臉**的人，正掛在正式站 `/lkk-lecturer`。講師另有 4 位無去背照（李柏橋／吳禎明／石峻瑋／阮玟文），以及 4 個沒人引用的中文檔名重複檔（2.5MB）。
 
 
 ## 內容資料放哪裡（⚠️ 改文案／資料前必看，2026-08-23）
@@ -132,6 +146,7 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 | 內容 | 唯一來源 | 後台可編？ |
 |---|---|---|
 | 分店營業時間／交通／地圖／電話 | `composables/useStoreDefaults.ts` | ❌ 2026-08-12 起後台已移除此區塊 |
+| 分店頁門市實景照／Hero 底圖 | `pages/locations/index.vue` 的 `STORE_PHOTOS` ＋ `public/images/locations/` | ❌ 程式碼維護（與後台上傳的單店環境照 `store.images.env1~5` 是**兩套不同東西**） |
 | 分店名稱／地址／照片／上架 | Firestore `stores` | ✅ |
 | 教練 | Firestore `coaches` | ✅ |
 | 講師（含 2026-08-23 新增的 `education` 學歷背景） | Firestore `lecturers` | ✅ |
@@ -175,4 +190,27 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - **LKK4 頁（`pages/lkk4.vue`）已全齡改版**：定位「全齡」非中高齡、賽事始於 2021（第六屆＝2026，勿寫 2019），詳見記憶 [[lkk-web-gotchas]]。
 - **後台下拉選單自訂箭頭**（2026-08-05）：`layouts/admin.vue` 根節點掛 `.admin-root`，用**非 scoped 全域 `<style>`** 的 `.admin-root select{appearance:none;background-image:chevron;background-position:right .85rem center;padding-right:2.25rem}` 一次套所有後台 select（原生箭頭改自訂、內縮）。⚠️ layout 用 `scoped`+`:deep()` **無法穩定命中 `<slot/>` 內的頁面 select**（slotted content 屬 page scope）→ 故採「wrapper class＋全域 style」。前台單頁要改 select 箭頭則各頁自己 `<style scoped>`（如 `personal-record.vue`，用 `background-position:right 1rem center`）。
 - **後台版面/表格（2026-08-12）**：後台主內容 wrapper（`layouts/admin.vue` 的 `<div class="flex-1 flex flex-col lg:pl-64">`）已加 **`min-w-0`**——因 `body` 有全域 `overflow-x:hidden`（`assets/css/main.css`），flex 項目預設 `min-width:auto` 會讓寬表格**撐破版面被裁切、無法捲動**；`min-w-0` 讓它收縮、把捲動交回卡片 `overflow-x-auto`（⚠️ **只改卡片 overflow 無效，根因在 wrapper**）。表格頁慣例：卡片 `overflow-x-auto` ＋ 表格 `min-w-[720px]`（或內層 `overflow-x-auto` div ＋ `min-w-full`）。**團課預約後台已完整**（2026-08-19，見下方「團體課報名系統」段）：`pages/admin/group-classes.vue` 讀 `type=group_class`、版型已比照 `/admin/leads`、選單在客戶預約下方（icon `usergroup`）、`sales` 可存取。**分店後台已移除營業時間/交通/Google Maps 連結欄位**（全改由程式統一維護）。詳見 [[lkk-web-gotchas]] 第 18/19 條。
-- **圖片位/切圖**：業主的切圖規格表多數區塊**還沒有真 `<img>` 位**（Hero、首頁門店卡、LKK4 四項卡=SVG、媒體報導=文字、locations/index 店卡=漸層），「放圖」要先改程式；有真圖位的只有 ServicesSection「我們的服務」、`/services`、單一門店環境照（Firestore `store.images.env1~5`）、Team。比例/尺寸/object-fit 詳見 [[lkk-web-gotchas]] 第 11 條。
+- **圖片位/切圖**：業主的切圖規格表多數區塊**還沒有真 `<img>` 位**（首頁 Hero、首頁門店卡、LKK4 四項卡=SVG；**LKK4 媒體報導區塊已於 2026-08-24 移除**；**`locations/index` 已於 2026-08-24 加上真圖**＝Hero 底圖＋四張門市照），「放圖」要先改程式；有真圖位的只有 ServicesSection「我們的服務」、`/services`、單一門店環境照（Firestore `store.images.env1~5`）、Team。比例/尺寸/object-fit 詳見 [[lkk-web-gotchas]] 第 11 條。
+
+---
+
+## 驗證與量測的三個教訓（2026-08-24 實際踩到）
+
+**1. 查「Nuxt 有沒有產出某條 CSS」不能只 grep `_nuxt/*.css`** —— critical CSS 會被**內嵌進 HTML 的 `<style>`**。我因此誤判 Tailwind 的 `[filter:brightness(0.4)]` 沒編譯、做了不必要的「修復」還把錯誤結論寫進 commit message，事後翻舊版 HTML 才發現規則一直都在。**要 grep 整份 HTML，或直接量渲染結果。** 附帶：**Tailwind JIT 會掃原始檔純文字，連註解裡的 class 字串也會編出 CSS**。
+
+**2. 部署輪詢的標記要「先看實際產出再挑」，且要同時驗新出現＋舊消失**。同一批改動連錯三次：
+   (a) 拿區塊內文字當標記，但**別處也有同一串字**（LKK4「新加坡電視台 CNA」在賽事緣起描述裡也有一份）；
+   (b) 新舊字面重疊——舊版 class 名稱 `[filter:brightness(0.4)]` 本身就含 `brightness(0.4)` → 第一次輪詢就假陽性；
+   (c) **Vue SSR 會正規化 style**，輸出 `style="filter:brightness(0.4);"` 沒有空格，我卻 grep 有空格的版本 → 跑滿逾時但其實早就上線。
+   **作法**：先 `curl` 抓 dev 的 HTML、用 `grep -o '<img[^>]*keyword[^>]*>'` 看清原文長相再決定標記 → 條件寫成「新標記 >0 **且** 舊標記 =0」→ 優先選**全新檔案路徑**這種不可能與舊版重疊的東西 → 輪詢前先確認該標記 prod=0、dev=1，證明真的能區分。
+   ⚠️ **第一次輪詢就命中通常是假陽性**（rollout 要 4–7 分鐘），遇到就當標記有問題去複查。
+
+**3. 深色 Hero 換照片底圖要先量對比再選參數**（`pages/locations/index.vue`）。門市實景照偏亮（白天花板＋燈具），直接鋪會把原本合格的文字弄壞：
+
+| 處理 | 白字 | orange-300 |
+|---|---|---|
+| 原本純 navy | 8.37:1 ✅ | 4.96:1 ✅ |
+| 只加 `opacity-60` | 2.97:1 ❌ | 1.76:1 ❌ |
+| `brightness(.4)` + `opacity-60` | 8.30:1 ✅ | 4.92:1 ✅ |
+
+**關鍵是先壓暗再降透明度**，只調 opacity 不夠（亮部仍會穿透）。選定值讓文字區最亮 5% 的相對亮度 L=0.077 ≈ 原本純 navy 的 0.075 ＝**對比完全不變**。量法：Pillow 讀圖 → 取文字所在區塊（垂直 20–90%、水平 15–85%）→ sRGB 線性化算相對亮度 → 取 95 百分位（最壞情況）→ 套 WCAG 對比公式。⚠️ 該 Hero 有一行 `text-white/40` 小字**本來就只有 2.75:1**（既有問題，非這次造成）。

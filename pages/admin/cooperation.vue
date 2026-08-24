@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 
-const { statusLabels, statusOptions, leadTypeLabels, leadTypeOptions, getStatusLabel, getStatusClass, getLeadTypeLabel, getLeadTypeClass } = useLeadStatus()
+const { statusLabels, statusOptions, leadTypeLabels, getStatusLabel, getStatusClass, getLeadTypeLabel, getLeadTypeClass } = useLeadStatus()
 const { formatDateTime } = useFormatDate()
 
 definePageMeta({
@@ -9,7 +9,7 @@ definePageMeta({
 })
 
 useHead({
-  title: '合作加盟｜練健康後台',
+  title: '合作洽詢｜練健康後台',
 })
 
 interface CooperationLead {
@@ -37,7 +37,16 @@ const isLoading = ref(true)
 const error = ref('')
 
 const statusFilter = ref('')
-const leadTypeFilter = ref('')
+// 篩選改為「洽詢類型」（原本篩的是 lead type＝合作/加盟）。
+// ⚠️ 選項需與 pages/cooperation.vue 的 enquiryTypes value 保持一致。
+// 加盟名單的 cooperationType 是 '加盟'，不在此清單中 → 只會出現在「全部來源」。
+const cooperationTypeOptions = [
+  { value: '', label: '全部來源' },
+  { value: '講座及課程邀約', label: '講座及課程邀約' },
+  { value: '採訪邀約', label: '採訪邀約' },
+  { value: '異業合作', label: '異業合作' },
+]
+const cooperationTypeFilter = ref('')
 const searchQuery = ref('')
 const selectedLead = ref<CooperationLead | null>(null)
 const noteText = ref('')
@@ -121,7 +130,7 @@ onMounted(fetchLeads)
 const filteredLeads = computed(() => {
   return leads.value.filter(lead => {
     if (statusFilter.value && lead.status !== statusFilter.value) return false
-    if (leadTypeFilter.value && lead.leadType !== leadTypeFilter.value) return false
+    if (cooperationTypeFilter.value && lead.cooperationType !== cooperationTypeFilter.value) return false
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
       return (
@@ -206,8 +215,8 @@ function closeDetail() {
   <div>
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">合作加盟</h1>
-        <p class="text-gray-500 mt-1">管理合作洽詢與加盟洽詢名單</p>
+        <h1 class="text-2xl font-bold text-gray-900">合作洽詢</h1>
+        <p class="text-gray-500 mt-1">管理合作洽詢及邀約名單</p>
       </div>
       <button
         @click="handleExport"
@@ -240,10 +249,10 @@ function closeDetail() {
 
         <!-- Filter by lead type -->
         <select
-          v-model="leadTypeFilter"
+          v-model="cooperationTypeFilter"
           class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
         >
-          <option v-for="opt in leadTypeOptions" :key="opt.value" :value="opt.value">
+          <option v-for="opt in cooperationTypeOptions" :key="opt.value" :value="opt.value">
             {{ opt.label }}
           </option>
         </select>
@@ -291,7 +300,7 @@ function closeDetail() {
         </thead>
         <tbody class="divide-y divide-gray-200">
           <tr v-if="filteredLeads.length === 0">
-            <td colspan="7" class="px-6 py-12 text-center text-gray-500">目前沒有合作加盟資料</td>
+            <td colspan="7" class="px-6 py-12 text-center text-gray-500">目前沒有合作洽詢資料</td>
           </tr>
           <tr v-for="lead in filteredLeads" :key="lead.id" class="hover:bg-gray-50">
             <td class="px-6 py-4 whitespace-nowrap">

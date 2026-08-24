@@ -551,14 +551,35 @@ export async function sendCooperationConfirmation(data: {
   email: string
   organization: string
   cooperationType: string
+  phone?: string
+  lineId?: string
+  companySize?: string
+  budgetRange?: string
+  message?: string
 }) {
+  // 2026-08-24：改為與 sendBookingConfirmation 相同的分區塊版，把填寫內容完整回列給對方
+  const contactRows: Array<{ label: string; value: string }> = [
+    { label: '公司/單位', value: data.organization },
+    { label: '聯絡人', value: data.name },
+  ]
+  if (data.phone) contactRows.push({ label: '聯絡電話', value: data.phone })
+  if (data.email) contactRows.push({ label: 'Email', value: data.email })
+  if (data.lineId) contactRows.push({ label: 'LINE ID', value: data.lineId })
+
+  const enquiryRows: Array<{ label: string; value: string }> = [
+    { label: '洽詢類型', value: data.cooperationType },
+  ]
+  if (data.companySize) enquiryRows.push({ label: '規模人數', value: data.companySize })
+  if (data.budgetRange) enquiryRows.push({ label: '預算區間', value: data.budgetRange })
+  if (data.message) enquiryRows.push({ label: '合作內容詳情', value: data.message })
+
   return sendFormConfirmation({
     type: 'cooperation',
     name: data.name,
     email: data.email,
-    details: [
-      { label: '公司/單位', value: data.organization },
-      { label: '洽詢類型', value: data.cooperationType },
+    sections: [
+      { title: '聯絡資訊', rows: contactRows },
+      { title: '洽詢內容', rows: enquiryRows },
     ],
   })
 }
