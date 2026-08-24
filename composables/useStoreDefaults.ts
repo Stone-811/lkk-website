@@ -5,11 +5,16 @@
  *   1. pages/locations/[store].vue 的 storeExtraData（前台實際顯示的那份）
  *   2. 本檔案舊有的 storeDefaults
  *   3. Firestore 的 businessHours / transportation 欄位
- * 現以「前台實際顯示的那份」為準合併於此，另兩份已移除。
+ * 現以「前台實際顯示的那份」為準合併於此，另兩份已移除
+ * （Firestore 的 businessHours / transportation 兩個欄位已於 2026-08-23 從 dev 與 prod 刪除）。
  *
- * ⚠️ Firestore 仍留著舊的 businessHours / transportation（JSON 字串），
- *    但後台已於 2026-08-12 移除這兩個編輯區塊，前台也不再讀取，
- *    要改營業時間或交通資訊請直接改這個檔案。
+ * 後台已於 2026-08-12 移除營業時間與交通的編輯區塊，改由本檔案維護，
+ * 要改營業時間或交通資訊請直接改這個檔案。
+ *
+ * ✅ 營業時間 2026-08-24 經業主逐日確認，與本檔案現值一致：
+ *    平日至 22:00、週六與週日皆至 18:00；南京店 09:30 開門，其餘三店 10:00。
+ * ⚠️ businessHours.holiday（國定假日）目前不會顯示——components/StoreHours.vue
+ *    只渲染星期一到星期日七列，改它不會有任何效果。
  */
 
 /**
