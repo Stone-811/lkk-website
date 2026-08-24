@@ -90,7 +90,7 @@ const managementTeam = [
     title: '總教練・物理治療師',
     photo: '/images/team/cheng-yushao.webp',
     description: '物理治療師背景，專精運動傷害防護與中高齡肌力訓練，曾任競速滑冰世界盃隨隊體能訓練師，將專業運動員的訓練方法轉譯進中高齡課程。',
-    credentials: ['物理治療師證照', 'NSCA-CSCS', 'NASM-CES', 'C 級肌力與體能教練'],
+    credentials: ['物理治療師證照', 'NSCA-CSCS', 'NASM-CES'],
   },
 ]
 
@@ -153,7 +153,7 @@ const programGroups = [
       <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 text-center">
         <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
           <span class="w-5 h-0.5 bg-orange" />
-          About LKK Wellness
+          About LKK Wellness Center
         </div>
 
         <h1 class="font-serif text-5xl lg:text-6xl font-black leading-tight mb-2">
