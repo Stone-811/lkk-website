@@ -146,13 +146,6 @@ const audience = [
   '熱血的親友團，想揪團一起拚團體積分',
 ]
 
-const mediaReports = [
-  { name: '中央社', url: 'https://l-kk.tw/deadlift/' },
-  { name: 'BBC', url: 'https://l-kk.tw/bbc-90-year-old-with-parkinsons-enters-weightlifting-contest/' },
-  { name: '路透社', url: 'https://l-kk.tw/reuters-weightlifting-taiwan-granny-90-garners-cheers-health-benefits-at-gym/' },
-  { name: '法新社', url: 'https://l-kk.tw/afp-taipei-hosts-santa-themed-deadlift-contest-for-seniors/' },
-  { name: '新加坡電視台 CNA', url: 'https://l-kk.tw/cna-insider/' },
-]
 </script>
 
 <template>
@@ -561,27 +554,6 @@ const mediaReports = [
             </svg>
             參賽成績查詢
           </NuxtLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- 媒體報導 -->
-    <section class="bg-white py-8 lg:py-10">
-      <div class="container mx-auto px-4">
-        <div class="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12">
-          <span class="text-ink/60 text-sm font-medium whitespace-nowrap">媒體報導</span>
-          <div class="flex flex-wrap items-center justify-center gap-x-8 lg:gap-x-12 gap-y-4">
-            <a
-              v-for="report in mediaReports"
-              :key="report.name"
-              :href="report.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-ink/50 text-sm lg:text-base font-medium hover:text-ink/70 transition-colors"
-            >
-              {{ report.name }}
-            </a>
-          </div>
         </div>
       </div>
     </section>
