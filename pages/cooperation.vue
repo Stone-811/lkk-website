@@ -47,10 +47,11 @@ const pressStats = [
   { num: '大數據', label: '攜手國衛院推動中高齡肌肉研究' },
 ]
 
+// ⚠️ value 會寫進 leads.payload.cooperationType，後台篩選選項要跟著對齊
 const enquiryTypes = [
-  { label: '🎤 講座邀約', value: '講座邀約', placeholder: '請簡述你的講座邀約需求（例如：預計日期、聽眾背景對象、期望講授的主題方向、授課形式等）…' },
-  { label: '🏢 企業健康促進', value: '企業健康促進邀請', placeholder: '請簡述你的企業同仁健康促進規劃（例如：同仁年齡層背景、期望採用的形式如健康講座/科學化動作篩檢/員工重訓體驗團體課、預計人數等）…' },
-  { label: '🤝 採訪與異業合作', value: '媒體採訪與異業合作', placeholder: '請詳述你的採訪需求或異業合作提案內容（例如：報導專題、產品跨界結合構想、海外教練培訓授權洽談等）…' },
+  { label: '🎤 講座及課程邀約', value: '講座及課程邀約', placeholder: '請簡述你的講座及課程需求，例如：預計舉辦日期、聽眾背景、期望講授的主題方向、授課形式...等。' },
+  { label: '📰 採訪邀約', value: '採訪邀約', placeholder: '請簡述你的採訪需求，例如：預計採訪日期、報導主題、採訪形式...等。' },
+  { label: '🤝 異業合作', value: '異業合作', placeholder: '請簡述你的合作提案，例如：商品或品牌曝光、團購合作、海外教練培訓授權洽談、加盟...等。' },
 ]
 
 interface FormData {
@@ -127,6 +128,18 @@ const handleSubmit = async () => {
   }
   if (!isValidEmail(formData.value.email)) {
     errorMessage.value = '電子郵件格式不正確'
+    isSubmitting.value = false
+    submitStatus.value = 'error'
+    return
+  }
+  if (!formData.value.companySize.trim()) {
+    errorMessage.value = '請填寫規模人數'
+    isSubmitting.value = false
+    submitStatus.value = 'error'
+    return
+  }
+  if (!formData.value.budgetRange.trim()) {
+    errorMessage.value = '請填寫預算區間'
     isSubmitting.value = false
     submitStatus.value = 'error'
     return
@@ -473,7 +486,7 @@ const resetForm = () => {
 
             <div class="grid md:grid-cols-2 gap-4">
               <div>
-                <label class="text-xs font-bold text-ink/70 block mb-1.5">規模人數 <span class="text-ink/40 font-normal">(選填)</span></label>
+                <label class="text-xs font-bold text-ink/70 block mb-1.5">規模人數 <span class="text-orange">*</span></label>
                 <input
                   type="text"
                   v-model="formData.companySize"
@@ -483,7 +496,7 @@ const resetForm = () => {
                 />
               </div>
               <div>
-                <label class="text-xs font-bold text-ink/70 block mb-1.5">預算區間 <span class="text-ink/40 font-normal">(選填)</span></label>
+                <label class="text-xs font-bold text-ink/70 block mb-1.5">預算區間 <span class="text-orange">*</span></label>
                 <input
                   type="text"
                   v-model="formData.budgetRange"

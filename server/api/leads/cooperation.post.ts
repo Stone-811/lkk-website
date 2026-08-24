@@ -15,8 +15,8 @@ export default defineEventHandler(async (event) => {
       sourcePage,
     } = body
 
-    // Validate required fields (lineId is optional)
-    if (!organization || !name || !phone || !email || !message || !cooperationType) {
+    // Validate required fields（lineId 仍為選填；companySize/budgetRange 於 2026-08-24 改必填）
+    if (!organization || !name || !phone || !email || !message || !cooperationType || !companySize || !budgetRange) {
       setResponseStatus(event, 400)
       return { success: false, error: '請填寫必要欄位' }
     }
@@ -90,6 +90,11 @@ export default defineEventHandler(async (event) => {
         email,
         organization,
         cooperationType,
+        phone,
+        lineId,
+        companySize,
+        budgetRange,
+        message,
       }).catch(err => console.error('Failed to send cooperation confirmation:', err))
     } catch (emailError) {
       console.error('Email module error:', emailError)
