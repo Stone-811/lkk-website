@@ -81,10 +81,14 @@ const reasons = [
           分店實景底圖。brightness(.4) + opacity-60 疊在 bg-navy 上是量測後選定的：
           文字區域最亮 5% 的相對亮度 L=0.077，與原本純 navy 的 0.075 幾乎相同，
           因此 Hero 上白字（8.3:1）與 orange-300（4.9:1）的對比都維持不變。
-          直接放原圖會讓白字掉到 2.97:1、orange-300 掉到 1.76:1，完全看不清楚。
-          ⚠️ brightness 用 inline style 而非 Tailwind 的 [filter:brightness(.4)]：
-             後者在此專案不會編譯出 CSS（實測建置後 CSS 完全沒有這條規則），
-             會靜默失效變成全亮度底圖。改動這裡請務必確認產出的 HTML 仍帶 style。
+          若不壓暗、只調 opacity，白字會掉到 2.97:1、orange-300 掉到 1.76:1，
+          完全看不清楚——所以 brightness 這層是必要的，不能省。
+
+          brightness 寫成 inline style 是為了讓數值直接出現在產出的 HTML 裡、
+          好驗證；Tailwind 的 [filter:brightness(0.4)] 同樣可用（實測會編譯成
+          .\[filter\:brightness\(0\.4\)\]{filter:brightness(.4)}），兩種都行。
+          ⚠️ 查證 Nuxt 有沒有產出某條 CSS 時，別只 grep _nuxt/*.css——critical CSS
+             會被內嵌進 HTML 的 <style>，只看 .css 檔會誤判成「沒編譯」。
         -->
         <img
           src="/images/locations/overview.webp"
