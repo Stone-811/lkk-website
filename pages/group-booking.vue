@@ -308,18 +308,13 @@ const inputClass =
           >先點此加入好友</a>
         </p>
 
-        <div class="bg-white rounded-2xl p-6 border border-navy-700/15 shadow-sm text-left mb-6">
+        <div class="bg-white rounded-2xl p-6 border border-navy-700/15 shadow-sm text-left">
           <div class="font-bold text-[#1a3545] mb-3">接下來的確認流程</div>
           <div class="space-y-2">
-            <div v-for="(row, i) in ['加入官方 LINE 並傳送姓名與課程後，教練將於 2-3 個工作天內確認梯次與繳費方式', '若你未加入 LINE，我們也將於 2-3 個工作天內嘗試撥打你填寫的手機號碼聯繫', '一期4堂，請假最晚提前一週告知可順延一週']" :key="i" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
+            <div v-for="(row, i) in ['加入官方 LINE 並傳送姓名與課程後，教練將於 2-3 個工作天內確認梯次與繳費方式', '若你未加入 LINE，我們也將於 2-3 個工作天內嘗試撥打你填寫的手機號碼聯繫']" :key="i" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
               <span class="text-orange flex-shrink-0">→</span><span>{{ row }}</span>
             </div>
           </div>
-        </div>
-
-        <div class="bg-[#1a3545] rounded-xl p-6 text-center">
-          <div class="text-sm text-white/50 mb-1.5">有任何緊急排課變更？也可直接來電</div>
-          <div class="font-serif text-2xl font-bold text-white"><a href="tel:+886225074196" class="text-orange">(02) 2507-4196</a></div>
         </div>
       </div>
     </section>
@@ -544,10 +539,6 @@ const inputClass =
                     <svg v-if="!submitting" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 5l7 7-7 7" /></svg>
                   </button>
                   <p class="text-xs text-ink/50 text-center leading-relaxed">送出即表示同意我們以電話或 LINE 與你聯繫確認開課梯次，個人資料僅用於此報名目的。</p>
-                  <div class="text-center pt-4 border-t border-navy-700/15 text-sm text-ink/70">
-                    不想填表？直接來電也可以<br>
-                    <a href="tel:+886225074196" class="text-navy-700 font-semibold">(02) 2507-4196</a>（南京店）
-                  </div>
                 </form>
               </div>
             </div>
