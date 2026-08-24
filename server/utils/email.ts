@@ -167,7 +167,7 @@ function notifRow(
 export function buildLeadNotificationEmail(data: LeadNotificationData): { subject: string; html: string } {
   const typeLabel = leadTypeLabels[data.type] || data.type
   const subject = `【練健康】新${typeLabel}表單${data.company ? `【${data.company}】` : ''} - ${data.name}`
-  const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://l-kk.tw'
+  const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://lkkwellness.com'
 
   // 有值才輸出該列（對應舊版逐列的 if 判斷）
   const opt = (
@@ -435,8 +435,8 @@ export async function sendFormConfirmation(data: FormConfirmationData) {
       練健康｜中高齡肌力訓練專家
     </p>
     <p style="margin: 10px 0 0 0;">
-      <a href="https://l-kk.tw" style="color: #FB720A; text-decoration: none;">
-        l-kk.tw
+      <a href="https://lkkwellness.com" style="color: #FB720A; text-decoration: none;">
+        lkkwellness.com
       </a>
     </p>
   </div>
