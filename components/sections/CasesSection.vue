@@ -1,8 +1,10 @@
 <script setup lang="ts">
-// 學員見證。photo 填入路徑後，卡片頂端會顯示學員照片（4:3）；
-// 留空則沿用原本的引號符號 + 首字圓形頭像，版面不會開天窗。
+// 學員見證。
+// 2026-08-24 改版：學員照片從「卡片頂端的大方框」改成「姓名左側的小圓形頭像」，
+// 卡片頂端一律顯示引號符號，版面更輕、三張卡高度也更容易一致。
+// photo 留空時，小圓頭像自動退回深藍底 + 姓氏首字（avatar），不會開天窗。
 // 圖檔放置位置：public/images/cases/  →  路徑寫成 '/images/cases/檔名.jpg'
-// 卡片照片為 1:1（現有素材皆為接近正方形的人像特寫，用 4:3 會裁到頭頂）
+// 小圓頭像用 object-cover + object-top，避免正方形素材把下巴切掉。
 const cases = [
   {
     id: 1,
@@ -56,17 +58,8 @@ const cases = [
           :key="item.id"
           class="bg-cream-100 rounded-3xl p-6 lg:p-8 border border-navy-700/15 hover:shadow-lg transition-shadow flex flex-col"
         >
-          <!-- 學員照片（有填 photo 才顯示；4:3、object-cover） -->
-          <div v-if="item.photo" class="aspect-square rounded-2xl overflow-hidden mb-5 bg-navy-700/5">
-            <img
-              :src="item.photo"
-              :alt="`${item.name}・${item.detail}`"
-              loading="lazy"
-              class="w-full h-full object-cover"
-            />
-          </div>
-          <!-- 未提供照片時的引號符號 -->
-          <span v-else class="font-serif text-7xl font-black text-orange/20 leading-none block mb-2">
+          <!-- 引號符號（照片已移到下方姓名列的小圓頭像） -->
+          <span class="font-serif text-7xl font-black text-orange/20 leading-none block mb-2">
             "
           </span>
 
@@ -77,10 +70,17 @@ const cases = [
 
           <!-- Meta -->
           <div class="flex items-center gap-3">
-            <!-- 首字頭像（已有照片時不重複顯示） -->
+            <!-- 小圓頭像：有照片就放照片，沒照片退回姓氏首字 -->
+            <img
+              v-if="item.photo"
+              :src="item.photo"
+              :alt="`${item.name}・${item.detail}`"
+              loading="lazy"
+              class="w-12 h-12 rounded-full object-cover object-top bg-navy-700/5 flex-shrink-0"
+            />
             <div
-              v-if="!item.photo"
-              class="w-11 h-11 rounded-full bg-navy-700 flex items-center justify-center text-white font-bold flex-shrink-0"
+              v-else
+              class="w-12 h-12 rounded-full bg-navy-700 flex items-center justify-center text-white font-bold flex-shrink-0"
             >
               {{ item.avatar }}
             </div>

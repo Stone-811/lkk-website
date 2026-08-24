@@ -118,8 +118,6 @@ const tw: Report[] = [
   },
 ]
 
-// 完整報導紀錄清單只顯示年份，date 內含月日與記者名的部分不呈現
-const yearOf = (d?: string) => (d || '').match(/\d{4}/)?.[0] || ''
 
 const more: Report[] = [
   { outlet: '志祺七七', cat: 'Podcast', type: 'video', lkk4: false, date: '2026-05-08',
@@ -340,7 +338,6 @@ const showMore = computed(() => fMore.value.length > 0)
             <div class="flex-1 min-w-0">
               <div class="text-sm font-medium text-navy-700 group-hover:text-orange transition-colors leading-snug">{{ item.title }}</div>
             </div>
-            <div class="text-xs text-ink/40 sm:shrink-0 sm:text-right">{{ yearOf(item.date) }}</div>
             <span class="text-orange text-sm font-bold sm:shrink-0 whitespace-nowrap">閱讀全文 →</span>
           </a>
         </div>

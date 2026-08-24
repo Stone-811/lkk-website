@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="!isBookingPage"
+    v-if="!isHidden"
     class="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-white via-white to-transparent md:hidden"
   >
     <NuxtLink
@@ -30,7 +30,18 @@ import { computed } from 'vue'
 
 const route = useRoute()
 
-const isBookingPage = computed(() => {
-  return route.path.includes('/booking')
+/**
+ * 不顯示這顆浮動按鈕的頁面：
+ *   /booking       —— 本身就是預約體驗頁
+ *   /group-booking —— 團體課有自己的報名表，浮動按鈕會導去別的表單
+ *   /lkk4          —— 賽事頁的主要行動是「報名 LKK4」，不是預約體驗
+ * 用「完全相同或其子路徑」比對，避免 /lkk-academy、/lkk-lecturer 被 /lkk4 誤判，
+ * 也避免舊寫法 route.path.includes('/booking') 把任何含 booking 的路徑都吃掉。
+ */
+const HIDDEN_PATHS = ['/booking', '/group-booking', '/lkk4']
+
+const isHidden = computed(() => {
+  const path = route.path.replace(/\/+$/, '') || '/'
+  return HIDDEN_PATHS.some((p) => path === p || path.startsWith(`${p}/`))
 })
 </script>

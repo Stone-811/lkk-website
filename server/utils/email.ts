@@ -167,7 +167,7 @@ function notifRow(
 export function buildLeadNotificationEmail(data: LeadNotificationData): { subject: string; html: string } {
   const typeLabel = leadTypeLabels[data.type] || data.type
   const subject = `【練健康】新${typeLabel}表單${data.company ? `【${data.company}】` : ''} - ${data.name}`
-  const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://l-kk.tw'
+  const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://lkkwellness.com'
 
   // 有值才輸出該列（對應舊版逐列的 if 判斷）
   const opt = (
@@ -356,7 +356,7 @@ const formConfirmationConfig: Record<string, {
     subject: '【練健康】感謝您報名團體課程',
     title: '團體課程報名確認',
     greeting: '感謝您報名練健康的團體課程！',
-    message: '我們已收到您的報名資料。由於團體課程需依當期名額與人數安排梯次，教練將於 1 個工作天內主動與您聯繫，確認可開班的梯次日期、名額狀況與繳費方式。',
+    message: '我們已收到您的報名資料。由於團體課程需依當期名額與人數安排梯次，教練將於 2~3 個工作天主動與您聯繫，確認可開班的梯次日期、名額狀況與繳費方式。',
     closing: '想更快確認梯次，歡迎加入練健康 LINE 官方帳號 <a href="https://line.me/R/ti/p/%40201fzruh" style="color:#FB720A;">@201fzruh</a>，傳送學員姓名與想上的課程。<br>期待在課堂上見到您！',
   },
 }
@@ -435,8 +435,8 @@ export async function sendFormConfirmation(data: FormConfirmationData) {
       練健康｜中高齡肌力訓練專家
     </p>
     <p style="margin: 10px 0 0 0;">
-      <a href="https://l-kk.tw" style="color: #FB720A; text-decoration: none;">
-        l-kk.tw
+      <a href="https://lkkwellness.com" style="color: #FB720A; text-decoration: none;">
+        lkkwellness.com
       </a>
     </p>
   </div>

@@ -126,13 +126,46 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 
 **`server/utils/fallback-data.ts`** 內含 43 筆與舊資料相同的假教練，Firestore 掛掉會頂替顯示＝對外露出已修正掉的錯誤職稱；四店都更新完後要一併處理。
 
+
+## 內容資料放哪裡（⚠️ 改文案／資料前必看，2026-08-23）
+
+| 內容 | 唯一來源 | 後台可編？ |
+|---|---|---|
+| 分店營業時間／交通／地圖／電話 | `composables/useStoreDefaults.ts` | ❌ 2026-08-12 起後台已移除此區塊 |
+| 分店名稱／地址／照片／上架 | Firestore `stores` | ✅ |
+| 教練 | Firestore `coaches` | ✅ |
+| 講師（含 2026-08-23 新增的 `education` 學歷背景） | Firestore `lecturers` | ✅ |
+| 首頁 TeamSection／about 經營團隊 | 寫死在 `.vue` | ❌ |
+
+**分店營業時間／交通的來龍去脈**：原本同一份資料散在三處且互不一致（`[store].vue` 的 `storeExtraData`＝前台實際顯示那份、`useStoreDefaults` 舊有那份、Firestore 的 `businessHours`／`transportation`）。2026-08-23 以「前台實際顯示那份」為準併入 composable，**Firestore 那兩個欄位已從 dev 與 prod 刪除**。前台判斷是 `typeof === 'object'` 而 Firestore 存 JSON 字串 → 就算欄位還在也永遠用不到，這是當初「改後台沒反應」的真正原因。
+✅ **已確認（2026-08-24）**：業主逐日給了四店營業時間，**與程式碼現值完全一致，不需改任何值**（dev/prod 線上渲染已逐店比對 28/28 相符）。規律＝**平日到 22:00、週六日到 18:00、無公休；南京店 09:30 開門，七張／松江／西門 10:00**。被刪掉的 Firestore 舊值寫「週六 09:00–20:00、七張週日公休」是錯的，已作廢。
+⚠️ `businessHours.holiday`（國定假日）**改了不會有效果**——`components/StoreHours.vue` 只渲染星期一到星期日七列，沒有假日列。
+
+## 全站文案標準（2026-08-23 業主拍板）
+
+- 體驗優惠：**「第一堂體驗課，50歲以上免費・未滿50歲 $500」**；只講免費那半用「第一堂體驗課 50歲以上免費」
+- 學員數 **10,000+**／對外成立年 **2019**（2018 記為「品牌籌備」）／年資 **七年**／體驗課 **60 分鐘**／分店名 **七張店**
+- 講師分類前台叫 **練健康認證講師**（`type` 值仍是 `'lkk'`，**別動**）；導覽的「海外授權講師」是另一個名詞，不改
+- ⚠️ **不可改的字串**：付款方式的值 `'50歲以上免費'`（lead payload、`email.ts`、後台名單都靠它比對）；廠商 `allAgesFree` 變體的「不限年齡免費」是另一個活動
+
 ## 慣例
 - Nitro API：admin 端各檔 inline `const session = await getSession(event)`；寫入類要補角色檢查。
 - 表單 → `server/api/leads/*.post.ts` → 寫 Firestore `leads` + `server/utils/email.ts` 寄信（nodemailer + Gmail SMTP，收件人讀 Firestore `settings`）。
 - UTM 追蹤（已實作）：`composables/useUtm.ts` + `plugins/utm.client.ts` 進站擷取 `utm_*` 存 sessionStorage；booking/franchise 送出帶 `utm`，存進 lead `payload.utm`（`{source,medium,campaign,content,term,referrer}`）；後台 `leads.vue`（booking）與 `cooperation.vue`（franchise/cooperation）詳情+CSV 顯示；**⚠️ 2026-08-12 現況：`leads.vue` 篩選欄含 UTM 來源＋UTM 活動（可搜尋下拉），但刻意不含 UTM 媒介**（媒介對本站區隔性低：來源＋活動已足夠、媒介的跨來源彙總少用到；已從篩選移除、**勿加回**，仍存 `payload`、詳情/CSV 看得到。見下方名單欄位對照與 [[lkk-web-gotchas]] 第 16 條）。分店建議放 `utm_campaign`。cooperation 前台仍是假送出（未接 API），故其 UTM 尚未實際寫入。
 - **GA4 已安裝（2026-08-11，正式站）**：`plugins/gtag.client.ts`（評估 ID `G-DSQC1NTPJ3`，公開碼 hardcode），**只在正式網域 `lkkwellness.com`/`www.` 啟用**（`window.location.hostname` gate）→ dev/預覽/hosted.app 完全不追蹤、不污染數據。**站上原本沒裝任何分析工具，這是第一次裝** → 廠商連結的 `utm_*` 現在才真的有 GA 在收（先前只存進 lead `payload.utm`）。無新增套件、不動 apphosting.yaml。⚠️ GA4 明細資料保留預設 2 個月（資料設定→資料保留可改 14 個月）；尚未加自訂轉換事件（form_submit/click_cta）。細節見 [[lkk-web-deploy]]。
 - 根目錄 `npm install`（**需 `.npmrc` 的 `legacy-peer-deps=true`**，否則 npm 10.9 arborist 會崩）；build 用 `npm run build`（=`nuxt build`）。`firebase-tools` 已非依賴，CLI 用 `npx firebase-tools`。
-- **改 → 發 → 驗證流程**（⚠️ 2026-08-22 業主要求：**不要開 localhost 本機測試環境**，一律推 dev 再看——本機 `.env` 指向的 `lkk-website-dev` 是第三個舊專案，資料過期會誤導判斷）：改在 `dev` 分支 → `npm run build` 確認過 → `git push origin dev`（觸發 lkkdev rollout，約 4–7 分鐘）→ **背景輪詢 `lkk-website-dev--lkkdev.asia-east1.hosted.app` 抓該次改動的新內容標記確認真的上線**再回報（別只看 push 成功）→ 使用者確認後才 merge `dev`→`prod` 發正式站。**驗版面/CSS 類改動**：內建瀏覽器 pane 的 screenshot 偶爾會卡在頂部或整片空白、`computer scroll` 逾時（pane hidden）；此時改用 `javascript_tool` 直接量渲染結果最可靠——`getComputedStyle`/`getBoundingClientRect`（如比對同排卡片 `img.top - btn.top`）、canvas `drawImage`+`getImageData` 掃像素（量燒進圖的橫幅位置）、或 `document.body.style.zoom='0.3'`+把 `loading=lazy` 改 `eager` 讓整頁擠進一張截圖。輪詢部署則 grep `/_nuxt/*.js` chunk 內該次改動獨有字串（如新 class `flex flex-col bg-white`）。
+- **⚠️ 發 prod 的三個必查（2026-08-23 全踩過）**：
+1. `git checkout origin/dev -- .` **只新增不刪除** → 要補
+   `git diff --diff-filter=D --name-only origin/prod origin/dev -z | xargs -0 git rm -q --ignore-unmatch --`，
+   最後 `git diff --name-only origin/prod origin/dev` 應**只剩 apphosting.yaml**。
+2. `git add -A` 會把本機未追蹤檔 commit 進 prod → 改逐檔 add，或 commit 前檢查
+   `git diff --cached --name-status | grep -v '^D'`。
+3. **Firestore 資料改動也要發 prod**。這次教練 photo 路徑改 `.webp` 只套了 dev，
+   prod 漏掉 → 新檔案部署上去了但 Firestore 仍指舊路徑、舊檔又因坑 1 沒刪掉、
+   照樣載得到 → **正式站默默繼續顯示舊照片，完全不報錯**。
+   檢查表：**程式碼、靜態檔、Firestore 三者都要對齊。**
+
+**改 → 發 → 驗證流程**（⚠️ 2026-08-22 業主要求：**不要開 localhost 本機測試環境**，一律推 dev 再看——本機 `.env` 指向的 `lkk-website-dev` 是第三個舊專案，資料過期會誤導判斷）：改在 `dev` 分支 → `npm run build` 確認過 → `git push origin dev`（觸發 lkkdev rollout，約 4–7 分鐘）→ **背景輪詢 `lkk-website-dev--lkkdev.asia-east1.hosted.app` 抓該次改動的新內容標記確認真的上線**再回報（別只看 push 成功）→ 使用者確認後才 merge `dev`→`prod` 發正式站。**驗版面/CSS 類改動**：內建瀏覽器 pane 的 screenshot 偶爾會卡在頂部或整片空白、`computer scroll` 逾時（pane hidden）；此時改用 `javascript_tool` 直接量渲染結果最可靠——`getComputedStyle`/`getBoundingClientRect`（如比對同排卡片 `img.top - btn.top`）、canvas `drawImage`+`getImageData` 掃像素（量燒進圖的橫幅位置）、或 `document.body.style.zoom='0.3'`+把 `loading=lazy` 改 `eager` 讓整頁擠進一張截圖。輪詢部署則 grep `/_nuxt/*.js` chunk 內該次改動獨有字串（如新 class `flex flex-col bg-white`）。
 - **預約表單變體系統（2026-08-05，廠商 UTM 活動用）**：`/booking?v=<key>` 對應 `config/bookingVariants.ts` 的設定驅動變體——**加廠商＝在該檔加一段設定、不改 `booking.vue`**（未知 `v` 自動 fallback default）。變體可覆蓋：Hero(badge/title/titleHighlight/subtitle/checklist/ctaText)、`lockStoreId`(以 id/slug/name 命中→預選+隱藏分店選單)、`hideSources`、`allAgesFree`、`company`(公司)、`leadSource`(來源)。**`allAgesFree`**：隱藏付款方式、自動 `paymentMethod='活動免費'`、解除「未滿50歲清掉免費」年齡邏輯；**所有價格文案集中在 `pricingCopy` computed**（Hero badge/標題、底部說明、FAQ f1/f2、服務卡 `steps[2].badges` 全讀它，改價只動一處）。**來源可用網址參數 `?src=` 覆蓋**（同公司不同來源共用同一變體，如 `?v=nanshan&src=LINE`）。送出時 `formVariant`/`company`/`leadSource` 一起寫進 `leads/{id}.payload`（已實測寫入 Firestore ✅），後台 `leads.vue` 清單「來源」欄＋詳情「活動來源」區塊顯示。`?src=` 用語規範見 `docs/廠商表單網址規範.md`。meta description 維持通用（SEO 不收 `?v=` 版本）。現有變體：`abbott`(亞培/LINE)、`nanshan`(南山/網站)，皆全齡免費、不鎖店、**顯示**得知管道（`hideSources` 是能力，但這兩家不設）。**改 `booking.vue` 勿把 SSR 分店改成 client fetch 以外的問題**：分店目前是 `onMounted` client fetch（非 SSR），會兩段式載入。
 - **廠商完整連結配方（2026-08-11 確立）**：`booking?v={公司代號}&src={通路}&utm_source=&utm_medium=&utm_campaign=` —— **`v`/`src` 給後台名單（公司/來源）、`utm_*` 給 GA**，兩套獨立、同一條連結可並存（各讀各的、互不干擾）。**`v=` 放英文代號**（nanshan/abbott，**不是**中文「南山」，業主/行銷常搞錯）。全部欄位皆選配（要後台分類就 `v`+`src`、要 GA 算廣告就 `utm_*`、全都要就全放）。`src` 規範 7 值＝網站/LINE/Facebook/Instagram/Email/傳單/Google。`payload.leadSource`(Facebook) 與 `payload.utm.source`(facebook) 重複是**刻意的**（前者給後台篩選、後者存底/GA），後台篩選只讀 `leadSource`、不會重複計算。現有代號：`nanshan`、`abbott`。
 - **名單「來源」欄位對照（主來源約定，2026-08-05）**：一筆 lead 有多個來源相關欄位、各司其職，**勿硬合成一個**——**① 廠商活動來源（分析主依據）**：`payload.company`(公司)＋`payload.leadSource`(來源)，來自 `?v=`/`?src=`。**② GA 追蹤**：`payload.utm.{source,medium,campaign,content,term,referrer}`，來自 `?utm_*`，只給 Google Analytics（後台 UTM 欄另顯示）。**③ 使用者自填「得知管道」**：`payload.sources`(陣列)＋頂層 `sourceChannel`(=sources join)，是使用者在表單勾的，**與 ①② 不同概念、勿混用**。`payload.formVariant`＝`?v=` 值。**`sourceTag` 已於 2026-08-05 移除**（曾與 company/leadSource 重疊，退役清除）。清單「來源」欄＋詳情「活動來源」區以 chips 顯示 company+leadSource。**後台名單篩選（2026-08-12 現況）＝單排、全部可搜尋下拉（`components/SearchableSelect.vue`）＋已套用 chips＋清除全部＋筆數**：搜尋(姓名/電話/Email 關鍵字)、日期(`createdAt` 起訖)、分店、狀態、公司(`payload.company`；選項＝`bookingVariants` companies ∪ 名單值)、來源(`payload.leadSource`；選項＝常數 `SOURCE_CHANNELS`=[網站/LINE/Facebook/Instagram/Email/傳單/Google] ∪ 名單值)、UTM 來源(`payload.utm.source`)、UTM 活動(`payload.utm.campaign`)——各下拉選項皆自名單去重自動蒐集。**公司與來源各比各的欄位、不混（業主明確要求分開，勿再 union）**。**UTM 媒介刻意不列（區隔性低，勿加回）**；UTM 仍存 payload、詳情/CSV 顯示。

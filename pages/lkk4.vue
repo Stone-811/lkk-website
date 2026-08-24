@@ -544,18 +544,17 @@ const mediaReports = [
       </div>
     </section>
 
-    <!-- 歷年參賽成績搜尋 -->
+    <!-- 歷年參賽成績查詢 -->
     <section class="py-16 lg:py-20 bg-cream">
       <div class="container mx-auto px-4">
         <div class="bg-white rounded-2xl p-8 lg:p-10 border border-navy/10 text-center">
           <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
             <span class="w-5 h-0.5 bg-orange" />
-            歷年參賽成績
+            歷年參賽成績查詢
           </div>
-          <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-3">歷年參賽成績搜尋</h2>
-          <p class="text-ink/60 max-w-xl mx-auto mb-6 leading-relaxed">
-            查詢歷屆選手的參賽成績與排名紀錄
-          </p>
+          <!-- 原本標題下方還有一段說明文字，內容與現在的標題完全相同，改標題後會重複出現兩次，故移除；
+               mb-3 改 mb-6 補回那段說明原本佔的間距。 -->
+          <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-6">查詢歷屆選手的參賽成績與排名紀錄</h2>
           <NuxtLink to="/personal-record" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
