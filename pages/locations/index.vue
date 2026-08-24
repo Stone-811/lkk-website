@@ -81,13 +81,17 @@ const reasons = [
           分店實景底圖。brightness(.4) + opacity-60 疊在 bg-navy 上是量測後選定的：
           文字區域最亮 5% 的相對亮度 L=0.077，與原本純 navy 的 0.075 幾乎相同，
           因此 Hero 上白字（8.3:1）與 orange-300（4.9:1）的對比都維持不變。
-          直接放原圖會讓 orange-300 掉到 2.9:1、白字掉到 4.9:1。
+          直接放原圖會讓白字掉到 2.97:1、orange-300 掉到 1.76:1，完全看不清楚。
+          ⚠️ brightness 用 inline style 而非 Tailwind 的 [filter:brightness(.4)]：
+             後者在此專案不會編譯出 CSS（實測建置後 CSS 完全沒有這條規則），
+             會靜默失效變成全亮度底圖。改動這裡請務必確認產出的 HTML 仍帶 style。
         -->
         <img
           src="/images/locations/overview.webp"
           alt=""
           aria-hidden="true"
-          class="absolute inset-0 w-full h-full object-cover opacity-60 [filter:brightness(0.4)]"
+          class="absolute inset-0 w-full h-full object-cover opacity-60"
+          style="filter: brightness(0.4)"
         />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
       </div>
