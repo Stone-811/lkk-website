@@ -175,13 +175,9 @@ const personalFeatures = [
         <h1 class="text-3xl md:text-5xl font-bold mb-6 font-serif">
           找到最適合你的上課方式
         </h1>
-        <p class="text-cream-200 text-lg md:text-xl mb-6 max-w-3xl mx-auto leading-relaxed">
+        <p class="text-cream-200 text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed">
           練健康提供三種上課形式，不管你是第一次接觸重訓、希望有同伴一起練，還是想在家自主訓練，都有對應的選擇。
         </p>
-        <p class="text-orange text-lg md:text-xl font-semibold mb-10">
-          第一堂體驗課，50歲以上免費 · 未滿50歲 $500
-        </p>
-
         <!-- 快速導航按鈕 -->
         <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-3xl mx-auto">
           <button

@@ -18,7 +18,9 @@ useHead({
   ],
 })
 
-const LINE_URL = 'https://line.me/R/ti/p/%40201fzruh'
+const LINE_OA_ID = '@201fzruh'
+// 加好友連結（尚未成為好友時的備援；oaMessage 連結只有已加好友才有作用）
+const LINE_URL = `https://line.me/R/ti/p/${encodeURIComponent(LINE_OA_ID)}`
 
 const formData = reactive({
   name: '',
@@ -184,6 +186,30 @@ const errors = ref<Record<string, string>>({})
 const submitting = ref(false)
 const isSuccess = ref(false)
 
+/**
+ * 成功畫面：LINE 官方帳號預填訊息（作法比照 pages/booking.vue）
+ * 使用 oaMessage 連結把「學員姓名 + 門店 + 報名課程」直接帶進輸入框，
+ * 使用者只要按下傳送即可，不必自己打字（訊息仍需由使用者親自送出）。
+ * 代填的情況會一併寫明報名者與學員，教練才知道要聯繫誰。
+ */
+const lineMessage = computed(() => {
+  // formData.store 的格式是「南京店｜台北市…」，只取店名
+  const store = (formData.store.split('｜')[0] || '').trim()
+  const storeText = store ? `${store} ` : ''
+  const course = formData.course.trim() || '團體課程'
+  const student = formData.name.trim()
+  const filler = formData.fillerName.trim()
+
+  if (formData.isFillerSelf === '否' && filler) {
+    return `你好，我是 ${filler}，我替 ${student} 報名練健康 ${storeText}的${course}，請協助確認開課梯次。`
+  }
+  return `你好，我是 ${student}，我已報名練健康 ${storeText}的${course}，請協助確認開課梯次。`
+})
+
+const lineMessageUrl = computed(
+  () => `https://line.me/R/oaMessage/${LINE_OA_ID}/?${encodeURIComponent(lineMessage.value)}`,
+)
+
 function validate() {
   const e: Record<string, string> = {}
   if (!formData.name.trim()) e.name = '請填寫學員姓名'
@@ -256,18 +282,30 @@ const inputClass =
         </div>
         <h1 class="font-serif text-3xl lg:text-4xl font-black text-[#1a3545] mb-3">團體課程報名已送出！</h1>
         <p class="text-ink/70 leading-relaxed mb-8">
-          你的報名資料已即時同步後台系統。由於團體課程需依當期名額與人數安排梯次，<strong class="text-ink">請點擊下方按鈕加入「練健康 LINE 官方帳號」</strong>，傳送一則包含學員姓名與想上課程的訊息，教練將以最快速度為你確認開課日期！
+          你的報名資料已即時同步後台系統。由於團體課程需依當期名額與人數安排梯次，<strong class="text-ink">我們已為你預填好學員姓名與報名課程</strong>，請點下方按鈕加入「練健康 LINE 官方帳號」並直接送出（訊息需由你親自按下傳送），教練將以最快速度為你確認開課日期！
         </p>
 
+        <!-- LINE CTA（已預填學員姓名與報名課程，使用者只需按傳送） -->
         <a
-          :href="LINE_URL"
+          :href="lineMessageUrl"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center justify-center gap-2.5 w-full py-4 bg-[#06C755] hover:bg-[#05b34c] text-white font-bold text-lg rounded-xl shadow-lg shadow-[#06C755]/30 transition mb-6"
+          class="inline-flex items-center justify-center gap-2.5 w-full py-4 bg-[#06C755] hover:bg-[#05b34c] text-white font-bold text-lg rounded-xl shadow-lg shadow-[#06C755]/30 transition"
         >
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 5.64 2 10.13c0 4.02 3.55 7.39 8.35 8.03.33.07.77.22.88.5.1.26.07.66.03.92l-.14.85c-.04.26-.2 1.02.89.56 1.1-.46 5.9-3.47 8.05-5.94C21.6 13.42 22 11.83 22 10.13 22 5.64 17.52 2 12 2z" /></svg>
-          點擊加入練健康官方 LINE 帳號（快速排課通道）
+          加入官方 LINE 並傳送報名資訊
         </a>
+
+        <!-- 尚未加好友的備援：oaMessage 連結只有已加好友才有作用 -->
+        <p class="mt-2 mb-6 text-xs text-ink/40">
+          還不是官方 LINE 好友？
+          <a
+            :href="LINE_URL"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-navy-700 underline underline-offset-2"
+          >先點此加入好友</a>
+        </p>
 
         <div class="bg-white rounded-2xl p-6 border border-navy-700/15 shadow-sm text-left mb-6">
           <div class="font-bold text-[#1a3545] mb-3">接下來的確認流程</div>
