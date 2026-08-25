@@ -21,11 +21,9 @@ interface FormData {
   title: string
   organization: string
   region: string
-  countries: string[]
   type: 'lkk' | 'partner' | 'overseas'
   description: string
   specialties: string[]
-  courses: string[]
   certifications: string[]
   education: string[]
   sortOrder: number
@@ -44,11 +42,9 @@ const formData = ref<FormData>({
   title: '',
   organization: '',
   region: '',
-  countries: [],
   type: 'lkk',
   description: '',
   specialties: [],
-  courses: [],
   certifications: [],
   education: [],
   sortOrder: 0,
@@ -57,10 +53,8 @@ const formData = ref<FormData>({
 
 // Temp inputs for array fields
 const specialtyInput = ref('')
-const courseInput = ref('')
 const certInput = ref('')
 const eduInput = ref('')
-const countryInput = ref('')
 
 onMounted(async () => {
   if (isNew.value) {
@@ -91,11 +85,9 @@ onMounted(async () => {
         title: data.title || '',
         organization: data.organization || '',
         region: data.region || '',
-        countries: data.countries || [],
         type: data.type || 'lkk',
         description: data.description || '',
         specialties: data.specialties || [],
-        courses: data.courses || [],
         certifications: data.certifications || [],
         education: data.education || [],
         sortOrder: data.sortOrder || 0,
@@ -110,13 +102,13 @@ onMounted(async () => {
   }
 })
 
-function addToArray(field: 'specialties' | 'courses' | 'certifications' | 'countries' | 'education', value: string) {
+function addToArray(field: 'specialties' | 'certifications' | 'education', value: string) {
   if (value.trim()) {
     formData.value[field].push(value.trim())
   }
 }
 
-function removeFromArray(field: 'specialties' | 'courses' | 'certifications' | 'countries' | 'education', index: number) {
+function removeFromArray(field: 'specialties' | 'certifications' | 'education', index: number) {
   formData.value[field].splice(index, 1)
 }
 
@@ -308,35 +300,6 @@ async function handlePhotoUpload(event: Event) {
               placeholder="例如: 東南亞"
             />
           </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">授權國家</label>
-            <div class="flex gap-2">
-              <input
-                type="text"
-                v-model="countryInput"
-                class="flex-1 border border-gray-300 rounded-lg px-3 py-2"
-                placeholder="輸入後按 Enter"
-                @keydown.enter.prevent="addToArray('countries', countryInput); countryInput = ''"
-              />
-              <button
-                type="button"
-                @click="addToArray('countries', countryInput); countryInput = ''"
-                class="bg-gray-100 text-gray-700 font-medium px-4 py-2 rounded-lg hover:bg-gray-200"
-              >
-                新增
-              </button>
-            </div>
-            <div class="flex flex-wrap gap-2 mt-2">
-              <span
-                v-for="(c, i) in formData.countries"
-                :key="i"
-                class="inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded text-sm"
-              >
-                {{ c }}
-                <button type="button" @click="removeFromArray('countries', i)" class="hover:text-green-900">×</button>
-              </span>
-            </div>
-          </div>
         </div>
 
         <div class="flex items-center gap-2">
@@ -413,37 +376,6 @@ async function handlePhotoUpload(event: Event) {
           >
             {{ s }}
             <button type="button" @click="removeFromArray('specialties', i)" class="hover:text-orange-900">×</button>
-          </span>
-        </div>
-      </div>
-
-      <!-- Courses -->
-      <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-        <h2 class="font-bold text-lg border-b pb-2">授課項目</h2>
-        <div class="flex gap-2">
-          <input
-            type="text"
-            v-model="courseInput"
-            class="flex-1 border border-gray-300 rounded-lg px-3 py-2"
-            placeholder="輸入課程後按 Enter"
-            @keydown.enter.prevent="addToArray('courses', courseInput); courseInput = ''"
-          />
-          <button
-            type="button"
-            @click="addToArray('courses', courseInput); courseInput = ''"
-            class="bg-gray-100 text-gray-700 font-medium px-4 py-2 rounded-lg hover:bg-gray-200"
-          >
-            新增
-          </button>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <span
-            v-for="(c, i) in formData.courses"
-            :key="i"
-            class="inline-flex items-center gap-1 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm"
-          >
-            {{ c }}
-            <button type="button" @click="removeFromArray('courses', i)" class="hover:text-blue-900">×</button>
           </span>
         </div>
       </div>

@@ -17,7 +17,6 @@ interface Lecturer {
   organization?: string
   description?: string
   specialties?: string[]
-  courses?: string[]
   certifications?: string[]
 }
 

@@ -25,7 +25,6 @@ export default defineEventHandler(async (event) => {
           siteName: '練健康',
           siteDescription: '專業一對一私人教練，科學化訓練，找回您的健康生活。',
           contactEmail: 'lkkwellness@gmail.com',
-          contactPhone: '02-2537-1055',
         }
 
     // Get social links

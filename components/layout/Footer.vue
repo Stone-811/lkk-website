@@ -16,16 +16,12 @@ const { data: site } = useLazyFetch('/api/public/settings', {
   key: 'public-site-settings',
   default: () => ({
     contactEmail: 'lkkwellness@gmail.com',
-    // ⚠️ contactPhone 於 2026-08-25 起不在 Footer「聯絡我們」顯示（業主要求移除）。
-    // 後台系統設定仍可編輯此欄位，但目前全站沒有任何地方會呈現它。
-    contactPhone: '02-2537-1055',
     socialLinks: {
       facebook: 'https://www.facebook.com/LKKWellnessCenter/',
       instagram: 'https://www.instagram.com/lkk_wellness/',
       youtube: 'https://www.youtube.com/c/LKKWellness',
       podcast: 'https://podcasts.apple.com/tw/podcast/%E5%88%9D%E4%B8%80%E5%8D%81%E4%BA%94%E7%B7%B4%E5%81%A5%E5%BA%B7/id1779024584',
       line: 'https://line.me/R/ti/p/%40201fzruh',
-      email: 'lkkwellness@gmail.com',
     },
   }),
 })

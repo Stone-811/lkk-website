@@ -35,11 +35,9 @@ export default defineEventHandler(async (event) => {
       title: lecturer.title,
       organization: lecturer.organization,
       region: lecturer.region,
-      countries: lecturer.countries || [],
       type: lecturer.type,
       description: lecturer.description,
       specialties: lecturer.specialties || [],
-      courses: lecturer.courses || [],
       certifications: lecturer.certifications || [],
       education: lecturer.education || [],
     }))
