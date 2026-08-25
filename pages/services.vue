@@ -82,7 +82,7 @@ const comparisonData = [
   { item: '個人化程度', personal: '★★★', group: '★★', online: '★' },
   { item: '教練即時指導', personal: '✓', group: '✓', online: '—' },
   { item: '小班人數', personal: '1-2人', group: '3-6 人', online: '自主學習' },
-  { item: '適合特殊族群', personal: '✓ 最適合', group: '部分課程', online: '—' },
+  { item: '適合特殊族群', personal: '★★★', group: '★★', online: '★' },
   { item: '時間彈性', personal: '依約定排課', group: '依固定時段', online: '✓ 完全彈性' },
   { item: '需要到分店', personal: '✓', group: '✓', online: '不需要' },
   // 開始方式：各自連到對應的報名入口（to 有值即渲染成連結，http 開頭自動開新分頁）

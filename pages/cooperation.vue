@@ -48,11 +48,16 @@ const pressStats = [
 ]
 
 // ⚠️ value 會寫進 leads.payload.cooperationType，後台篩選選項要跟著對齊
+// 只有「講座及課程邀約」需要規模人數與預算區間，其餘兩種為選填
+const SCALE_REQUIRED_TYPE = '講座及課程邀約'
 const enquiryTypes = [
   { label: '🎤 講座及課程邀約', value: '講座及課程邀約', placeholder: '請簡述你的講座及課程需求，例如：預計舉辦日期、聽眾背景、期望講授的主題方向、授課形式...等。' },
   { label: '📰 採訪邀約', value: '採訪邀約', placeholder: '請簡述你的採訪需求，例如：預計採訪日期、報導主題、採訪形式...等。' },
   { label: '🤝 異業合作', value: '異業合作', placeholder: '請簡述你的合作提案，例如：商品或品牌曝光、團購合作、海外教練培訓授權洽談、加盟...等。' },
 ]
+
+// 目前選到的洽詢類型是否需要「規模人數／預算區間」
+const isScaleRequired = computed(() => enquiryTypes[activeType.value]?.value === SCALE_REQUIRED_TYPE)
 
 interface FormData {
   organization: string
@@ -132,13 +137,13 @@ const handleSubmit = async () => {
     submitStatus.value = 'error'
     return
   }
-  if (!formData.value.companySize.trim()) {
+  if (isScaleRequired.value && !formData.value.companySize.trim()) {
     errorMessage.value = '請填寫規模人數'
     isSubmitting.value = false
     submitStatus.value = 'error'
     return
   }
-  if (!formData.value.budgetRange.trim()) {
+  if (isScaleRequired.value && !formData.value.budgetRange.trim()) {
     errorMessage.value = '請填寫預算區間'
     isSubmitting.value = false
     submitStatus.value = 'error'
@@ -486,7 +491,11 @@ const resetForm = () => {
 
             <div class="grid md:grid-cols-2 gap-4">
               <div>
-                <label class="text-xs font-bold text-ink/70 block mb-1.5">規模人數 <span class="text-orange">*</span></label>
+                <label class="text-xs font-bold text-ink/70 block mb-1.5">
+                  規模人數
+                  <span v-if="isScaleRequired" class="text-orange">*</span>
+                  <span v-else class="text-ink/40 font-normal">(選填)</span>
+                </label>
                 <input
                   type="text"
                   v-model="formData.companySize"
@@ -496,7 +505,11 @@ const resetForm = () => {
                 />
               </div>
               <div>
-                <label class="text-xs font-bold text-ink/70 block mb-1.5">預算區間 <span class="text-orange">*</span></label>
+                <label class="text-xs font-bold text-ink/70 block mb-1.5">
+                  預算區間
+                  <span v-if="isScaleRequired" class="text-orange">*</span>
+                  <span v-else class="text-ink/40 font-normal">(選填)</span>
+                </label>
                 <input
                   type="text"
                   v-model="formData.budgetRange"

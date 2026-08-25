@@ -15,10 +15,17 @@ export default defineEventHandler(async (event) => {
       sourcePage,
     } = body
 
-    // Validate required fields（lineId 仍為選填；companySize/budgetRange 於 2026-08-24 改必填）
-    if (!organization || !name || !phone || !email || !message || !cooperationType || !companySize || !budgetRange) {
+    // Validate required fields（lineId 為選填）
+    if (!organization || !name || !phone || !email || !message || !cooperationType) {
       setResponseStatus(event, 400)
       return { success: false, error: '請填寫必要欄位' }
+    }
+
+    // 規模人數／預算區間只有「講座及課程邀約」需要（與 pages/cooperation.vue 的
+    // SCALE_REQUIRED_TYPE 對應；改前台選項名稱時這裡要一起改）
+    if (cooperationType === '講座及課程邀約' && (!companySize || !budgetRange)) {
+      setResponseStatus(event, 400)
+      return { success: false, error: '請填寫規模人數與預算區間' }
     }
 
     // Validate phone format (Taiwan mobile or landline)
