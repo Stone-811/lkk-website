@@ -95,16 +95,27 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - **本機驗證管線**（無測試框架下的替代）：`npm run build`（⚠️ 不做型別檢查）→ `(set -a; source .env; set +a; unset SMTP_*; NODE_ENV=development ALLOW_DEV_ADMIN=true node .output/server/index.mjs)` → 後台用 dev 後門帳號（見 auth.ts DEV_TEST_USER，須 NODE_ENV≠production 且 ALLOW_DEV_ADMIN=true）→ 瀏覽器 pane 走查＋`javascript_tool` 斷言；表單類改動 curl POST 後用 service account 腳本直讀 Firestore 核對 shape、驗完刪測試文件。unset SMTP_* 可讓寄信乾淨跳過不發真信。
 - ⚠️ **備註存檔競態（已修）**：存檔期間關閉彈窗，舊碼 `selectedLead.value.internalNote` NPE→誤報「儲存失敗」（實際已寫入）。useAdminLeads 已加 null 防護，勿退回。
 
-## 教練資料現況（⚠️ 動 /team-intro/coaches 或教練資料前必看，2026-08-24 更新）
+## 教練資料現況（⚠️ 動 /team-intro/coaches 或教練資料前必看，2026-08-25 更新）
+
+> **要匯入 CSV 或補照片 → 改讀 skill `lkk-coach-import`**（完整流程、解析地雷、照片取景對齊法、Firestore 寫入順序）。本節只記現況。
 
 | 分店 | 人數 | 狀態 | 缺形象照 |
 |---|---|---|---|
 | 松江店 | **7** | ✅ 業主 CSV（2026-08-24，dev＋prod） | 楊君澤／蔡侑儒／張子誼 |
 | 七張店 | **11** | ✅ 業主 CSV（2026-08-24 重新上傳） | 陳存灝 |
-| 西門店 | **17** | ✅ 業主 CSV（2026-08-24 重新上傳） | 林稚荃／林承緯／盧立軒 |
-| **南京店** | **14** | ❌ **仍是樣板假資料**，多人誤標物理治療師 | — |
+| 西門店 | **17** | ✅ 業主 CSV（2026-08-24 重新上傳） | 林稚荃／盧立軒 |
+| 南京店 | **14** | ✅ 業主 CSV（2026-08-25，dev＋prod） | 許之丞 |
 
-**全站 49 位。南京是最後一塊，等業主給 CSV。**
+**全站 49 位，四店文字資料全部是真的了**（樣板假資料已清除）。缺形象照 7 位。
+
+**南京匯入（2026-08-25）**：刪林星辰（不在名單）、新增許之丞、職稱格式改為與其他三店一致的
+「練健康教練/物理治療師」、店經理蕭彥嶸提到 sortOrder 1。
+⚠️ **教練歸教練、講師歸講師**（業主明示）——林星辰仍在 `lecturers`，兩份名單獨立，不要連動。
+
+⚠️ **前台兩句文案已與事實不符，但業主 2026-08-25 決定「不用動」**：
+`pages/team-intro/coaches.vue`「每位教練都有物理治療師或醫療專業背景」、
+`pages/locations/[store].vue`「每位教練都有醫療或專業運動科學背景」。
+實際 49 位裡 30 位無醫療/運動科學學歷，有國家證照級醫事資格的 15 位。**不要再自行修改**。
 
 **原始問題**：教練資料是「照教練牆照片建檔、內容用範本填」——姓名與分店對，但證照/學歷/經歷是編的、`description` 全空。最嚴重的是**非物理治療師被標成「物理治療師」並列出「物理治療師證照」**（受《物理治療師法》管制＝合規問題）。
 
@@ -134,9 +145,19 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - 首頁 TeamSection 三人（鄭宇劭/吳皓宇/蕭彥嶸）走 `public/images/team/`（硬編碼路徑）；講師走 `public/images/lecturers/lkk/`（鄭健寬在講師是 `cheng-jiankuan`、教練是 `zheng-jiankuan`）。
 - **原始未壓縮檔（139MB）移到 repo 根 `_raw-assets/`，已 gitignore**——留在 `public/` 會被打包進 build。裁切腳本在 scratchpad `imgtool/`（sharp：掃 alpha 求主體 bbox → 頭頂留 10% → 3:4 置中）。
 - **改副檔名時**：photo 路徑同時在 Firestore（coaches + lecturers）與 `server/utils/fallback-data.ts`，兩邊都要改；且**先部署再改 Firestore**，否則舊 build 找不到新檔會有一段 404 空窗。
-- **尚無新照片**：林稚荃/林承緯/盧立軒（西門）、陳存灝（七張）、楊君澤/蔡侑儒/張子誼（松江，CSV 標「待拍攝」）→ 顯示姓名首字替代圖、不破版。`liu-yuming.jpg` 已隨劉育銘刪除一併移除（dev/prod 皆 404）。`team/huang-yuanjie.png` 仍是舊的 700×500 橫幅照，在 3:4 容器裡裁切明顯。
+- **尚無新照片（7 位）**：林稚荃/盧立軒（西門）、陳存灝（七張）、楊君澤/蔡侑儒/張子誼（松江，CSV 標「待拍攝」）、許之丞（南京）→ 顯示姓名首字替代圖、不破版。`liu-yuming.jpg`、`lin-xingchen.webp` 已隨離職者刪除一併移除。
+- **2026-08-25 新增**：林承緯（西門）`lin-chengwei.webp`。原圖是 2048×1152 橫幅，**取景用「量既有照片 alpha bbox 再反推縮放」的方式對齊**（主體高度 91%、底部切齊、水平置中），不是置中裁切。做法見 skill `lkk-coach-import`。
+- `team/huang-yuanjie.png` 仍是 700×500 橫幅照（3:4 容器裁切明顯），但**攝影棚淺灰底已於 2026-08-25 轉成白色**，配合白底容器。
 
-**`server/utils/fallback-data.ts` 必須跟著改**：Firestore 掛掉時會頂替顯示，**只改 Firestore 不改它＝留了一份假資料隨時可能對外**。松江/七張/西門三店已於 2026-08-24 重建為真實資料，**南京 14 筆仍是假的**。更新時也要檢查人數（原本七張只有 10 筆缺陳存灝、西門只有 14 筆缺 3 人）。
+**🎨 人物照底色統一白底（2026-08-25，dev＋prod）**：這些照片都是 alpha 去背，**底色由容器決定**。8 個容器已統一 `bg-white`：`pages/team-intro/coaches.vue`、`components/CoachCard.vue`、`components/CoachDetailModal.vue`、`pages/{lkk,co,oversea}-lecturer.vue`、`pages/about.vue`、`components/sections/TeamSection.vue`。⚠️ **深色漸層沒刪，移到 `v-else` 佔位區塊上**——佔位是 `text-white/20` 姓氏大字，留白底會看不見。新增放人物照的容器請比照。
+
+**`server/utils/fallback-data.ts` 必須跟著改**：Firestore 掛掉時會頂替顯示，**只改 Firestore 不改它＝留了一份假資料隨時可能對外**。四店已全部重建為真實資料（松江/七張/西門 2026-08-24、南京 2026-08-25）。更新時也要檢查人數（原本七張只有 10 筆缺陳存灝、西門只有 14 筆缺 3 人）。
+
+**🔴 photo 欄位與圖檔的部署順序（2026-08-25 踩過）**：Firestore 即時生效、圖檔要部署。
+**必須先確認該站 `curl -I` 圖檔回 200，才寫該環境的 photo 欄位**，反過來線上立刻破圖。
+dev/prod 各自照順序走。三個渲染點已補 `@error` 退路（404 退回姓氏佔位）：`CoachCard.vue`（本來就有）、
+`pages/team-intro/coaches.vue`（`v-for` 內要用 Set 記失敗網址，不能共用 ref）、
+`CoachDetailModal.vue`（要 `watch(coach.id)` 重置）。
 
 **🔴 石峻瑋的講師照是錯的**：`/images/lecturers/lkk/liuchang.png`（檔名對不上人），內容是**戴全罩安全帽、看不到臉**的人，正掛在正式站 `/lkk-lecturer`。講師另有 4 位無去背照（李柏橋／吳禎明／石峻瑋／阮玟文），以及 4 個沒人引用的中文檔名重複檔（2.5MB）。
 
