@@ -22,6 +22,10 @@ interface Coach {
 const props = defineProps<{ coach: Coach | null }>()
 const emit = defineEmits<{ close: [] }>()
 
+// 照片 404 時退回姓氏佔位；換一位教練要重置，否則會沿用上一位的失敗狀態
+const imageError = ref(false)
+watch(() => props.coach?.id, () => { imageError.value = false })
+
 // 彈窗開啟時鎖住背景捲動；元件卸載時務必還原，否則整頁會捲不動
 watch(
   () => props.coach,
@@ -69,10 +73,11 @@ onUnmounted(() => { document.body.style.overflow = '' })
               <!-- Photo - Smaller -->
               <div class="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-white">
                 <img
-                  v-if="coach.photo"
+                  v-if="coach.photo && !imageError"
                   :src="coach.photo"
                   :alt="coach.name"
                   class="w-full h-full object-cover object-top"
+                  @error="imageError = true"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-navy to-navy/80">
                   <span class="font-serif text-3xl font-black text-white/20">{{ coach.name.charAt(0) }}</span>
