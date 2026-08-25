@@ -26,7 +26,7 @@ const imageError = ref(false)
     @click="emit('select')"
   >
     <!-- Photo -->
-    <div class="aspect-[3/4] relative bg-cream-200 overflow-hidden">
+    <div class="aspect-[3/4] relative bg-white overflow-hidden">
       <img
         v-if="coach.photo && !imageError"
         :src="coach.photo"

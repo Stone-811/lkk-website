@@ -67,7 +67,7 @@ onUnmounted(() => { document.body.style.overflow = '' })
             <!-- Coach Header - Compact horizontal layout -->
             <div class="flex gap-4 px-4 pb-4">
               <!-- Photo - Smaller -->
-              <div class="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-cream-200">
+              <div class="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-white">
                 <img
                   v-if="coach.photo"
                   :src="coach.photo"

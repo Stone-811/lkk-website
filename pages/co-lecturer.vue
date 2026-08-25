@@ -135,14 +135,14 @@ const benefits = [
             :key="lecturer.id"
             class="bg-white rounded-2xl overflow-hidden shadow-lg border border-navy/10 hover:-translate-y-1 transition-transform w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
           >
-            <div class="aspect-square bg-gradient-to-br from-navy to-navy/80 relative">
+            <div class="aspect-square bg-white relative">
               <img
                 v-if="lecturer.photo"
                 :src="lecturer.photo"
                 :alt="lecturer.name"
                 class="w-full h-full object-cover object-top"
               />
-              <div v-else class="absolute inset-0 flex items-center justify-center">
+              <div v-else class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-navy to-navy/80">
                 <span class="font-serif text-7xl font-black text-white/20">{{ lecturer.name.charAt(0) }}</span>
               </div>
             </div>

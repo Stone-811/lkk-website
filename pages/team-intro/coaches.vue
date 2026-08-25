@@ -266,7 +266,7 @@ function setActiveStore(storeSlug: string | null) {
                 class="group flex flex-col bg-white rounded-xl overflow-hidden shadow-sm border border-navy/10 hover:shadow-lg hover:border-orange/30 transition-all duration-300 text-left cursor-pointer"
               >
                 <!-- Coach Image -->
-                <div class="aspect-[3/4] relative bg-cream-200 overflow-hidden">
+                <div class="aspect-[3/4] relative bg-white overflow-hidden">
                   <img
                     v-if="coach.photo"
                     :src="coach.photo"
