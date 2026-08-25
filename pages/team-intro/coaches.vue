@@ -9,6 +9,10 @@ useHead({
   ]
 })
 
+// 照片 404 時記下來，讓該張退回姓氏佔位而不是留一個破圖 icon。
+// （只有 CoachCard 本來有這層保護，這頁與詳情彈窗都沒有。）
+const brokenPhotos = ref(new Set<string>())
+
 interface Coach {
   id: string
   name: string
@@ -266,13 +270,14 @@ function setActiveStore(storeSlug: string | null) {
                 class="group flex flex-col bg-white rounded-xl overflow-hidden shadow-sm border border-navy/10 hover:shadow-lg hover:border-orange/30 transition-all duration-300 text-left cursor-pointer"
               >
                 <!-- Coach Image -->
-                <div class="aspect-[3/4] relative bg-cream-200 overflow-hidden">
+                <div class="aspect-[3/4] relative bg-white overflow-hidden">
                   <img
-                    v-if="coach.photo"
+                    v-if="coach.photo && !brokenPhotos.has(coach.photo)"
                     :src="coach.photo"
                     :alt="coach.name"
                     loading="lazy"
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    @error="brokenPhotos = new Set(brokenPhotos).add(coach.photo!)"
                   />
                   <div v-else class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-navy to-navy/80">
                     <span class="font-serif text-5xl font-black text-white/20">{{ coach.name.charAt(0) }}</span>
