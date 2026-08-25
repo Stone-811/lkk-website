@@ -452,7 +452,7 @@ export const fallbackCoaches: Record<string, Coach[]> = {
       id: 'xm-7',
       name: '林承緯',
       roleTitle: '練健康教練',
-      photo: '',
+      photo: '/images/coaches/ximending/lin-chengwei.webp',
       education: ['中原大學 生物醫學工程學系 學士'],
       experiences: ['2023-PRC 自由潛水賽事 DNF（動態平潛無蹼）100M', '自由潛水教練'],
       certifications: ['NASM-CPT 美國國家運動醫學學院-私人教練證照', 'ISCA-國際C級健身教練', '練健康 中高齡訓練研習', 'AIDA International Freediving 初階自由潛水員（AIDA2）', 'AIDA International Freediving 進階自由潛水員（AIDA3）', 'AIDA International Freediving 高階自由潛水員（AIDA4）', 'AIDA International Freediving 國際自由潛水教練（Instructor）'],
