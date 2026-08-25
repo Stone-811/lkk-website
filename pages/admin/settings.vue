@@ -23,7 +23,7 @@ interface Settings {
 }
 
 const defaultSettings: Settings = {
-  contactEmail: 'lkkwellness@gmail.com',
+  contactEmail: 'service@l-kk.tw',
   socialLinks: {
     facebook: 'https://www.facebook.com/LKKWellnessCenter/',
     instagram: 'https://www.instagram.com/lkk_wellness/',

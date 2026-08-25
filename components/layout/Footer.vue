@@ -15,7 +15,7 @@ const { stores } = usePublicStores()
 const { data: site } = useLazyFetch('/api/public/settings', {
   key: 'public-site-settings',
   default: () => ({
-    contactEmail: 'lkkwellness@gmail.com',
+    contactEmail: 'service@l-kk.tw',
     socialLinks: {
       facebook: 'https://www.facebook.com/LKKWellnessCenter/',
       instagram: 'https://www.instagram.com/lkk_wellness/',

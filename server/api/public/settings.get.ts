@@ -6,7 +6,7 @@ import { getDb } from '~/server/utils/firebase'
 const DEFAULTS = {
   siteName: '練健康',
   siteDescription: '專業一對一私人教練，科學化訓練，找回你的健康生活。',
-  contactEmail: 'lkkwellness@gmail.com',
+  contactEmail: 'service@l-kk.tw',
   socialLinks: {
     facebook: 'https://www.facebook.com/LKKWellnessCenter/',
     instagram: 'https://www.instagram.com/lkk_wellness/',
