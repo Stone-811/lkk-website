@@ -16,6 +16,8 @@ const { data: site } = useLazyFetch('/api/public/settings', {
   key: 'public-site-settings',
   default: () => ({
     contactEmail: 'lkkwellness@gmail.com',
+    // ⚠️ contactPhone 於 2026-08-25 起不在 Footer「聯絡我們」顯示（業主要求移除）。
+    // 後台系統設定仍可編輯此欄位，但目前全站沒有任何地方會呈現它。
     contactPhone: '02-2537-1055',
     socialLinks: {
       facebook: 'https://www.facebook.com/LKKWellnessCenter/',
@@ -28,7 +30,6 @@ const { data: site } = useLazyFetch('/api/public/settings', {
   }),
 })
 
-const telHref = (phone: string) => `tel:${(phone || '').replace(/[^0-9+]/g, '')}`
 
 const currentYear = new Date().getFullYear()
 </script>
@@ -164,12 +165,6 @@ const currentYear = new Date().getFullYear()
               <span class="text-cream-300/70">信箱：</span>
               <a :href="`mailto:${site.contactEmail}`" class="hover:text-white transition-colors">
                 {{ site.contactEmail }}
-              </a>
-            </li>
-            <li v-if="site.contactPhone">
-              <span class="text-cream-300/70">電話：</span>
-              <a :href="telHref(site.contactPhone)" class="hover:text-white transition-colors">
-                {{ site.contactPhone }}
               </a>
             </li>
             <li v-if="site.socialLinks.line">

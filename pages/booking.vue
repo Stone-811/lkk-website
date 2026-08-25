@@ -77,10 +77,12 @@ const toggleFaq = (id: string) => {
   openFaqId.value = openFaqId.value === id ? null : id
 }
 
+// photo 與首頁 components/sections/CasesSection.vue 用同一組圖檔；
+// 留空時會退回姓氏首字的圓形替代圖，版面不會開天窗。
 const cases = [
-  { name: '雪莉', info: '72歲・氣喘與心臟病', quote: '不讓先天性氣喘與心臟病影響我的生活，我現在可以自信地站上聖誕老人硬舉大賽的舞台！' },
-  { name: '黃阿公', info: '85歲・訓練三年多', quote: '教練都會針對我的狀況隨時調整教學課表，連我的老婆都開始在這裡運動！' },
-  { name: '保羅', info: '69歲・原發性顫抖症', quote: '當初手抖到連倒水、吃飯都有問題，在開始重訓後，不僅藥量減半，我還能輕鬆抱起孫子玩耍！' },
+  { name: '雪莉', info: '72歲・氣喘與心臟病', photo: '/images/cases/shirley.jpg', quote: '不讓先天性氣喘與心臟病影響我的生活，我現在可以自信地站上聖誕老人硬舉大賽的舞台！' },
+  { name: '黃阿公', info: '85歲・訓練三年多', photo: '/images/cases/huang.jpg', quote: '教練都會針對我的狀況隨時調整教學課表，連我的老婆都開始在這裡運動！' },
+  { name: '保羅', info: '69歲・原發性顫抖症', photo: '/images/cases/paul.jpg', quote: '當初手抖到連倒水、吃飯都有問題，在開始重訓後，不僅藥量減半，我還能輕鬆抱起孫子玩耍！' },
 ]
 
 const steps = computed(() => [
@@ -1052,7 +1054,18 @@ const handleSubmit = async () => {
               <div class="text-[0.82rem] font-bold tracking-widest uppercase text-navy-700/50 mb-4">他們也是這樣開始的</div>
               <div class="flex flex-col gap-3">
                 <div v-for="c in cases" :key="c.name" class="flex gap-3 items-start">
-                  <div class="w-10 h-10 rounded-full bg-orange/20 flex items-center justify-center text-orange font-bold text-sm flex-shrink-0">
+                  <!-- 頭像：有照片就放照片（object-top 避免切到頭頂），沒有才退回姓氏首字 -->
+                  <img
+                    v-if="c.photo"
+                    :src="c.photo"
+                    :alt="`${c.name}・${c.info}`"
+                    loading="lazy"
+                    class="w-10 h-10 rounded-full object-cover object-top bg-navy-700/5 flex-shrink-0"
+                  />
+                  <div
+                    v-else
+                    class="w-10 h-10 rounded-full bg-orange/20 flex items-center justify-center text-orange font-bold text-sm flex-shrink-0"
+                  >
                     {{ c.name.charAt(0) }}
                   </div>
                   <div class="flex-1 min-w-0">
