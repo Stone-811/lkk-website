@@ -14,12 +14,10 @@ interface Lecturer {
   title?: string
   organization?: string
   region?: string
-  countries?: string[]
   type: 'lkk' | 'partner' | 'overseas'
   photo?: string
   description?: string
   specialties?: string[]
-  courses?: string[]
   certifications?: string[]
   sortOrder?: number
   isActive: boolean
@@ -73,12 +71,10 @@ const formData = ref({
   title: '',
   organization: '',
   region: '',
-  countriesText: '',
   type: 'lkk' as 'lkk' | 'partner' | 'overseas',
   photo: '',
   description: '',
   specialtiesText: '',
-  coursesText: '',
   certificationsText: '',
   sortOrder: 0,
   isActive: true,
@@ -141,12 +137,10 @@ function openEditModal(lecturer?: Lecturer) {
       title: lecturer.title || '',
       organization: lecturer.organization || '',
       region: lecturer.region || '',
-      countriesText: (lecturer.countries || []).join('\n'),
       type: lecturer.type || 'lkk',
       photo: lecturer.photo || '',
       description: lecturer.description || '',
       specialtiesText: (lecturer.specialties || []).join('\n'),
-      coursesText: (lecturer.courses || []).join('\n'),
       certificationsText: (lecturer.certifications || []).join('\n'),
       sortOrder: lecturer.sortOrder || 0,
       isActive: lecturer.isActive ?? true,
@@ -160,12 +154,10 @@ function openEditModal(lecturer?: Lecturer) {
       title: '',
       organization: '',
       region: '',
-      countriesText: '',
       type: 'lkk',
       photo: '',
       description: '',
       specialtiesText: '',
-      coursesText: '',
       certificationsText: '',
       sortOrder: maxSortOrder + 1,
       isActive: true,
@@ -197,12 +189,10 @@ async function saveLecturer() {
       title: formData.value.title,
       organization: formData.value.organization,
       region: formData.value.region,
-      countries: formData.value.countriesText.split('\n').map(s => s.trim()).filter(Boolean),
       type: formData.value.type,
       photo: formData.value.photo,
       description: formData.value.description,
       specialties: formData.value.specialtiesText.split('\n').map(s => s.trim()).filter(Boolean),
-      courses: formData.value.coursesText.split('\n').map(s => s.trim()).filter(Boolean),
       certifications: formData.value.certificationsText.split('\n').map(s => s.trim()).filter(Boolean),
       sortOrder: formData.value.sortOrder,
       isActive: formData.value.isActive,
@@ -615,16 +605,6 @@ const filteredLecturers = computed(() => {
             </div>
           </div>
 
-          <div v-if="formData.type === 'overseas'">
-            <label class="block text-sm font-medium mb-1">授權國家（每行一個）</label>
-            <textarea
-              v-model="formData.countriesText"
-              rows="3"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="馬來西亞&#10;新加坡&#10;泰國"
-            ></textarea>
-          </div>
-
           <!-- Photo Upload -->
           <div>
             <label class="block text-sm font-medium mb-2">講師照片</label>
@@ -666,25 +646,14 @@ const filteredLecturers = computed(() => {
             ></textarea>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium mb-1">專長領域（每行一個）</label>
-              <textarea
-                v-model="formData.specialtiesText"
-                rows="4"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2"
-                placeholder="肌力與體能訓練&#10;運動傷害防護&#10;功能性訓練"
-              ></textarea>
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">授課項目（每行一個）</label>
-              <textarea
-                v-model="formData.coursesText"
-                rows="4"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2"
-                placeholder="初階肌力訓練&#10;進階體能訓練&#10;教練培訓課程"
-              ></textarea>
-            </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">專長領域（每行一個）</label>
+            <textarea
+              v-model="formData.specialtiesText"
+              rows="4"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2"
+              placeholder="肌力與體能訓練&#10;運動傷害防護&#10;功能性訓練"
+            ></textarea>
           </div>
 
           <div>

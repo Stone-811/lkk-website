@@ -15,7 +15,6 @@ interface Lecturer {
   photo?: string
   title?: string
   region?: string
-  countries?: string[]
   description?: string
   specialties?: string[]
   certifications?: string[]

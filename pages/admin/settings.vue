@@ -9,14 +9,12 @@ useHead({
 
 interface Settings {
   contactEmail: string
-  contactPhone: string
   socialLinks: {
     facebook: string
     instagram: string
     youtube: string
     podcast: string
     line: string
-    email: string
   }
   notifications: {
     emailOnNewLead: boolean
@@ -25,15 +23,13 @@ interface Settings {
 }
 
 const defaultSettings: Settings = {
-  contactEmail: 'lkkwellness@gmail.com',
-  contactPhone: '02-2537-1055',
+  contactEmail: 'service@l-kk.tw',
   socialLinks: {
     facebook: 'https://www.facebook.com/LKKWellnessCenter/',
     instagram: 'https://www.instagram.com/lkk_wellness/',
     youtube: 'https://www.youtube.com/c/LKKWellness',
     podcast: 'https://podcasts.apple.com/tw/podcast/%E5%88%9D%E4%B8%80%E5%8D%81%E4%BA%94%E7%B7%B4%E5%81%A5%E5%BA%B7/id1779024584',
     line: 'https://line.me/R/ti/p/%40201fzruh',
-    email: 'lkkwellness@gmail.com',
   },
   notifications: {
     emailOnNewLead: true,
@@ -53,14 +49,12 @@ onMounted(async () => {
     if (res.success && res.data) {
       settings.value = {
         contactEmail: res.data.contactEmail || defaultSettings.contactEmail,
-        contactPhone: res.data.contactPhone || defaultSettings.contactPhone,
         socialLinks: {
           facebook: res.data.socialLinks?.facebook || defaultSettings.socialLinks.facebook,
           instagram: res.data.socialLinks?.instagram || defaultSettings.socialLinks.instagram,
           youtube: res.data.socialLinks?.youtube || defaultSettings.socialLinks.youtube,
           podcast: res.data.socialLinks?.podcast || defaultSettings.socialLinks.podcast,
           line: res.data.socialLinks?.line || defaultSettings.socialLinks.line,
-          email: res.data.socialLinks?.email || defaultSettings.socialLinks.email,
         },
         notifications: res.data.notifications || defaultSettings.notifications,
       }
@@ -80,7 +74,6 @@ async function handleSave() {
         section: 'general',
         data: {
           contactEmail: settings.value.contactEmail,
-          contactPhone: settings.value.contactPhone,
         },
       },
       { section: 'social', data: settings.value.socialLinks },
@@ -159,15 +152,6 @@ async function handleTestNotification() {
             <input
               v-model="settings.contactEmail"
               type="email"
-              class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange focus:border-orange transition-colors"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">聯絡電話</label>
-            <input
-              v-model="settings.contactPhone"
-              type="tel"
               class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange focus:border-orange transition-colors"
             />
           </div>
@@ -259,23 +243,6 @@ async function handleTestNotification() {
             type="url"
             class="w-full max-w-xl border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange focus:border-orange transition-colors"
             placeholder="https://line.me/R/ti/p/..."
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            <span class="inline-flex items-center gap-2">
-              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Email
-            </span>
-          </label>
-          <input
-            v-model="settings.socialLinks.email"
-            type="email"
-            class="w-full max-w-xl border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange focus:border-orange transition-colors"
-            placeholder="lkkwellness@gmail.com"
           />
         </div>
       </div>

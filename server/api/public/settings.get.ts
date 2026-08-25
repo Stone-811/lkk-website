@@ -6,15 +6,13 @@ import { getDb } from '~/server/utils/firebase'
 const DEFAULTS = {
   siteName: '練健康',
   siteDescription: '專業一對一私人教練，科學化訓練，找回你的健康生活。',
-  contactEmail: 'lkkwellness@gmail.com',
-  contactPhone: '02-2537-1055',
+  contactEmail: 'service@l-kk.tw',
   socialLinks: {
     facebook: 'https://www.facebook.com/LKKWellnessCenter/',
     instagram: 'https://www.instagram.com/lkk_wellness/',
     youtube: 'https://www.youtube.com/c/LKKWellness',
     podcast: 'https://podcasts.apple.com/tw/podcast/%E5%88%9D%E4%B8%80%E5%8D%81%E4%BA%94%E7%B7%B4%E5%81%A5%E5%BA%B7/id1779024584',
     line: 'https://line.me/R/ti/p/%40201fzruh',
-    email: 'lkkwellness@gmail.com',
   },
 }
 
@@ -35,14 +33,12 @@ export default defineEventHandler(async () => {
       siteName: pick(general.siteName, DEFAULTS.siteName),
       siteDescription: pick(general.siteDescription, DEFAULTS.siteDescription),
       contactEmail: pick(general.contactEmail, DEFAULTS.contactEmail),
-      contactPhone: pick(general.contactPhone, DEFAULTS.contactPhone),
       socialLinks: {
         facebook: pick(social.facebook, DEFAULTS.socialLinks.facebook),
         instagram: pick(social.instagram, DEFAULTS.socialLinks.instagram),
         youtube: pick(social.youtube, DEFAULTS.socialLinks.youtube),
         podcast: pick(social.podcast, DEFAULTS.socialLinks.podcast),
         line: pick(social.line, DEFAULTS.socialLinks.line),
-        email: pick(social.email, DEFAULTS.socialLinks.email),
       },
     }
   } catch (error) {

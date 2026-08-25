@@ -268,11 +268,9 @@ export interface LecturerDoc extends FirestoreDoc {
   title?: string;
   organization?: string;
   region?: string;
-  countries?: string[];
   type: 'lkk' | 'partner' | 'overseas';
   description?: string;
   specialties: string[];
-  courses?: string[];
   certifications?: string[];
   /** 學歷背景 */
   education?: string[];
