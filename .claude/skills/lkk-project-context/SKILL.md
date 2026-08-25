@@ -147,6 +147,8 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 |---|---|---|
 | 分店營業時間／交通／地圖／電話 | `composables/useStoreDefaults.ts` | ❌ 2026-08-12 起後台已移除此區塊 |
 | 分店頁門市實景照／Hero 底圖 | `pages/locations/index.vue` 的 `STORE_PHOTOS` ＋ `public/images/locations/` | ❌ 程式碼維護（與後台上傳的單店環境照 `store.images.env1~5` 是**兩套不同東西**） |
+| 聯絡信箱（Footer 顯示） | Firestore `settings/general.contactEmail` | ✅ 可編。**2026-08-25 起＝`service@l-kk.tw`**（原 lkk@l-kk.tw）；⚠️ 與「通知信收件人」`settings/notifications.emailRecipients`、SMTP 寄件帳號 `lkkwellness@gmail.com` 是三個不同東西 |
+| 分店環境照 | Firestore `stores.images.env1~5` | ✅ 可編、功能正常（API 轉成 `galleryImages`）。⚠️ **四店目前都是 0 張**，分店詳情頁顯示 Unsplash 佔位圖 |
 | 分店名稱／地址／照片／上架 | Firestore `stores` | ✅ |
 | 教練 | Firestore `coaches` | ✅ |
 | 講師（含 2026-08-23 新增的 `education` 學歷背景） | Firestore `lecturers` | ✅ |
@@ -214,3 +216,35 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 | `brightness(.4)` + `opacity-60` | 8.30:1 ✅ | 4.92:1 ✅ |
 
 **關鍵是先壓暗再降透明度**，只調 opacity 不夠（亮部仍會穿透）。選定值讓文字區最亮 5% 的相對亮度 L=0.077 ≈ 原本純 navy 的 0.075 ＝**對比完全不變**。量法：Pillow 讀圖 → 取文字所在區塊（垂直 20–90%、水平 15–85%）→ sRGB 線性化算相對亮度 → 取 95 百分位（最壞情況）→ 套 WCAG 對比公式。⚠️ 該 Hero 有一行 `text-white/40` 小字**本來就只有 2.75:1**（既有問題，非這次造成）。
+
+---
+
+## 後台「能編但不會顯示」的欄位（2026-08-25 已清空）
+
+這個專案反覆出現同一種坑：**後台留著欄位、業主填了卻沒效果**（分店營業時間是最早的一例）。
+2026-08-25 全面盤點後移除四個：**系統設定的聯絡電話 `contactPhone`、社群 Email
+`socialLinks.email`；講師管理的授權國家 `countries`、授課項目 `courses`**。
+
+**清除範圍要完整，只刪介面不夠**：
+① **講師有兩個編輯入口** —— `pages/admin/lecturers.vue`（列表頁內嵌 modal，用 `xxxText`
+多行字串）＋ `pages/admin/lecturers/[id].vue`（獨立編輯頁，用標籤式陣列）。只改一個，
+另一個照樣寫得進去。
+② 還要清：新增講師 API、public/admin settings API、public lecturers API、
+`LecturerDoc` 型別、前台頁面的死型別宣告、Footer fallback，
+**以及 Firestore 的殘留欄位**（留著就是下一個 `businessHours`）。
+
+⚠️ **刪之前先確認那不是唯一來源**：周千媚的 `countries: ["馬來西亞"]` 看似有內容，
+但畫面上的「馬來西亞」其實來自 `region`，兩者重複 → 刪掉不影響顯示（實測驗證過）。
+⚠️ **同名不代表同源**：`lkk-lecturer.vue` 的「培訓課程」區塊是該頁**自己寫死的
+`const courses`**，與講師的 `courses` 欄位無關。
+⚠️ **用行號區間刪 template 極易多刪一行**（我刪「授課項目」時把父層 grid 的 `</div>`
+一起刪掉、build 直接失敗）；刪完務必 build，並留意**父容器是否失去意義**
+（兩欄 grid 少一格就該改回單欄）。
+
+## 後台篩選下拉會列出「已不存在的舊選項」
+
+`/admin/group-classes` 的門店／課程／UTM 篩選，**選項是掃名單自動蒐集**的，
+而表單存的是**顯示字串不是 id** → 選項改名後舊名單留著舊字串，下拉就新舊並存。
+實例：門店「新店七張店」、課程「銀髮肌力班・平日上午(測試)」。
+狀態篩選是固定常數所以安全。**排查心法：先去 Firestore 統計該欄位實際值分布，別先改程式。**
+正式站團課名單 0 筆，此問題僅在 dev；2026-08-25 已刪掉那兩筆測試資料。
