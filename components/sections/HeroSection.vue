@@ -119,7 +119,7 @@ const pressOutlets = [
     <!-- Data Strip -->
     <section class="bg-navy-800 py-8 lg:py-10">
       <div class="container mx-auto px-4">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.08] rounded-2xl overflow-hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.08] rounded-2xl overflow-hidden">
           <div
             v-for="stat in dataStats"
             :key="stat.num"
