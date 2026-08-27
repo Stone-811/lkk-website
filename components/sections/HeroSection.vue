@@ -125,10 +125,11 @@ const pressOutlets = [
             :key="stat.num"
             class="bg-navy-800 px-4 py-6 sm:p-6 lg:p-7 text-center hover:bg-white/[0.04] transition-colors"
           >
-            <div class="font-serif text-3xl lg:text-4xl font-black text-orange leading-none mb-2">
-              {{ stat.num }}
+            <div class="leading-tight mb-2">
+              <span class="font-serif text-2xl lg:text-3xl font-black text-orange align-baseline">{{ stat.num }}</span>
+              <span class="text-white/25 mx-0.5 lg:mx-1 align-baseline">｜</span>
+              <span class="font-bold text-white text-sm lg:text-base align-baseline">{{ stat.title }}</span>
             </div>
-            <strong class="block text-white text-sm lg:text-base mb-1.5">{{ stat.title }}</strong>
             <p class="text-white/65 text-xs lg:text-sm leading-relaxed">
               {{ stat.desc }}
             </p>
