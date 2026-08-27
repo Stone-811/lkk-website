@@ -42,10 +42,12 @@ env:
     value: smtp.gmail.com
   - variable: SMTP_PORT
     value: "465"
-  # 寄件帳號＝l-kk.tw 的 Google Workspace 信箱（MX 指向 aspmx.l.google.com）。
-  # SMTP_USER / SMTP_FROM 一致，不需要 Gmail 的「以其他地址寄信」別名。
+  # SMTP_USER 必須是「能登入的真帳號」＝lkk@l-kk.tw。
+  # service@l-kk.tw 是它的別名，別名沒有自己的密碼、無法通過 SMTP 驗證
+  # （用 service@ 當 SMTP_USER 會拿到 535-5.7.8 BadCredentials）。
+  # SMTP_FROM 用別名沒問題：Workspace 允許以自己帳號的網域別名寄信，不需額外驗證。
   - variable: SMTP_USER
-    value: service@l-kk.tw
+    value: lkk@l-kk.tw
   - variable: SMTP_FROM
     value: service@l-kk.tw
   # 只有 Firestore settings/notifications.emailRecipients 為空時才會用到的保底值。
