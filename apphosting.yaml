@@ -43,8 +43,11 @@ env:
     value: "465"
   - variable: SMTP_USER
     value: lkkwellness@gmail.com
+  # 信件顯示的寄件者。SMTP_USER 仍是 Gmail 那組（負責 SMTP 驗證），
+  # 這個位址必須先在該 Gmail 帳號的「以其他地址寄信」驗證過，
+  # 否則 Gmail 會把 From 改寫回 SMTP_USER。
   - variable: SMTP_FROM
-    value: lkkwellness@gmail.com
+    value: service@l-kk.tw
   - variable: NOTIFICATION_EMAIL
     value: lkkwellness@gmail.com
   # SMTP Password - reuse existing secret from Next.js
