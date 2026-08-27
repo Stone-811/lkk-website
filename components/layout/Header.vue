@@ -174,7 +174,7 @@ const closeMobileMenu = () => {
               isActive('/lkk4') ? 'text-orange font-medium' : 'text-cream-100 hover:text-orange'
             ]"
           >
-            LKK4
+            LKK4比賽報名
           </NuxtLink>
 
           <!-- 媒體報導 -->
@@ -345,7 +345,7 @@ const closeMobileMenu = () => {
             :class="['py-3 px-2 rounded', isActive('/lkk4') ? 'text-orange font-medium bg-navy-600/50' : 'text-cream-100']"
             @click="closeMobileMenu"
           >
-            LKK4
+            LKK4比賽報名
           </NuxtLink>
 
           <!-- 媒體報導 -->

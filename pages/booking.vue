@@ -28,15 +28,18 @@ const pricingCopy = computed(() => variant.value.allAgesFree
       badge: '不限年齡・免費體驗',
       title: '不限年齡',
       titleHighlight: '體驗課完全免費',
+      titleHighlightClass: 'text-orange',
       note: '本活動不限年齡免費・無隱藏費用・不強迫買課',
       faqFee: '本活動不限年齡，首次體驗完全免費。',
       faqPay: '本活動免費，無需付款。',
       cardBadges: ['不限年齡 免費'],
     }
   : {
-      badge: '50歲以下，體驗課$500元',
-      title: '50 歲以上',
-      titleHighlight: '第一堂體驗課免費',
+      badge: '50歲以上免費體驗',
+      title: '第一堂課',
+      titleHighlight: '讓我們陪你開始',
+      // 這組主標是一句完整的話，第二行不上橘色（活動變體另有自己的標題，仍走橘色）
+      titleHighlightClass: 'text-white',
       note: '第一堂體驗課，50歲以上免費・未滿50歲 $500・無隱藏費用・不強迫買課',
       faqFee: '第一堂體驗課 50歲以上免費；未滿50歲酌收 $500 檢測與體驗費用。若為一對二且皆未滿50歲，兩位皆需收取 $500。',
       faqPay: '體驗結束後至櫃台臨櫃繳費即可。',
@@ -94,7 +97,6 @@ const steps = computed(() => [
 
 const whatYouGet = [
   '身體素質・活動度・肌力 全面檢測',
-  '核心啟動與基礎重訓教學',
   '客製化訓練動作指導',
   '訓練目標評估與規劃建議',
 ]
@@ -421,11 +423,11 @@ const handleSubmit = async () => {
 
             <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-3 sm:mb-4">
               {{ variant.hero?.title ?? pricingCopy.title }}<br />
-              <span class="text-orange">{{ variant.hero?.titleHighlight ?? pricingCopy.titleHighlight }}</span>
+              <span :class="variant.hero?.titleHighlight ? 'text-orange' : pricingCopy.titleHighlightClass">{{ variant.hero?.titleHighlight ?? pricingCopy.titleHighlight }}</span>
             </h1>
 
             <p class="text-white/60 text-base sm:text-lg font-light leading-relaxed mb-5 sm:mb-6 max-w-lg mx-auto">
-              {{ variant.hero?.subtitle ?? '不論年齡、運動經驗、身體狀況——體驗課的目的是讓我們了解你，而不是評判你。由醫療相關、運動科學等專業背景教練帶領，安全有效。' }}
+              {{ variant.hero?.subtitle ?? '不需要準備好，才開始運動。從了解你的身體與需求開始，我們會一對一陪你找到適合自己的訓練方式。你的第一步，就從一堂體驗課開始。' }}
             </p>
 
             <!-- What you get -->
