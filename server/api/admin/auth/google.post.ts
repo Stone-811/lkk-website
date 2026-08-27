@@ -1,6 +1,6 @@
 // Admin login via Google (Firebase Auth).
 // Verifies the Firebase ID token, checks the email against an allow-list
-// (ADMIN_ALLOWED_EMAILS, default lkkwellness@gmail.com), and — only then —
+// (ADMIN_ALLOWED_EMAILS, default lkkwellness@gmail.com,service@l-kk.tw), and — only then —
 // issues the app's existing admin session cookie. Any other Google account,
 // even if it authenticates with Google, is rejected here.
 export default defineEventHandler(async (event) => {
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     const emailVerified = decoded.email_verified === true
 
     // Allow-list: only these emails may access the admin
-    const allowed = (process.env.ADMIN_ALLOWED_EMAILS || 'lkkwellness@gmail.com')
+    const allowed = (process.env.ADMIN_ALLOWED_EMAILS || 'lkkwellness@gmail.com,service@l-kk.tw')
       .split(',')
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean)

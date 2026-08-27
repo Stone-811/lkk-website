@@ -1,3 +1,8 @@
+// 收件者按「回覆」時信會寄到這裡。
+// 寄件帳號 SMTP_USER 必須維持 Gmail 那組才通得過 SMTP 驗證，動 from 會讓 Gmail 改寫或使 SPF/DKIM
+// 不對齊而進垃圾信匣，所以不動 from，改用 Reply-To 導向。
+const REPLY_TO = process.env.SMTP_REPLY_TO || 'service@l-kk.tw'
+
 // Lazy load nodemailer to avoid bundling issues
 let _nodemailer: any = null
 
@@ -311,6 +316,7 @@ export async function sendLeadNotification(data: LeadNotificationData) {
   try {
     await transporter.sendMail({
       from: `"練健康" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+      replyTo: REPLY_TO,
       to: recipients.join(', '),
       subject,
       html,
@@ -343,7 +349,7 @@ const formConfirmationConfig: Record<string, {
     title: '洽詢確認',
     greeting: '感謝您對練健康的關注與洽詢！',
     message: '我們已收到您的合作洽詢，專人將於 3-5 個工作天內與您聯繫。',
-    closing: '如有緊急需求，請聯繫業務部（02）2500-0131 分機11。<br>期待與您的合作',
+    closing: '如有緊急需求，請聯繫業務部（02）2500-0131 分機11。<br>期待與您的合作！',
   },
   franchise: {
     subject: '【練健康】感謝您的加盟洽詢',
@@ -446,6 +452,7 @@ export async function sendFormConfirmation(data: FormConfirmationData) {
   try {
     await transporter.sendMail({
       from: `"練健康" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+      replyTo: REPLY_TO,
       to: data.email,
       subject: config.subject,
       html: content,

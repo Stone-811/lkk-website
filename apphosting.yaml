@@ -32,20 +32,26 @@ env:
   - variable: NUXT_PUBLIC_FIREBASE_APP_ID
     value: "1:358130100336:web:d7fbf02d5e53715aa32cb5"
   # Admin allow-list for Google sign-in (comma-separated)
+  # 這是「誰能登入後台」的白名單，跟寄信無關，改錯會把人鎖在門外。
   - variable: ADMIN_ALLOWED_EMAILS
-    value: lkkwellness@gmail.com
+    value: lkkwellness@gmail.com,service@l-kk.tw
 
   # SMTP Configuration (same as Next.js web app)
   - variable: SMTP_HOST
     value: smtp.gmail.com
   - variable: SMTP_PORT
     value: "465"
+  # SMTP_USER 必須是「能登入的真帳號」＝lkk@l-kk.tw。
+  # service@l-kk.tw 是它的別名，別名沒有自己的密碼、無法通過 SMTP 驗證
+  # （用 service@ 當 SMTP_USER 會拿到 535-5.7.8 BadCredentials）。
+  # SMTP_FROM 用別名沒問題：Workspace 允許以自己帳號的網域別名寄信，不需額外驗證。
   - variable: SMTP_USER
-    value: lkkwellness@gmail.com
+    value: lkk@l-kk.tw
   - variable: SMTP_FROM
-    value: lkkwellness@gmail.com
+    value: service@l-kk.tw
+  # 只有 Firestore settings/notifications.emailRecipients 為空時才會用到的保底值。
   - variable: NOTIFICATION_EMAIL
-    value: lkkwellness@gmail.com
+    value: service@l-kk.tw
   # SMTP Password - reuse existing secret from Next.js
   - variable: SMTP_PASS
     secret: smtp-pass

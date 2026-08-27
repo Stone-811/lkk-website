@@ -409,16 +409,6 @@ export const fallbackCoaches: Record<string, Coach[]> = {
       specialties: ['中高齡訓練', '肌力訓練', '體態雕塑'],
     },
     {
-      id: 'xm-3',
-      name: '林稚荃',
-      roleTitle: '練健康教練/物理治療師',
-      photo: '',
-      education: ['國立台灣大學 物理治療學系 六年制畢業'],
-      experiences: ['2023亞青/亞青少舉重錦標賽中華隊隨隊物理治療師', '2023亞洲盃短道競速滑冰錦標賽中華隊隨隊物理治療師', '國立台灣大學男子籃球隊隨隊物理治療師'],
-      certifications: ['高考合格物理治療師', '中華民國健身運動協會 C級體適能指導員', '動態神經肌肉穩定術 Dynamic Neuromuscular Stabilization A、B認證'],
-      specialties: ['術後訓練', '特殊族群訓練', '中高齡訓練'],
-    },
-    {
       id: 'xm-4',
       name: '范瑞瑜',
       roleTitle: '練健康教練',
