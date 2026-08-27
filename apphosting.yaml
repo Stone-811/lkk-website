@@ -33,8 +33,9 @@ env:
   - variable: NUXT_PUBLIC_FIREBASE_APP_ID
     value: "1:519198461380:web:02167a9297dd17b714e891"
   # Admin allow-list for Google sign-in (comma-separated)
+  # 這是「誰能登入後台」的白名單，跟寄信無關，改錯會把人鎖在門外。
   - variable: ADMIN_ALLOWED_EMAILS
-    value: lkkwellness@gmail.com
+    value: lkkwellness@gmail.com,service@l-kk.tw
 
   # SMTP Configuration (same as Next.js web app)
   - variable: SMTP_HOST
