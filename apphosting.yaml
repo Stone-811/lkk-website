@@ -41,16 +41,17 @@ env:
     value: smtp.gmail.com
   - variable: SMTP_PORT
     value: "465"
+  # 寄件帳號＝l-kk.tw 的 Google Workspace 信箱（MX 指向 aspmx.l.google.com）。
+  # SMTP_USER / SMTP_FROM 一致，不需要 Gmail 的「以其他地址寄信」別名。
   - variable: SMTP_USER
-    value: lkkwellness@gmail.com
-  # 信件顯示的寄件者。SMTP_USER 仍是 Gmail 那組（負責 SMTP 驗證），
-  # 這個位址必須先在該 Gmail 帳號的「以其他地址寄信」驗證過，
-  # 否則 Gmail 會把 From 改寫回 SMTP_USER。
+    value: service@l-kk.tw
   - variable: SMTP_FROM
     value: service@l-kk.tw
+  # 只有 Firestore settings/notifications.emailRecipients 為空時才會用到的保底值。
   - variable: NOTIFICATION_EMAIL
-    value: lkkwellness@gmail.com
-  # SMTP Password - reuse existing secret from Next.js
+    value: service@l-kk.tw
+  # ⚠️ 這個 secret 必須是 service@l-kk.tw 的應用程式密碼，不是舊的 Gmail 那組。
+  # 更新：npx firebase-tools apphosting:secrets:set smtp-pass --project lkkdev
   - variable: SMTP_PASS
     secret: smtp-pass
 
