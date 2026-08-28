@@ -17,12 +17,15 @@ useHead({
 })
 
 // 分店環境照片分類定義
+// ⚠️ 這裡的順序與標籤要跟 pages/locations/[store].vue 的 envLabels 一致，
+//    前台是照 env1~env6 的順序排版，標籤同時當作照片的 alt。
 const imageCategories = [
   { key: 'env1', label: '主訓練區（分店頁大圖）', description: '主訓練區' },
-  { key: 'env2', label: '一對一訓練空間', description: '一對一訓練空間' },
-  { key: 'env3', label: '專業器材區', description: '專業器材區' },
-  { key: 'env4', label: '功能性訓練區', description: '功能性訓練區' },
-  { key: 'env5', label: '舒適休息區', description: '舒適休息區' },
+  { key: 'env2', label: '功能性訓練區', description: '功能性訓練區' },
+  { key: 'env3', label: '器材訓練區', description: '器材訓練區' },
+  { key: 'env4', label: '重量訓練區', description: '重量訓練區' },
+  { key: 'env5', label: '服務櫃檯', description: '服務櫃檯' },
+  { key: 'env6', label: '更衣與盥洗空間', description: '更衣與盥洗空間' },
 ]
 
 interface StoreImages {
@@ -31,6 +34,7 @@ interface StoreImages {
   env3: string
   env4: string
   env5: string
+  env6: string
 }
 
 interface FormData {
@@ -81,6 +85,7 @@ const formData = ref<FormData>({
     env3: '',
     env4: '',
     env5: '',
+    env6: '',
   },
   sortOrder: 0,
   isActive: true,
@@ -140,12 +145,12 @@ onMounted(async () => {
       }
 
       // Parse images
-      let images = { env1: '', env2: '', env3: '', env4: '', env5: '' }
+      let images = { env1: '', env2: '', env3: '', env4: '', env5: '', env6: '' }
       if (storeData.images) {
         if (typeof storeData.images === 'object' && !Array.isArray(storeData.images)) {
           images = { ...images, ...storeData.images }
         } else if (Array.isArray(storeData.images)) {
-          const imageKeys = ['env1', 'env2', 'env3', 'env4', 'env5'] as const
+          const imageKeys = ['env1', 'env2', 'env3', 'env4', 'env5', 'env6'] as const
           storeData.images.forEach((url: string, index: number) => {
             if (url && imageKeys[index]) {
               images[imageKeys[index]] = url

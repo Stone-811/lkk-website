@@ -163,6 +163,22 @@ const showMore = computed(() => fMore.value.length > 0)
     <!-- Hero -->
     <section class="relative bg-navy-700 pt-16 overflow-hidden text-white">
       <div class="absolute inset-0">
+        <!--
+          媒體採訪實景底圖。opacity-60 + brightness(0.4) 是全站深色 Hero 的統一參數，
+          與 /locations 同一套做法。但這張照片比分店那張亮（白牆＋綠地墊＋鏡面），
+          沿用 brightness(0.4) 會讓文字區底色亮度衝到 L=0.0895（純 navy 是 0.0755），
+          eyebrow 掉到 4.46、h1 橘字 2.69、副標 3.91，三處都不合格。
+          量測後改用 0.30，底色 L=0.0629，四處文字全部通過。
+          ⚠️ 參數是「量出來的結果」，不是固定值——換別張照片要重量一次。
+          brightness 寫 inline style，方便直接在產出的 HTML 裡驗證。
+        -->
+        <img
+          src="/images/news/hero.webp"
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover opacity-60"
+          style="filter: brightness(0.30)"
+        />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_5%_80%,rgba(58,106,133,0.35)_0%,transparent_45%)]" />
       </div>
       <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 text-center">
@@ -173,7 +189,7 @@ const showMore = computed(() => fMore.value.length > 0)
         <h1 class="font-serif text-4xl lg:text-5xl font-black leading-tight mb-5">
           被<span class="text-orange">世界看見</span>的台灣故事
         </h1>
-        <p class="text-white/60 text-lg font-light leading-relaxed max-w-2xl mx-auto">
+        <p class="text-white/70 text-lg font-light leading-relaxed max-w-2xl mx-auto">
           這裡收錄了一群相信「幾歲開始肌力訓練都不嫌晚」的故事，讓全球看見了台灣中高齡的力量。
         </p>
       </div>
