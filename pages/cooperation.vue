@@ -10,29 +10,12 @@ useHead({
 })
 
 const heroStats = [
-  { title: '國衛院', desc: '學術共同研究計畫' },
-  { title: '醫療級', desc: '草屯療養院等機構培訓' },
-  { title: '跨國輸出', desc: '馬來西亞海外種子師資' },
-  { title: '客製化', desc: '企業健促與團體動作篩檢' },
+  { title: '專業講座', desc: '企業、機構與團體之中高齡健康、肌力訓練主題講座' },
+  { title: '教育培訓', desc: '依不同專業與場域需求，規劃肌力訓練相關教育課程' },
+  { title: '海外合作', desc: '中高齡肌力訓練課程、人才培訓與教育服務輸出' },
+  { title: '研究合作', desc: '結合第一線訓練經驗，參與高齡健康與運動相關研究' },
 ]
 
-const methodPoints = [
-  {
-    num: '01',
-    title: '講座邀約與專業授課',
-    body: '應各大醫療體系、大專院校及社福團體之邀，分享練健康獨創的「中高齡與特殊族群訓練實務」。亦包含內容行銷與社群經營成果分享（如嘉義慈濟醫院講座），協助相關從業者提升專業及推廣技術。',
-  },
-  {
-    num: '02',
-    title: '企業健康促進邀請',
-    body: '專為現代企業員工及中高齡同仁設計。結合科學化動作篩檢與數字化檢測，量身規劃內部健康講座與員工團體運動課程（如與知名品牌包大人合作），協助同仁踏出運動步伐，維持持之以恆的職場健康活力。',
-  },
-  {
-    num: '03',
-    title: '政府與醫療單位專業教育訓練',
-    body: '輸出系統化教學經驗，為院內物理治療師、職能治療師及教練進行專業培訓（如草屯療養院教育訓練），將專業知識帶回單位持續造福病友。海外亦首度聯手馬來西亞 PhysioGym，將成熟的銀髮動作基礎訓練營帶向國際。',
-  },
-]
 
 const pressCases = [
   { badge: '學術專案', org: '國家衛生研究院', title: '「中高齡訓練者訓練頻率與肌肉增長關係」共同研究', quote: '練健康引進專業級 InBody 770 與 Body Go 體適能檢測系統，協助學員透過數據精準掌握身體組成狀態，並透過博覽會展出為長輩進行科學化動作檢測。', image: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=800&h=400&fit=crop&q=80' },
@@ -41,11 +24,6 @@ const pressCases = [
   { badge: '跨界講座與運動推廣', org: '慈濟醫院教育訓練', title: '肌力訓練課程、內容行銷分享與團體健康促進項目', quote: '應嘉義慈濟邀請開設科學化肌力課程與社群經營行銷講座，為長輩量身打造團體可以進行的趣味運動課程，協助長輩順利踏出運動第一步。', image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&h=400&fit=crop&q=80' },
 ]
 
-const pressStats = [
-  { num: '科學化', label: '慈濟醫院專屬肌力與行銷授課' },
-  { num: '跨國', label: '馬來西亞PhysioGym海外教練培訓' },
-  { num: '大數據', label: '攜手國衛院推動中高齡肌肉研究' },
-]
 
 // ⚠️ value 會寫進 leads.payload.cooperationType，後台篩選選項要跟著對齊
 // 只有「講座及課程邀約」需要規模人數與預算區間，其餘兩種為選填
@@ -216,16 +194,16 @@ const resetForm = () => {
           <div>
             <div class="flex items-center gap-3 text-orange text-sm font-medium tracking-widest uppercase mb-8">
               <span class="w-5 h-px bg-orange" />
-              中高齡肌力訓練專家
+              把我們累積的實務經驗，帶進更多場域。
               <span class="w-5 h-px bg-orange" />
             </div>
 
             <h1 class="font-serif text-4xl lg:text-5xl font-black text-white leading-tight mb-4">
-              講座 / 採訪 / 合作洽詢
+              中高齡肌力訓練跨界合作洽詢
             </h1>
 
             <p class="text-white/65 text-lg font-light leading-relaxed max-w-xl mb-8">
-              練健康以<strong class="text-white font-medium">中高齡與特殊族群健康為核心</strong>，積極推動跨領域合作。我們深耕醫療體系教育訓練、企業健康促進講座，以及前沿運動科學專案研究，期盼將正確的肌力訓練觀念推廣至海內外，共創雙贏。
+              練健康長期專注於<strong class="text-white font-medium">中高齡肌力訓練</strong>，從第一線教學經驗出發，延伸至企業講座、專業培訓、研究合作與海外教育訓練，與不同領域的夥伴一起推動更完整專業的高齡健康與運動環境。
             </p>
 
             <div class="flex gap-3 flex-wrap">
@@ -264,85 +242,15 @@ const resetForm = () => {
       </div>
     </section>
 
-    <!-- Methodology Section -->
-    <section id="method" class="py-20 bg-cream-100">
-      <div class="container mx-auto px-4">
-        <span class="text-orange text-sm font-medium tracking-widest uppercase block mb-4">三大核心合作範疇</span>
-        <div class="grid lg:grid-cols-2 gap-12 items-start">
-          <div>
-            <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy-700 leading-tight mb-4">
-              將醫學與運動科學<br /><span class="text-orange">精準落地</span>的跨界服務
-            </h2>
-            <p class="text-ink/60 leading-relaxed mb-8 max-w-md">
-              我們打破傳統健身房的侷限，將物理治療、呼吸治療背景的專業肌力訓練系統，輸出給更需要健康促進的組織與大企業。
-            </p>
-
-            <div class="space-y-0 divide-y divide-navy-700/15">
-              <div
-                v-for="point in methodPoints"
-                :key="point.num"
-                class="flex gap-4 py-5"
-              >
-                <div class="font-serif text-2xl font-bold text-navy-700/25 flex-shrink-0 w-8">{{ point.num }}</div>
-                <div>
-                  <h3 class="font-bold text-navy-700 mb-1">{{ point.title }}</h3>
-                  <p class="text-ink/60 text-sm leading-relaxed">{{ point.body }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Data Panel -->
-          <div class="space-y-3">
-            <div class="bg-navy-700 rounded p-6 space-y-4 divide-y divide-white/10">
-              <div class="pb-4">
-                <div class="font-serif text-4xl font-black text-orange leading-none mb-2">中高齡研究</div>
-                <p class="text-white/65 text-sm leading-relaxed">與「國家衛生研究院」深度合作，共同研究中高齡訓練者訓練頻率與肌肉增長的關係。</p>
-                <span class="text-white/30 text-xs mt-2 block">學術與臨床實務接軌</span>
-              </div>
-              <div class="pt-4">
-                <div class="font-serif text-4xl font-black text-orange leading-none mb-2">科學化篩檢</div>
-                <p class="text-white/65 text-sm leading-relaxed">受邀參與高齡健康博覽會，將長輩動作篩檢結果數字化，提供精準動作改善與科學化評估。</p>
-                <span class="text-white/30 text-xs mt-2 block">健康照護・快樂生活・智慧服務</span>
-              </div>
-            </div>
-
-            <div class="bg-white border border-navy-700/15 rounded p-5">
-              <div class="text-sm font-bold text-navy-700 mb-3">專案合作引進之頂級檢測系統：</div>
-              <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="tag in ['身體組成測量儀器 InBody 770', '智慧體適能檢測系統 Body Go', '銀髮基礎動作篩檢模組']"
-                  :key="tag"
-                  class="text-xs text-navy-600 bg-navy-700/10 border border-navy-700/15 px-3 py-1 rounded-full"
-                >
-                  {{ tag }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- Press Cases Section -->
     <section id="press" class="py-20 bg-white">
       <div class="container mx-auto px-4">
-        <div class="grid lg:grid-cols-2 gap-12 items-end mb-10">
+        <div class="mb-10">
           <div>
             <span class="text-orange text-sm font-medium tracking-widest uppercase block mb-4">Cooperation Cases</span>
             <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy-700 leading-tight">
               深耕台灣，<span class="text-orange">走向國際</span><br />練健康的跨領域實績
             </h2>
-          </div>
-          <div class="grid grid-cols-3 gap-3">
-            <div
-              v-for="stat in pressStats"
-              :key="stat.label"
-              class="text-center p-4 bg-cream-100 border border-navy-700/15 rounded"
-            >
-              <div class="font-serif text-2xl font-bold text-navy-700 leading-none">{{ stat.num }}</div>
-              <div class="text-ink/50 text-xs mt-1">{{ stat.label }}</div>
-            </div>
           </div>
         </div>
 
