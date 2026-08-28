@@ -24,7 +24,9 @@ const isLoading = ref(false)
 const records = ref<LKK4Record[]>([])
 const error = ref('')
 
-const availableYears = ['2025', '2024']
+// ⚠️ 這裡是寫死的。每次匯入新年度的成績，都要記得把年份加進來，
+// 否則資料進了 Firestore 但下拉選單選不到，等於查不到。
+const availableYears = ['2025', '2024', '2023']
 
 const handleSearch = async () => {
   if (!year.value || !name.value.trim()) return
