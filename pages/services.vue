@@ -61,7 +61,7 @@ const groupCourses = [
   {
     id: 'senior',
     title: '樂齡體適能訓練班',
-    target: '適合60歲以上中高齡者',
+    target: '適合50歲以上',
     description: '專為 50 歲以上設計，低衝擊、安全優先，兼顧肌力、平衡感與柔軟度，讓訓練融入日常生活。',
     people: '小班制 3-6 人',
     duration: '每堂 60 分鐘',
