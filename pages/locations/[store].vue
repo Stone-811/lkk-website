@@ -136,6 +136,8 @@ const photos = computed(() => {
     return list.map((img: string, index: number) => ({
       label: envLabels[index] || `環境照片 ${index + 1}`,
       span: index === 0 && spanFirst,
+      // 跨欄那格是 16:9、比同列的 4:3 高，同列夥伴要撐滿列高才不會在下方留空洞
+      stretch: spanFirst && index === 1,
       image: img,
     }))
   }
@@ -337,7 +339,8 @@ const photos = computed(() => {
             :key="photo.label"
             :class="[
               'aspect-[4/3] rounded-xl overflow-hidden relative group',
-              photo.span ? 'md:col-span-2 md:aspect-video' : ''
+              photo.span ? 'md:col-span-2 md:aspect-video' : '',
+              photo.stretch ? 'md:aspect-auto md:h-full' : ''
             ]"
           >
             <img
