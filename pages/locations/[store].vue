@@ -120,16 +120,18 @@ useHead({
   ]
 })
 
-// 分店照片。順序與後台「分店環境照片」的 env1~env6 欄位一一對應。
+// 分店照片。順序與後台「分店環境照片」的 env1~env5 欄位一一對應。
 // 這些字串只當 alt 用（照片上的區域標籤已於 2026-08 移除），改欄位標籤時要一起改
 // pages/admin/stores/[id].vue 的 imageCategories，兩邊語意才不會對不起來。
-const envLabels = ['主訓練區', '功能性訓練區', '器材訓練區', '重量訓練區', '服務櫃檯', '更衣與盥洗空間']
+// 標籤要能同時說得通四家店的照片，所以第 5 格用「環境一隅」這種涵蓋性的字
+// （七張放更衣盥洗、西門放店面外觀）。
+const envLabels = ['主訓練區', '團體／功能性訓練區', '重量訓練區', '服務櫃檯', '環境一隅']
 const photos = computed(() => {
   const galleryImages = store.value?.galleryImages || []
   if (galleryImages.length > 0) {
-    const list = galleryImages.slice(0, 6)
+    const list = galleryImages.slice(0, 5)
     // 第一張跨兩欄。三欄的格線裡，跨欄等於多佔一格，所以只有 (張數+1) 能被 3 整除
-    // 時才不會留下殘缺的一列（5 張→6 格 ✅ 跨欄；6 張→3×2 剛好 ✅ 不跨欄）。
+    // 時才不會留下殘缺的一列（5 張→6 格 ✅ 跨欄；照片不足 5 張時自動不跨欄）。
     const spanFirst = (list.length + 1) % 3 === 0
     return list.map((img: string, index: number) => ({
       label: envLabels[index] || `環境照片 ${index + 1}`,

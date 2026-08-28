@@ -80,13 +80,13 @@ export default defineEventHandler(async (event) => {
       description: coach.description,
     }));
 
-    // Normalize images: admin saves as {env1..env6} object; expose as an ordered
+    // Normalize images: admin saves as {env1..env5} object; expose as an ordered
     // array so heroImage / galleryImages work on the store detail page.
     const imgs: any = storeData.images;
     const storeImages: string[] = Array.isArray(imgs)
       ? imgs.filter(Boolean)
       : imgs
-        ? ['env1', 'env2', 'env3', 'env4', 'env5', 'env6'].map((k) => imgs[k]).filter(Boolean)
+        ? ['env1', 'env2', 'env3', 'env4', 'env5'].map((k) => imgs[k]).filter(Boolean)
         : [];
 
     return {
