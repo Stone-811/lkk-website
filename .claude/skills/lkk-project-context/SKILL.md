@@ -26,6 +26,25 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - **gcloud 未安裝**，一律 `npx firebase-tools`（已登入 tingo8320@gmail.com，可存取 lkkdev/lkkprod）。部署 repo（唯一真實來源）：`/Users/stone/4.柚智源/練健康/3. 形象網站翻新`。舊 `Downloads/lkk-new-web` 雙胞胎已棄用。
 - 新環境 setup 血淚點：Firestore 用 `firestore:databases:create --location asia-east1`（別靠 deploy 自動建→會在 nam5）；secrets set 後**務必 `grantaccess --backend`**（否則 Misconfigured Secret）；啟用 Storage；Auth 啟用 Google provider+加該 hosted.app 授權網域。詳見記憶 [[lkk-web-deploy]]。
 
+## LKK4 成績（動 /personal-record 或 lkk4_records 前必看）
+
+**2023／2024／2025 三個年度，共 656 筆**（224／225／207），dev 與 prod 一致。
+
+🔴 **後台的匯入端點 `server/api/admin/lkk4-records/import.post.ts` 會先 `deleteAllRecords()` 清空整個 collection**，只能用來「一次上傳全部年度」，補單一年度會把其他年份刪光——改為直接寫 Firestore 並加安全閥。
+🔴 **`pages/personal-record.vue` 的 `availableYears` 是寫死的陣列**，新增年度一定要一起改，否則資料進得了 Firestore 卻選不到年度。
+
+完整流程、分組區段 CSV 的解析方式（長者友善組欄位與其他八組不同）見 skill **`lkk-lkk4-records`**。
+
+## 2026-08-27～28 這批文案／版面改動（已上 prod）
+
+- **導覽**：LKK4 → **LKK4比賽報名**
+- **首頁 Hero**：刪眉標「中高齡肌力訓練專家」；主標改「健康，是練出來的。／現在開始，永遠不嫌晚。」（第一行整句橘字）；副標整段換；**數據條三張改四張**（`1%｜現在開始的理由` 這種 num｜title 同行格式，`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`——兩欄時每欄可用寬只有 139px，標題行會從中間斷開）
+- **`/booking` Hero**：標籤「50歲以上免費體驗」；主標「第一堂課／讓我們陪你開始」**兩行皆白字**（第二行顏色改由 `pricingCopy.titleHighlightClass` 決定，廠商活動變體自帶標題時仍走橘色）
+- **`/services`**：一對一與團課標題加副標並移除重複的「最熱門」橘標；「一般肌力與體態」→「日常健康與體能提升」；**減重→減脂**（全站已無「減重」）；樂齡班對象「適合50歲以上」（與卡片說明對齊）
+- **`/news`**：國際區塊加說明；`For Journalists & Editors` → `MEDIA INQUIRIES`
+- **`/team-intro/coaches`**：刪橘標與人數；主標「專業教練團隊」；**專長標籤全部列出、不再收成 +N**，並移除 `truncate max-w-[90px]`（最長的「肌力訓練與動作優化」會被裁掉），改 `whitespace-nowrap`；`components/CoachCard.vue` 同步（它的註解本來就寫明比照該頁）
+- **`/cooperation`**：Hero 四項全換；刪除「三大核心合作範疇」整個 section 與 科學化／跨國／大數據 三格，連同已無用的 `methodPoints`、`pressStats`
+
 ## 安全（動 /admin 或 server/api/admin 前必看）
 - 已修補：後門帳號（改 `ALLOW_DEV_ADMIN` gate）、`JWT_SECRET` 正式站強制、登入頁明文帳密移除。
 - **部署前必設 `JWT_SECRET` secret**，否則正式站啟動 crash。
