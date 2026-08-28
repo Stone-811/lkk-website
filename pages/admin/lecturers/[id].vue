@@ -26,6 +26,8 @@ interface FormData {
   specialties: string[]
   certifications: string[]
   education: string[]
+  experiences: string[]
+  courses: string[]
   sortOrder: number
   isActive: boolean
 }
@@ -47,6 +49,8 @@ const formData = ref<FormData>({
   specialties: [],
   certifications: [],
   education: [],
+  experiences: [],
+  courses: [],
   sortOrder: 0,
   isActive: true,
 })
@@ -55,6 +59,8 @@ const formData = ref<FormData>({
 const specialtyInput = ref('')
 const certInput = ref('')
 const eduInput = ref('')
+const expInput = ref('')
+const courseInput = ref('')
 
 onMounted(async () => {
   if (isNew.value) {
@@ -90,6 +96,8 @@ onMounted(async () => {
         specialties: data.specialties || [],
         certifications: data.certifications || [],
         education: data.education || [],
+        experiences: data.experiences || [],
+        courses: data.courses || [],
         sortOrder: data.sortOrder || 0,
         isActive: data.isActive ?? true,
       }
@@ -407,6 +415,66 @@ async function handlePhotoUpload(event: Event) {
           >
             {{ e }}
             <button type="button" @click="removeFromArray('education', i)" class="hover:text-gray-900">×</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+        <h2 class="font-bold text-lg border-b pb-2">專業經歷</h2>
+        <div class="flex gap-2">
+          <input
+            type="text"
+            v-model="expInput"
+            class="flex-1 border border-gray-300 rounded-lg px-3 py-2"
+            placeholder="輸入經歷後按 Enter"
+            @keydown.enter.prevent="addToArray('experiences', expInput); expInput = ''"
+          />
+          <button
+            type="button"
+            @click="addToArray('experiences', expInput); expInput = ''"
+            class="bg-gray-100 text-gray-700 font-medium px-4 py-2 rounded-lg hover:bg-gray-200"
+          >
+            新增
+          </button>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span
+            v-for="(e, i) in formData.experiences"
+            :key="i"
+            class="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+          >
+            {{ e }}
+            <button type="button" @click="removeFromArray('experiences', i)" class="hover:text-gray-900">×</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+        <h2 class="font-bold text-lg border-b pb-2">授課經歷</h2>
+        <div class="flex gap-2">
+          <input
+            type="text"
+            v-model="courseInput"
+            class="flex-1 border border-gray-300 rounded-lg px-3 py-2"
+            placeholder="輸入授課經歷後按 Enter"
+            @keydown.enter.prevent="addToArray('courses', courseInput); courseInput = ''"
+          />
+          <button
+            type="button"
+            @click="addToArray('courses', courseInput); courseInput = ''"
+            class="bg-gray-100 text-gray-700 font-medium px-4 py-2 rounded-lg hover:bg-gray-200"
+          >
+            新增
+          </button>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span
+            v-for="(e, i) in formData.courses"
+            :key="i"
+            class="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+          >
+            {{ e }}
+            <button type="button" @click="removeFromArray('courses', i)" class="hover:text-gray-900">×</button>
           </span>
         </div>
       </div>

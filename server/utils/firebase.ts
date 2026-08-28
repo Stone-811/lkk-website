@@ -274,6 +274,10 @@ export interface LecturerDoc extends FirestoreDoc {
   certifications?: string[];
   /** 學歷背景 */
   education?: string[];
+  /** 專業經歷 */
+  experiences?: string[];
+  /** 授課經歷 */
+  courses?: string[];
   sortOrder: number;
   isActive: boolean;
 }

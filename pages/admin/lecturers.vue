@@ -76,6 +76,9 @@ const formData = ref({
   description: '',
   specialtiesText: '',
   certificationsText: '',
+  educationText: '',
+  experiencesText: '',
+  coursesText: '',
   sortOrder: 0,
   isActive: true,
 })
@@ -142,6 +145,9 @@ function openEditModal(lecturer?: Lecturer) {
       description: lecturer.description || '',
       specialtiesText: (lecturer.specialties || []).join('\n'),
       certificationsText: (lecturer.certifications || []).join('\n'),
+      educationText: (lecturer.education || []).join('\n'),
+      experiencesText: (lecturer.experiences || []).join('\n'),
+      coursesText: (lecturer.courses || []).join('\n'),
       sortOrder: lecturer.sortOrder || 0,
       isActive: lecturer.isActive ?? true,
     }
@@ -159,6 +165,9 @@ function openEditModal(lecturer?: Lecturer) {
       description: '',
       specialtiesText: '',
       certificationsText: '',
+      educationText: '',
+      experiencesText: '',
+      coursesText: '',
       sortOrder: maxSortOrder + 1,
       isActive: true,
     }
@@ -194,6 +203,9 @@ async function saveLecturer() {
       description: formData.value.description,
       specialties: formData.value.specialtiesText.split('\n').map(s => s.trim()).filter(Boolean),
       certifications: formData.value.certificationsText.split('\n').map(s => s.trim()).filter(Boolean),
+      education: formData.value.educationText.split('\n').map(s => s.trim()).filter(Boolean),
+      experiences: formData.value.experiencesText.split('\n').map(s => s.trim()).filter(Boolean),
+      courses: formData.value.coursesText.split('\n').map(s => s.trim()).filter(Boolean),
       sortOrder: formData.value.sortOrder,
       isActive: formData.value.isActive,
     }
@@ -663,6 +675,36 @@ const filteredLecturers = computed(() => {
               rows="3"
               class="w-full border border-gray-300 rounded-lg px-3 py-2"
               placeholder="NSCA-CSCS&#10;ACE-CPT&#10;FMS Level 2"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">學歷背景（每行一個）</label>
+            <textarea
+              v-model="formData.educationText"
+              rows="3"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2"
+              placeholder="國立體育大學 競技與教練科學研究所 碩士"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">專業經歷（每行一個）</label>
+            <textarea
+              v-model="formData.experiencesText"
+              rows="4"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2"
+              placeholder="109-至今 練健康總教練&#10;106年 世大運運動傷害防護組場館經理"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">授課經歷（每行一個）</label>
+            <textarea
+              v-model="formData.coursesText"
+              rows="4"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2"
+              placeholder="訓練營講師&#10;中高齡研習講師"
             ></textarea>
           </div>
 

@@ -40,6 +40,8 @@ export default defineEventHandler(async (event) => {
       specialties: lecturer.specialties || [],
       certifications: lecturer.certifications || [],
       education: lecturer.education || [],
+      experiences: lecturer.experiences || [],
+      courses: lecturer.courses || [],
     }))
 
     return {

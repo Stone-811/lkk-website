@@ -55,20 +55,14 @@ const imageError = ref(false)
         {{ coach.roleTitle }}
       </p>
 
-      <!-- 標籤數與樣式比照 /team-intro/coaches：最多 2 個，其餘收成 +N -->
+      <!-- 標籤數與樣式比照 /team-intro/coaches：全部列出，不收成 +N -->
       <div v-if="coach.specialties && coach.specialties.length > 0" class="flex flex-wrap gap-1 mt-2">
         <span
-          v-for="specialty in coach.specialties.slice(0, 2)"
+          v-for="specialty in coach.specialties"
           :key="specialty"
-          class="px-2 py-0.5 bg-cream text-ink/70 text-[11px] rounded-full truncate max-w-[90px]"
+          class="px-2 py-0.5 bg-cream text-ink/70 text-[11px] leading-tight rounded-full whitespace-nowrap"
         >
           {{ specialty }}
-        </span>
-        <span
-          v-if="coach.specialties.length > 2"
-          class="px-2 py-0.5 text-ink/40 text-[11px]"
-        >
-          +{{ coach.specialties.length - 2 }}
         </span>
       </div>
     </div>

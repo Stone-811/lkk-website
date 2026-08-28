@@ -18,6 +18,9 @@ interface Lecturer {
   description?: string
   specialties?: string[]
   certifications?: string[]
+  education?: string[]
+  experiences?: string[]
+  courses?: string[]
 }
 
 // Fetch lecturers from API
@@ -152,6 +155,8 @@ const courses = [
                   <p class="text-orange font-semibold text-sm">{{ lecturer.title }}</p>
                 </div>
 
+                <p v-if="lecturer.description" class="text-ink/60 text-sm leading-relaxed mb-3">{{ lecturer.description }}</p>
+
                 <div v-if="lecturer.specialties?.length" class="mb-3">
                   <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">專長領域</div>
                   <div class="flex flex-wrap gap-1.5">
@@ -169,6 +174,20 @@ const courses = [
                   <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">學歷背景</div>
                   <ul class="space-y-0.5">
                     <li v-for="edu in lecturer.education" :key="edu" class="text-xs text-ink/60 leading-relaxed">{{ edu }}</li>
+                  </ul>
+                </div>
+
+                <div v-if="lecturer.experiences?.length" class="pt-3 border-t border-navy/10 mb-3">
+                  <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">專業經歷</div>
+                  <ul class="space-y-0.5">
+                    <li v-for="exp in lecturer.experiences" :key="exp" class="text-xs text-ink/60 leading-relaxed">{{ exp }}</li>
+                  </ul>
+                </div>
+
+                <div v-if="lecturer.courses?.length" class="pt-3 border-t border-navy/10 mb-3">
+                  <div class="text-[10px] font-bold text-navy/45 tracking-wide mb-1.5">授課經歷</div>
+                  <ul class="space-y-0.5">
+                    <li v-for="c in lecturer.courses" :key="c" class="text-xs text-ink/60 leading-relaxed">{{ c }}</li>
                   </ul>
                 </div>
 
