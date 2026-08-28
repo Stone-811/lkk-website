@@ -6,7 +6,7 @@ const services = [
     description: '40歲後肌肉、骨質流失速度增加，透過訓練讓你找回屬於你的身體動作能力。',
     tags: ['肌少症預防', '骨質強化', '平衡訓練', '一對一教練'],
     badge: '最受歡迎',
-    image: '/images/services/senior.jpg',
+    image: '/images/services/senior.webp',
   },
   {
     id: 'special',
@@ -14,7 +14,7 @@ const services = [
     description: '中風、癌症、手術後、糖尿病、骨質疏鬆族群之專業訓練介入，讓你在最安全且有效的方式下，讓身體恢復到原有水準。',
     tags: ['中風復健', '術後訓練', '慢性病管理', '專業教練把關'],
     badge: '醫療背景',
-    image: '/images/services/special.png',
+    image: '/images/services/special.webp',
   },
   {
     id: 'performance',
@@ -22,7 +22,7 @@ const services = [
     description: '針對專項需求與身體檢測，找出弱點，透過數據分析與專業肌力訓練提升你的運動表現。',
     tags: ['數據化訓練', '動作分析', '運動傷害預防'],
     badge: null,
-    image: '/images/services/performance.png',
+    image: '/images/services/performance.webp',
   },
 ]
 </script>

@@ -4,14 +4,22 @@ const { stores } = usePublicStores()
 </script>
 
 <template>
-  <section class="bg-cream-100 py-16 lg:py-24">
-    <div class="container mx-auto px-4">
+  <section class="relative bg-navy-800 py-16 lg:py-24 overflow-hidden">
+    <!-- 底圖壓暗參數與首頁 Hero、分店資訊頁 Hero 一致 -->
+    <img
+      src="/images/home/locations-bg.webp"
+      alt=""
+      aria-hidden="true"
+      class="absolute inset-0 w-full h-full object-cover opacity-60"
+      style="filter: brightness(0.4)"
+    />
+    <div class="container mx-auto px-4 relative z-10">
       <!-- Section header -->
       <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
         <span class="w-5 h-0.5 bg-orange" />
         分店資訊
       </div>
-      <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy-700 mb-10">
+      <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-10">
         台北・新北，<span class="text-orange">找到離你最近</span>的分店
       </h2>
 
@@ -49,7 +57,7 @@ const { stores } = usePublicStores()
       <div class="text-center mt-10">
         <NuxtLink
           to="/locations"
-          class="inline-flex items-center gap-2 text-navy-700 border border-navy-700/15 px-6 py-2.5 rounded-full hover:border-navy-700 transition-colors"
+          class="inline-flex items-center gap-2 text-white/80 border border-white/25 px-6 py-2.5 rounded-full hover:border-white hover:text-white transition-colors"
         >
           查看練健康分店 &rarr;
         </NuxtLink>

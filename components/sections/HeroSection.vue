@@ -21,6 +21,18 @@ const pressOutlets = [
     <section class="relative min-h-screen bg-navy-800 flex flex-col justify-center overflow-hidden pt-16">
       <!-- Background effects -->
       <div class="absolute inset-0">
+        <!--
+          壓暗參數（opacity-60 + brightness(0.4)）與 pages/locations/index.vue 的 Hero 相同。
+          ⚠️ brightness 用 inline style 而非 Tailwind 任意屬性：兩者都會編譯，但 Nuxt 會把
+             critical CSS 內嵌進 HTML 的 <style>，用 class 寫法在驗證時容易誤判成沒生效。
+        -->
+        <img
+          src="/images/home/hero.webp"
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover opacity-60"
+          style="filter: brightness(0.4)"
+        />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_10%_80%,rgba(42,82,105,0.6)_0%,transparent_50%)]" />
         <div
           class="absolute inset-0 opacity-[0.025]"
