@@ -151,30 +151,61 @@ const audience = [
 <template>
   <div class="min-h-screen bg-cream">
     <!-- Hero -->
-    <section class="relative bg-[#0e2230] py-24 lg:py-32 overflow-hidden text-center">
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(251,114,10,0.15)_0%,transparent_60%)]" />
-      <div class="container mx-auto px-4 relative z-10">
-        <!-- Status pill -->
-        <div class="inline-flex items-center bg-orange/15 border border-orange/30 rounded-full px-4 py-1.5 mb-6">
-          <span class="text-orange text-sm font-medium">第六屆賽事・2026 年 12 月 13 日・台北世貿一館</span>
-        </div>
+    <!--
+      LKK4 主視覺是「已排版好的圖」，不是照片：中央米色框本來就是留給文字的位置。
+      所以這裡不壓暗、不裁切（跟其他頁的照片底圖做法完全不同）——一壓暗米色框
+      就變成灰泥色，設計就毀了；object-cover 裁邊也會切掉左右直排的
+      「台北世貿一館C區」「十二月十三日」。
 
-        <h1 class="font-serif text-6xl lg:text-8xl font-black text-white tracking-tight mb-2">
-          LKK<span class="text-orange">4</span>
-        </h1>
-        <div class="text-xl lg:text-2xl text-white/70 font-light tracking-widest mb-6">
-          聖誕老人功能錦標賽🔥
-        </div>
-        <p class="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed font-light mb-8">
-          不只是比賽，這是一場為所有年齡打造的訓練舞台！
-        </p>
+      量測結果（1920x1080 原圖）：米色 #F4F0E4、深藍 #004B6A；
+      框內扣掉圖示與聖誕樹之後，真正乾淨可放字的範圍是 x 29%~71%、y 36%~76%。
 
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+      手機做不到疊字：375 寬的 16:9 只有 211px 高，框內僅約 116px，
+      塞不下大標＋副標＋報名鈕，所以改成「圖在上、文字在下」兩段式。
+
+      原本的 status pill（第六屆賽事・2026 年 12 月 13 日・台北世貿一館）已移除，
+      圖上本來就有這些資訊，留著會重複。
+    -->
+    <section class="relative bg-[#004B6A] pt-16 overflow-hidden text-center">
+      <div class="relative lg:aspect-video">
+        <img
+          src="/images/lkk4/hero.webp"
+          alt="LKK4 第六屆聖誕老人功能錦標賽，2026 年 12 月 13 日於台北世貿一館 C 區"
+          class="w-full aspect-video object-cover lg:absolute lg:inset-0 lg:h-full lg:aspect-auto"
+        />
+
+        <!-- 桌機定位到米色框內；手機退回一般流排在圖片下方 -->
+        <div
+          class="mx-auto max-w-2xl px-4 py-10
+                 lg:absolute lg:left-[29%] lg:right-[29%] lg:top-[36%] lg:bottom-[24%]
+                 lg:mx-0 lg:max-w-none lg:p-0 lg:flex lg:flex-col lg:items-center lg:justify-center"
+        >
+          <!-- 桌機字級用 vw 跟著 aspect-video 的高度縮放，避免在 1024 寬時撐破米色框 -->
+          <h1
+            class="font-serif font-black tracking-tight leading-none mb-2 text-6xl text-white
+                   lg:mb-1 lg:text-[#004B6A] lg:text-[clamp(2.5rem,6.5vw,6rem)]"
+          >
+            LKK<span class="text-orange lg:text-orange-700">4</span>
+          </h1>
+          <div
+            class="font-light tracking-widest mb-6 text-xl text-white/70
+                   lg:mb-2 lg:text-[#004B6A]/80 lg:text-[clamp(0.85rem,1.6vw,1.5rem)]"
+          >
+            聖誕老人功能錦標賽🔥
+          </div>
+          <p
+            class="font-light leading-relaxed mb-8 text-lg text-white/70
+                   lg:mb-4 lg:text-[#004B6A]/80 lg:text-[clamp(0.75rem,1.15vw,1.125rem)]"
+          >
+            不只是比賽，這是一場為所有年齡打造的訓練舞台！
+          </p>
+
           <a
             href="https://www.accupass.com/event/2606231002373711869520?utm_source=google&utm_medium=Direct&utm_campaign=accu_260702a6zestso"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors"
+            class="inline-flex items-center gap-2 bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors
+                   lg:px-6 lg:py-2.5 lg:text-[clamp(0.75rem,1.05vw,1rem)]"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5h14a2 2 0 012 2v3a2 2 0 000 4v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a2 2 0 000-4V7a2 2 0 012-2z" />
