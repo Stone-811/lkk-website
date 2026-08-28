@@ -1,8 +1,9 @@
 <script setup lang="ts">
 const dataStats = [
-  { num: '1%', text: ['40歲後每年流失的肌肉量', '不訓練，就是被動老化'] },
-  { num: '50+歲', text: ['以上第一堂體驗課免費', '零門檻開始第一堂課'] },
-  { num: '90+歲', text: ['學員也能做訓練', '年齡不是限制，方法才是'] },
+  { num: '1%', title: '現在開始的理由', desc: '50歲後肌肉量逐年流失1%，越早開始訓練，越早為未來累積力量。' },
+  { num: '50+', title: '專為中高齡設計', desc: '50歲以上免費體驗，找到真正適合你的訓練方式。' },
+  { num: '90歲', title: '幾歲都能開始', desc: '年齡不是限制，找到適合的方法，每個階段都能練。' },
+  { num: '專業', title: '安心有人把關', desc: '結合物理治療與專業教練團隊，讓訓練更安心、更適合你。' },
 ]
 
 const pressOutlets = [
@@ -34,18 +35,13 @@ const pressOutlets = [
         <div class="grid lg:grid-cols-[1fr_460px] gap-12 items-center">
           <!-- Left content -->
           <div class="text-center lg:text-left">
-            <!-- Eyebrow -->
-            <div class="inline-flex items-center bg-orange/15 border border-orange/35 text-orange text-sm font-medium px-4 py-1.5 rounded-full mb-5 tracking-wide">
-              中高齡肌力訓練專家
-            </div>
-
-            <h1 class="font-serif text-4xl lg:text-6xl font-black text-white leading-tight mb-5">
-              <span class="text-orange">健康</span>是練出來的
+            <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-5">
+              <span class="text-orange">健康，是練出來的。</span><br />
+              現在開始，永遠不嫌晚。
             </h1>
 
-            <p class="text-white/65 text-lg font-light leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
-              60分鐘專屬體驗，10,000+ 位學員的共同選擇<br />
-              安心啟動你的肌力人生
+            <p class="text-white/65 text-base lg:text-lg font-light leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
+              隨著年齡增長，肌力與身體機能會逐漸改變。但透過持續、適合自己的肌力訓練，我們依然可以把力量、行動力與生活的自主，一點一點練回來。現在開始，讓我們一起為未來的自己，做好準備！
             </p>
 
             <div class="flex flex-wrap gap-3 justify-center lg:justify-start">
@@ -123,19 +119,19 @@ const pressOutlets = [
     <!-- Data Strip -->
     <section class="bg-navy-800 py-8 lg:py-10">
       <div class="container mx-auto px-4">
-        <div class="grid grid-cols-3 gap-px bg-white/[0.08] rounded-2xl overflow-hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.08] rounded-2xl overflow-hidden">
           <div
             v-for="stat in dataStats"
             :key="stat.num"
-            class="bg-navy-800 px-2 py-5 sm:p-6 lg:p-8 text-center hover:bg-white/[0.04] transition-colors"
+            class="bg-navy-800 px-4 py-6 sm:p-6 lg:p-7 text-center hover:bg-white/[0.04] transition-colors"
           >
-            <div class="font-serif text-2xl sm:text-3xl lg:text-5xl font-black text-orange leading-none mb-2">
-              {{ stat.num }}
+            <div class="leading-tight mb-2">
+              <span class="font-serif text-2xl lg:text-3xl font-black text-orange align-baseline">{{ stat.num }}</span>
+              <span class="text-white/25 mx-0.5 lg:mx-1 align-baseline">｜</span>
+              <span class="font-bold text-white text-sm lg:text-base align-baseline">{{ stat.title }}</span>
             </div>
-            <p class="text-white/65 text-sm leading-relaxed">
-              <strong class="text-white">{{ stat.text[0] }}</strong>
-              <br />
-              {{ stat.text[1] }}
+            <p class="text-white/65 text-xs lg:text-sm leading-relaxed">
+              {{ stat.desc }}
             </p>
           </div>
         </div>
