@@ -320,13 +320,9 @@ const photos = computed(() => {
           <span class="w-5 h-0.5 bg-orange" />
           分店環境
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-8">
           來之前<span class="text-orange">先看看</span>
         </h2>
-        <p class="text-ink/60 leading-relaxed mb-8 max-w-xl">
-          專業的訓練空間，安靜、不擁擠，沒有一般健身房的喧鬧。教練和學員的比例讓每個人都能得到充分的關注。
-        </p>
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div
             v-for="photo in photos"
@@ -341,10 +337,6 @@ const photos = computed(() => {
               :alt="photo.label"
               class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-navy-700/70 via-transparent to-transparent" />
-            <span class="absolute bottom-4 left-4 text-sm font-medium text-white">
-              {{ photo.label }}
-            </span>
           </div>
         </div>
       </div>

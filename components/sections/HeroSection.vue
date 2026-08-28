@@ -21,6 +21,18 @@ const pressOutlets = [
     <section class="relative min-h-screen bg-navy-800 flex flex-col justify-center overflow-hidden pt-16">
       <!-- Background effects -->
       <div class="absolute inset-0">
+        <!--
+          壓暗參數（opacity-60 + brightness(0.4)）與 pages/locations/index.vue 的 Hero 相同。
+          ⚠️ brightness 用 inline style 而非 Tailwind 任意屬性：兩者都會編譯，但 Nuxt 會把
+             critical CSS 內嵌進 HTML 的 <style>，用 class 寫法在驗證時容易誤判成沒生效。
+        -->
+        <img
+          src="/images/home/hero.webp"
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover opacity-60"
+          style="filter: brightness(0.4)"
+        />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_10%_80%,rgba(42,82,105,0.6)_0%,transparent_50%)]" />
         <div
           class="absolute inset-0 opacity-[0.025]"
@@ -40,7 +52,7 @@ const pressOutlets = [
               現在開始，永遠不嫌晚。
             </h1>
 
-            <p class="text-white/65 text-base lg:text-lg font-light leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
+            <p class="text-white/80 text-base lg:text-lg font-light leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
               隨著年齡增長，肌力與身體機能會逐漸改變。但透過持續、適合自己的肌力訓練，我們依然可以把力量、行動力與生活的自主，一點一點練回來。現在開始，讓我們一起為未來的自己，做好準備！
             </p>
 
@@ -59,11 +71,11 @@ const pressOutlets = [
               </a>
             </div>
 
-            <div class="flex items-center justify-center lg:justify-start gap-2 mt-4 text-sm text-white/50">
+            <div class="flex items-center justify-center lg:justify-start gap-2 mt-4 text-sm text-white/75">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span><strong class="text-orange">第一堂體驗課，50歲以上免費</strong>・未滿50歲 $500</span>
+              <span><strong class="text-orange-300">第一堂體驗課，50歲以上免費</strong>・未滿50歲 $500</span>
             </div>
           </div>
 
