@@ -140,6 +140,18 @@ const programGroups = [
     <!-- Hero -->
     <section class="relative bg-navy-700 pt-16 overflow-hidden text-white">
       <div class="absolute inset-0">
+        <!--
+          學員與教練合照。opacity-60 + brightness(0.30)：文字區底色 L=0.0594，
+          比純 navy-700 的 0.0755 更暗，所以加了底圖後對比只會更好、不會更差。
+          ⚠️ 換照片要重量一次，brightness 不是通用常數。
+        -->
+        <img
+          src="/images/about/hero.webp"
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover opacity-60"
+          style="filter: brightness(0.30)"
+        />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_25%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_5%_80%,rgba(58,106,133,0.35)_0%,transparent_45%)]" />
         <div
           class="absolute inset-0 opacity-[0.022]"
@@ -161,7 +173,7 @@ const programGroups = [
         </h1>
         <div class="w-16 h-1 bg-orange rounded-full mb-6 mx-auto" />
 
-        <p class="text-white/60 text-lg font-light leading-relaxed max-w-4xl mx-auto mb-8">
+        <p class="text-white/70 text-lg font-light leading-relaxed max-w-4xl mx-auto mb-8">
           練健康是一間專注於中高齡及特殊族群的肌力訓練中心。我們相信年齡不是限制，而是開始——期望每一個人，都能擁有獨立自主、有尊嚴的健康晚年生活。
         </p>
 
@@ -171,7 +183,7 @@ const programGroups = [
             :key="p.k"
             class="inline-flex items-center gap-2 bg-white/[0.06] border border-white/12 rounded-full px-5 py-2.5"
           >
-            <span class="text-white/50 text-sm">{{ p.k }}</span>
+            <span class="text-white/70 text-sm">{{ p.k }}</span>
             <span class="text-white font-bold text-sm">{{ p.v }}</span>
           </div>
         </div>

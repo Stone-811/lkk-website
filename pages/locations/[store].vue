@@ -158,6 +158,20 @@ const photos = computed(() => {
     <section class="relative bg-navy-700 pt-16 overflow-hidden min-h-[68vh] flex items-center">
       <!-- Background effects -->
       <div class="absolute inset-0">
+        <!--
+          門市實景底圖。opacity-60 + brightness(0.30) 是量測後選定的：四家店的照片
+          在文字區的底色亮度落在 L=0.059~0.063，比純 navy-700 的 0.0755 更暗，
+          所以 Hero 上所有文字的對比都不會因為加了底圖而變差。
+          ⚠️ 換照片要重量一次，brightness 不是通用常數。
+          brightness 寫 inline style，方便直接在產出的 HTML 裡驗證。
+        -->
+        <img
+          :src="`/images/locations/${storeSlug}/hero.webp`"
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover opacity-60"
+          style="filter: brightness(0.30)"
+        />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(251,114,10,0.10)_0%,transparent_50%),radial-gradient(circle_at_5%_75%,rgba(42,82,105,0.5)_0%,transparent_45%)]" />
         <div
           class="absolute inset-0 opacity-[0.022]"
@@ -171,16 +185,17 @@ const photos = computed(() => {
       <div class="container mx-auto px-4 relative z-10 py-12 lg:py-20">
         <div class="max-w-2xl">
           <!-- Breadcrumb -->
-          <nav class="flex items-center gap-1.5 text-xs text-white/35 mb-5">
-            <NuxtLink to="/" class="hover:text-white/70 transition-colors">練健康</NuxtLink>
-            <span class="text-white/20">›</span>
-            <NuxtLink to="/locations" class="hover:text-white/70 transition-colors">分店地點</NuxtLink>
-            <span class="text-white/20">›</span>
+          <!-- white/35 在純 navy 上只有 2.45:1，本來就不合格；提到 white/65＝5.03:1 -->
+          <nav class="flex items-center gap-1.5 text-xs text-white/65 mb-5">
+            <NuxtLink to="/" class="hover:text-white transition-colors">練健康</NuxtLink>
+            <span class="text-white/40">›</span>
+            <NuxtLink to="/locations" class="hover:text-white transition-colors">分店地點</NuxtLink>
+            <span class="text-white/40">›</span>
             <span>{{ store.name }}</span>
           </nav>
 
           <!-- District badge -->
-          <div class="inline-flex items-center gap-2 bg-orange/15 border border-orange/30 text-orange text-xs font-medium px-3 py-1 rounded-full mb-4 tracking-wide">
+          <div class="inline-flex items-center gap-2 bg-orange/15 border border-orange/30 text-orange-300 text-xs font-medium px-3 py-1 rounded-full mb-4 tracking-wide">
             {{ store.city }}{{ store.district }}
           </div>
 
@@ -212,11 +227,11 @@ const photos = computed(() => {
             </a>
           </div>
 
-          <div class="flex items-center gap-2 mt-4 text-sm text-white/45">
+          <div class="flex items-center gap-2 mt-4 text-sm text-white/70">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            <span><strong class="text-orange">第一堂體驗課，50歲以上免費</strong>・未滿50歲 $500</span>
+            <span><strong class="text-orange-300">第一堂體驗課，50歲以上免費</strong>・未滿50歲 $500</span>
           </div>
         </div>
       </div>
