@@ -118,7 +118,6 @@ const filteredCoachesByStore = computed(() => {
 })
 
 // Total coach count
-const totalCoachCount = computed(() => coaches.value.length)
 
 // Set active store filter
 function setActiveStore(storeSlug: string | null) {
@@ -151,21 +150,13 @@ function setActiveStore(storeSlug: string | null) {
           <span>全體教練</span>
         </nav>
 
-        <div class="inline-flex items-center bg-orange/20 border border-orange/40 text-orange text-sm font-medium px-4 py-1.5 rounded-full mb-5">
-          物理治療背景專業教練
-        </div>
-
         <h1 class="font-serif text-4xl lg:text-5xl font-black text-white leading-tight mb-4">
-          全體<span class="text-orange">教練</span>
+          專業<span class="text-orange">教練團隊</span>
         </h1>
 
-        <p class="text-white/60 text-lg font-light leading-relaxed max-w-2xl mx-auto mb-6">
-          每位教練都有物理治療師或醫療專業背景，專精於中高齡與特殊族群訓練，讓你在安全的環境下達到最佳訓練效果。
+        <p class="text-white/60 text-lg font-light leading-relaxed max-w-2xl mx-auto">
+          從專業培訓、能力考核到持續進修，我們建立完整的教練培育制度，讓你無論在哪個據點，都能安心接受專業的訓練指導。
         </p>
-
-        <div class="text-white/40 text-sm">
-          共 <span class="text-orange font-semibold">{{ totalCoachCount }}</span> 位專業教練
-        </div>
       </div>
     </section>
 
@@ -326,9 +317,6 @@ function setActiveStore(storeSlug: string | null) {
     <!-- CTA Section -->
     <section class="bg-orange py-16 lg:py-20 text-center">
       <div class="max-w-4xl mx-auto px-6 lg:px-8">
-        <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">
-          找到適合你的教練了嗎？
-        </h2>
         <p class="text-white/80 mb-8 max-w-md mx-auto">
           預約免費體驗，讓專業教練為你評估並制定訓練計畫。第一堂體驗課，50歲以上免費。
         </p>

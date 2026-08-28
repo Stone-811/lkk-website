@@ -207,7 +207,10 @@ const showMore = computed(() => fMore.value.length > 0)
           <span class="w-5 h-0.5 bg-orange" />
           International Press
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10">國際媒體報導</h2>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">國際媒體報導</h2>
+        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl">
+          2024年起，獲多家國際媒體報導，持續將台灣的高齡肌力訓練經驗帶向國際。
+        </p>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- AP featured (big) -->
@@ -286,7 +289,7 @@ const showMore = computed(() => fMore.value.length > 0)
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">每一次出現，都是一次信任累積</h2>
         <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl">
-          吳淡如、大愛新聞、天下等知名媒體的採訪，讓更多台灣家庭認識練健康。
+          持續受到媒體與各界關注，透過一次次真實的報導與分享，讓更多人看見中高齡肌力訓練的價值。
         </p>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -360,11 +363,13 @@ const showMore = computed(() => fMore.value.length > 0)
       <div class="container mx-auto px-4 text-center">
         <div class="inline-flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
-          For Journalists &amp; Editors
+          MEDIA INQUIRIES
         </div>
-        <h2 class="font-serif text-3xl lg:text-4xl font-black mb-4">歡迎<span class="text-orange">聯繫我們</span></h2>
+        <h2 class="font-serif text-3xl lg:text-4xl font-black mb-4">
+          歡迎媒體採訪與合作<br /><span class="text-orange">一起讓更多好的故事被看見</span>
+        </h2>
         <p class="text-white/60 leading-relaxed mb-8 max-w-2xl mx-auto">
-          如果你正在報導中高齡健康、銀髮健身、或台灣的積極老化故事，我們很樂意協助。
+          歡迎媒體針對高齡肌力訓練、健康老化與跨世代運動等議題與我們聯繫，我們樂於分享第一線經驗、專業觀點與真實故事。
         </p>
         <div class="flex flex-wrap justify-center items-center gap-4">
           <NuxtLink
