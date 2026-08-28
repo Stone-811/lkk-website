@@ -15,7 +15,7 @@ const { stores } = usePublicStores()
     />
     <div class="container mx-auto px-4 relative z-10">
       <!-- Section header -->
-      <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
+      <div class="flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-2">
         <span class="w-5 h-0.5 bg-orange" />
         分店資訊
       </div>
