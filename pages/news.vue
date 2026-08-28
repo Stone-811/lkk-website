@@ -161,7 +161,9 @@ const showMore = computed(() => fMore.value.length > 0)
 <template>
   <div class="bg-cream min-h-screen">
     <!-- Hero -->
-    <section class="relative bg-navy-700 pt-16 overflow-hidden text-white">
+    <!-- min-h-[68vh] 讓底圖多露出來（原本高度只由文字決定，圖上下被裁掉近一半），
+         與分店詳情頁的 Hero 同一組規則 -->
+    <section class="relative bg-navy-700 pt-16 overflow-hidden text-white min-h-[68vh] flex items-center">
       <div class="absolute inset-0">
         <!--
           媒體採訪實景底圖。opacity-60 + brightness(0.4) 是全站深色 Hero 的統一參數，
@@ -181,7 +183,7 @@ const showMore = computed(() => fMore.value.length > 0)
         />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_5%_80%,rgba(58,106,133,0.35)_0%,transparent_45%)]" />
       </div>
-      <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 text-center">
+      <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 text-center w-full">
         <div class="inline-flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
           <span class="w-5 h-0.5 bg-orange" />
           Media Coverage

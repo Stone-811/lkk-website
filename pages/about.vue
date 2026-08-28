@@ -138,7 +138,9 @@ const programGroups = [
 <template>
   <div class="bg-cream min-h-screen">
     <!-- Hero -->
-    <section class="relative bg-navy-700 pt-16 overflow-hidden text-white">
+    <!-- min-h-[68vh] 讓底圖多露出來（原本高度只由文字決定，圖上下被裁掉近一半），
+         與分店詳情頁的 Hero 同一組規則 -->
+    <section class="relative bg-navy-700 pt-16 overflow-hidden text-white min-h-[68vh] flex items-center">
       <div class="absolute inset-0">
         <!--
           學員與教練合照。opacity-60 + brightness(0.30)：文字區底色 L=0.0594，
@@ -162,7 +164,7 @@ const programGroups = [
         />
       </div>
 
-      <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 text-center">
+      <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 text-center w-full">
         <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
           <span class="w-5 h-0.5 bg-orange" />
           About LKK Wellness Center
