@@ -158,18 +158,28 @@ const audience = [
       所以那顆一併改成 orange-300（5.78）。換照片要重量一次。
     -->
     <section class="relative bg-[#0e2230] py-24 lg:py-32 overflow-hidden text-center">
+      <!--
+        底圖只在 lg 以上出現。實測 object-cover 後的水平可見範圍：
+        1440→100%、1024→98%、768→77%、390→只剩 43%（左右直排的
+        「台北世貿一館C區」「十二月十三日」整條被裁掉，中間只剩一片深灰）。
+        所以 lg 以下不套底圖，維持原本的純深色底。
+      -->
       <img
         src="/images/lkk4/hero.webp"
         alt=""
         aria-hidden="true"
-        class="absolute inset-0 w-full h-full object-cover opacity-60"
+        class="hidden lg:block absolute inset-0 w-full h-full object-cover opacity-60"
         style="filter: brightness(0.30)"
       />
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(251,114,10,0.15)_0%,transparent_60%)]" />
+      <!--
+        橘色光暈是為純深色底設計的，疊在主視覺上會把它的藍綠色調染成偏褐的灰，
+        所以只留在沒有底圖的 lg 以下。
+      -->
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(251,114,10,0.15)_0%,transparent_60%)] lg:hidden" />
       <div class="container mx-auto px-4 relative z-10">
         <!-- Status pill -->
         <div class="inline-flex items-center bg-orange/15 border border-orange/30 rounded-full px-4 py-1.5 mb-6">
-          <span class="text-orange-300 text-sm font-medium">第六屆賽事・2026 年 12 月 13 日・台北世貿一館</span>
+          <span class="text-orange lg:text-orange-300 text-sm font-medium">第六屆賽事・2026 年 12 月 13 日・台北世貿一館</span>
         </div>
 
         <h1 class="font-serif text-6xl lg:text-8xl font-black text-white tracking-tight mb-2">
