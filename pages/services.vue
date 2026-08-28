@@ -25,16 +25,16 @@ const courseDirections = [
   {
     id: 'rehab',
     title: '運動復健',
-    description: '結合物理治療與肌力訓練，針對關節炎、慢性腰背痛、術後恢復期，以漸進式訓練重建身體功能。',
+    description: '改善動作問題結合物理治療與運動科學知識，陪你重新建立動作能力與運動習慣，找回對身體的信心。',
     icon: 'refresh',
-    tags: ['關節炎', '腰背痛', '術後恢復', '姿勢矯正'],
+    tags: ['動作品質', '活動能力', '肌力提升', '動作控制'],
   },
   {
     id: 'fitness',
-    title: '一般肌力與體態',
-    description: '想減重、增肌、改善體態，或剛開始運動不知道怎麼做？從正確動作模式開始，建立長期維持的訓練習慣。',
+    title: '日常健康與體能提升',
+    description: '想減脂、增肌、改善體態，或剛開始運動不知道怎麼做？從正確動作模式開始，建立長期維持的訓練習慣。',
     icon: 'bolt',
-    tags: ['減重減脂', '增肌塑身', '運動新手'],
+    tags: ['增肌減脂', '維持健康', '新手友善'],
   },
 ]
 
@@ -52,7 +52,7 @@ const groupCourses = [
   {
     id: 'strength',
     title: '肌力團練班',
-    target: '有基礎者適合',
+    target: '適合有訓練經驗者',
     description: '針對已有基礎動作能力的學員，以提升肌力和體能為目標，訓練強度較高，挑戰自我極限。',
     people: '小班制 3-6 人',
     duration: '每堂 60 分鐘',
@@ -61,7 +61,7 @@ const groupCourses = [
   {
     id: 'senior',
     title: '樂齡體適能訓練班',
-    target: '中高齡專屬',
+    target: '適合60歲以上中高齡者',
     description: '專為 50 歲以上設計，低衝擊、安全優先，兼顧肌力、平衡感與柔軟度，讓訓練融入日常生活。',
     people: '小班制 3-6 人',
     duration: '每堂 60 分鐘',
@@ -158,7 +158,6 @@ onMounted(() => {
 })
 
 const personalFeatures = [
-  '物理治療師或呼吸治療師背景教練指導',
   '訓練前進行身體評估，建立安全個人課表',
   '每堂課 60 分鐘，動作示範與即時糾正',
   '定期追蹤進度，課表隨狀況調整',
@@ -266,11 +265,8 @@ const personalFeatures = [
 
           <!-- 右側內容 -->
           <div class="lg:w-1/2">
-            <div class="flex items-center gap-3 mb-4">
-              <span class="bg-orange/10 text-orange font-semibold px-3 py-1 rounded-full text-sm">最熱門</span>
-            </div>
             <h2 class="text-3xl md:text-4xl font-bold text-navy-700 font-serif mb-4">
-              一對一訓練
+              一對一訓練，精準客製，最熱門
             </h2>
             <p class="text-ink-600 text-lg mb-6 leading-relaxed">
               由專業教練全程陪伴，根據你的身體狀況、健康目標與生活習慣，量身打造個人訓練計畫。一週一次，持續進步。
@@ -359,10 +355,10 @@ const personalFeatures = [
             <span class="bg-orange/10 text-orange font-semibold px-3 py-1 rounded-full text-sm">小班制</span>
           </div>
           <h2 class="text-3xl md:text-4xl font-bold text-navy-700 font-serif mb-4">
-            團體課程
+            團體課程，互相鼓勵，更有效
           </h2>
           <p class="text-ink-600 max-w-2xl mx-auto leading-relaxed">
-            一期4堂，與志同道合的夥伴一起訓練，互相激勵。小班制（3-6 人）確保教練能顧到每個人的動作品質。
+            精緻小班制（3-6 人），一次買四堂課，不僅有效訓練，教練更能掌握每個人的動作狀況，在互相激勵活潑溫馨的氛圍裡，你也能獲得細緻的動作指導。
           </p>
         </div>
 
