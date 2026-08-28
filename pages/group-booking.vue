@@ -322,10 +322,23 @@ const inputClass =
     <!-- ===== PAGE ===== -->
     <template v-else>
       <!-- HERO -->
-      <section class="relative bg-[#1a3545] pt-16 overflow-hidden text-white">
+      <!--
+        團課實景底圖。opacity-60 + brightness(0.30) 是量測後選定的。
+        min-h-[68vh] 與 /about、/news 同一組規則：Hero 高度原本只由文字決定，
+        比 16:9 的圖扁很多，object-cover 會把上下裁掉一大半。
+        ⚠️ 換照片要重量一次，brightness 不是通用常數。
+      -->
+      <section class="relative bg-[#1a3545] pt-16 overflow-hidden text-white min-h-[68vh] flex items-center">
+        <img
+          src="/images/group-booking/hero.webp"
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover opacity-60"
+          style="filter: brightness(0.30)"
+        />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
-        <div class="relative z-10 max-w-3xl mx-auto px-4 text-center py-12 lg:py-20">
-          <div class="inline-flex items-center bg-orange/[0.18] border border-orange/40 text-orange text-[0.78rem] font-medium px-3.5 py-1.5 rounded-full mb-5 tracking-wide">
+        <div class="relative z-10 max-w-3xl mx-auto px-4 text-center py-12 lg:py-20 w-full">
+          <div class="inline-flex items-center bg-orange/[0.18] border border-orange/40 text-orange-300 text-[0.78rem] font-medium px-3.5 py-1.5 rounded-full mb-5 tracking-wide">
             {{ variant.hero?.badge ?? '一期4堂 · 隨時可續課' }}
           </div>
           <h1 class="font-serif text-3xl lg:text-5xl font-black leading-tight mb-6">
@@ -343,7 +356,7 @@ const inputClass =
           <div>
             <a href="#form" class="inline-block bg-orange hover:bg-orange-400 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-orange/35 transition">{{ variant.hero?.ctaText ?? '團體課報名' }}</a>
           </div>
-          <div class="flex items-center justify-center gap-1.5 text-xs text-white/40 mt-3">
+          <div class="flex items-center justify-center gap-1.5 text-xs text-white/65 mt-3">
             <svg class="w-3.5 h-3.5 text-orange-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
             <span><strong class="text-orange-300">4堂 $2,400 起</strong>・請假可順延一週・無須綁約長期課程</span>
           </div>

@@ -120,14 +120,24 @@ useHead({
   ]
 })
 
-// 分店照片（依序：主訓練區、一對一訓練空間、專業器材區、功能性訓練區、舒適休息區）
-const envLabels = ['主訓練區', '一對一訓練空間', '專業器材區', '功能性訓練區', '舒適休息區']
+// 分店照片。順序與後台「分店環境照片」的 env1~env5 欄位一一對應。
+// 這些字串只當 alt 用（照片上的區域標籤已於 2026-08 移除），改欄位標籤時要一起改
+// pages/admin/stores/[id].vue 的 imageCategories，兩邊語意才不會對不起來。
+// 標籤要能同時說得通四家店的照片，所以第 5 格用「環境一隅」這種涵蓋性的字
+// （七張放更衣盥洗、西門放店面外觀）。
+const envLabels = ['主訓練區', '團體／功能性訓練區', '重量訓練區', '服務櫃檯', '環境一隅']
 const photos = computed(() => {
   const galleryImages = store.value?.galleryImages || []
   if (galleryImages.length > 0) {
-    return galleryImages.slice(0, 5).map((img: string, index: number) => ({
+    const list = galleryImages.slice(0, 5)
+    // 第一張跨兩欄。三欄的格線裡，跨欄等於多佔一格，所以只有 (張數+1) 能被 3 整除
+    // 時才不會留下殘缺的一列（5 張→6 格 ✅ 跨欄；照片不足 5 張時自動不跨欄）。
+    const spanFirst = (list.length + 1) % 3 === 0
+    return list.map((img: string, index: number) => ({
       label: envLabels[index] || `環境照片 ${index + 1}`,
-      span: index === 0,
+      span: index === 0 && spanFirst,
+      // 跨欄那格是 16:9、比同列的 4:3 高，同列夥伴要撐滿列高才不會在下方留空洞
+      stretch: spanFirst && index === 1,
       image: img,
     }))
   }
@@ -148,6 +158,20 @@ const photos = computed(() => {
     <section class="relative bg-navy-700 pt-16 overflow-hidden min-h-[68vh] flex items-center">
       <!-- Background effects -->
       <div class="absolute inset-0">
+        <!--
+          門市實景底圖。opacity-60 + brightness(0.30) 是量測後選定的：四家店的照片
+          在文字區的底色亮度落在 L=0.059~0.063，比純 navy-700 的 0.0755 更暗，
+          所以 Hero 上所有文字的對比都不會因為加了底圖而變差。
+          ⚠️ 換照片要重量一次，brightness 不是通用常數。
+          brightness 寫 inline style，方便直接在產出的 HTML 裡驗證。
+        -->
+        <img
+          :src="`/images/locations/${storeSlug}/hero.webp`"
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover opacity-60"
+          style="filter: brightness(0.30)"
+        />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(251,114,10,0.10)_0%,transparent_50%),radial-gradient(circle_at_5%_75%,rgba(42,82,105,0.5)_0%,transparent_45%)]" />
         <div
           class="absolute inset-0 opacity-[0.022]"
@@ -161,16 +185,17 @@ const photos = computed(() => {
       <div class="container mx-auto px-4 relative z-10 py-12 lg:py-20">
         <div class="max-w-2xl">
           <!-- Breadcrumb -->
-          <nav class="flex items-center gap-1.5 text-xs text-white/35 mb-5">
-            <NuxtLink to="/" class="hover:text-white/70 transition-colors">練健康</NuxtLink>
-            <span class="text-white/20">›</span>
-            <NuxtLink to="/locations" class="hover:text-white/70 transition-colors">分店地點</NuxtLink>
-            <span class="text-white/20">›</span>
+          <!-- white/35 在純 navy 上只有 2.45:1，本來就不合格；提到 white/65＝5.03:1 -->
+          <nav class="flex items-center gap-1.5 text-xs text-white/65 mb-5">
+            <NuxtLink to="/" class="hover:text-white transition-colors">練健康</NuxtLink>
+            <span class="text-white/40">›</span>
+            <NuxtLink to="/locations" class="hover:text-white transition-colors">分店地點</NuxtLink>
+            <span class="text-white/40">›</span>
             <span>{{ store.name }}</span>
           </nav>
 
           <!-- District badge -->
-          <div class="inline-flex items-center gap-2 bg-orange/15 border border-orange/30 text-orange text-xs font-medium px-3 py-1 rounded-full mb-4 tracking-wide">
+          <div class="inline-flex items-center gap-2 bg-orange/15 border border-orange/30 text-orange-300 text-xs font-medium px-3 py-1 rounded-full mb-4 tracking-wide">
             {{ store.city }}{{ store.district }}
           </div>
 
@@ -202,11 +227,11 @@ const photos = computed(() => {
             </a>
           </div>
 
-          <div class="flex items-center gap-2 mt-4 text-sm text-white/45">
+          <div class="flex items-center gap-2 mt-4 text-sm text-white/70">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            <span><strong class="text-orange">第一堂體驗課，50歲以上免費</strong>・未滿50歲 $500</span>
+            <span><strong class="text-orange-300">第一堂體驗課，50歲以上免費</strong>・未滿50歲 $500</span>
           </div>
         </div>
       </div>
@@ -329,12 +354,14 @@ const photos = computed(() => {
             :key="photo.label"
             :class="[
               'aspect-[4/3] rounded-xl overflow-hidden relative group',
-              photo.span ? 'md:col-span-2 md:aspect-video' : ''
+              photo.span ? 'md:col-span-2 md:aspect-video' : '',
+              photo.stretch ? 'md:aspect-auto md:h-full' : ''
             ]"
           >
             <img
               :src="photo.image"
-              :alt="photo.label"
+              :alt="`${store.name}${photo.label}`"
+              loading="lazy"
               class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           </div>

@@ -17,12 +17,14 @@ useHead({
 })
 
 // 分店環境照片分類定義
+// ⚠️ 這裡的順序與標籤要跟 pages/locations/[store].vue 的 envLabels 一致，
+//    前台是照 env1~env5 的順序排版，標籤同時當作照片的 alt。
 const imageCategories = [
   { key: 'env1', label: '主訓練區（分店頁大圖）', description: '主訓練區' },
-  { key: 'env2', label: '一對一訓練空間', description: '一對一訓練空間' },
-  { key: 'env3', label: '專業器材區', description: '專業器材區' },
-  { key: 'env4', label: '功能性訓練區', description: '功能性訓練區' },
-  { key: 'env5', label: '舒適休息區', description: '舒適休息區' },
+  { key: 'env2', label: '團體／功能性訓練區', description: '團體／功能性訓練區' },
+  { key: 'env3', label: '重量訓練區', description: '重量訓練區' },
+  { key: 'env4', label: '服務櫃檯', description: '服務櫃檯' },
+  { key: 'env5', label: '環境一隅（更衣盥洗、店面外觀等）', description: '環境一隅' },
 ]
 
 interface StoreImages {

@@ -256,8 +256,11 @@ const personalFeatures = [
           <div class="lg:w-1/2">
             <div class="rounded-3xl overflow-hidden shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=900&h=675&fit=crop&q=80"
-                alt="練健康一對一訓練：專業教練指導學員進行肌力訓練"
+                src="/images/services/personal.webp"
+                alt="練健康一對一訓練：教練一對一指導中高齡學員完成訓練"
+                width="1200"
+                height="900"
+                loading="lazy"
                 class="w-full h-auto"
               />
             </div>
@@ -362,6 +365,18 @@ const personalFeatures = [
           </p>
         </div>
 
+        <!-- 課程實拍 -->
+        <div class="max-w-3xl mx-auto rounded-3xl overflow-hidden shadow-xl mb-12">
+          <img
+            src="/images/services/group.webp"
+            alt="練健康團體課程：小班制學員一同進行體適能訓練"
+            width="1200"
+            height="900"
+            loading="lazy"
+            class="w-full h-auto"
+          />
+        </div>
+
         <!-- 課程卡片 -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <div
@@ -430,25 +445,29 @@ const personalFeatures = [
         <div class="flex flex-col lg:flex-row gap-12 items-center">
           <!-- 左側影片/圖片 -->
           <div class="lg:w-1/2">
-            <div class="relative rounded-3xl overflow-hidden shadow-xl">
+            <!-- 課程主視覺已內建標題，遮罩與播放鍵改為 hover 才出現，避免蓋住字 -->
+            <a
+              href="https://sat.cool/course/97"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group relative block rounded-3xl overflow-hidden shadow-xl"
+            >
               <img
-                src="https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=900&h=506&fit=crop&q=80"
-                alt="練健康線上課程"
+                src="/images/services/online.webp"
+                alt="練健康線上課程「居家科學微運動」：不跑不跳、安全有效、緩解痠痛，由總教練鄭宇劭物理治療師授課"
+                width="1200"
+                height="675"
+                loading="lazy"
                 class="w-full h-auto"
               />
-              <a
-                href="https://sat.cool/course/97"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors group"
-              >
-                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <span class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/35 transition-colors">
+                <span class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all">
                   <svg class="w-8 h-8 text-orange ml-1" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z" />
                   </svg>
-                </div>
-              </a>
-            </div>
+                </span>
+              </span>
+            </a>
           </div>
 
           <!-- 右側內容 -->
