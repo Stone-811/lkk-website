@@ -322,24 +322,20 @@ const inputClass =
     <!-- ===== PAGE ===== -->
     <template v-else>
       <!-- HERO -->
+      <section class="relative bg-[#1a3545] pt-16 overflow-hidden text-white flex items-center xl:aspect-video">
       <!--
-        團課實景底圖。opacity-60 + brightness(0.30) 是量測後選定的。
-        Hero 比例對齊圖片的 16:9，讓整張圖完整呈現、不裁切。
-        ⚠️ 換照片要重量一次，brightness 不是通用常數。
-      -->
-      <section class="relative bg-[#1a3545] pt-16 overflow-hidden text-white xl:aspect-video xl:flex xl:items-center">
-      <!--
-        團課實景。1024 寬時內容高 609px > 16:9 的 576px 會被切掉，所以斷點拉到 xl(1280)＝720px。
-        xl 以下：圖片走一般流排在最上方，w-full aspect-video 完整呈現，不裁切。
-        xl 以上：section 本身是 aspect-video，圖片絕對定位鋪滿，
-        容器比例與圖片相同，所以 object-cover 一樣不會裁到任何一邊。
-        ⚠️ 斷點是量出來的：文字內容必須塞得進 16:9 的高度，否則會被 overflow-hidden 切掉。
+        底圖在所有尺寸都是絕對定位的全幅背景，文字壓在圖上——與首頁 Hero 同一套呈現。
+        xl 以上：section 是 aspect-video，容器與圖片同比例，object-cover 零裁切。
+        xl 以下：高度由文字內容決定，比例比圖片瘦，左右會被裁掉
+        （390 手機約只剩三到五成寬）——這是換取「文字壓在照片上」的必然代價，
+        首頁 Hero 手機版同樣只剩 26% 寬。主體請盡量置中構圖。
+        ⚠️ xl 以上的斷點是量出來的：文字內容必須塞得進 16:9 的高度，否則會被 overflow-hidden 切掉。
       -->
       <img
         src="/images/group-booking/hero.webp"
         alt=""
         aria-hidden="true"
-        class="w-full aspect-video object-cover opacity-60 xl:absolute xl:inset-0 xl:h-full xl:aspect-auto"
+        class="absolute inset-0 w-full h-full object-cover opacity-60"
         style="filter: brightness(0.30)"
       />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />

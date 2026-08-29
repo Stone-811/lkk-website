@@ -161,19 +161,20 @@ const showMore = computed(() => fMore.value.length > 0)
 <template>
   <div class="bg-cream min-h-screen">
     <!-- Hero -->
-    <section class="relative bg-navy-700 pt-16 overflow-hidden text-white lg:aspect-video lg:flex lg:items-center">
+    <section class="relative bg-navy-700 pt-16 overflow-hidden text-white flex items-center lg:aspect-video">
       <!--
-        媒體採訪實景。1024 寬時內容高 426px < 16:9 的 576px，塞得下。
-        lg 以下：圖片走一般流排在最上方，w-full aspect-video 完整呈現，不裁切。
-        lg 以上：section 本身是 aspect-video，圖片絕對定位鋪滿，
-        容器比例與圖片相同，所以 object-cover 一樣不會裁到任何一邊。
-        ⚠️ 斷點是量出來的：文字內容必須塞得進 16:9 的高度，否則會被 overflow-hidden 切掉。
+        底圖在所有尺寸都是絕對定位的全幅背景，文字壓在圖上——與首頁 Hero 同一套呈現。
+        lg 以上：section 是 aspect-video，容器與圖片同比例，object-cover 零裁切。
+        lg 以下：高度由文字內容決定，比例比圖片瘦，左右會被裁掉
+        （390 手機約只剩三到五成寬）——這是換取「文字壓在照片上」的必然代價，
+        首頁 Hero 手機版同樣只剩 26% 寬。主體請盡量置中構圖。
+        ⚠️ lg 以上的斷點是量出來的：文字內容必須塞得進 16:9 的高度，否則會被 overflow-hidden 切掉。
       -->
       <img
         src="/images/news/hero.webp"
         alt=""
         aria-hidden="true"
-        class="w-full aspect-video object-cover opacity-60 lg:absolute lg:inset-0 lg:h-full lg:aspect-auto"
+        class="absolute inset-0 w-full h-full object-cover opacity-60"
         style="filter: brightness(0.30)"
       />
       <div class="absolute inset-0">
