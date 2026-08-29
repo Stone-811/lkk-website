@@ -322,6 +322,7 @@ const inputClass =
     <!-- ===== PAGE ===== -->
     <template v-else>
       <!-- HERO -->
+      <section class="relative bg-[#1a3545] pt-16 overflow-hidden text-white flex items-center xl:aspect-video">
       <!--
         底圖在所有尺寸都是絕對定位的全幅背景，文字壓在圖上——與首頁 Hero 同一套呈現。
         xl 以上：section 是 aspect-video，容器與圖片同比例，object-cover 零裁切。
