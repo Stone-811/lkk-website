@@ -161,9 +161,21 @@ const showMore = computed(() => fMore.value.length > 0)
 <template>
   <div class="bg-cream min-h-screen">
     <!-- Hero -->
-    <!-- min-h-[68vh] 讓底圖多露出來（原本高度只由文字決定，圖上下被裁掉近一半），
-         與分店詳情頁的 Hero 同一組規則 -->
-    <section class="relative bg-navy-700 pt-16 overflow-hidden text-white min-h-[68vh] flex items-center">
+    <section class="relative bg-navy-700 pt-16 overflow-hidden text-white lg:aspect-video lg:flex lg:items-center">
+      <!--
+        媒體採訪實景。1024 寬時內容高 426px < 16:9 的 576px，塞得下。
+        lg 以下：圖片走一般流排在最上方，w-full aspect-video 完整呈現，不裁切。
+        lg 以上：section 本身是 aspect-video，圖片絕對定位鋪滿，
+        容器比例與圖片相同，所以 object-cover 一樣不會裁到任何一邊。
+        ⚠️ 斷點是量出來的：文字內容必須塞得進 16:9 的高度，否則會被 overflow-hidden 切掉。
+      -->
+      <img
+        src="/images/news/hero.webp"
+        alt=""
+        aria-hidden="true"
+        class="w-full aspect-video object-cover opacity-60 lg:absolute lg:inset-0 lg:h-full lg:aspect-auto"
+        style="filter: brightness(0.30)"
+      />
       <div class="absolute inset-0">
         <!--
           媒體採訪實景底圖。opacity-60 + brightness(0.4) 是全站深色 Hero 的統一參數，
@@ -174,13 +186,6 @@ const showMore = computed(() => fMore.value.length > 0)
           ⚠️ 參數是「量出來的結果」，不是固定值——換別張照片要重量一次。
           brightness 寫 inline style，方便直接在產出的 HTML 裡驗證。
         -->
-        <img
-          src="/images/news/hero.webp"
-          alt=""
-          aria-hidden="true"
-          class="absolute inset-0 w-full h-full object-cover opacity-60"
-          style="filter: brightness(0.30)"
-        />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_5%_80%,rgba(58,106,133,0.35)_0%,transparent_45%)]" />
       </div>
       <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 text-center w-full">
