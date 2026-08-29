@@ -324,18 +324,24 @@ const inputClass =
       <!-- HERO -->
       <!--
         團課實景底圖。opacity-60 + brightness(0.30) 是量測後選定的。
-        min-h-[68vh] 與 /about、/news 同一組規則：Hero 高度原本只由文字決定，
-        比 16:9 的圖扁很多，object-cover 會把上下裁掉一大半。
+        Hero 比例對齊圖片的 16:9，讓整張圖完整呈現、不裁切。
         ⚠️ 換照片要重量一次，brightness 不是通用常數。
       -->
-      <section class="relative bg-[#1a3545] pt-16 overflow-hidden text-white min-h-[68vh] flex items-center">
-        <img
-          src="/images/group-booking/hero.webp"
-          alt=""
-          aria-hidden="true"
-          class="absolute inset-0 w-full h-full object-cover opacity-60"
-          style="filter: brightness(0.30)"
-        />
+      <section class="relative bg-[#1a3545] pt-16 overflow-hidden text-white xl:aspect-video xl:flex xl:items-center">
+      <!--
+        團課實景。1024 寬時內容高 609px > 16:9 的 576px 會被切掉，所以斷點拉到 xl(1280)＝720px。
+        xl 以下：圖片走一般流排在最上方，w-full aspect-video 完整呈現，不裁切。
+        xl 以上：section 本身是 aspect-video，圖片絕對定位鋪滿，
+        容器比例與圖片相同，所以 object-cover 一樣不會裁到任何一邊。
+        ⚠️ 斷點是量出來的：文字內容必須塞得進 16:9 的高度，否則會被 overflow-hidden 切掉。
+      -->
+      <img
+        src="/images/group-booking/hero.webp"
+        alt=""
+        aria-hidden="true"
+        class="w-full aspect-video object-cover opacity-60 xl:absolute xl:inset-0 xl:h-full xl:aspect-auto"
+        style="filter: brightness(0.30)"
+      />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
         <div class="relative z-10 max-w-3xl mx-auto px-4 text-center py-12 lg:py-20 w-full">
           <div class="inline-flex items-center bg-orange/[0.18] border border-orange/40 text-orange-300 text-[0.78rem] font-medium px-3.5 py-1.5 rounded-full mb-5 tracking-wide">
