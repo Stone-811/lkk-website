@@ -12,9 +12,14 @@ scripts:
   runCommand: node .output/server/index.mjs
 
 env:
-  # Site URL
+  # Site URL —— 必須是「這個環境自己的網址」。
+  # ⚠️ 曾經誤設為 https://l-kk.tw（舊 WordPress 站）。那個值會讓管理者通知信裡的
+  #   「前往後台查看詳情」連到 l-kk.tw/admin/leads——一個還活著、但沒有後台的站，
+  #    看起來像「後台壞了」而不是「連結指錯站」，很難察覺。
+  # ⚠️ 也不能直接拿掉：server/utils/email.ts 的 fallback 是 lkkwellness.com，
+  #    拿掉之後 dev 的信會連到「正式站後台」，測試時會看到真實客戶資料，更糟。
   - variable: NUXT_PUBLIC_SITE_URL
-    value: https://l-kk.tw
+    value: https://lkk-website-dev--lkkdev.asia-east1.hosted.app
 
   # Firebase (migrated to lkkdev)
   - variable: FIREBASE_PROJECT_ID
@@ -53,7 +58,12 @@ env:
   # 只有 Firestore settings/notifications.emailRecipients 為空時才會用到的保底值。
   - variable: NOTIFICATION_EMAIL
     value: service@l-kk.tw
-  # ⚠️ 這個 secret 必須是 service@l-kk.tw 的應用程式密碼，不是舊的 Gmail 那組。
+  # ⚠️ 這個 secret 必須是 SMTP_USER 那個帳號、也就是 lkk@l-kk.tw 的應用程式密碼。
+  #    Google 的應用程式密碼是「綁帳號」的，service@l-kk.tw 是別名、產不出來
+  #    （上面 SMTP_USER 的註解已說明原因）。設錯會拿到 535-5.7.8 BadCredentials。
+  # ⚠️ 寄信失敗是「靜默」的：server/api/leads/*.post.ts 的寄信是 fire-and-forget，
+  #    錯誤只進 console.error，表單照樣回「預約成功」。名單本身不會遺失
+  #    （Firestore 的寫入在寄信之前），但不會有任何人被通知。
   # 更新：npx firebase-tools apphosting:secrets:set smtp-pass --project lkkdev
   - variable: SMTP_PASS
     secret: smtp-pass
