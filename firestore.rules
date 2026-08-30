@@ -1,60 +1,33 @@
 rules_version = '2';
 
+// ⚠️ 本站的 Firestore 一律全鎖，這是刻意的，不是還沒寫。
+//
+// 存取路徑只有一條：
+//   瀏覽器 ──HTTP──> Nitro API Routes ──firebase-admin──> Firestore
+//                     (server/api/**)   (server/utils/firebase.ts)
+//
+// 伺服器用 Admin SDK，憑證走 Application Default Credentials（App Hosting 自動注入），
+// 依服務帳號的 IAM 權限存取——設計上就**繞過 Firestore Security Rules**。
+// 瀏覽器端只 import 'firebase/app' 與 'firebase/auth'（後台 Google 登入用），
+// 全站沒有任何一處 import 'firebase/firestore'。
+// 也就是說：規則管的那條 client SDK 路徑，這個站從來不走。
+//
+// 🔴 為什麼要明文全鎖，而不是留空或留舊版：
+//    這個檔案在 2026-08-29 之前是一份「假設用 client SDK」的規則，內含
+//      match /leads/{leadId} { allow create: if true; allow read: if request.auth != null; }
+//    那份規則從未被部署（線上一直是預設 deny-all，實測匿名讀寫皆 403），
+//    但只要有人「順手把沒部署的規則補上去」，名單就會變成
+//    任何人可寫入、任何 Google 登入者可讀取（含電話、Email、健康狀況）——
+//    因為 ADMIN_ALLOWED_EMAILS 白名單是在 Nitro API 裡比對的，規則看不到。
+//    現在改成 deny-all：部署與否結果都一樣安全。
+//
+// 若日後真的要改用 client SDK 直連 Firestore，這份必須整份重寫，
+// 且不能用 `request.auth != null` 當授權條件（那對任何 Google 帳號都成立）。
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
-    function isAdmin() {
-      return isAuthenticated() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    function isEditor() {
-      return isAuthenticated() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'editor'];
-    }
-
-    // Public read for active content
-    match /stores/{storeId} {
-      allow read: if resource.data.isActive == true;
-      allow write: if isEditor();
-    }
-
-    match /coaches/{coachId} {
-      allow read: if resource.data.isActive == true;
-      allow write: if isEditor();
-    }
-
-    match /faqs/{faqId} {
-      allow read: if resource.data.isActive == true;
-      allow write: if isEditor();
-    }
-
-    match /homePage/{docId} {
-      allow read: if true;
-      allow write: if isEditor();
-    }
-
-    // Leads - public can create, only authenticated can read/update
-    match /leads/{leadId} {
-      allow create: if true;
-      allow read, update: if isAuthenticated();
-      allow delete: if isAdmin();
-    }
-
-    // Users - only admin can manage
-    match /users/{userId} {
-      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      allow write: if isAdmin();
-    }
-
-    // Settings - only admin can manage
-    match /settings/{settingId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

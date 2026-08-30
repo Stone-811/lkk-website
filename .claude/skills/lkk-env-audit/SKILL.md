@@ -1,6 +1,6 @@
 ---
 name: lkk-env-audit
-description: 稽核練健康官網 dev/prod 兩個環境的設定有沒有漂移或交叉污染。當被問「兩邊設定一樣嗎」「會不會環境污染」「apphosting.yaml 能不能統一」，或動到 apphosting.yaml、secrets、環境變數之前使用。
+description: 稽核練健康官網 dev/prod 兩個環境的設定有沒有漂移或交叉污染，並釐清 Firestore/Storage 安全規則在這個架構裡的角色。當被問「兩邊設定一樣嗎」「會不會環境污染」「apphosting.yaml 能不能統一」「規則沒部署要不要補」，或動到 apphosting.yaml、firestore.rules、storage.rules、secrets、環境變數之前使用。
 ---
 
 # 環境設定稽核
@@ -106,3 +106,83 @@ git diff --unified=0 apphosting.yaml | grep -E '^[+-]' | grep -v '^[+-][+-]' \
 ```
 
 改完再用 `node -e` 搭配專案既有的 `yaml` 套件解析一次，確認 YAML 沒壞、關鍵值仍是該環境的值。
+
+
+---
+
+# Firestore / Storage 規則：先搞清楚這個架構「不走規則」
+
+稽核時很容易看到「`firestore.rules` 沒部署」就想補上去。**在這個專案，那是錯的。**
+
+## 存取路徑只有一條
+
+```
+瀏覽器 ──HTTP──> Nitro API Routes ──firebase-admin──> Firestore
+                  (server/api/**)   (server/utils/firebase.ts)
+```
+
+- 伺服器端唯一入口 `server/utils/firebase.ts`，憑證依序判斷：
+  `FIRESTORE_EMULATOR_HOST` → service account（`CLIENT_EMAIL`+`PRIVATE_KEY`，**線上沒宣告、走不到**）
+  → **`applicationDefault()`（ADC，App Hosting 自動注入）← 線上實際走這條**
+- **Admin SDK 依服務帳號 IAM 權限存取，設計上繞過 Security Rules。**
+- 前端 `plugins/firebase.client.ts` 只 import `'firebase/app'` + `'firebase/auth'`（後台 Google 登入），
+  全站**沒有任何** `import 'firebase/firestore'`。
+- ⚠️ 連 emulator 也一樣：`firebase.ts:46` 連 emulator 時用的仍是 firebase-admin，同樣繞過規則。
+  **不要拿「emulator 沒規則檔會預設全開」當論證**——那條路徑本地也不會走到。
+
+## 查「線上實際生效」的規則
+
+```javascript
+// 用 ADC 換 access_token 後
+fetch(`https://firebaserules.googleapis.com/v1/projects/${p}/releases`, {headers:{Authorization:'Bearer '+token}})
+```
+2026-08-29 實測：兩個專案都**只有 `firebase.storage/…`，沒有 `cloud.firestore`**
+→ Firestore 跑在預設 deny-all。實測佐證：
+
+```bash
+KEY=<NUXT_PUBLIC_FIREBASE_API_KEY>
+curl -o /dev/null -w '%{http_code}' "https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents/stores?key=$KEY"   # 403
+curl -o /dev/null -w '%{http_code}' -X POST "https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents/leads?key=$KEY" -d '{"fields":{}}'  # 403
+```
+
+## 🔴 舊版規則檔為什麼是上膛的槍
+
+2026-08-29 之前的 `firestore.rules` 假設「client SDK 直連」，內含：
+
+```javascript
+match /leads/{leadId} {
+  allow create: if true;                     // 任何人、不需登入即可寫入名單
+  allow read, update: if isAuthenticated();  // 任何 Google 帳號可讀全部名單
+}
+```
+
+`ADMIN_ALLOWED_EMAILS` 白名單是在 Nitro API 比對的，**規則看不到**；`isAdmin()` 靠
+`users/{request.auth.uid}` 查角色，但本站 `users` 是自訂 docId＋bcrypt＋自簽 JWT，
+跟 Firebase Auth UID 無關 → 永遠 false。部署下去＝名單對外開放。
+
+**觸發機率不低**：`firebase.json` 宣告了 `"firestore": {"rules": "firestore.rules"}`，
+不加 `--only` 的 `firebase deploy` 就會推；而 `CLAUDE.md` 當時直接寫著那道指令。
+
+**現況（已處置）**：`firestore.rules` 改成明文 `allow read, write: if false` 並在檔頭寫清楚
+架構與理由；`CLAUDE.md` 移除該指令改成警告。部署與否結果都安全。
+
+## ⚠️ `firebase.json` 的 `firestore` 區塊不能整塊刪
+
+同一區塊的 `indexes` 是真的有在用：檔案宣告 10 個複合索引，`lkkdev`/`lkkprod`
+線上各 10 個且全部 READY。查法：
+
+```javascript
+fetch(`https://firestore.googleapis.com/v1/projects/${p}/databases/(default)/collectionGroups/-/indexes`, …)
+```
+
+## Storage 規則「有」部署，而且偏寬
+
+`allow read: if true`（公開讀，符合預期）／`allow write: if isAuthenticated() && isValidImage()`
+——**任何 Firebase 登入者**皆可上傳，不限白名單。影響面小（圖片已改走 `public/`），
+但這是目前唯一「規則真的生效」的地方，收緊要改 `storage.rules` 並重新部署。
+
+## 別把 middleware 的防護誤判成沒有
+
+逐支 admin 端點大多只 `getSession`、不驗角色，看起來像沒防護。**防護在
+`server/middleware/admin-api-guard.ts`**：`/api/admin/*`（`auth/` 除外）一律要登入，
+`users`/`seed`/`debug` 僅 admin。實測正式站未登入時三者皆 401。
