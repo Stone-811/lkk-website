@@ -6,7 +6,7 @@
 
 | 應用 | 路徑 | 框架 | 狀態 |
 |------|------|------|------|
-| **newweb** | `apps/newweb` | Vue 3 + Nuxt 3 | ✅ 主站 |
+| **lkk-website** | repo 根目錄 | Vue 3 + Nuxt 3 | ✅ 主站（單一應用，無 monorepo） |
 
 目標是用較低維運成本完成階段性網站改版，並讓業主可透過後台自行管理新官網頁面的照片、文案、CTA、連結、分店、教練與表單名單。
 
@@ -215,22 +215,19 @@ Site Address (URL):      https://l-kk.tw
 |------|------|
 | 單一圖示 | 直接使用 inline SVG |
 | 多個相關圖示 | 建立 Icon 元件（如 `ServiceIcon`、`EventIcon`） |
-| 共用圖示 | 放置於 `components/icons/` |
+| 共用圖示 | 放置於 `components/`（Nuxt 會自動註冊，目前尚無 `components/icons/`） |
 
-範例：
-```tsx
-// 建立 Icon 元件
-function ServiceIcon({ type }: { type: string }) {
-  const iconClass = "w-12 h-12 text-orange";
-  switch (type) {
-    case 'personal':
-      return <svg className={iconClass} ...>...</svg>;
-    case 'rehab':
-      return <svg className={iconClass} ...>...</svg>;
-    default:
-      return null;
-  }
-}
+範例（Vue SFC，**不是** React/JSX——那是已移除的舊架構寫法）：
+```vue
+<!-- components/ServiceIcon.vue -->
+<script setup lang="ts">
+defineProps<{ type: 'personal' | 'rehab' }>()
+</script>
+
+<template>
+  <svg v-if="type === 'personal'" class="w-12 h-12 text-orange" ...>...</svg>
+  <svg v-else-if="type === 'rehab'" class="w-12 h-12 text-orange" ...>...</svg>
+</template>
 ```
 
 ### Logo 與 Favicon
@@ -247,7 +244,7 @@ function ServiceIcon({ type }: { type: string }) {
 
 | 項目 | 說明 |
 |------|------|
-| 元件 | `components/layout/MobileBookingButton.tsx` |
+| 元件 | `components/layout/MobileBookingButton.vue` |
 | 顯示條件 | 僅手機版（`md:hidden`） |
 | 隱藏頁面 | `/booking` 頁面自動隱藏 |
 | 連結 | `/booking#form` |
@@ -256,76 +253,63 @@ function ServiceIcon({ type }: { type: string }) {
 
 ## 專案結構
 
+**應用就在 repo 根目錄**（`srcDir` 即根目錄）。沒有 `apps/`、沒有 Turborepo、沒有 npm workspaces —— 那是已經移除的舊 monorepo 結構。
+
 ```
-lkk-website/                    # 根目錄
-├── package.json                # workspaces: ["apps/*"]
-├── package-lock.json           # 統一管理所有依賴
-├── turbo.json                  # Turborepo 設定
-├── firebase.json               # Firebase 設定
-├── firestore.rules
-├── firestore.indexes.json
+lkk-website/                    # repo 根目錄，同時就是 Nuxt 應用根目錄
+├── package.json                # name: lkk-website（單一應用，無 workspaces）
+├── package-lock.json
+├── nuxt.config.ts              # Nuxt 設定（含 routeRules、nitro preset）
+├── tailwind.config.ts          # Tailwind 設定（含自訂色彩）
+├── apphosting.yaml             # ⚠️ 唯一分隔 dev/prod 的檔案，絕不能跨分支互蓋
+├── firebase.json               # apphosting / emulators / firestore.indexes / storage.rules
+├── firestore.rules             # 明文全鎖，刻意不部署（見下方「Firestore 安全規則」）
+├── firestore.indexes.json      # 10 個複合索引，兩專案皆已部署
 ├── storage.rules
 │
-└── apps/
-    └── newweb/                 # Vue 3 + Nuxt 3 主站
-        ├── package.json        # @lkk/newweb
-        ├── apphosting.yaml     # Firebase App Hosting 設定
-        ├── nuxt.config.ts      # Nuxt 設定
-        ├── tailwind.config.ts  # Tailwind 設定（含自訂色彩）
-        │
-        ├── pages/
-        │   ├── index.vue               # 首頁
-        │   ├── booking.vue             # 預約體驗
-        │   ├── services.vue            # 服務方案
-        │   ├── franchise.vue           # 加盟說明
-        │   ├── shop.vue                # 商品導購
-        │   ├── personal-record.vue     # LKK4 成績查詢
-        │   ├── lkk4.vue                # LKK4 賽事
-        │   ├── lkk-academy.vue         # 練健康學院
-        │   ├── cooperation.vue         # 合作洽詢
-        │   ├── privacy.vue             # 隱私權政策
-        │   ├── lkk-lecturer.vue        # 練健康授權講師
-        │   ├── co-lecturer.vue         # 合作講師
-        │   ├── oversea-lecturer.vue    # 海外授權講師
-        │   ├── locations/
-        │   │   ├── index.vue           # 分店總覽
-        │   │   └── [store].vue         # 分店詳情
-        │   ├── team-intro/
-        │   │   ├── index.vue           # 經營團隊
-        │   │   └── coaches.vue         # 全體教練
-        │   └── admin/
-        │       ├── index.vue           # 後台儀表板
-        │       ├── login.vue           # 後台登入
-        │       ├── leads.vue           # 名單管理
-        │       ├── stores/             # 分店管理
-        │       ├── coaches/            # 教練管理
-        │       ├── lecturers.vue       # 講師管理
-        │       ├── cooperation.vue     # 合作表單
-        │       ├── lkk4-records/       # LKK4 成績管理
-        │       └── settings.vue        # 系統設定
-        │
-        ├── server/
-        │   ├── api/                    # Nitro API Routes
-        │   │   ├── leads/              # 表單提交 API
-        │   │   ├── public/             # 公開資料 API
-        │   │   └── admin/              # 後台 API
-        │   └── utils/
-        │       ├── firebase.ts         # Firebase Admin SDK
-        │       ├── auth.ts             # JWT 驗證
-        │       └── email.ts            # Email 通知
-        │
-        ├── layouts/
-        │   ├── default.vue             # 預設 Layout
-        │   ├── admin.vue               # 後台 Layout
-        │   └── auth.vue                # 登入頁 Layout
-        │
-        ├── components/
-        │   ├── layout/                 # Header、Footer、MobileBookingButton
-        │   └── sections/               # 頁面區塊元件
-        │
-        └── composables/                # 共用邏輯
-            ├── useFormatDate.ts
-            └── useLeadStatus.ts
+├── pages/
+│   ├── index.vue               # 首頁
+│   ├── about.vue               # 關於練健康（原 /team-intro，已 301 導向至此）
+│   ├── booking.vue             # 預約體驗
+│   ├── services.vue            # 服務方案
+│   ├── group-booking.vue       # 團體課程報名
+│   ├── news.vue                # 媒體報導
+│   ├── franchise.vue           # 加盟說明
+│   ├── shop.vue                # 商品導購
+│   ├── personal-record.vue     # LKK4 成績查詢
+│   ├── lkk4.vue                # LKK4 賽事
+│   ├── lkk-academy.vue         # 練健康學院
+│   ├── cooperation.vue         # 合作洽談
+│   ├── privacy.vue             # 隱私權政策
+│   ├── lkk-lecturer.vue        # 練健康授權講師
+│   ├── co-lecturer.vue         # 合作講師
+│   ├── oversea-lecturer.vue    # 海外授權講師
+│   ├── locations/
+│   │   ├── index.vue           # 分店總覽
+│   │   └── [store].vue         # 分店詳情
+│   ├── team-intro/
+│   │   ├── index.vue           # 只剩 301 導向 /about
+│   │   └── coaches.vue         # 全體教練
+│   └── admin/                  # 自建 CMS 後台
+│
+├── server/
+│   ├── api/                    # Nitro API Routes（public / admin / leads）
+│   ├── middleware/
+│   │   ├── admin-api-guard.ts  # /api/admin/* 集中角色鎖
+│   │   └── redirect-canonical.ts # prod hosted.app → lkkwellness.com 的 301
+│   └── utils/                  # firebase.ts（Admin SDK）／auth.ts／email.ts／leads.ts
+│
+├── components/                 # layout／sections／共用元件
+├── composables/                # useFormatDate、useLeadStatus…
+├── layouts/                    # default／admin／auth
+├── middleware/                 # 前端路由守衛
+├── plugins/                    # firebase.client.ts（僅 Auth，不含 Firestore）
+├── utils/                      # adminAccess.ts 等前後端共用
+├── config/                     # 靜態設定
+├── public/                     # 靜態檔（圖片一律放這裡）
+├── assets/ ／ _raw-assets/     # 建置期資源／原始素材
+├── scripts/                    # 一次性維運腳本
+└── docs/
 ```
 
 ### 頁面開發狀態
@@ -351,12 +335,13 @@ lkk-website/                    # 根目錄
 
 ### 開發注意事項
 
-1. **只在根目錄執行 `npm install`**
-2. **只有根目錄有 `package-lock.json`**
-3. **使用 `turbo` 執行 build**：`npm run build`
-4. **根目錄 package.json 必須有 `packageManager` 欄位**
+1. **應用就在 repo 根目錄**，`npm install` / `npm run dev` / `npm run build` 都在根目錄執行
+2. **驗證建置成敗要看結束碼**（`npm run build; echo $?`），不要用 `grep ERROR` 判斷——
+   grep 命中錯誤字串時反而回傳 0，會讓壞掉的版本被 commit 出去（2026-08-29 真的踩過）
+3. **圖片一律放 `public/`**，不要走 Firebase Storage（現況站上圖片全部在 `public/images/`）
+4. **改動一律先驗 dev 站**，不要開 localhost——本機 `.env` 指向的是另一個舊專案
 
-### Vue/Nuxt 版本（newweb）技術說明
+### Vue/Nuxt 技術說明
 
 | 項目 | 技術 |
 |------|------|
@@ -381,7 +366,7 @@ colors: {
 
 ```bash
 # 開發
-cd apps/newweb && npm run dev
+npm run dev
 
 # 建置
 npm run build
@@ -396,7 +381,7 @@ npm run preview
 - 頁面使用 `useHead()` 設定 meta
 - 動態路由使用 `[param].vue` 檔名格式
 
-### Composables（apps/newweb/composables/）
+### Composables（composables/）
 
 共用邏輯抽取為 Nuxt composables，自動匯入無需 import：
 
@@ -433,9 +418,9 @@ const {
 
 **使用頁面**：leads.vue、cooperation.vue、index.vue（dashboard）
 
-### Nuxt Server API（apps/newweb/server/）
+### Nuxt Server API（server/）
 
-newweb 使用 Nitro 作為 server-side 引擎，API 放在 `server/api/` 目錄：
+本站使用 Nitro 作為 server-side 引擎，API 放在 `server/api/` 目錄：
 
 ```
 server/
@@ -466,7 +451,7 @@ server/
     └── email.ts                   # Email 通知系統
 ```
 
-### Email 通知系統（apps/newweb/server/utils/email.ts）
+### Email 通知系統（server/utils/email.ts）
 
 表單提交後會觸發兩種郵件通知：
 
@@ -499,10 +484,11 @@ env:
     secret: smtp-pass
 ```
 
-**授權 Secret 給 newweb backend：**
+**授權 Secret 給 backend：**
 
 ```bash
-firebase apphosting:secrets:grantaccess smtp-pass --project lkk-website-dev --backend newweb
+firebase apphosting:secrets:grantaccess smtp-pass --project lkkdev  --backend lkk-website-dev
+firebase apphosting:secrets:grantaccess smtp-pass --project lkkprod --backend lkk-website
 ```
 
 ### 手機版固定按鈕（Nuxt 版）
@@ -511,7 +497,7 @@ Nuxt 版的手機版預約按鈕位於：
 
 | 項目 | 說明 |
 |------|------|
-| 元件 | `apps/newweb/components/layout/MobileBookingButton.vue` |
+| 元件 | `components/layout/MobileBookingButton.vue` |
 | Layout | 在 `layouts/default.vue` 中引入 `<LayoutMobileBookingButton />` |
 | 顯示條件 | 僅手機版（`md:hidden`） |
 | 隱藏頁面 | `/booking` 頁面自動隱藏（使用 `useRoute()` 判斷） |
@@ -523,7 +509,7 @@ Nuxt 版的手機版預約按鈕位於：
 
 | 項目 | 說明 |
 |------|------|
-| 頁面 | `apps/newweb/pages/team-intro/coaches.vue` |
+| 頁面 | `pages/team-intro/coaches.vue` |
 | 元件類型 | Bottom Sheet（從底部滑入） |
 | 動畫 | Vue Transition + CSS `translateY` |
 
@@ -544,7 +530,7 @@ Nuxt 版的手機版預約按鈕位於：
 **Z-index 層級：**
 - 彈窗：`z-[60]`（高於手機固定按鈕 `z-50`）
 
-### PWA 設定（apps/newweb/nuxt.config.ts）
+### PWA 設定（nuxt.config.ts）
 
 使用 `@vite-pwa/nuxt` 模組，針對 SSR 做特殊配置：
 
@@ -998,7 +984,7 @@ SMTP_PASS=your-app-password      # Gmail App Password
 
 ### 郵件模組架構
 
-郵件功能集中於 `apps/newweb/server/utils/email.ts`：
+郵件功能集中於 `server/utils/email.ts`：
 
 ```typescript
 // 核心函式
@@ -1080,23 +1066,26 @@ export async function sendNewTypeConfirmation(data: { name: string; email: strin
 
 ### 實作方式
 
-建議使用 GTM 搭配 `next/script` 載入追蹤碼：
+本站是 Nuxt 3，用 `nuxt.config.ts` 的 `app.head.script` 或頁面內的 `useHead()` 載入追蹤碼
+（**不是** Next.js 的 `next/script`——那是已移除的舊架構留下的敘述）：
 
-```tsx
-// app/layout.tsx
-import Script from 'next/script';
-
-// GTM
-<Script id="gtm" strategy="afterInteractive">
-  {`(function(w,d,s,l,i){...})(window,document,'script','dataLayer','GTM-XXXXXX');`}
-</Script>
-
-// GA4 (若不用 GTM)
-<Script
-  src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXX"
-  strategy="afterInteractive"
-/>
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  app: {
+    head: {
+      script: [
+        // GTM
+        { innerHTML: `(function(w,d,s,l,i){...})(window,document,'script','dataLayer','GTM-XXXXXX');` },
+        // GA4（若不用 GTM）
+        { src: 'https://www.googletagmanager.com/gtag/js?id=G-XXXXXX', async: true },
+      ],
+    },
+  },
+})
 ```
+
+> 目前站上**尚未接任何追蹤碼**，這節是規劃，不是現況。
 
 ### 轉換追蹤
 
@@ -1169,14 +1158,15 @@ NUXT_PUBLIC_RECAPTCHA_SITE_KEY=xxx
 
 ### Firebase App Hosting（apphosting.yaml）
 
-生產環境的環境變數設定在 `apps/newweb/apphosting.yaml`：
+環境變數設定在**各分支自己的** `apphosting.yaml`（repo 根目錄）：
 
 ```yaml
 env:
+  # 這裡以 dev 分支為例；prod 分支的值是 lkkwellness.com / lkkprod
   - variable: NUXT_PUBLIC_SITE_URL
-    value: https://lkk-website-dev.web.app
+    value: https://lkk-website-dev--lkkdev.asia-east1.hosted.app
   - variable: FIREBASE_PROJECT_ID
-    value: lkk-website-dev
+    value: lkkdev
   - variable: SMTP_HOST
     value: smtp.gmail.com
   - variable: SMTP_PORT
@@ -1192,8 +1182,10 @@ env:
 
 **設定 Firebase Secret：**
 ```bash
-# 建立 SMTP 密碼 secret
-firebase apphosting:secrets:set smtp-pass --project lkk-website-dev
+# 建立 SMTP 密碼 secret（⚠️ --project 用 lkkdev / lkkprod，不是 backend 名稱）
+firebase apphosting:secrets:set smtp-pass --project lkkdev
+# set 完務必授權給該 backend，否則 build 會報 Misconfigured Secret
+firebase apphosting:secrets:grantaccess smtp-pass --project lkkdev --backend lkk-website-dev
 ```
 
 ---
@@ -1204,20 +1196,22 @@ firebase apphosting:secrets:set smtp-pass --project lkk-website-dev
 # 安裝依賴（在根目錄執行）
 npm install
 
-# 本地開發（使用 Turbo）
+# 本地開發
 npm run dev
 
-# Firebase Emulator
+# Firebase Emulator（伺服器端仍走 Admin SDK，安全規則不參與）
 npx firebase-tools emulators:start
 
-# 建置（使用 Turbo）
+# 建置
 npm run build
 
-# 手動觸發部署
-npx firebase-tools apphosting:rollouts:create lkk-web --project lkk-website-dev
+# 手動觸發部署（平常 push 分支就會自動 build，這個是備援）
+npx firebase-tools apphosting:rollouts:create lkk-website-dev --project lkkdev  --git-branch dev  --force
+npx firebase-tools apphosting:rollouts:create lkk-website     --project lkkprod --git-branch prod --force
 
 # 查看部署狀態
-npx firebase-tools apphosting:backends:list --project lkk-website-dev
+npx firebase-tools apphosting:backends:list --project lkkdev
+npx firebase-tools apphosting:backends:list --project lkkprod
 
 # 部署 Firestore 索引（首次或更新時必須執行）
 # ⚠️ 專案是 lkkdev（dev 站）或 lkkprod（正式站）；lkk-website-dev 是 backend 名稱，
@@ -1237,10 +1231,17 @@ npx firebase-tools deploy --only firestore:indexes --project lkkprod
 
 Firebase App Hosting 會自動監聽 GitHub push，自動部署：
 
-1. Push 到 `main` branch
-2. Firebase 自動觸發 Cloud Build
-3. 使用 Turborepo buildpack 建置
+1. Push 到 `dev`（→ dev 站）或 `prod`（→ 正式站）branch
+2. 對應的 App Hosting backend 自動觸發 Cloud Build
+3. 執行 `npm run build`（Nuxt/Nitro，preset `firebase-app-hosting`）
 4. 部署到 Cloud Run（由 Firebase 管理）
+
+⚠️ **發 prod 用「檔案級帶入」，不要整支 merge**：
+`git checkout -B prod origin/prod` → `git checkout origin/dev -- <只要的檔案…>`
+（**絕不含 `apphosting.yaml`**）→ 確認 `grep FIREBASE_PROJECT_ID apphosting.yaml` 仍是
+`lkkprod` → `npm run build`（看結束碼，不要用 grep 判斷成敗）→ `git commit`（不加 `-a`）
+→ `git push origin prod` → `git checkout dev`。
+判斷「什麼還沒上 prod」一律用 `git diff --stat origin/prod origin/dev`，不要看 commit log。
 
 ---
 
@@ -1250,17 +1251,22 @@ Firebase App Hosting 會自動監聽 GitHub push，自動部署：
 
 使用 Firebase App Hosting 部署。
 
-**Backend 設定**：
-- Backend ID: `newweb`
-- Region: `asia-east1`
-- Root Directory: `apps/newweb`
-- GitHub Repo: `Stone-811/lkk-website-dev`
-- Branch: `main`
+**dev / prod 雙環境**（同一個 repo，靠「不同專案的 backend ＋ 不同分支 ＋ 分支各自的 `apphosting.yaml`」分離）：
+
+| | dev | prod |
+|---|---|---|
+| Firebase 專案 | `lkkdev` | `lkkprod` |
+| App Hosting backend | `lkk-website-dev` | `lkk-website` |
+| 分支 | `dev` | `prod` |
+| 網址 | `lkk-website-dev--lkkdev.asia-east1.hosted.app` | `lkkwellness.com`（正式對外） |
+
+- Region: `asia-east1`／Root Directory: repo 根目錄（`.`）／GitHub Repo: `Stone-811/lkk-website`
+- ⚠️ 網址格式是 **`<backend>--<專案>`**，很容易讀反。`lkk-website-dev` 是 **backend 名稱**，同時也是**另一個舊專案**的 ID——拿它當 `--project` 會寫錯地方。
 
 **關鍵設定檔**：
 
 ```yaml
-# apps/newweb/apphosting.yaml
+# apphosting.yaml（⚠️ 各分支值不同，發 prod 時絕不能從 dev 帶入）
 runConfig:
   minInstances: 0
   maxInstances: 10
@@ -1269,39 +1275,26 @@ runConfig:
   memoryMiB: 512
 
 env:
-  - variable: NUXT_PUBLIC_SITE_URL
-    value: https://lkk-website-dev.web.app
-  - variable: FIREBASE_PROJECT_ID
-    value: lkk-website-dev
+  # dev 分支                              # prod 分支
+  - variable: NUXT_PUBLIC_SITE_URL        #   https://lkkwellness.com
+    value: https://lkk-website-dev--lkkdev.asia-east1.hosted.app
+  - variable: FIREBASE_PROJECT_ID         #   lkkprod
+    value: lkkdev
+  - variable: FIREBASE_STORAGE_BUCKET     #   lkkprod.firebasestorage.app
+    value: lkkdev.firebasestorage.app
+  # NUXT_PUBLIC_FIREBASE_* 四項 client 設定也各自不同
 ```
 
 ```json
 // firebase.json
 {
-  "apphosting": [
-    {
-      "backendId": "newweb",
-      "rootDir": "./apps/newweb"
-    }
-  ]
+  "apphosting": [{ "backendId": "lkk-website-dev", "rootDir": "." }],
+  "firestore": { "rules": "firestore.rules", "indexes": "firestore.indexes.json" },
+  "storage":   { "rules": "storage.rules" }
 }
 ```
 
-```json
-// turbo.json
-{
-  "tasks": {
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".output/**", ".nuxt/**"]
-    }
-  }
-}
-```
-
-**Nuxt 設定**：
-- `nitro.preset: 'firebase-app-hosting'`
-- routeRules WordPress proxy 設定
+> 沒有 `turbo.json`——Turborepo 與 npm workspaces 已隨 monorepo 結構一起移除。
 
 單一 Nuxt 應用，負責：
 - 前台頁面（SSR）
@@ -1329,7 +1322,7 @@ npx firebase-tools deploy --only firestore:indexes --project lkkprod
 
 使用 Application Default Credentials (ADC) 連接 Firestore，在 Firebase App Hosting 環境自動運作。
 
-關鍵設定（`apps/newweb/server/utils/firebase.ts`）：
+關鍵設定（`server/utils/firebase.ts`）：
 - 優先使用明確的 service account 憑證（若有設定）
 - 否則使用 `applicationDefault()` 自動取得 ADC
 - 需要設定 `FIREBASE_PROJECT_ID` 環境變數
@@ -1422,7 +1415,7 @@ npx firebase-tools deploy --only firestore:indexes --project lkkprod
 
 **影響時間**：1-3 秒
 
-**程式碼位置**：`apps/newweb/server/utils/firebase.ts`
+**程式碼位置**：`server/utils/firebase.ts`
 
 #### 2. API 端點查詢時間
 
@@ -1434,11 +1427,11 @@ npx firebase-tools deploy --only firestore:indexes --project lkkprod
 
 即使已優化為批次查詢，仍需 2-3 次 Firestore 往返。
 
-**程式碼位置**：`apps/newweb/server/api/public/coaches.get.ts`
+**程式碼位置**：`server/api/public/coaches.get.ts`
 
 #### 3. Firebase App Hosting 冷啟動
 
-**現行設定**（`apps/newweb/apphosting.yaml`）：
+**現行設定**（`apphosting.yaml`）：
 
 ```yaml
 runConfig:
@@ -1470,17 +1463,17 @@ runConfig:
 
 ### 已完成的優化
 
-#### 2024-07 Nuxt (newweb) 已實施
+#### 2024-07 已實施
 
 1. **API 查詢優化**
    - 將 N+1 查詢改為批次查詢（使用 Firestore `where('__name__', 'in', batch)`）
-   - 檔案：`apps/newweb/server/api/public/coaches.get.ts`
+   - 檔案：`server/api/public/coaches.get.ts`
 
 2. **前端載入優化**
    - 改用 `useLazyFetch` 避免阻塞導航（解決白屏問題）
    - 新增 Skeleton Loader 改善體感
    - 移除 Quick Jump 區塊簡化 UI
-   - 檔案：`apps/newweb/pages/team-intro/coaches.vue`
+   - 檔案：`pages/team-intro/coaches.vue`
 
 3. **圖片載入優化**
    - 新增 `loading="lazy"` 屬性
@@ -1489,7 +1482,7 @@ runConfig:
 4. **UI/UX 優化**
    - 統一容器類別為 `max-w-7xl mx-auto px-6 lg:px-8`
    - 新增 BackToTop 返回頂部按鈕
-   - 檔案：`apps/newweb/components/layout/BackToTop.vue`
+   - 檔案：`components/layout/BackToTop.vue`
 
 ### 優化階段計畫
 
@@ -1517,12 +1510,12 @@ runConfig:
 
 | 檔案 | 說明 |
 |-----|------|
-| `apps/newweb/apphosting.yaml` | Firebase App Hosting 設定 |
-| `apps/newweb/server/utils/firebase.ts` | Firebase 初始化邏輯 |
-| `apps/newweb/server/api/public/coaches.get.ts` | 教練 API 端點 |
-| `apps/newweb/server/api/public/stores.get.ts` | 分店 API 端點 |
-| `apps/newweb/pages/team-intro/coaches.vue` | 教練頁面元件 |
-| `apps/newweb/pages/locations/index.vue` | 分店頁面元件 |
+| `apphosting.yaml` | Firebase App Hosting 設定 |
+| `server/utils/firebase.ts` | Firebase 初始化邏輯 |
+| `server/api/public/coaches.get.ts` | 教練 API 端點 |
+| `server/api/public/stores.get.ts` | 分店 API 端點 |
+| `pages/team-intro/coaches.vue` | 教練頁面元件 |
+| `pages/locations/index.vue` | 分店頁面元件 |
 
 ### 效能監控指標目標
 
