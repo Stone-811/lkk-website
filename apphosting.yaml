@@ -52,13 +52,22 @@ env:
   # 只有 Firestore settings/notifications.emailRecipients 為空時才會用到的保底值。
   - variable: NOTIFICATION_EMAIL
     value: service@l-kk.tw
-  # SMTP Password - reuse existing secret from Next.js
+  # ⚠️ 這個 secret 必須是 SMTP_USER 那個帳號、也就是 lkk@l-kk.tw 的應用程式密碼。
+  #    Google 的應用程式密碼是「綁帳號」的，service@l-kk.tw 是別名、產不出來
+  #    （上面 SMTP_USER 的註解已說明原因）。設錯會拿到 535-5.7.8 BadCredentials。
+  # ⚠️ 寄信失敗是「靜默」的：server/api/leads/*.post.ts 的寄信是 fire-and-forget，
+  #    錯誤只進 console.error，表單照樣回「預約成功」。名單本身不會遺失
+  #    （Firestore 的寫入在寄信之前），但不會有任何人被通知。
+  # 更新：npx firebase-tools apphosting:secrets:set smtp-pass --project lkkprod
   - variable: SMTP_PASS
     secret: smtp-pass
 
   # JWT signing secret for admin auth (REQUIRED in production).
-  # Create it in lkkdev and grant access to this backend, e.g.:
-  #   npx firebase-tools apphosting:secrets:set jwt-secret --project lkkdev
-  #   npx firebase-tools apphosting:secrets:grantaccess jwt-secret --project lkkdev --backend lkk-website-dev
+  # ⚠️ 這是 prod 分支的檔案，指令要用 lkkprod / lkk-website。
+  #    這段原本整段從 dev 帶過來、寫著 lkkdev 與 lkk-website-dev；照著做會變成
+  #    「覆蓋掉 dev 的密鑰、prod 完全沒動」——要輪替密鑰時（通常是最緊急的時候）
+  #    prod 仍在用舊的那把，dev 的後台登入卻被無故踢掉。
+  #   npx firebase-tools apphosting:secrets:set jwt-secret --project lkkprod
+  #   npx firebase-tools apphosting:secrets:grantaccess jwt-secret --project lkkprod --backend lkk-website
   - variable: JWT_SECRET
     secret: jwt-secret
