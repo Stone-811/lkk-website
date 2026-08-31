@@ -110,14 +110,16 @@ const programGroups = [
 <template>
   <div class="bg-cream min-h-screen">
     <!-- Hero -->
-    <section class="relative bg-navy-700 pt-16 overflow-hidden text-white flex items-center lg:aspect-video">
+    <section class="relative bg-navy-700 pt-16 overflow-hidden text-white flex items-center xl:aspect-video">
       <!--
         底圖在所有尺寸都是絕對定位的全幅背景，文字壓在圖上——與首頁 Hero 同一套呈現。
-        lg 以上：section 是 aspect-video，容器與圖片同比例，object-cover 零裁切。
-        lg 以下：高度由文字內容決定，比例比圖片瘦，左右會被裁掉
+        xl 以上：section 是 aspect-video，容器與圖片同比例，object-cover 零裁切。
+        ⚠️ 斷點從 lg 提高到 xl：Hero 加入圖表卡片後內容變高，1024 寬的 16:9 只有 576px
+           塞不下，會被 overflow-hidden 切掉；1280 寬的 720px 才夠。
+        xl 以下：高度由文字內容決定，比例比圖片瘦，左右會被裁掉
         （390 手機約只剩三到五成寬）——這是換取「文字壓在照片上」的必然代價，
         首頁 Hero 手機版同樣只剩 26% 寬。主體請盡量置中構圖。
-        ⚠️ lg 以上的斷點是量出來的：文字內容必須塞得進 16:9 的高度，否則會被 overflow-hidden 切掉。
+        ⚠️ 斷點是量出來的：文字內容必須塞得進 16:9 的高度。
       -->
       <img
         src="/images/about/hero.webp"
@@ -142,30 +144,59 @@ const programGroups = [
         />
       </div>
 
-      <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 text-center w-full">
-        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
-          <span class="w-5 h-0.5 bg-orange" />
-          About LKK Wellness Center
-        </div>
+      <!--
+        雙欄 Hero（2026-08-31 依設計稿調整）：左文字、右圖表卡片。
+        圖表原本在下方的「品牌主張」區，依設計稿移進 Hero。
+        lg 以下堆疊成上下，圖表卡片排在文字下方。
+      -->
+      <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24 w-full">
+        <div class="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
 
-        <h1 class="font-serif text-5xl lg:text-6xl font-black leading-tight mb-2">
-          健康，<span class="text-orange">是練出來的</span>
-        </h1>
-        <div class="w-16 h-1 bg-orange rounded-full mb-6 mx-auto" />
+          <div class="text-center lg:text-left">
+            <div class="flex items-center justify-center lg:justify-start gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
+              <span class="w-5 h-0.5 bg-orange" />
+              About LKK Wellness Center
+            </div>
 
-        <p class="text-white/70 text-lg font-light leading-relaxed max-w-4xl mx-auto mb-8">
-          練健康是一間專注於中高齡及特殊族群的肌力訓練中心。我們相信年齡不是限制，而是開始——期望每一個人，都能擁有獨立自主、有尊嚴的健康晚年生活。
-        </p>
+            <h1 class="font-serif text-5xl lg:text-6xl font-black leading-tight mb-2">
+              健康，<br /><span class="text-orange">是練出來的</span>
+            </h1>
+            <div class="w-16 h-1 bg-orange rounded-full mb-6 mx-auto lg:mx-0" />
 
-        <div class="flex flex-wrap justify-center gap-3">
-          <div
-            v-for="p in heroPills"
-            :key="p.k"
-            class="inline-flex items-center gap-2 bg-white/[0.06] border border-white/12 rounded-full px-5 py-2.5"
-          >
-            <span class="text-white/75 text-sm">{{ p.k }}</span>
-            <span class="text-white font-bold text-sm">{{ p.v }}</span>
+            <p class="text-white/75 text-lg font-light leading-relaxed mb-8">
+              練健康專注中高齡、特殊族群訓練<br />
+              我們期許透過循序漸進的訓練<br />
+              享有獨立自主有尊嚴的晚年生活
+            </p>
+
+            <div class="flex flex-wrap justify-center lg:justify-start gap-3">
+              <div
+                v-for="p in heroPills"
+                :key="p.k"
+                class="inline-flex items-center gap-2 bg-white/[0.06] border border-white/12 rounded-full px-5 py-2.5"
+              >
+                <span class="text-white/75 text-sm">{{ p.k }}</span>
+                <span class="text-white font-bold text-sm">{{ p.v }}</span>
+              </div>
+            </div>
           </div>
+
+          <div class="bg-white rounded-2xl shadow-xl p-4 lg:p-5">
+            <img
+              src="/images/about/belief-chart.webp"
+              alt="提升肌力是延緩失能的關鍵：有在訓練與沒在訓練的身體活動功能隨年齡變化對照圖"
+              width="1600"
+              height="904"
+              class="w-full h-auto rounded-xl"
+            />
+            <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+              <p class="text-[11px] text-ink/45 tracking-wide">Fig. 01 — 參考資料：多篇研究整合</p>
+              <p class="font-serif text-sm font-black text-navy-700">
+                練出力量，才能<span class="text-orange">保有生活品質</span>
+              </p>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -210,22 +241,6 @@ const programGroups = [
             {{ pillar }}
           </span>
         </div>
-
-        <div class="max-w-4xl mx-auto bg-white rounded-2xl border border-navy-700/12 shadow-sm p-4 lg:p-6">
-          <img
-            src="/images/about/belief-chart.webp"
-            alt="提升肌力是延緩失能的關鍵：有在訓練與沒在訓練的身體活動功能隨年齡變化對照圖"
-            loading="lazy"
-            width="1600"
-            height="904"
-            class="w-full h-auto rounded-xl"
-          />
-          <!-- 設計稿的圖表卡片呈現：標題在上、資料來源註記在下 -->
-          <p class="mt-4 text-xs text-ink/45 tracking-wide">Fig. 01 — 參考資料：多篇研究整合</p>
-        </div>
-        <p class="mt-5 font-serif text-lg lg:text-xl font-black text-navy-700">
-          練出力量，才能<span class="text-orange">保有生活品質</span>
-        </p>
       </div>
     </section>
 
