@@ -43,6 +43,25 @@ export const bookingVariants: Record<string, BookingVariant> = {
     leadSource: 'LINE',
   },
 
+  // ── 技嘉 GIGABYTE（2026-08 起，無結束日期）──
+  // ⚠️ 優惠條件與一般人「完全相同」（50歲以上免費、未滿50歲 $500），
+  //    所以不設 allAgesFree——這個變體純粹是為了歸因與品牌文案。
+  //    文案不可寫成「專屬優惠」之類會讓人以為有額外折扣的說法。
+  // 連結：/booking?v=gigabyte&utm_source=website&utm_medium=referral&utm_campaign=gigabyte-50plus-free-trial
+  // ⚠️ utm_source 依業主決定沿用共用值 website，所以 GA4 裡辨識技嘉要看
+  //    utm_campaign（gigabyte-50plus-free-trial），那是唯一的識別依據。
+  // 活動結束時：把這一段刪掉即可，舊連結會自動 fallback 成一般表單，不會壞頁。
+  gigabyte: {
+    hero: {
+      title: '技嘉 GIGABYTE × 練健康',
+      titleHighlight: '員工專屬體驗課',
+      subtitle: '由專業教練帶領，安全有效。填寫後我們會主動與您聯繫安排時間。第一堂體驗課 50 歲以上免費。',
+      ctaText: '立即預約專屬體驗 →',
+    },
+    company: '技嘉',
+    leadSource: '網站',
+  },
+
   // ── 南山（不限年齡免費、不鎖店；來源：網站）──
   nanshan: {
     hero: {
