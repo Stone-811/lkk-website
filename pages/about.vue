@@ -42,10 +42,24 @@ const brandPillars = [
   '安全且有效的訓練環境',
 ]
 
+// 三個支柱（2026-08-31 業主定稿；第 3 項由「永續經營」改為「運動醫學為本」）
+// icon＝卡片右下角的淡色浮水印，依 CLAUDE.md 規範一律用 inline SVG，不用 Emoji。
 const pillars = [
-  { n: '1', t: '中高齡訓練推廣', d: '來自各領域的教練團隊，協助中高齡與特殊族群重新擁有健康的體能與肌力，把身體的自主權練回來。' },
-  { n: '2', t: '知識科普教育', d: '以深入淺出的方式轉譯專業知識與最新研究，讓正確的訓練觀念真的走進一般家庭，而不只留在論文裡。' },
-  { n: '3', t: '永續經營', d: '透過系統化的知識與人才培育，讓練健康的影響力不侷限在場館中，而能持續複製、傳承、擴散，讓健康遍地開花。' },
+  {
+    n: '1', t: '中高齡訓練推廣',
+    d: '培育專業教練團隊，專注於中高齡及特殊族群訓練，透過肌力訓練，找回身體自主權。',
+    icon: 'M6.5 6.5v11M4 8.5v6M17.5 6.5v11M20 8.5v6M6.5 12h11', // 啞鈴
+  },
+  {
+    n: '2', t: '知識科普教育',
+    d: '透過深入淺出的方式，將知識轉譯成大眾理解的語言，讓肌力訓練的重要性推廣普及。',
+    icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', // 書
+  },
+  {
+    n: '3', t: '運動醫學為本',
+    d: '以運動醫學，包含運動治療、運動科學等知識為根基，提供客製化的訓練服務。',
+    icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', // 盾
+  },
 ]
 
 // 創辦人故事（2026-08-31 依設計稿加入）
@@ -299,13 +313,22 @@ const programGroups = [
           <div
             v-for="p in pillars"
             :key="p.n"
-            class="bg-white rounded-2xl border border-navy-700/10 shadow-sm p-7 lg:p-8"
+            class="relative overflow-hidden bg-white rounded-2xl border border-navy-700/10 shadow-sm p-7 lg:p-8"
           >
             <div class="w-12 h-12 rounded-full bg-orange/12 flex items-center justify-center mb-6">
               <span class="w-9 h-9 rounded-full bg-orange text-white font-serif font-black flex items-center justify-center">{{ p.n }}</span>
             </div>
             <h3 class="font-serif text-xl font-black text-navy-700 mb-3">{{ p.t }}</h3>
             <p class="text-ink/60 leading-relaxed text-sm">{{ p.d }}</p>
+
+            <!-- 右下角浮水印圖示（裝飾用，對輔助科技隱藏）-->
+            <svg
+              class="absolute -bottom-2 -right-2 w-20 h-20 text-navy-700/[0.06]"
+              fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" :d="p.icon" />
+            </svg>
           </div>
         </div>
       </div>
