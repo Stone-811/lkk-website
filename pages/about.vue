@@ -226,10 +226,10 @@ const programGroups = [
           <span class="text-navy-700/40 tracking-normal normal-case font-medium">・品牌主張</span>
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-4 max-w-3xl mx-auto leading-snug">
-          透過專業訓練，讓每個人<span class="text-orange">在理想狀態老去</span>
+          我們相信，年齡<span class="text-orange">不該限制一個人的可能</span>。
         </h2>
         <p class="text-ink/70 leading-relaxed mb-8 max-w-2xl mx-auto">
-          老化不可逆，但衰退的速度可以被改變。肌力是少數能靠訓練「重新長回來」的能力——即使已經八十、九十歲。這是練健康存在的理由：把運動科學與醫學實證，變成長輩真的做得到的訓練。
+          年齡會增長，但我們仍然可以選擇怎麼面對身體的改變。透過循序漸進的肌力訓練，力量可以持續被鍛鍊，活動能力也能持續累積。
         </p>
 
         <div class="flex flex-wrap justify-center gap-2.5 mb-10">
