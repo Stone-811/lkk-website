@@ -19,12 +19,10 @@ const sectionNav = [
   { id: 'brand', label: '品牌主張' },
   { id: 'who', label: '我們是誰' },
   { id: 'pillars', label: '三個支柱' },
-  { id: 'history', label: '發展歷程' },
-  { id: 'team', label: '經營團隊' },
-  { id: 'lkk4', label: '聖誕硬舉大賽' },
-  { id: 'media', label: '媒體報導' },
+  { id: 'founder', label: '創辦人故事' },
+  { id: 'approach', label: '我們的方式' },
   { id: 'programs', label: '課程與活動' },
-  { id: 'locations', label: '分店' },
+  { id: 'history', label: '發展歷程' },
 ]
 
 // 社群：帳號、追蹤數與連結合併成一組卡片（數字來源＝業主 2026-08-23 提供的截圖）
@@ -50,6 +48,19 @@ const pillars = [
   { n: '3', t: '永續經營', d: '透過系統化的知識與人才培育，讓練健康的影響力不侷限在場館中，而能持續複製、傳承、擴散，讓健康遍地開花。' },
 ]
 
+// 創辦人故事（2026-08-31 依設計稿加入）
+// ⚠️ 文案尚未定稿，錯字依業主指示先原樣保留，確認後再修：
+//    「肥老闆」（疑為綽號或錯字，出現 2 次）、「因線際會」（應為「因緣際會」）、
+//    第一則句子未完（「…對於長者本身的身體自主。」）。
+const founderStory = [
+  { t: '阿嬤的故事', d: '肥老闆的阿嬤晚年因為失智、跌倒及臥床，讓老闆深深體會長者晚年健康，對於長者本身的身體自主。' },
+  { t: '自己受傷的經驗', d: '因為打籃球受傷經歷十字韌帶手術後復健，發現與理解運動治療與肌力訓練的價值。' },
+  { t: '健保資料庫的啟發', d: '在學研究期間肥老闆因線際會接觸健保資料庫，發現其實在醫療之前，我們可以為身體做更多的預防。' },
+]
+
+// 我們的方式：四個價值（2026-08-31 依設計稿加入）
+const approachValues = ['以人為本', '安全有效', '快樂運動', '長期陪伴']
+
 const timeline = [
   { y: '2018', t: '品牌籌備', d: '以「中高齡也能安全重訓」為題籌備第一間中心。' },
   { y: '2019', t: '練健康創立', d: '南京店啟用，提供一對一教練課程。' },
@@ -62,45 +73,6 @@ const timeline = [
   { y: '2025.10', t: '海外第一站', d: '台灣 × 馬來西亞《銀髮動作基礎訓練營》。' },
   { y: '2025', t: '第五屆賽事・七張店開幕', d: '70 歲以上選手超過 60 人參賽。' },
   { y: '2026', t: '松江加盟店開幕', d: '第六屆聖誕老人硬舉大賽，加盟版圖持續擴大。' },
-]
-
-const managementTeam = [
-  {
-    id: '1',
-    name: '黃元杰',
-    nickname: '肥老闆',
-    title: '創辦人暨執行長',
-    photo: '/images/team/huang-yuanjie.png',
-    description: '練健康創辦人，經濟學碩士背景，曾跨足健身產業行銷與海外業務開發，並具備豐富的海外業務推廣經驗。看見台灣中高齡族群的運動需求，創立練健康，投入中高齡健身品牌的經營。',
-    credentials: ['台大農經所碩士', 'IHFI 台灣 CPT 國際健康體適能專業人員'],
-  },
-  {
-    id: '2',
-    name: '曾子桓',
-    nickname: 'Michael',
-    title: '訓練部區經理・肌力與體能教練',
-    photo: '/images/team/tseng-tzuhuan.webp',
-    description: '專精肌力與體能訓練、運動表現提升及中高齡族群訓練。現任訓練部區經理，統籌門市營運與教練團隊管理，把關訓練與服務品質。',
-    credentials: ['NSCA-CSCS', 'TSCA-SCC', 'SMA 運動總監認證', 'ASCA-VBT', 'AFAA-WT'],
-  },
-  {
-    id: '3',
-    name: '鄭宇劭',
-    nickname: 'Bob',
-    title: '總教練・物理治療師',
-    photo: '/images/team/cheng-yushao.webp',
-    description: '物理治療師背景，專精運動傷害防護與中高齡肌力訓練，曾任競速滑冰世界盃隨隊體能訓練師，將專業運動員的訓練方法轉譯進中高齡課程。',
-    credentials: ['物理治療師證照', 'NSCA-CSCS', 'NASM-CES'],
-  },
-]
-
-const mediaOutlets = ['Associated Press', 'BBC', 'Reuters', 'AFP', 'CNA Insider', '天下雜誌', 'TVBS 新聞']
-
-const branches = [
-  { name: '南京店', desc: '台北市中山區・松江南京站', slug: 'nanjing' },
-  { name: '松江店', desc: '台北市中山區・松江南京站', slug: 'songjiang' },
-  { name: '西門店', desc: '台北市中正區・西門站', slug: 'ximending' },
-  { name: '七張店', desc: '新北市新店區・七張站', slug: 'xindian' },
 ]
 
 const programGroups = [
@@ -239,20 +211,24 @@ const programGroups = [
           </span>
         </div>
 
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-4xl mx-auto bg-white rounded-2xl border border-navy-700/12 shadow-sm p-4 lg:p-6">
           <img
             src="/images/about/belief-chart.webp"
             alt="提升肌力是延緩失能的關鍵：有在訓練與沒在訓練的身體活動功能隨年齡變化對照圖"
             loading="lazy"
             width="1600"
             height="904"
-            class="w-full h-auto rounded-2xl border border-navy-700/12 shadow-sm"
+            class="w-full h-auto rounded-xl"
           />
+          <!-- 設計稿的圖表卡片呈現：標題在上、資料來源註記在下 -->
+          <p class="mt-4 text-xs text-ink/45 tracking-wide">Fig. 01 — 參考資料：多篇研究整合</p>
         </div>
+        <p class="mt-5 font-serif text-lg lg:text-xl font-black text-navy-700">
+          練出力量，才能<span class="text-orange">保有生活品質</span>
+        </p>
       </div>
     </section>
 
-    <!-- 我們是誰 -->
     <section id="who" class="bg-white py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4 text-center">
         <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
@@ -295,7 +271,6 @@ const programGroups = [
       </div>
     </section>
 
-    <!-- 三個支柱：練健康在做什麼 -->
     <section id="pillars" class="py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
         <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
@@ -321,133 +296,61 @@ const programGroups = [
       </div>
     </section>
 
-    <!-- 發展歷程 -->
-    <section id="history" class="py-14 lg:py-20 scroll-mt-28">
+    <!-- 創辦人故事（2026-08-31 依設計稿新增）-->
+    <section id="founder" class="bg-white py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
-          Milestones
-          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・發展歷程</span>
-        </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-2 text-center">練健康的旅程</h2>
-        <p class="text-ink/40 text-xs mb-6 text-center">← 左右滑動看完整歷程 →</p>
-
-        <div class="overflow-x-auto pb-4">
-          <div class="relative flex gap-8 min-w-max">
-            <!-- 橫向軸線 -->
-            <div class="absolute left-0 right-0 top-2 h-0.5 bg-navy-700/15" />
-            <div
-              v-for="item in timeline"
-              :key="item.y"
-              class="relative w-60 flex-shrink-0"
-            >
-              <div class="w-4 h-4 rounded-full bg-orange ring-4 ring-cream relative z-10 mb-5" />
-              <div class="text-orange font-black font-serif text-lg mb-1">{{ item.y }}</div>
-              <h3 class="font-bold text-navy-700 mb-1">{{ item.t }}</h3>
-              <p class="text-ink/60 text-sm leading-relaxed">{{ item.d }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 經營團隊 -->
-    <section id="team" class="bg-white py-14 lg:py-20 scroll-mt-28">
-      <div class="container mx-auto px-4">
-        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
-          Our Team
-          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・經營團隊</span>
-        </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3 text-center">核心經營與<span class="text-orange">教練團隊</span></h2>
-        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl mx-auto text-center">帶領練健康走到今天的核心夥伴，橫跨經營、訓練與物理治療專業。</p>
-
-        <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <article
-            v-for="member in managementTeam"
-            :key="member.id"
-            class="bg-cream-100 rounded-2xl overflow-hidden shadow-sm border border-navy-700/10 hover:-translate-y-1 transition-transform"
-          >
-            <div class="aspect-[3/4] bg-white relative">
-              <img v-if="member.photo" :src="member.photo" :alt="member.name" loading="lazy" class="w-full h-full object-cover" />
-              <div v-else class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-navy-700 to-navy-700/80">
-                <span class="font-serif text-7xl font-black text-white/20">{{ member.name.charAt(0) }}</span>
-              </div>
-            </div>
-            <div class="p-6">
-              <div class="mb-4">
-                <h3 class="font-serif text-xl font-bold text-navy-700">
-                  {{ member.name }}
-                  <span v-if="member.nickname" class="text-navy-700/50 font-normal ml-2">{{ member.nickname }}</span>
-                </h3>
-                <p class="text-orange font-semibold text-sm">{{ member.title }}</p>
-              </div>
-              <p class="text-ink/60 leading-relaxed mb-4 text-sm">{{ member.description }}</p>
-              <div class="flex flex-wrap gap-2">
-                <span v-for="cred in member.credentials" :key="cred" class="text-xs font-medium text-navy-700 bg-navy-700/[0.08] px-3 py-1 rounded-full">
-                  {{ cred }}
-                </span>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <div class="mt-8 text-center">
-          <NuxtLink to="/team-intro/coaches" class="inline-flex items-center gap-2 text-navy-700 border border-navy-700/15 px-6 py-2.5 rounded-full hover:border-navy-700 transition-colors font-medium">
-            查看全體教練團隊 →
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- 聖誕老人硬舉大賽 / LKK4 -->
-    <section id="lkk4" class="py-14 lg:py-20 scroll-mt-28">
-      <div class="container mx-auto px-4">
-        <div class="bg-gradient-to-br from-navy-700 to-[#0e2230] rounded-3xl p-8 lg:p-12 text-white text-center max-w-3xl mx-auto">
-          <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-3">
+        <div class="text-center">
+          <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
             <span class="w-5 h-0.5 bg-orange" />
-            Signature Event
-            <span class="text-white/35 tracking-normal normal-case font-medium">・年度盛事</span>
+            Founder Story
+            <span class="text-navy-700/40 tracking-normal normal-case font-medium">・創辦人故事</span>
           </div>
-          <h2 class="font-serif text-3xl lg:text-4xl font-black mb-2 leading-tight">
-            聖誕老人<span class="text-orange">硬舉大賽</span>
+          <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10 max-w-3xl mx-auto leading-snug">
+            一個家庭的經歷，開啟了<span class="text-orange">練健康的使命</span>
           </h2>
-          <p class="text-orange-300/80 text-xs font-bold tracking-widest uppercase mb-5">LKK4 · Santa Claus Deadlift Competition</p>
-          <p class="text-white/60 leading-relaxed max-w-xl mx-auto mb-8">
-            辦一場給長輩的比賽，是我們喚起社會意識的方式。每年 12 月舉辦，2026 年邁入第六屆，曾吸引 BBC、Reuters、AFP 等國際媒體到場採訪，是練健康最具代表性的年度品牌活動。
-          </p>
-          <NuxtLink to="/lkk4" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-            查看 2026 第六屆賽事詳情 →
-          </NuxtLink>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+          <div
+            v-for="f in founderStory"
+            :key="f.t"
+            class="bg-cream-100 rounded-2xl border border-navy-700/10 p-6 border-l-4 border-l-orange"
+          >
+            <h3 class="font-serif text-lg font-black text-navy-700 mb-3">{{ f.t }}</h3>
+            <p class="text-ink/70 text-sm leading-relaxed">{{ f.d }}</p>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 媒體報導 -->
-    <section id="media" class="bg-white py-14 lg:py-20 scroll-mt-28">
+    <!-- 我們的方式：四個價值（2026-08-31 依設計稿新增）-->
+    <section id="approach" class="py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4 text-center">
-        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
-          As Seen In
-          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・媒體報導</span>
+          Our Approach
+          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・我們的方式</span>
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">被世界看見的台灣故事</h2>
-        <p class="text-ink/60 leading-relaxed mb-8 max-w-2xl mx-auto">從台北出發，AP、BBC、Reuters、AFP、CNA Insider 等全球媒體相繼來台採訪，讓台灣的中高齡訓練故事被世界看見。</p>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">
+          專業嚴謹，<span class="text-orange">快樂訓練</span>
+        </h2>
+        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl mx-auto">
+          希望透過練健康的場域，讓你能感受訓練可以很自在開心。
+        </p>
 
-        <div class="flex flex-wrap justify-center gap-2 mb-8">
-          <span v-for="o in mediaOutlets" :key="o" class="bg-cream-100 border border-navy-700/10 text-navy-700/80 font-semibold text-xs px-3.5 py-1.5 rounded-full">
-            {{ o }}
-          </span>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
+          <div
+            v-for="v in approachValues"
+            :key="v"
+            class="bg-white rounded-2xl border border-navy-700/10 py-7 px-4 font-serif text-lg font-black text-navy-700"
+          >
+            {{ v }}
+          </div>
         </div>
-
-        <a href="https://l-kk.tw/category/news/" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-          查看完整報導清單 →
-        </a>
       </div>
     </section>
 
-    <!-- 課程與活動 -->
-    <section id="programs" class="py-14 lg:py-20 scroll-mt-28">
+    <section id="programs" class="bg-white py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
         <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
@@ -481,39 +384,55 @@ const programGroups = [
       </div>
     </section>
 
-    <!-- 分店 -->
-    <section id="locations" class="bg-white py-14 lg:py-20 scroll-mt-28">
-      <div class="container mx-auto px-4 text-center">
+    <section id="history" class="py-14 lg:py-20 scroll-mt-28">
+      <div class="container mx-auto px-4">
         <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
-          Locations
-          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・分店資訊</span>
+          Milestones
+          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・發展歷程</span>
         </div>
-        <p class="text-orange font-bold text-sm mb-1">台北・新北</p>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">四間分店</h2>
-        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl mx-auto">每一間分店都配置醫療或運動科學背景的教練團隊。第一次來，建議先預約體驗，我們會先做完整的身體評估再談訓練。</p>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-2 text-center">練健康的旅程</h2>
+        <p class="text-ink/40 text-xs mb-6 text-center">← 左右滑動看完整歷程 →</p>
 
-        <div class="flex flex-wrap justify-center gap-3">
-          <NuxtLink
-            v-for="b in branches"
-            :key="b.slug"
-            :to="`/locations/${b.slug}`"
-            class="bg-cream-100 border border-navy-700/10 text-navy-700 font-bold text-sm px-5 py-2.5 rounded-full hover:border-orange/50 hover:text-orange transition-colors"
-          >
-            {{ b.name }}
-          </NuxtLink>
+        <div class="overflow-x-auto pb-4">
+          <div class="relative flex gap-8 min-w-max">
+            <!-- 橫向軸線 -->
+            <div class="absolute left-0 right-0 top-2 h-0.5 bg-navy-700/15" />
+            <div
+              v-for="item in timeline"
+              :key="item.y"
+              class="relative w-60 flex-shrink-0"
+            >
+              <div class="w-4 h-4 rounded-full bg-orange ring-4 ring-cream relative z-10 mb-5" />
+              <div class="text-orange font-black font-serif text-lg mb-1">{{ item.y }}</div>
+              <h3 class="font-bold text-navy-700 mb-1">{{ item.t }}</h3>
+              <p class="text-ink/60 text-sm leading-relaxed">{{ item.d }}</p>
+            </div>
+          </div>
         </div>
+      </div>
+    </section>
 
-        <div class="mt-8 flex flex-wrap justify-center gap-4">
+    <!-- 結尾 CTA（2026-08-31 依設計稿新增，取代原本 locations 區的收尾角色）-->
+    <section class="bg-navy-700 text-white py-16 lg:py-20">
+      <div class="container mx-auto px-4 text-center">
+        <h2 class="font-serif text-3xl lg:text-4xl font-black mb-4 leading-tight">
+          一起把健康，<span class="text-orange-300">練成日常</span>
+        </h2>
+        <p class="text-white/70 leading-relaxed mb-9 max-w-2xl mx-auto">
+          無論你是想變更健康的長輩、關心家人的你，或想推動健康的企業與夥伴，我們都在這裡，陪你一起練成更有力量的生活。
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
           <NuxtLink to="/booking" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-            預約體驗與身體評估 →
+            立即預約體驗 →
           </NuxtLink>
-          <NuxtLink to="/locations" class="inline-flex items-center gap-2 border border-navy-700/15 text-navy-700 font-bold px-7 py-3 rounded-full hover:border-navy-700 transition-colors">
-            查看分店地址與電話 →
+          <NuxtLink to="/locations" class="inline-flex items-center gap-2 border border-white/25 text-white font-bold px-7 py-3 rounded-full hover:border-white transition-colors">
+            查看四間分店 →
           </NuxtLink>
         </div>
       </div>
     </section>
+
 
   </div>
 </template>
