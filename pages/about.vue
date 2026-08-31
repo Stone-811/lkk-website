@@ -62,14 +62,27 @@ const pillars = [
   },
 ]
 
-// 創辦人故事（2026-08-31 依設計稿加入）
-// ⚠️ 文案尚未定稿，錯字依業主指示先原樣保留，確認後再修：
-//    「肥老闆」（疑為綽號或錯字，出現 2 次）、「因線際會」（應為「因緣際會」）、
-//    第一則句子未完（「…對於長者本身的身體自主。」）。
+// 創辦人故事（2026-08-31 業主定稿）
+// 「肥老闆」經業主確認為慣用稱呼，不是錯字，保留。
+// icon＝圓形外框內的線性圖示，依 CLAUDE.md 規範一律 inline SVG。
+// ⚠️ 第 2 則設計稿用的是膝關節圖示，Heroicons 沒有對應款，改用「生命徵象曲線」，
+//    語意上仍指向受傷與復健，若要精準的關節圖示需另外請設計提供 SVG。
 const founderStory = [
-  { t: '阿嬤的故事', d: '肥老闆的阿嬤晚年因為失智、跌倒及臥床，讓老闆深深體會長者晚年健康，對於長者本身的身體自主。' },
-  { t: '自己受傷的經驗', d: '因為打籃球受傷經歷十字韌帶手術後復健，發現與理解運動治療與肌力訓練的價值。' },
-  { t: '健保資料庫的啟發', d: '在學研究期間肥老闆因線際會接觸健保資料庫，發現其實在醫療之前，我們可以為身體做更多的預防。' },
+  {
+    t: '阿嬤的故事',
+    d: '肥老闆的阿嬤晚年因為失智、跌倒及臥床讓老闆深深體會長者晚年健康對於長者本身的身體自主及家庭照護的重要性。',
+    icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+  },
+  {
+    t: '自己受傷的經驗',
+    d: '因為打籃球受傷經歷十字韌帶手術後復健發現與理解運動治療與肌力訓練的價值。',
+    icon: 'M22 12h-4l-3 9L9 3l-3 9H2',
+  },
+  {
+    t: '健保資料庫的啟發',
+    d: '在學研究期間肥老闆因緣際會接觸健保資料庫，發現其實在醫療之前，我們可以做更多的預防。',
+    icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+  },
 ]
 
 // 我們的方式：四個價值（2026-08-31 依設計稿加入）
@@ -334,29 +347,47 @@ const programGroups = [
       </div>
     </section>
 
-    <!-- 創辦人故事（2026-08-31 依設計稿新增）-->
+    <!-- 創辦人故事（2026-08-31 業主定稿，版型依設計稿圖二：左文字、右照片）-->
     <section id="founder" class="bg-white py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="text-center">
-          <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-            <span class="w-5 h-0.5 bg-orange" />
-            Founder Story
-            <span class="text-navy-700/40 tracking-normal normal-case font-medium">・創辦人故事</span>
-          </div>
-          <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10 max-w-3xl mx-auto leading-snug">
-            一個家庭的經歷，開啟了<span class="text-orange">練健康的使命</span>
-          </h2>
-        </div>
+        <div class="grid lg:grid-cols-[1fr_320px] gap-10 lg:gap-14 items-start">
 
-        <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
-          <div
-            v-for="f in founderStory"
-            :key="f.t"
-            class="bg-cream-100 rounded-2xl border border-navy-700/10 p-6 border-l-4 border-l-orange"
-          >
-            <h3 class="font-serif text-lg font-black text-navy-700 mb-3">{{ f.t }}</h3>
-            <p class="text-ink/70 text-sm leading-relaxed">{{ f.d }}</p>
+          <!-- 左：標題 + 三則故事 -->
+          <div>
+            <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
+              <span class="w-5 h-0.5 bg-orange" />
+              Founder Story
+              <span class="text-navy-700/40 tracking-normal normal-case font-medium">・創辦人故事</span>
+            </div>
+            <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10 leading-snug">
+              一個家庭的經歷，開啟了<span class="text-orange">練健康的使命</span>
+            </h2>
+
+            <div class="grid sm:grid-cols-3 gap-8">
+              <div v-for="f in founderStory" :key="f.t" class="text-center">
+                <span class="w-14 h-14 rounded-full border border-navy-700/15 flex items-center justify-center mx-auto mb-4 text-navy-700">
+                  <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" :d="f.icon" />
+                  </svg>
+                </span>
+                <h3 class="font-serif text-base font-black text-navy-700 mb-2">{{ f.t }}</h3>
+                <p class="text-ink/65 text-sm leading-relaxed">{{ f.d }}</p>
+              </div>
+            </div>
           </div>
+
+          <!-- 右：創辦人與阿嬤的合照 -->
+          <div class="mx-auto lg:mx-0 max-w-[320px] w-full">
+            <img
+              src="/images/about/founder-grandma.webp"
+              alt="練健康創辦人幼時與阿嬤的合照"
+              loading="lazy"
+              width="900"
+              height="894"
+              class="w-full h-auto rounded-2xl border-4 border-white shadow-xl"
+            />
+          </div>
+
         </div>
       </div>
     </section>
