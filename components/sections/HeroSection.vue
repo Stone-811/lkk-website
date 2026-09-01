@@ -154,12 +154,12 @@ const pressOutlets = [
       <div class="container mx-auto px-4">
         <div class="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12">
           <a href="https://l-kk.tw/category/news/" class="text-ink/60 text-sm font-medium whitespace-nowrap hover:text-ink transition-colors">報導列表</a>
-          <div class="flex flex-wrap items-center justify-center gap-x-8 lg:gap-x-12 gap-y-4">
+          <div class="flex flex-wrap items-center justify-center gap-x-8 lg:gap-x-12 gap-y-1">
             <a
               v-for="outlet in pressOutlets"
               :key="outlet.name"
               :href="outlet.url"
-              class="text-ink/50 text-sm lg:text-base font-medium hover:text-ink/70 transition-colors"
+              class="text-ink/70 text-sm lg:text-base font-medium hover:text-ink transition-colors py-2.5 -my-1"
             >
               {{ outlet.name }}
             </a>

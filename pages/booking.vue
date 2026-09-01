@@ -489,7 +489,7 @@ const handleSubmit = async () => {
               </a>
 
               <!-- 尚未加好友的備援 -->
-              <p class="mt-2 text-xs text-ink-400">
+              <p class="mt-2 text-sm text-ink-500">
                 還不是官方 LINE 好友？
                 <a
                   href="https://line.me/R/ti/p/%40201fzruh"
@@ -746,7 +746,7 @@ const handleSubmit = async () => {
                         <option value="">請選擇分店</option>
                         <option v-for="store in stores" :key="store.id" :value="store.id">{{ store.name }}</option>
                       </select>
-                      <p v-if="selectedStore" class="text-xs text-ink/60 mt-1.5">
+                      <p v-if="selectedStore" class="text-sm text-ink/70 mt-1.5">
                         {{ selectedStore.address }}<span v-if="selectedStore.phone"> ・ {{ selectedStore.phone }}</span>
                       </p>
                       <p v-if="errors.storeId" class="text-red-500 text-sm mt-2">{{ errors.storeId }}</p>
@@ -754,7 +754,7 @@ const handleSubmit = async () => {
                     <!-- 變體鎖定分店：唯讀顯示 -->
                     <div v-else class="w-full px-4 py-3 border border-cream-200 rounded-lg bg-cream-50 text-navy-700 font-medium">
                       {{ lockedStore?.name ?? variant.lockStoreId }}
-                      <span v-if="lockedStore?.address" class="block text-xs text-ink/60 font-normal mt-0.5">
+                      <span v-if="lockedStore?.address" class="block text-sm text-ink/70 font-normal mt-0.5">
                         {{ lockedStore.address }}<span v-if="lockedStore.phone"> ・ {{ lockedStore.phone }}</span>
                       </span>
                     </div>
@@ -886,7 +886,7 @@ const handleSubmit = async () => {
                       class="w-full mt-2 px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange"
                       placeholder="例如：改善腰痠背痛、上樓梯更有力、久坐姿態調整、或簡述希望體驗的專項訓練...等等"
                     />
-                    <p class="text-xs text-ink/60 mt-3 leading-relaxed">
+                    <p class="text-sm text-ink/70 mt-3 leading-relaxed">
                       註：訓練無法取代醫療，所有身體疾患務必先尋求醫療人員協助。
                     </p>
                   </div>
@@ -924,7 +924,7 @@ const handleSubmit = async () => {
                 <!-- 同意事項 -->
                 <div class="mt-6 p-4 bg-cream-50 rounded-lg border border-cream-200">
                   <div class="text-sm text-navy-700 font-medium mb-3">參加練健康相關課程，了解並願遵守下列事項：</div>
-                  <div class="text-xs text-ink/70 space-y-2 max-h-48 overflow-y-auto pr-2">
+                  <div class="text-sm text-ink/75 space-y-2 max-h-56 overflow-y-auto pr-2">
                     <p>一、本人若有心臟病、高血壓、癲癇症、具傳染性皮膚病及足以影響運動訓練等病症，或於五年內有重大傷病開刀或住院超過3周以上之病史，將主動告知。</p>
                     <p>二、本人在課程期間除教練指導的使用範圍，不會自行使用以外之場地及各項設備器材，並遵守教練指示及場地使用規範。</p>
                     <p>三、本人了解訓練本身具有發生自己或他人事故或傷害危險，願充分負擔此一危險，並盡力防杜該危險或事故傷害之發生。</p>
@@ -956,10 +956,10 @@ const handleSubmit = async () => {
                   >
                     {{ isSubmitting ? '送出中...' : '送出預約' }}
                   </button>
-                  <p class="text-xs text-ink/60 text-center mt-4 leading-relaxed">
+                  <p class="text-sm text-ink/70 text-center mt-4 leading-relaxed">
                     送出即表示同意我們以電話或 LINE 與你聯繫安排體驗課，個人資料僅用於此目的。
                   </p>
-                  <p class="text-xs text-ink/60 text-center mt-2 leading-relaxed">
+                  <p class="text-sm text-ink/70 text-center mt-2 leading-relaxed">
                     送出後請稍候，頁面將導向加入 LINE 官方帳號，加入後即可收到最新通知；同時我們也會寄送 Email 通知你報名成功。
                   </p>
                 </div>
@@ -986,7 +986,7 @@ const handleSubmit = async () => {
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="text-sm md:text-base font-semibold text-navy-700 mb-0.5">{{ step.title }}</div>
-                  <div class="text-xs md:text-sm text-ink/60 leading-relaxed">{{ step.desc }}</div>
+                  <div class="text-sm text-ink/70 leading-relaxed">{{ step.desc }}</div>
                   <div v-if="step.badges" class="flex flex-wrap gap-1.5 md:gap-2 mt-1.5 md:mt-2">
                     <span
                       v-for="(badge, bIdx) in step.badges"
@@ -1076,7 +1076,7 @@ const handleSubmit = async () => {
                   </div>
                 </div>
               </div>
-              <a href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/" class="block text-center text-xs text-navy-700/50 hover:text-navy-700 mt-4 pt-4 border-t border-navy-700/10">
+              <a href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/" class="block text-center text-sm text-navy-700 hover:text-orange-700 mt-4 pt-4 border-t border-navy-700/10 py-2">
                 看更多學員故事 &rarr;
               </a>
             </div>

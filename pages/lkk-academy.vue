@@ -290,7 +290,7 @@ const whyUs = [
               <p v-for="(d, di) in c.desc" :key="di" class="text-ink/65 leading-relaxed mb-4">{{ d }}</p>
 
               <details class="group mt-2">
-                <summary class="cursor-pointer list-none text-sm font-bold text-navy-700 hover:text-orange transition-colors select-none">
+                <summary class="cursor-pointer list-none text-sm font-bold text-navy-700 hover:text-orange-700 transition-colors select-none py-3 -my-1">
                   <span class="group-open:hidden">＋ 查看完整課程介紹</span>
                   <span class="hidden group-open:inline">－ 收起課程介紹</span>
                 </summary>
