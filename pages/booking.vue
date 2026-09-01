@@ -1005,8 +1005,8 @@ const handleSubmit = async () => {
 
             <!-- FAQ Accordion -->
             <div class="mt-6 mb-6">
-              <div class="flex items-center gap-2 text-[0.82rem] font-bold tracking-widest text-orange mb-2">
-                <span class="w-4 h-0.5 bg-orange"></span>
+              <div class="flex items-center gap-2 text-sm font-bold tracking-widest text-orange-700 mb-2">
+                <span class="w-4 h-0.5 bg-orange-700"></span>
                 你可能在想
               </div>
               <h3 class="font-serif text-xl font-black text-navy-700 mb-4">
@@ -1043,7 +1043,7 @@ const handleSubmit = async () => {
                           openFaqId === faq.id ? 'max-h-40 pb-3 px-4' : 'max-h-0'
                         ]"
                       >
-                        <p class="text-[0.85rem] text-ink/60 leading-relaxed">{{ faq.a }}</p>
+                        <p class="text-sm text-ink/70 leading-relaxed">{{ faq.a }}</p>
                       </div>
                     </div>
                   </div>
@@ -1053,7 +1053,7 @@ const handleSubmit = async () => {
 
             <!-- Cases Card (cases-teaser style) -->
             <div class="bg-white rounded-[20px] p-6 shadow-sm">
-              <div class="text-[0.82rem] font-bold tracking-widest uppercase text-navy-700/50 mb-4">他們也是這樣開始的</div>
+              <div class="text-sm font-bold tracking-widest uppercase text-navy-800/70 mb-4">他們也是這樣開始的</div>
               <div class="flex flex-col gap-3">
                 <div v-for="c in cases" :key="c.name" class="flex gap-3 items-start">
                   <!-- 頭像：有照片就放照片（object-top 避免切到頭頂），沒有才退回姓氏首字 -->
@@ -1071,8 +1071,8 @@ const handleSubmit = async () => {
                     {{ c.name.charAt(0) }}
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="text-[0.88rem] font-semibold text-navy-800">{{ c.name }}・{{ c.info }}</div>
-                    <div class="text-[0.88rem] text-ink/60 italic">「{{ c.quote }}」</div>
+                    <div class="text-sm font-semibold text-navy-800">{{ c.name }}・{{ c.info }}</div>
+                    <div class="text-sm text-ink/70 italic">「{{ c.quote }}」</div>
                   </div>
                 </div>
               </div>
