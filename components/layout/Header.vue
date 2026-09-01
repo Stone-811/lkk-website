@@ -57,16 +57,57 @@ const closeMobileMenu = () => {
 
         <!-- Desktop Navigation -->
         <div class="hidden lg:flex items-center gap-6 xl:gap-8">
-          <!-- 服務方案 -->
-          <NuxtLink
-            to="/services"
-            :class="[
-              'text-sm xl:text-base transition-colors',
-              isActive('/services') ? 'text-orange font-medium' : 'text-cream-100 hover:text-orange'
-            ]"
+          <!-- 服務方案 - 下拉選單（結構比照分店資訊：第一項為總覽，下方以細線區隔）-->
+          <div
+            class="relative group"
+            @mouseenter="openDropdown = 'services'"
+            @mouseleave="openDropdown = null"
           >
-            服務方案
-          </NuxtLink>
+            <button
+              :class="[
+                'flex items-center gap-1 text-sm xl:text-base transition-colors',
+                isActive('/services') || isActive('/booking') || isActive('/group-booking')
+                  ? 'text-orange font-medium'
+                  : 'text-cream-100 hover:text-orange'
+              ]"
+            >
+              服務方案
+              <svg
+                :class="['w-4 h-4 transition-transform', openDropdown === 'services' ? 'rotate-180' : '']"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div v-if="openDropdown === 'services'" class="absolute top-full left-0 pt-2 z-50">
+              <div class="w-44 bg-white rounded-lg shadow-lg py-2">
+                <NuxtLink
+                  to="/services"
+                  class="block px-4 py-2 text-sm text-navy-700 hover:bg-cream-100 hover:text-orange transition-colors font-medium"
+                  @click="openDropdown = null"
+                >
+                  所有服務
+                </NuxtLink>
+                <div class="border-t border-cream-200 my-1" />
+                <NuxtLink
+                  to="/booking"
+                  class="block px-4 py-2 text-sm text-navy-700 hover:bg-cream-100 hover:text-orange transition-colors"
+                  @click="openDropdown = null"
+                >
+                  一對一體驗報名
+                </NuxtLink>
+                <NuxtLink
+                  to="/group-booking"
+                  class="block px-4 py-2 text-sm text-navy-700 hover:bg-cream-100 hover:text-orange transition-colors"
+                  @click="openDropdown = null"
+                >
+                  團體課程報名
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
 
           <!-- 團隊介紹 - 下拉選單 -->
           <div
@@ -241,14 +282,51 @@ const closeMobileMenu = () => {
       <!-- Mobile Menu -->
       <div v-if="mobileMenuOpen" class="lg:hidden py-4 border-t border-navy-600 max-h-[70vh] overflow-y-auto">
         <div class="flex flex-col gap-1">
-          <!-- 服務方案 -->
-          <NuxtLink
-            to="/services"
-            :class="['py-3 px-2 rounded', isActive('/services') ? 'text-orange font-medium bg-navy-600/50' : 'text-cream-100']"
-            @click="closeMobileMenu"
-          >
-            服務方案
-          </NuxtLink>
+          <!-- 服務方案 - 手機版下拉 -->
+          <div>
+            <button
+              :class="[
+                'w-full flex items-center justify-between py-3 px-2 rounded',
+                isActive('/services') || isActive('/booking') || isActive('/group-booking')
+                  ? 'text-orange font-medium bg-navy-600/50'
+                  : 'text-cream-100'
+              ]"
+              @click="toggleMobileDropdown('services')"
+            >
+              服務方案
+              <svg
+                :class="['w-4 h-4 transition-transform', mobileOpenDropdown === 'services' ? 'rotate-180' : '']"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div v-if="mobileOpenDropdown === 'services'" class="ml-4 mt-1 space-y-1">
+              <NuxtLink
+                to="/services"
+                class="block py-2 px-3 text-sm text-cream-200 hover:text-orange rounded font-medium"
+                @click="closeMobileMenu"
+              >
+                所有服務
+              </NuxtLink>
+              <NuxtLink
+                to="/booking"
+                class="block py-2 px-3 text-sm text-cream-200 hover:text-orange rounded"
+                @click="closeMobileMenu"
+              >
+                一對一體驗報名
+              </NuxtLink>
+              <NuxtLink
+                to="/group-booking"
+                class="block py-2 px-3 text-sm text-cream-200 hover:text-orange rounded"
+                @click="closeMobileMenu"
+              >
+                團體課程報名
+              </NuxtLink>
+            </div>
+          </div>
 
           <!-- 團隊介紹 - 手機版下拉 -->
           <div>
