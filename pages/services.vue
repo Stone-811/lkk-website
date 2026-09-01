@@ -289,13 +289,16 @@ const personalFeatures = [
          ink-600 內文 4.35 → 3.54 ✗ ——內文本來就只有 4.35（既有問題，非底圖造成），
          所以標題區的內文一併改 ink-700：純 cream 6.40、加底圖後 5.21，兩種情況都過 4.5。
       卡片區以下全是 bg-white 不透明卡，不受底圖影響。
+      ⚠️ object-top 不能拿掉：圖是 1200×900（比例 1.33），寬螢幕上區塊比例會超過 1.33，
+         縮放改由寬度決定 → 垂直被裁。預設的 object-position 50% 50% 是上下對半裁，
+         會切到人物的頭。改成 50% 0% 保住上緣，要裁一律從腳裁（業主 2026-09-01 指定）。
     -->
     <section id="group" class="relative py-16 md:py-24 bg-cream-200 overflow-hidden">
       <img
         src="/images/services/group.webp"
         alt=""
         aria-hidden="true"
-        class="absolute inset-0 w-full h-full object-cover opacity-[0.15]"
+        class="absolute inset-0 w-full h-full object-cover object-top opacity-[0.15]"
       />
       <div class="container mx-auto px-4 relative z-10">
         <div class="text-center mb-12">

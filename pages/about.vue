@@ -477,7 +477,7 @@ const whatWeDo = [
     </section>
 
     <!-- 結尾 CTA（2026-08-31 依設計稿：左文字＋按鈕、右數據）-->
-    <section class="bg-navy-800 text-white py-16 lg:py-20">
+    <section class="bg-navy-700 text-white py-16 lg:py-20">
       <div class="container mx-auto px-4">
         <div class="text-center">
           <h2 class="font-serif text-3xl lg:text-4xl font-black mb-4 leading-tight">
