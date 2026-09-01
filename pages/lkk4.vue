@@ -274,7 +274,7 @@ const faqs = [
 
           <div class="max-w-2xl mx-auto text-center mt-9">
             <p class="text-white/75 text-base lg:text-lg leading-relaxed mb-8">
-              不是比誰舉得最重。LKK4 用四個生活裡本來就在做的動作——拿、推、走穩、走久，陪你看看這一年，身體多做到了哪些事。第一次參加也沒關係，完成，本身就是成果。
+              不是比誰舉得最重。LKK4 用四個生活裡本來就在做的動作——拿得動、推得動、走得穩、走得久，陪你看看這一年，身體多做到了哪些事。第一次參加也沒關係，完成，本身就是成果。
             </p>
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
               <a
