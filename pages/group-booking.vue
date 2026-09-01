@@ -268,7 +268,7 @@ async function handleSubmit() {
 }
 
 const inputClass =
-  'w-full px-3.5 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-lg text-[0.95rem] text-ink transition focus:outline-none focus:border-navy-700 focus:bg-white focus:ring-2 focus:ring-navy-700/10'
+  'w-full px-3.5 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-lg text-base text-ink transition focus:outline-none focus:border-navy-700 focus:bg-white focus:ring-2 focus:ring-navy-700/10'
 </script>
 
 <template>
@@ -298,7 +298,7 @@ const inputClass =
         </a>
 
         <!-- 尚未加好友的備援：oaMessage 連結只有已加好友才有作用 -->
-        <p class="mt-2 mb-6 text-xs text-ink/40">
+        <p class="mt-2 mb-6 text-sm text-ink/65">
           還不是官方 LINE 好友？
           <a
             :href="LINE_URL"
@@ -340,7 +340,7 @@ const inputClass =
       />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
         <div class="relative z-10 max-w-3xl mx-auto px-4 text-center py-12 lg:py-20 w-full">
-          <div class="inline-flex items-center bg-orange/[0.18] border border-orange/40 text-orange-300 text-[0.78rem] font-medium px-3.5 py-1.5 rounded-full mb-5 tracking-wide">
+          <div class="inline-flex items-center bg-orange/[0.18] border border-orange/40 text-orange-300 text-sm font-medium px-3.5 py-1.5 rounded-full mb-5 tracking-wide">
             {{ variant.hero?.badge ?? '一期4堂 · 隨時可續課' }}
           </div>
           <h1 class="font-serif text-3xl lg:text-5xl font-black leading-tight mb-6">
@@ -358,7 +358,7 @@ const inputClass =
           <div>
             <a href="#form" class="inline-block bg-orange hover:bg-orange-400 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-orange/35 transition">{{ variant.hero?.ctaText ?? '團體課報名' }}</a>
           </div>
-          <div class="flex items-center justify-center gap-1.5 text-xs text-white/65 mt-3">
+          <div class="flex items-center justify-center gap-1.5 text-sm text-white/75 mt-3">
             <svg class="w-3.5 h-3.5 text-orange-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
             <span><strong class="text-orange-300">4堂 $2,400 起</strong>・請假可順延一週・無須綁約長期課程</span>
           </div>
@@ -368,7 +368,7 @@ const inputClass =
       <!-- REASSURE -->
       <div class="bg-white border-b border-navy-700/15 py-5">
         <div class="max-w-6xl mx-auto px-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
-          <div v-for="r in reassure" :key="r" class="flex items-center gap-2 text-[0.83rem] text-ink/70">
+          <div v-for="r in reassure" :key="r" class="flex items-center gap-2 text-sm text-ink/70">
             <svg class="w-4 h-4 text-[#2d8a5e] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
             {{ r }}
           </div>
@@ -400,7 +400,7 @@ const inputClass =
                     <div>
                       <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">學員姓名 <span class="text-orange">*</span></label>
                       <input v-model="formData.name" type="text" placeholder="學員姓名" :class="inputClass" />
-                      <p v-if="errors.name" class="text-red-500 text-xs mt-1">{{ errors.name }}</p>
+                      <p v-if="errors.name" class="text-red-600 text-sm mt-1">{{ errors.name }}</p>
                     </div>
                     <div>
                       <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">學員性別 <span class="text-orange">*</span></label>
@@ -410,7 +410,7 @@ const inputClass =
                           <span class="flex-1 flex items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ g }}</span>
                         </label>
                       </div>
-                      <p v-if="errors.gender" class="text-red-500 text-xs mt-1">{{ errors.gender }}</p>
+                      <p v-if="errors.gender" class="text-red-600 text-sm mt-1">{{ errors.gender }}</p>
                     </div>
                   </div>
 
@@ -422,19 +422,19 @@ const inputClass =
                         <span class="flex-1 flex items-center justify-center px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ a }}</span>
                       </label>
                     </div>
-                    <p v-if="errors.ageRange" class="text-red-500 text-xs mt-1">{{ errors.ageRange }}</p>
+                    <p v-if="errors.ageRange" class="text-red-600 text-sm mt-1">{{ errors.ageRange }}</p>
                   </div>
 
                   <div class="grid sm:grid-cols-2 gap-3">
                     <div>
                       <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">手機號碼 <span class="text-orange">*</span></label>
                       <input v-model="formData.phone" type="tel" inputmode="tel" placeholder="0987654321" :class="inputClass" />
-                      <p v-if="errors.phone" class="text-red-500 text-xs mt-1">{{ errors.phone }}</p>
+                      <p v-if="errors.phone" class="text-red-600 text-sm mt-1">{{ errors.phone }}</p>
                     </div>
                     <div>
                       <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">電子郵件 <span class="text-orange">*</span></label>
                       <input v-model="formData.email" type="email" placeholder="name@email.com" :class="inputClass" />
-                      <p v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</p>
+                      <p v-if="errors.email" class="text-red-600 text-sm mt-1">{{ errors.email }}</p>
                     </div>
                   </div>
 
@@ -446,7 +446,7 @@ const inputClass =
                         <span class="flex-1 flex items-center justify-center px-2 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ opt.l }}</span>
                       </label>
                     </div>
-                    <p v-if="errors.isFillerSelf" class="text-red-500 text-xs mt-1">{{ errors.isFillerSelf }}</p>
+                    <p v-if="errors.isFillerSelf" class="text-red-600 text-sm mt-1">{{ errors.isFillerSelf }}</p>
                   </div>
 
                   <div v-if="formData.isFillerSelf === '否'" class="bg-navy-700/[0.04] border border-dashed border-navy-700 rounded-xl p-4 space-y-3">
@@ -456,18 +456,18 @@ const inputClass =
                         <option value="">請選擇</option>
                         <option v-for="r in relationshipOptions" :key="r" :value="r">{{ r }}</option>
                       </select>
-                      <p v-if="errors.relationship" class="text-red-500 text-xs mt-1">{{ errors.relationship }}</p>
+                      <p v-if="errors.relationship" class="text-red-600 text-sm mt-1">{{ errors.relationship }}</p>
                     </div>
                     <div class="grid sm:grid-cols-2 gap-3">
                       <div>
                         <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">報名者姓名 <span class="text-orange">*</span></label>
                         <input v-model="formData.fillerName" type="text" placeholder="請輸入你的姓名" :class="inputClass" />
-                        <p v-if="errors.fillerName" class="text-red-500 text-xs mt-1">{{ errors.fillerName }}</p>
+                        <p v-if="errors.fillerName" class="text-red-600 text-sm mt-1">{{ errors.fillerName }}</p>
                       </div>
                       <div>
                         <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">方便聯繫的電話 <span class="text-orange">*</span></label>
                         <input v-model="formData.contactPhone" type="tel" placeholder="0912345678" :class="inputClass" />
-                        <p v-if="errors.contactPhone" class="text-red-500 text-xs mt-1">{{ errors.contactPhone }}</p>
+                        <p v-if="errors.contactPhone" class="text-red-600 text-sm mt-1">{{ errors.contactPhone }}</p>
                       </div>
                     </div>
                   </div>
@@ -477,43 +477,43 @@ const inputClass =
 
                   <div>
                     <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">想報名的課程 <span v-if="!lockedCourse" class="text-orange">*</span></label>
-                    <div v-if="lockedCourse" class="flex items-center justify-between px-3.5 py-2.5 bg-orange/[0.08] border-[1.5px] border-orange rounded-lg text-[0.95rem] font-semibold text-[#d45c04]">
+                    <div v-if="lockedCourse" class="flex items-center justify-between px-3.5 py-2.5 bg-orange/[0.08] border-[1.5px] border-orange rounded-lg text-base font-semibold text-[#d45c04]">
                       <span>{{ lockedCourse.value }}</span>
-                      <span class="text-xs font-normal text-ink/45">{{ lockedCourse.price }}</span>
+                      <span class="text-sm font-normal text-ink/65">{{ lockedCourse.price }}</span>
                     </div>
                     <div v-else class="grid grid-cols-3 gap-1.5 items-stretch">
                       <!-- label 用 flex 讓卡片撐滿格高；課名字數不同（窄螢幕會折成 2 行）時
                            三張卡仍等高，價格也固定貼底、對齊在同一條水平線上 -->
                       <label v-for="c in courses" :key="c.value" class="flex cursor-pointer">
                         <input v-model="formData.course" type="radio" :value="c.value" class="peer sr-only" />
-                        <span class="flex-1 flex flex-col px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-[0.82rem] text-ink/70 text-center leading-tight transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">
+                        <span class="flex-1 flex flex-col px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center leading-tight transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">
                           <span class="flex-1 flex items-center justify-center">{{ c.value }}</span>
-                          <span class="block text-[0.68rem] text-ink/45 font-normal mt-1">{{ c.price }}</span>
+                          <span class="block text-sm text-ink/65 font-normal mt-1">{{ c.price }}</span>
                         </span>
                       </label>
                     </div>
-                    <p v-if="errors.course" class="text-red-500 text-xs mt-1">{{ errors.course }}</p>
+                    <p v-if="errors.course" class="text-red-600 text-sm mt-1">{{ errors.course }}</p>
                   </div>
 
                   <div>
                     <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">想去哪一間門店上課？ <span v-if="!lockedStore" class="text-orange">*</span></label>
-                    <div v-if="lockedStore" class="px-3.5 py-2.5 bg-orange/[0.08] border-[1.5px] border-orange rounded-lg text-[0.95rem] font-semibold text-[#d45c04]">
+                    <div v-if="lockedStore" class="px-3.5 py-2.5 bg-orange/[0.08] border-[1.5px] border-orange rounded-lg text-base font-semibold text-[#d45c04]">
                       {{ lockedStore }}
                     </div>
                     <select v-else v-model="formData.store" :class="inputClass">
                       <option value="" disabled>請選擇偏好的門店地點</option>
                       <option v-for="s in storeOptions" :key="s" :value="s">{{ s }}</option>
                     </select>
-                    <p v-if="errors.store" class="text-red-500 text-xs mt-1">{{ errors.store }}</p>
+                    <p v-if="errors.store" class="text-red-600 text-sm mt-1">{{ errors.store }}</p>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">偏好的上課星期／時段 <span class="text-ink/45 font-normal text-xs">（選填，可參考右側各店開課時段）</span></label>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">偏好的上課星期／時段 <span class="text-ink/65 font-normal text-sm">（選填，可參考右側各店開課時段）</span></label>
                     <input v-model="formData.preferredTime" type="text" placeholder="例如：週四晚上、週六上午皆可" :class="inputClass" />
                   </div>
 
                   <div>
-                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">過去是否有重訓經驗？ <span class="text-ink/45 font-normal text-xs">（選填）</span></label>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">過去是否有重訓經驗？ <span class="text-ink/65 font-normal text-sm">（選填）</span></label>
                     <div class="grid grid-cols-3 gap-1.5">
                       <label v-for="ex in experiences" :key="ex.value" class="flex cursor-pointer">
                         <input v-model="formData.experience" type="radio" :value="ex.value" class="peer sr-only" />
@@ -525,14 +525,14 @@ const inputClass =
                   <div>
                     <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">是否有任何疾病、舊傷或開刀史？ <span class="text-orange">*</span></label>
                     <textarea v-model="formData.medicalHistory" rows="3" placeholder="例如：高血壓、糖尿病、骨質疏鬆、膝關節退化、心臟病、曾動過何種手術...等。若完全健康，請填寫「無」。" :class="[inputClass, 'resize-y min-h-[80px]']" />
-                    <p v-if="errors.medicalHistory" class="text-red-500 text-xs mt-1">{{ errors.medicalHistory }}</p>
+                    <p v-if="errors.medicalHistory" class="text-red-600 text-sm mt-1">{{ errors.medicalHistory }}</p>
                   </div>
 
                   <!-- 第三部分 -->
                   <div class="font-serif text-[1.05rem] font-bold text-navy-700 border-b-2 border-navy-700/15 pb-1 pt-2">第三部分：其他調查</div>
 
                   <div v-if="!variant.hideSources">
-                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">你是從哪裡得知練健康團體課程資訊的呢？ <span class="text-ink/45 font-normal text-xs">（可複選）</span></label>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">你是從哪裡得知練健康團體課程資訊的呢？ <span class="text-ink/65 font-normal text-sm">（可複選）</span></label>
                     <div class="grid grid-cols-2 gap-1.5">
                       <label v-for="s in sourceOptions" :key="s.value" class="flex items-center gap-1.5 px-2.5 py-2 bg-cream border-[1.5px] border-navy-700/15 rounded-lg text-sm text-ink/70 cursor-pointer transition has-[:checked]:border-navy-700 has-[:checked]:bg-navy-700/[0.07] has-[:checked]:text-[#1a3545] has-[:checked]:font-medium">
                         <input v-model="formData.source" type="checkbox" :value="s.value" class="peer sr-only" />
@@ -545,7 +545,7 @@ const inputClass =
                   </div>
 
                   <div>
-                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">備註與其他想補充說明的細節 <span class="text-ink/45 font-normal text-xs">（選填）</span></label>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">備註與其他想補充說明的細節 <span class="text-ink/65 font-normal text-sm">（選填）</span></label>
                     <textarea v-model="formData.note" rows="2" placeholder="例如想找同伴一起上課、特定教練指定需求、或其他特殊身體狀況備忘..." :class="[inputClass, 'resize-y min-h-[60px]']" />
                   </div>
 
@@ -553,7 +553,7 @@ const inputClass =
                     {{ submitting ? '送出中…' : '送出團體課程報名' }}
                     <svg v-if="!submitting" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 5l7 7-7 7" /></svg>
                   </button>
-                  <p class="text-xs text-ink/50 text-center leading-relaxed">送出即表示同意我們以電話或 LINE 與你聯繫確認開課梯次，個人資料僅用於此報名目的。</p>
+                  <p class="text-sm text-ink/65 text-center leading-relaxed">送出即表示同意我們以電話或 LINE 與你聯繫確認開課梯次，個人資料僅用於此報名目的。</p>
                 </form>
               </div>
             </div>
@@ -563,7 +563,7 @@ const inputClass =
           <div class="space-y-12">
             <!-- 三種團班 -->
             <div>
-              <div class="flex items-center gap-2 text-[0.78rem] font-bold tracking-widest uppercase text-orange mb-2"><span class="w-[18px] h-0.5 bg-orange" />課程介紹</div>
+              <div class="flex items-center gap-2 text-sm font-bold tracking-widest uppercase text-orange-700 mb-2"><span class="w-[18px] h-0.5 bg-orange-700" />課程介紹</div>
               <h2 class="font-serif text-2xl lg:text-3xl font-black text-[#1a3545] mb-5">三種團班<span class="text-orange">選一個開始</span></h2>
               <div class="space-y-3.5">
                 <div v-for="cc in courseCards" :key="cc.title" class="bg-white rounded-2xl border border-navy-700/15 shadow-sm p-6">
@@ -571,7 +571,7 @@ const inputClass =
                     <div class="font-serif text-lg font-bold text-[#1a3545]">{{ cc.title }}</div>
                     <div class="flex-shrink-0 text-right">
                       <div class="font-serif text-xl font-black text-orange">{{ cc.price }}</div>
-                      <div class="text-[0.72rem] text-ink/45">{{ cc.unit }}</div>
+                      <div class="text-sm text-ink/65">{{ cc.unit }}</div>
                     </div>
                   </div>
                   <p class="text-sm text-ink/65 leading-relaxed mb-3">{{ cc.desc }}</p>
@@ -584,7 +584,7 @@ const inputClass =
 
             <!-- 各店開課時段 -->
             <div>
-              <div class="flex items-center gap-2 text-[0.78rem] font-bold tracking-widest uppercase text-orange mb-2"><span class="w-[18px] h-0.5 bg-orange" />開課時段</div>
+              <div class="flex items-center gap-2 text-sm font-bold tracking-widest uppercase text-orange-700 mb-2"><span class="w-[18px] h-0.5 bg-orange-700" />開課時段</div>
               <h2 class="font-serif text-2xl lg:text-3xl font-black text-[#1a3545] mb-5">各店<span class="text-orange">目前開班時段</span></h2>
               <div class="bg-white rounded-2xl border border-navy-700/15 shadow-sm overflow-hidden">
                 <div class="flex flex-wrap bg-cream border-b border-navy-700/15">
@@ -593,7 +593,7 @@ const inputClass =
                     :key="tab.id"
                     type="button"
                     @click="activeStore = tab.id"
-                    :class="['flex-1 min-w-[50%] sm:min-w-0 px-2 py-3 text-[0.86rem] font-semibold border-b-2 transition', activeStore === tab.id ? 'text-[#d45c04] bg-white border-orange' : 'text-ink/60 border-transparent hover:text-ink']"
+                    :class="['flex-1 min-w-[50%] sm:min-w-0 px-2 py-3 text-sm font-semibold border-b-2 transition', activeStore === tab.id ? 'text-[#d45c04] bg-white border-orange' : 'text-ink/60 border-transparent hover:text-ink']"
                   >{{ tab.label }}</button>
                 </div>
                 <div class="px-6 py-5">
@@ -601,17 +601,17 @@ const inputClass =
                     <div class="flex-shrink-0 w-[52px] font-bold text-navy-700">{{ row.day }}</div>
                     <div class="text-ink/70 leading-relaxed">
                       {{ row.times }}
-                      <span v-if="row.lift" class="inline-block bg-navy-700/[0.08] text-navy-700 text-[0.72rem] px-2 py-0.5 rounded-lg ml-1">{{ row.lift }}</span>
+                      <span v-if="row.lift" class="inline-block bg-navy-700/[0.08] text-navy-700 text-xs px-2 py-0.5 rounded-lg ml-1">{{ row.lift }}</span>
                     </div>
                   </div>
-                  <div class="text-xs text-ink/45 mt-4 leading-relaxed">部分班級已滿班，實際可參加班次請以門市確認為主。</div>
+                  <div class="text-sm text-ink/65 mt-4 leading-relaxed">部分班級已滿班，實際可參加班次請以門市確認為主。</div>
                 </div>
               </div>
             </div>
 
             <!-- 三步驟 -->
             <div>
-              <div class="flex items-center gap-2 text-[0.78rem] font-bold tracking-widest uppercase text-orange mb-2"><span class="w-[18px] h-0.5 bg-orange" />接下來會發生什麼</div>
+              <div class="flex items-center gap-2 text-sm font-bold tracking-widest uppercase text-orange-700 mb-2"><span class="w-[18px] h-0.5 bg-orange-700" />接下來會發生什麼</div>
               <h2 class="font-serif text-2xl lg:text-3xl font-black text-[#1a3545] mb-5">填完表單後<span class="text-orange">三個步驟</span></h2>
               <div class="relative flex flex-col">
                 <div class="absolute left-[19px] top-6 bottom-6 w-[1.5px] bg-gradient-to-b from-orange to-orange/15" />
@@ -627,12 +627,12 @@ const inputClass =
 
             <!-- FAQ -->
             <div>
-              <div class="flex items-center gap-2 text-[0.78rem] font-bold tracking-widest uppercase text-orange mb-2"><span class="w-[18px] h-0.5 bg-orange" />你可能在想</div>
+              <div class="flex items-center gap-2 text-sm font-bold tracking-widest uppercase text-orange-700 mb-2"><span class="w-[18px] h-0.5 bg-orange-700" />你可能在想</div>
               <h2 class="font-serif text-2xl lg:text-3xl font-black text-[#1a3545] mb-5">先回答你<span class="text-orange">最常問的問題</span></h2>
               <div class="grid sm:grid-cols-2 gap-3">
                 <div v-for="f in faqs" :key="f.q" class="bg-white rounded-2xl border border-navy-700/15 shadow-sm p-5">
                   <div class="flex items-start gap-1.5 font-bold text-navy-700 mb-2">
-                    <span class="flex-shrink-0 w-[18px] h-[18px] rounded bg-navy-700 text-white text-[0.7rem] font-black flex items-center justify-center mt-0.5">Q</span>
+                    <span class="flex-shrink-0 w-5 h-5 rounded bg-navy-700 text-white text-xs font-black flex items-center justify-center mt-0.5">Q</span>
                     {{ f.q }}
                   </div>
                   <div class="text-sm text-ink/65 leading-relaxed">{{ f.a }}</div>
