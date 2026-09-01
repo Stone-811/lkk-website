@@ -149,13 +149,12 @@ const whatWeDo = [
           ⚠️ 換照片要重量一次，brightness 不是通用常數。
         -->
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_25%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_5%_80%,rgba(58,106,133,0.35)_0%,transparent_45%)]" />
-        <div
-          class="absolute inset-0 opacity-[0.022]"
-          :style="{
-            backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)',
-            backgroundSize: '55px 55px',
-          }"
-        />
+        <!--
+          2026-09-01 移除網格疊層（白線 55px 55px，opacity 0.022）。
+          業主回饋 Hero「主圖不要一格一格的」——這層網格原本是給平面深色底加質感用的，
+          疊在實拍照上會變成明顯的格線。純色底的 Hero（合作洽詢／三個講師頁／全體教練）
+          沒有這個問題，仍保留網格。
+        -->
       </div>
 
       <!--
