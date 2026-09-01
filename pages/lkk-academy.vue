@@ -25,26 +25,30 @@ const problems = [
 //    規格：16:10、建議 1200x750 以上，放 public/images/academy/*.webp
 const courses = [
   {
-    idx: '01 · TRAINING CAMP',
-    t: '訓練營',
+    idx: '01 · COACH DEVELOPMENT PROGRAM',
+    t: '徵才說明會暨訓練營',
     img: '',
     quote: '「我想轉職來練健康當教練，但不確定自己是否有能力帶中高齡學員訓練。」',
     desc: [
-      '練健康致力於推廣中高齡訓練，陪伴許多學員重拾健康、避免肌力流失，甚至敢於站上「聖誕老人硬舉大賽」的賽場，舉出超乎自己預期的成績。',
-      '訓練營提供完整的學科、術科培訓與考核，帶你從訓練原理、動作教學到實際帶課，建立指導一般大眾乃至特殊族群所需要的基礎。結業後，你將更有系統地掌握中高齡訓練規劃、動作進退階與現場教學邏輯。',
+      '想一起為中高齡訓練盡一份心力？想要跨領域不知道怎麼跨出那一步？說明會我們將完整說明教練升遷路徑，並分享練健康組織架構及未來展望。第一階段說明會為免費！',
+      '第二階段訓練營專門為有意加入的夥伴或是想釐清實務訓練的人設計，透過完整培訓及實務演練，讓你在陪伴中高齡訓練的路上更踏實有信心！',
     ],
     points: [
       { k: '學科培訓', v: '建立中高齡與一般大眾訓練所需的核心知識。' },
       { k: '術科實作', v: '從動作示範、口令到現場修正，把知道的內容真正教得出來。' },
       { k: '考核驗證', v: '透過實作與考核確認學習成果，建立更完整的教學能力。' },
     ],
+    // ⚠️ 業主 2026-08-31 只提供了說明會日期；訓練營日期沿用改版前既有的四組
+    //    （03/07、06/13、09/05、12/05），依時序推斷各自對應同一梯次的說明會
+    //    （說明會皆早於訓練營約一個月）。此對應關係待業主確認。
     dates: [
-      { k: '第一梯次', v: '03/07–03/08、03/21–03/22' },
-      { k: '第二梯次', v: '06/13–06/14、06/27–06/28' },
-      { k: '第三梯次', v: '09/05–09/06、09/19–09/20' },
-      { k: '第四梯次', v: '12/05–12/06、12/19–12/20' },
+      { k: '第一梯次', rows: [{ k: '說明會', v: '2/7' }, { k: '訓練營', v: '03/07–03/08、03/21–03/22' }] },
+      { k: '第二梯次', rows: [{ k: '說明會', v: '5/30' }, { k: '訓練營', v: '06/13–06/14、06/27–06/28' }] },
+      { k: '第三梯次', rows: [{ k: '說明會', v: '8/22' }, { k: '訓練營', v: '09/05–09/06、09/19–09/20' }] },
+      { k: '第四梯次', rows: [{ k: '說明會', v: '10/31' }, { k: '訓練營', v: '12/05–12/06、12/19–12/20' }] },
     ],
     href: 'https://www.surveycake.com/s/W2y4Z',
+    cta: '免費報名說明會點我 →',
   },
   {
     idx: '02 · SENIOR TRAINING',
@@ -235,9 +239,19 @@ const whyUs = [
                   <span class="text-[11px] tracking-widest uppercase text-navy-700/40">Course Dates</span>
                 </div>
                 <ul>
-                  <li v-for="d in c.dates" :key="d.k" class="flex flex-wrap items-baseline gap-x-4 gap-y-1 py-2 border-b border-navy-700/10 text-sm">
-                    <b class="text-navy-800 font-serif">{{ d.k }}</b>
-                    <span class="text-ink/65">{{ d.v }}</span>
+                  <li v-for="d in c.dates" :key="d.k" class="py-2 border-b border-navy-700/10 text-sm">
+                    <!-- 有 rows 的梯次（說明會／訓練營）拆成子列，其餘維持單列 -->
+                    <template v-if="d.rows">
+                      <b class="text-navy-800 font-serif block mb-1.5">【{{ d.k }}】</b>
+                      <div v-for="r in d.rows" :key="r.k" class="flex flex-wrap items-baseline gap-x-3 pl-4 py-0.5">
+                        <span class="text-navy-700 font-medium min-w-[3.5rem]">{{ r.k }}</span>
+                        <span class="text-ink/65">{{ r.v }}</span>
+                      </div>
+                    </template>
+                    <div v-else class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                      <b class="text-navy-800 font-serif">{{ d.k }}</b>
+                      <span class="text-ink/65">{{ d.v }}</span>
+                    </div>
                   </li>
                 </ul>
                 <p class="text-xs text-ink/45 mt-3">※ 實際開課日期與報名狀態以最新公告及報名頁為準。</p>
@@ -245,7 +259,7 @@ const whyUs = [
 
               <div class="mt-6">
                 <a :href="c.href" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-                  立即報名 →
+                  {{ c.cta || '立即報名 →' }}
                 </a>
               </div>
             </div>
