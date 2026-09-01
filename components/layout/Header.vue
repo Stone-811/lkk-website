@@ -109,6 +109,17 @@ const closeMobileMenu = () => {
             </div>
           </div>
 
+          <!-- 研習課程 -->
+          <NuxtLink
+            to="/lkk-academy"
+            :class="[
+              'text-sm xl:text-base transition-colors',
+              isActive('/lkk-academy') ? 'text-orange font-medium' : 'text-cream-100 hover:text-orange'
+            ]"
+          >
+            研習課程
+          </NuxtLink>
+
           <!-- 團隊介紹 - 下拉選單 -->
           <div
             class="relative group"
@@ -327,6 +338,15 @@ const closeMobileMenu = () => {
               </NuxtLink>
             </div>
           </div>
+
+          <!-- 研習課程 -->
+          <NuxtLink
+            to="/lkk-academy"
+            :class="['py-3 px-2 rounded', isActive('/lkk-academy') ? 'text-orange font-medium bg-navy-600/50' : 'text-cream-100']"
+            @click="closeMobileMenu"
+          >
+            研習課程
+          </NuxtLink>
 
           <!-- 團隊介紹 - 手機版下拉 -->
           <div>

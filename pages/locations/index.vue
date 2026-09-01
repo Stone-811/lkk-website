@@ -206,8 +206,8 @@ const reasons = [
     <section class="bg-cream py-12 lg:py-16">
       <div class="container mx-auto px-4">
         <div class="text-center mb-10">
-          <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
-            <span class="w-5 h-0.5 bg-orange" />
+          <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-2">
+            <span class="w-5 h-0.5 bg-orange-700" />
             為什麼選擇練健康
           </div>
           <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy">
@@ -245,8 +245,8 @@ const reasons = [
           <div class="grid lg:grid-cols-2">
             <!-- Left: Text -->
             <div class="p-8 lg:p-10 flex flex-col justify-center">
-              <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-                <span class="w-5 h-0.5 bg-orange" />
+              <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-3">
+                <span class="w-5 h-0.5 bg-orange-700" />
                 成果見證
               </div>
               <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-4">

@@ -227,7 +227,7 @@ const audience = [
         <!-- 參賽資訊 -->
         <div class="mb-14 lg:mb-16">
           <div class="bg-gradient-to-br from-[#1a3545] to-[#0e2230] rounded-3xl p-8 lg:p-10 text-center">
-            <div class="text-sm font-bold text-orange tracking-widest uppercase mb-4">
+            <div class="text-sm font-bold text-orange-700 tracking-widest uppercase mb-4">
               安全・直覺・全齡友善
             </div>
             <h3 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">
@@ -316,8 +316,8 @@ const audience = [
     <!-- Disciplines -->
     <section class="py-16 lg:py-20 bg-cream">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
+        <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-3">
+          <span class="w-5 h-0.5 bg-orange-700" />
           賽事宗旨
         </div>
         <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-5 leading-tight">
@@ -374,8 +374,8 @@ const audience = [
     <!-- 賽制與報名資訊（資料來源：Accupass 官方活動頁）-->
     <section class="py-16 lg:py-20 bg-white">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
+        <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-3">
+          <span class="w-5 h-0.5 bg-orange-700" />
           賽制與報名
         </div>
         <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-10 leading-tight">
@@ -530,8 +530,8 @@ const audience = [
     <!-- Origin & Milestones -->
     <section class="py-16 lg:py-20 bg-white">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
+        <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-3">
+          <span class="w-5 h-0.5 bg-orange-700" />
           賽事緣起
         </div>
         <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy mb-8">
@@ -564,8 +564,8 @@ const audience = [
     <section class="py-16 lg:py-20 bg-cream">
       <div class="container mx-auto px-4">
         <div class="bg-white rounded-2xl p-8 lg:p-10 border border-navy/10 text-center">
-          <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-            <span class="w-5 h-0.5 bg-orange" />
+          <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-3">
+            <span class="w-5 h-0.5 bg-orange-700" />
             歷年參賽成績查詢
           </div>
           <!-- 原本標題下方還有一段說明文字，內容與現在的標題完全相同，改標題後會重複出現兩次，故移除；

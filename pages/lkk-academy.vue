@@ -1,441 +1,338 @@
 <script setup lang="ts">
+// 研習課程（原「練健康學院」，2026-08-31 依業主提供的設計稿改版）
+// ⚠️ 「10,000+ 服務人次」必須與 pages/about.vue 的 keyStats 一致。
+//    設計稿原寫「6,000+ 位學員」，與 /about 的「10,000+ 累計服務人次」數字與單位都不同，
+//    業主 2026-08-31 決定統一採用 /about 那組。改其中一邊時記得兩邊一起改。
+// 網址維持 /lkk-academy 不變，保留既有的 SEO 累積；標題與內容改為「研習課程」。
+// 相對於改版前：刪除「課程總覽」「學習地圖」，課程由 5 門收斂為 3 門
+// （移除【解剖生物力學】與【高效指導語與動作拆解實戰課】）。
 useHead({
-  title: '練健康學院｜專業教練培訓課程',
+  title: '研習課程｜練健康 LKK Wellness',
   meta: [
     {
       name: 'description',
-      content: '練健康學院提供系統化中高齡與特殊族群訓練課程，從入門到進階，培養專業教練人才。'
-    }
-  ]
+      content: '練健康研習課程，整合 10,000+ 服務人次與中高齡、特殊族群訓練實務，提供訓練營、中高齡訓練研習與鷹眼大師課程，涵蓋評估、訓練規劃、動作判讀與現場教學，培養真正能落地的教練專業。',
+    },
+  ],
 })
 
+const problems = [
+  { n: '01', t: '學用落差', d: '缺乏系統化管道，難以將書本上的「基礎理論」轉化為現場的「有效教學」。知道原理，不代表遇到不同學員時，能立刻做出適合的調整。' },
+  { n: '02', t: '特殊族群缺口', d: '傳統肌力訓練教學多以年輕族群為主；面對高齡、慢性病、術後，或身體限制較多的學員，更需要相對應的訓練知識、風險判斷與指導技巧。' },
+]
+
+// ⚠️ 三張課程圖業主尚未提供，img 先留空 → 顯示占位圖示。
+//    規格：16:10、建議 1200x750 以上，放 public/images/academy/*.webp
 const courses = [
   {
-    id: 'training-camp',
-    level: 'Lv1 初階',
-    levelColor: 'bg-green-600',
-    category: '學術',
-    categoryColor: 'bg-navy',
-    title: '練健康訓練營',
-    subtitle: '熟練六大基礎動作，安全有效地帶領教學',
-    description: '熟練六大基礎動作，並能以安全、有效、邏輯清楚的方式教學。培養立即上線授課能力，並與客戶應對的軟實力。',
-    duration: '40 小時',
-    targetAudience: ['想成為全方位教練者', '跨領域轉職教練者', '健身愛好者'],
-    highlights: ['六大基礎動作', '系統化教學', '軟實力培養'],
-    image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=500&fit=crop&q=80',
-    registrationUrl: 'https://www.surveycake.com/s/W2y4Z',
+    idx: '01 · COACH DEVELOPMENT PROGRAM',
+    t: '徵才說明會暨訓練營',
+    img: '',
+    quote: '「我想轉職來練健康當教練，但不確定自己是否有能力帶中高齡學員訓練。」',
+    desc: [
+      '想一起為中高齡訓練盡一份心力？想要跨領域不知道怎麼跨出那一步？說明會我們將完整說明教練升遷路徑，並分享練健康組織架構及未來展望。第一階段說明會為免費！',
+      '第二階段訓練營專門為有意加入的夥伴或是想釐清實務訓練的人設計，透過完整培訓及實務演練，讓你在陪伴中高齡訓練的路上更踏實有信心！',
+    ],
+    points: [
+      { k: '學科培訓', v: '建立中高齡與一般大眾訓練所需的核心知識。' },
+      { k: '術科實作', v: '從動作示範、口令到現場修正，把知道的內容真正教得出來。' },
+      { k: '考核驗證', v: '透過實作與考核確認學習成果，建立更完整的教學能力。' },
+    ],
+    // ⚠️ 業主 2026-08-31 只提供了說明會日期；訓練營日期沿用改版前既有的四組
+    //    （03/07、06/13、09/05、12/05），依時序推斷各自對應同一梯次的說明會
+    //    （說明會皆早於訓練營約一個月）。此對應關係待業主確認。
+    dates: [
+      { k: '第一梯次', rows: [{ k: '說明會', v: '2/7' }, { k: '訓練營', v: '03/07–03/08、03/21–03/22' }] },
+      { k: '第二梯次', rows: [{ k: '說明會', v: '5/30' }, { k: '訓練營', v: '06/13–06/14、06/27–06/28' }] },
+      { k: '第三梯次', rows: [{ k: '說明會', v: '8/22' }, { k: '訓練營', v: '09/05–09/06、09/19–09/20' }] },
+      { k: '第四梯次', rows: [{ k: '說明會', v: '10/31' }, { k: '訓練營', v: '12/05–12/06、12/19–12/20' }] },
+    ],
+    href: 'https://www.surveycake.com/s/W2y4Z',
+    cta: '免費報名說明會點我 →',
   },
   {
-    id: 'coaching-language',
-    level: 'Lv1 初階',
-    levelColor: 'bg-green-600',
-    category: '學術',
-    categoryColor: 'bg-navy',
-    title: '高效指導語與動作拆解實戰課',
-    subtitle: '讓任何人快速學會動作教學，與教會親朋好友',
-    description: '讓任何人快速學會動作教學，有能力帶領團體課程與教會親朋好友。掌握六大基礎動作的自由重量操作、原理、變化式。',
-    duration: '8 小時',
-    targetAudience: ['新手教練', '想提升教學指導語者'],
-    highlights: ['指導語技巧', '動作拆解', '團體課程帶領'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=500&fit=crop&q=80',
-    registrationUrl: 'https://www.surveycake.com/s/W2y4Z',
+    idx: '02 · WORKSHOP FOR MIDDLE-AGE AND ELDERLY WELLNESS',
+    t: '中高齡訓練研習',
+    img: '',
+    // 業主 2026-08-31 定稿：中標由原本的引號句改為敘述句
+    quote: '培養能安全評估、有效訓練中高齡與特殊族群的實務指導能力。',
+    desc: [
+      '練健康累積近萬位個案訓練經驗，過半為中高齡族群。本研習整合醫師、物理治療師與肌力體能教練專業，從身體評估、常見疾病、安全考量，到訓練進退階與課表規劃，透過理論、實作與個案演練，培養教練面對中高齡及特殊族群時，能安全評估、有效訓練並建立醫療轉介判斷的實務能力。',
+    ],
+    points: [
+      { k: '填補市場缺口', v: '學習如何應對「非結構異常」但有身體限制的特殊族群。' },
+      { k: '醫體整合', v: '融合病理學與實務訓練，學習安全評估與風險控管，讓指導更安全、更有信心。' },
+      { k: '功能性導向', v: '目標不是破 PR，而是協助學員恢復生活自理能力，例如穩定行走、降低跌倒風險。' },
+    ],
+    dates: [
+      { k: '第一梯次', v: '05/09–05/10、05/16–05/17' },
+      { k: '第二梯次', v: '11/14–11/15、11/21–11/22' },
+    ],
+    href: 'https://www.surveycake.com/s/DraAb',
   },
   {
-    id: 'biomechanics',
-    level: 'Lv2 中階',
-    levelColor: 'bg-blue-500',
-    category: '學術',
-    categoryColor: 'bg-navy',
-    title: '解剖生物力學',
-    subtitle: '建立人體運作原理的底層知識',
-    description: '建立人體運作原理的底層知識，透過理解槓桿如何發揮功能，可獨立推演肌肉與骨骼發力的路徑。',
-    duration: '24 小時',
-    targetAudience: ['想全面了解肌動學及解剖學的教練', '人體工作者', '肌動、解剖、運動科學愛好者'],
-    highlights: ['解剖學基礎', '生物力學原理', '動作分析應用'],
-    image: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=800&h=500&fit=crop&q=80',
-    registrationUrl: 'https://www.surveycake.com/s/W2y4Z',
-  },
-  {
-    id: 'senior-training',
-    level: 'Lv3 高階',
-    levelColor: 'bg-purple-500',
-    category: '學術',
-    categoryColor: 'bg-navy',
-    title: '中高齡訓練研習營',
-    subtitle: '學會身體能力評估與解法，安全有效帶領特殊病友',
-    description: '學會身體能力評估與解法，解決基本活動度問題。學會安全考量與生理限制下的訓練進退階邏輯。了解常見疾病病理，建立醫療轉介共通語言。能夠安全有效帶領特殊病友進步。',
-    duration: '32 小時（4天）',
-    targetAudience: ['教練、醫療人員、照護員', '需要面對中高齡、特殊族群者'],
-    highlights: ['身體能力評估', '疾病病理了解', '醫療轉介溝通'],
-    image: 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&h=500&fit=crop&q=80',
-    registrationUrl: 'https://www.surveycake.com/s/DraAb',
-  },
-  {
-    id: 'eagle-eye',
-    level: 'Lv3 高階',
-    levelColor: 'bg-purple-500',
-    category: '學術',
-    categoryColor: 'bg-navy',
-    title: '鷹眼大師',
-    subtitle: '常見功能障礙與對策、精準動作解析與判斷點',
-    description: '系統性排除肩頸、脊椎（含胸椎、腰椎）、髖部和膝蓋等部位的常見動作障礙與功能受限。理解並應用不同平面動作組合，學習多面向的動作篩檢與分析，建立快速的判斷點。掌握身體運作的核心運動原則，設計相對應解決方法以優化動作。',
-    duration: '16 小時',
-    targetAudience: ['擁有一定教學經驗之教練', '健康促進人士', '醫療人員'],
-    highlights: ['功能障礙對策', '動作篩檢分析', '訓練課表設計'],
-    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=500&fit=crop&q=80',
-    registrationUrl: 'https://www.surveycake.com/s/W2y4Z',
+    idx: '03 · EAGLE EYE DETECTIVE WORKSHOP',
+    t: '鷹眼大師',
+    img: '',
+    // 業主 2026-08-31 定稿：中標由引號句改為敘述句
+    quote: '鍛鍊敏銳的動態評估能力，一眼看穿代償與瓶頸。',
+    desc: [
+      '培養教練精準判讀學員動作的觀察力，從現場快速抓出動作代償與風險，並掌握對應的調整策略，讓指導更即時、更到位。這堂課要訓練的，不只是「看見不一樣」，而是知道接下來該怎麼處理。',
+    ],
+    points: [
+      { k: '精準評估', v: '從靜態評估連結到動態檢測，逐步找出可能的問題來源。' },
+      { k: '實戰解法', v: '面對不對稱、動作歪斜與不明痠痛，透過實際案例訓練調整，而非只會照表操課。' },
+      { k: '建立信心', v: '理解教練可以處理的範圍與轉介界線，精準提升動作品質。' },
+    ],
+    dates: [
+      { k: '第一梯次', v: '06/20–06/21' },
+      { k: '第二梯次', v: '10/17–10/18' },
+    ],
+    href: 'https://www.surveycake.com/s/1QavK',
   },
 ]
 
-const stats = [
-  { num: '200+', label: '認證教練' },
-  { num: '50+', label: '合作機構' },
-  { num: '5 年', label: '培訓經驗' },
-  { num: '95%', label: '學員滿意度' },
-]
-
-const coursesByLevel = [
+// 為什麼選擇（2026-08-31 業主定稿）
+// 「近萬位個案」與本頁的「10,000+ 服務人次」及 /about 的 keyStats 一致。
+const whyUs = [
   {
-    level: 'Lv 1. 初階',
-    levelColor: 'bg-green-600',
-    description: '教學經驗及現場掌控',
-    courses: [
-      {
-        title: '高效指導語與動作拆解實戰課',
-        category: '學術',
-        objectives: ['讓任何人快速學會動作教學，有能力帶領團體課程與教會親朋好友。', '掌握六大基礎動作的自由重量操作、原理、變化式。'],
-        target: '新手教練：想瞭解更多有效動作教學指導語以提升教學能力。',
-      },
-      {
-        title: '練健康訓練營',
-        category: '學術',
-        objectives: ['熟練六大基礎動作，並能以安全、有效、邏輯清楚的方式教學。', '培養立即上線授課能力，並與客戶應對的軟實力。'],
-        target: '教練：想成為全方位教練。跨領域轉職教練者：有訓練經驗，想培養教學能力。健身愛好者：有訓練經驗，對訓練知識感興趣。',
-      },
-    ],
+    n: '01',
+    t: '第一線，你一定會遇到中高齡與特殊族群',
+    d: '中高齡學員越來越多，伴隨慢性病、術後、疼痛或活動限制的個案，也早已出現在日常訓練現場。如何判斷能不能練、怎麼練、何時該轉介，是教學中高齡者必須具備的能力。',
   },
   {
-    level: 'Lv 2. 中階',
-    levelColor: 'bg-blue-500',
-    description: '身體理解及應用層面',
-    courses: [
-      {
-        title: '解剖生物力學',
-        category: '學術',
-        objectives: ['建立人體運作原理的底層知識，透過理解槓桿如何發揮功能，可獨立推演肌肉與骨骼發力的路徑。'],
-        target: '教練：想全面了解並應用肌動學及解剖學。人體工作者。肌動、人體解剖、運動科學愛好者。',
-      },
-    ],
+    n: '02',
+    t: '實證為王，近萬位個案淬鍊出的實務方法',
+    d: '課程濃縮練健康近萬位個案的第一線經驗，整合醫師、物理治療師與肌力體能教練專業。從真實個案出發，把理論轉化成能直接運用的評估、判斷、指導與進退階方法。',
   },
   {
-    level: 'Lv 3. 高階',
-    levelColor: 'bg-purple-500',
-    description: '中高齡與特殊族群',
-    courses: [
-      {
-        title: '中高齡訓練研習營',
-        category: '學術',
-        objectives: ['學會身體能力評估與解法，解決基本活動度問題。', '學會安全考量與生理限制下的訓練進退階邏輯。', '了解常見疾病病理，建立醫療轉介共通語言。', '能夠安全有效帶領特殊病友進步。'],
-        target: '教練、醫療人員、照護員：需要面對中高齡、特殊族群者。',
-      },
-      {
-        title: '鷹眼大師',
-        category: '學術',
-        objectives: ['常見功能障礙與對策：系統性排除肩頸、脊椎、髖部和膝蓋等部位的常見動作障礙與功能受限。', '精準動作解析與判斷點：理解並應用不同平面動作組合，學習多面向的動作篩檢與分析。', '上／下肢運動解法：掌握身體運作的核心運動原則，設計相對應解決方法以優化動作。', '建立訓練課表：根據動作分析結果，設計針對功能障礙的訓練路徑，有效解決訓練中出現的動作問題。'],
-        target: '擁有一定教學經驗之教練：想增進評估能力、解決訓練問題。健康促進人士：想透過運動固化按摩放鬆的效果。醫療人員：針對服務個案的需求，提升解決問題的能力。',
-      },
-    ],
+    n: '03',
+    t: '從「知道怎麼練」到「真的敢帶」',
+    d: '面對中風、骨質疏鬆、帕金森氏症、術後等不同狀況，教練需要的不只是動作知識，更需要知道怎麼評估、怎麼調整、怎麼降低風險。透過實作、個案演練與考核，建立面對特殊族群的實戰能力與信心。',
   },
 ]
 </script>
 
 <template>
   <div class="min-h-screen bg-cream">
-    <!-- Hero Section -->
-    <section class="relative bg-navy pt-16 overflow-hidden">
-      <div class="absolute inset-0">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
-        <div
-          class="absolute inset-0 opacity-[0.022]"
-          :style="{
-            backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)',
-            backgroundSize: '55px 55px',
-          }"
-        />
-      </div>
 
-      <div class="container mx-auto px-4 relative z-10 py-16 lg:py-24">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <nav class="flex items-center gap-1.5 text-xs text-white/35 mb-6">
-              <NuxtLink to="/" class="hover:text-white/70 transition-colors">練健康</NuxtLink>
-              <span class="text-white/20">›</span>
-              <span>練健康學院</span>
-            </nav>
-
-            <div class="inline-flex items-center bg-orange/20 border border-orange/40 text-orange text-sm font-medium px-4 py-1.5 rounded-full mb-5">
-              中高齡與特殊族群訓練專業培訓
-            </div>
-
-            <h1 class="font-serif text-4xl lg:text-5xl font-black text-white leading-tight mb-4">
-              練健康<span class="text-orange">學院</span>
-            </h1>
-
-            <p class="text-white/60 text-lg font-light leading-relaxed max-w-xl mb-8">
-              從物理治療到肌力訓練，系統化培養專業教練。已培育 200+ 認證教練，遍及台灣與海外。
-            </p>
-
-            <div class="flex flex-wrap gap-3">
-              <a href="#courses" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-orange/35 hover:-translate-y-0.5 transition-transform">
-                查看課程 →
-              </a>
-              <a
-                href="https://www.surveycake.com/s/W2y4Z"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white font-medium px-6 py-3 rounded-full hover:bg-white/20 transition-colors"
-              >
-                前往報名頁
-              </a>
-            </div>
-          </div>
-
-          <!-- Stats -->
-          <div class="grid grid-cols-2 gap-4">
-            <div
-              v-for="stat in stats"
-              :key="stat.label"
-              class="bg-white/[0.07] border border-white/10 rounded-xl p-6 text-center"
-            >
-              <div class="font-serif text-3xl lg:text-4xl font-bold text-orange">{{ stat.num }}</div>
-              <div class="text-white/50 text-sm mt-1">{{ stat.label }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Why Academy Section -->
-    <section class="py-16 bg-cream">
-      <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto">
-          <div class="text-center mb-10">
-            <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-              <span class="w-5 h-0.5 bg-orange" />
-              學院理念
-            </div>
-            <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-6">
-              為什麼我們想成立<span class="text-orange">練健康學院</span>？
-            </h2>
-          </div>
-
-          <div class="bg-white rounded-2xl p-8 border border-navy/10 shadow-sm">
-            <p class="text-ink/80 leading-relaxed mb-6">
-              練健康自成立以來，累積服務 <strong class="text-navy">10,000+ 位學員</strong>，其中近 50% 為中高齡及特殊族群個案。在實務現場，我們看見了許多教練（與想成為教練的人）面臨的共同困境：
-            </p>
-
-            <div class="grid md:grid-cols-2 gap-4 mb-6">
-              <div class="bg-cream rounded-xl p-5 border-l-4 border-orange">
-                <h3 class="font-bold text-navy mb-2">學用落差</h3>
-                <p class="text-sm text-ink/70">缺乏系統化管道，難以將書本上的「基礎理論」轉化為現場的「有效教學」。</p>
-              </div>
-              <div class="bg-cream rounded-xl p-5 border-l-4 border-orange">
-                <h3 class="font-bold text-navy mb-2">特殊族群缺口</h3>
-                <p class="text-sm text-ink/70">傳統肌力訓練教學多針對年輕族群，面對身體有較多限制的長輩，缺乏相對應的訓練知識及合適的指導技巧。</p>
-              </div>
-            </div>
-
-            <p class="text-ink/80 leading-relaxed mb-4">
-              為了回應這些需求，我們設立了<strong class="text-orange">練健康學院</strong>，整合學科與術科的專業，設計出循序漸進的研習課程。不論你是剛入門、想補強基礎的教練，還是希望在職涯中持續精進、拓展專業的人，都能在練健康學院所開的課表中，找到實用且符合現場需求的學習資源。
-            </p>
-
-            <p class="text-navy font-medium leading-relaxed">
-              我們相信，專業教練的養成不只需要知識，更需要能落地的解法。練健康學院整合學科與術科，為你搭建一座從「正確練」到「好會教」的橋樑。
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Course Overview Section -->
-    <section class="py-16 bg-navy">
-      <div class="container mx-auto px-4">
-        <div class="text-center mb-12">
-          <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
+    <!-- HERO -->
+    <section class="relative bg-navy-800 text-white pt-16 overflow-hidden">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_82%_25%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_4%_80%,rgba(58,106,133,0.35)_0%,transparent_45%)]" />
+      <div class="container mx-auto px-4 relative z-10 py-14 lg:py-20">
+        <div class="max-w-3xl">
+          <div class="flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
             <span class="w-5 h-0.5 bg-orange" />
-            課程總覽
+            Programs
+            <span class="text-white/65 tracking-normal normal-case font-medium">・研習課程</span>
           </div>
-          <h2 class="font-serif text-2xl lg:text-3xl font-black text-white mb-4">
-            練健康<span class="text-orange">課程總覽</span>
-          </h2>
-          <div class="flex items-center justify-center gap-4 text-sm text-white/60">
-            <span class="flex items-center gap-1.5">
-              <span class="w-3 h-3 rounded bg-navy-800 border border-white/30"></span>
-              學術課程
-            </span>
-          </div>
-        </div>
-
-        <div class="max-w-6xl mx-auto grid lg:grid-cols-3 gap-6">
-          <div v-for="levelData in coursesByLevel" :key="levelData.level" class="space-y-4">
-            <!-- Level Header -->
-            <div :class="[levelData.levelColor, 'rounded-xl p-4 text-center']">
-              <div class="text-white font-bold text-lg">{{ levelData.level }}</div>
-              <div class="text-white/80 text-sm">{{ levelData.description }}</div>
-            </div>
-
-            <!-- Courses -->
-            <div v-for="course in levelData.courses" :key="course.title" class="bg-cream rounded-xl p-5 border-2 border-cream-200">
-              <div class="flex items-center gap-2 mb-3">
-                <h3 class="font-bold text-navy text-sm leading-tight">{{ course.title }}</h3>
-                <span class="text-[10px] bg-navy text-white px-2 py-0.5 rounded">{{ course.category }}</span>
-              </div>
-
-              <div class="mb-3">
-                <p class="text-[10px] font-bold text-orange mb-1">課程目標</p>
-                <ul class="text-xs text-ink/70 space-y-1">
-                  <li v-for="(obj, idx) in course.objectives" :key="idx" class="flex gap-1.5">
-                    <span class="text-orange">•</span>
-                    <span>{{ obj }}</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div class="pt-2 border-t border-cream-200">
-                <p class="text-[10px] font-bold text-orange mb-1">對象</p>
-                <p class="text-xs text-ink/70">{{ course.target }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Courses Section -->
-    <section id="courses" class="py-16 lg:py-20 bg-white">
-      <div class="container mx-auto px-4">
-        <div class="text-center mb-12">
-          <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-            <span class="w-5 h-0.5 bg-orange" />
-            課程介紹
-          </div>
-          <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy mb-4">
-            專業<span class="text-orange">培訓課程</span>
-          </h2>
-          <p class="text-ink/60 max-w-2xl mx-auto">
-            由物理治療師、職能治療師與資深教練組成的講師團隊，提供最專業的訓練課程。
+          <h1 class="font-serif text-4xl lg:text-5xl font-black leading-tight mb-5">
+            把實務經驗，<span class="text-orange-300">變成教得會的方法</span>
+          </h1>
+          <div class="w-14 h-1 bg-orange rounded-full mb-6" />
+          <p class="text-white/70 text-lg font-light leading-relaxed mb-8">
+            從中高齡與特殊族群訓練，到動作觀察與教學實戰，我們把第一線累積的方法整理成循序漸進的研習課程，幫助教練把知識真正帶進現場。
           </p>
+          <a href="#courses" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
+            查看研習課程 →
+          </a>
         </div>
+      </div>
+    </section>
 
-        <div class="space-y-8">
-          <article
-            v-for="(course, idx) in courses"
-            :key="course.id"
-            :class="[
-              'flex flex-col gap-6 lg:gap-8 bg-cream rounded-2xl overflow-hidden border border-navy/10',
-              idx % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'
-            ]"
-          >
-            <!-- Image -->
-            <div class="lg:w-2/5 aspect-video lg:aspect-auto relative">
-              <img
-                :src="course.image"
-                :alt="course.title"
-                class="w-full h-full object-cover"
-              />
-              <div class="absolute top-4 left-4 flex gap-2">
-                <span :class="[course.levelColor, 'text-white text-xs font-bold px-3 py-1 rounded-full']">
-                  {{ course.level }}
-                </span>
-                <span class="bg-navy text-white text-xs font-bold px-3 py-1 rounded-full">
-                  {{ course.category }}
-                </span>
-              </div>
+    <!-- 為什麼開設研習課程 -->
+    <section class="py-14 lg:py-20">
+      <div class="container mx-auto px-4">
+        <div class="grid lg:grid-cols-[.78fr_1.22fr] gap-10 lg:gap-16 items-start">
+
+          <div>
+            <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-4">
+              <span class="w-5 h-0.5 bg-orange-700" />
+              Why We Teach
             </div>
+            <span class="block font-serif text-6xl lg:text-7xl font-black text-orange leading-none tracking-tight mb-5">10,000+</span>
+            <h2 class="font-serif text-xl lg:text-2xl font-black text-navy-800 mb-4 leading-snug">
+              從真實個案裡，找到教練現場真正需要的方法
+            </h2>
+            <p class="text-ink/70 leading-relaxed">
+              練健康自成立以來，累計服務超過 10,000 人次，其中近 50% 為中高齡及特殊族群個案。這些第一線經驗，也是研習課程最重要的起點。
+            </p>
+          </div>
 
-            <!-- Content -->
-            <div class="lg:w-3/5 p-6 lg:p-8 flex flex-col justify-center">
-              <div class="mb-4">
-                <h3 class="font-serif text-2xl font-bold text-navy mb-2">{{ course.title }}</h3>
-                <p class="text-orange font-medium">{{ course.subtitle }}</p>
-              </div>
+          <div>
+            <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-4">
+              <span class="w-5 h-0.5 bg-orange-700" />
+              From Knowing to Coaching
+              <span class="text-navy-800/70 tracking-normal normal-case font-medium">・從知道，到真的會教</span>
+            </div>
+            <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-800 mb-5 leading-snug">
+              為什麼練健康要開設研習課程？
+            </h2>
+            <p class="text-ink/70 leading-relaxed mb-8">
+              在實務現場，我們看見許多教練，以及想成為教練的人，反覆遇到相似的難題。真正困難的，往往不是「有沒有學過」，而是能不能在學員站到面前時，做出正確判斷與有效教學。
+            </p>
 
-              <p class="text-ink/60 mb-4 leading-relaxed">{{ course.description }}</p>
-
-              <div class="flex items-center gap-4 mb-4 text-sm">
-                <span class="flex items-center gap-1.5 text-navy">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {{ course.duration }}
-                </span>
-              </div>
-
-              <!-- Target Audience -->
-              <div class="mb-4">
-                <p class="text-xs font-bold text-ink/50 mb-2">適合對象</p>
-                <div class="flex flex-wrap gap-2">
-                  <span
-                    v-for="audience in course.targetAudience"
-                    :key="audience"
-                    class="text-xs bg-navy/10 text-navy px-3 py-1 rounded-full"
-                  >
-                    {{ audience }}
-                  </span>
+            <div class="border-t border-navy-700/15">
+              <div v-for="p in problems" :key="p.n" class="grid grid-cols-[40px_1fr] gap-4 py-6 border-b border-navy-700/15">
+                <span class="font-serif text-sm font-black text-orange pt-1">{{ p.n }}</span>
+                <div>
+                  <h3 class="font-serif text-lg font-black text-navy-800 mb-2">{{ p.t }}</h3>
+                  <p class="text-ink/65 text-sm leading-relaxed">{{ p.d }}</p>
                 </div>
               </div>
+            </div>
 
-              <!-- Highlights -->
-              <div class="flex flex-wrap gap-2 mb-6">
-                <span
-                  v-for="highlight in course.highlights"
-                  :key="highlight"
-                  class="text-xs bg-orange/10 text-orange px-3 py-1 rounded-full"
-                >
-                  {{ highlight }}
-                </span>
+            <p class="text-ink/70 leading-relaxed mt-7">
+              為了回應這些需求，我們整合學科與術科的專業，設計出循序漸進的研習課程。不論你是剛入門、想補強基礎的教練，還是希望在職涯中持續精進、拓展專業，都能在這裡找到實用且符合現場需求的學習資源。
+            </p>
+            <p class="text-ink/70 leading-relaxed mt-4">
+              <strong class="text-navy-800">專業教練的養成不只需要知識，更需要能落地的解法。</strong>練健康希望為你搭建一座從「正確練」到「好會教」的橋樑。
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 課程列表 -->
+    <section id="courses" class="bg-white py-14 lg:py-20 scroll-mt-20">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-4">
+          <span class="w-5 h-0.5 bg-orange-700" />
+          Current Programs
+          <span class="text-navy-800/70 tracking-normal normal-case font-medium">・開放報名</span>
+        </div>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-800 mb-4 leading-snug">
+          把現場遇到的問題，<br class="hidden sm:block" />變成真正用得上的能力
+        </h2>
+        <p class="text-ink/65 leading-relaxed max-w-3xl mb-10 lg:mb-14">
+          每一門課都從實際教學情境出發。你不只會學到「怎麼做」，也會理解「為什麼這樣做」，並知道何時該調整、何時該進退階，以及自己的專業界線在哪裡。
+        </p>
+
+        <div>
+          <article
+            v-for="(c, i) in courses"
+            :key="c.t"
+            class="grid lg:grid-cols-2 gap-8 lg:gap-14 items-start py-10 lg:py-16 border-t border-navy-700/15 first:border-t-0 first:pt-0"
+          >
+            <!-- 偶數項圖片換到右邊 -->
+            <div :class="['relative overflow-hidden rounded-sm bg-cream-200 border border-navy-700/12', i % 2 === 1 ? 'lg:order-2' : '']">
+              <img v-if="c.img" :src="c.img" :alt="`練健康${c.t}課程`" loading="lazy" class="w-full aspect-[16/10] object-cover" />
+              <div v-else class="w-full aspect-[16/10] flex items-center justify-center text-navy-700/20">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+
+            <div>
+              <p class="flex items-center gap-3 text-xs font-bold text-orange-700 tracking-widest uppercase mb-4">
+                {{ c.idx }}
+                <span class="w-8 h-px bg-orange-700" />
+              </p>
+              <h3 class="font-serif text-3xl lg:text-4xl font-black text-navy-800 mb-4">{{ c.t }}</h3>
+              <p class="font-serif font-bold text-lg lg:text-xl text-navy-700 leading-relaxed mb-5 pl-4 border-l-[3px] border-orange">
+                {{ c.quote }}
+              </p>
+              <p v-for="(d, di) in c.desc" :key="di" class="text-ink/65 leading-relaxed mb-4">{{ d }}</p>
+
+              <details class="group mt-2">
+                <summary class="cursor-pointer list-none text-sm font-bold text-navy-700 hover:text-orange transition-colors select-none">
+                  <span class="group-open:hidden">＋ 查看完整課程介紹</span>
+                  <span class="hidden group-open:inline">－ 收起課程介紹</span>
+                </summary>
+                <ul class="mt-5 border-t border-navy-700/15">
+                  <li v-for="pt in c.points" :key="pt.k" class="grid sm:grid-cols-[145px_1fr] gap-1 sm:gap-4 py-4 border-b border-navy-700/15 text-sm leading-relaxed text-ink/65">
+                    <strong class="font-serif text-navy-800">{{ pt.k }}</strong>
+                    <span>{{ pt.v }}</span>
+                  </li>
+                </ul>
+              </details>
+
+              <div class="mt-7 pt-6 border-t border-navy-700/15">
+                <div class="flex items-baseline justify-between mb-3">
+                  <b class="font-serif text-navy-800">2026 開課梯次</b>
+                  <span class="text-[11px] tracking-widest uppercase text-navy-700/40">Course Dates</span>
+                </div>
+                <ul>
+                  <li v-for="d in c.dates" :key="d.k" class="py-2 border-b border-navy-700/10 text-sm">
+                    <!-- 有 rows 的梯次（說明會／訓練營）拆成子列，其餘維持單列 -->
+                    <template v-if="d.rows">
+                      <b class="text-navy-800 font-serif block mb-1.5">【{{ d.k }}】</b>
+                      <div v-for="r in d.rows" :key="r.k" class="flex flex-wrap items-baseline gap-x-3 pl-4 py-0.5">
+                        <span class="text-navy-700 font-medium min-w-[3.5rem]">{{ r.k }}</span>
+                        <span class="text-ink/65">{{ r.v }}</span>
+                      </div>
+                    </template>
+                    <div v-else class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                      <b class="text-navy-800 font-serif">{{ d.k }}</b>
+                      <span class="text-ink/65">{{ d.v }}</span>
+                    </div>
+                  </li>
+                </ul>
+                <p class="text-xs text-ink/45 mt-3">※ 實際開課日期與報名狀態以最新公告及報名頁為準。</p>
               </div>
 
-              <a
-                :href="course.registrationUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 bg-orange text-white font-bold px-6 py-2.5 rounded-full shadow-lg shadow-orange/25 hover:-translate-y-0.5 transition-transform w-fit"
-              >
-                立即報名 →
-              </a>
+              <div class="mt-6">
+                <a :href="c.href" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
+                  {{ c.cta || '立即報名 →' }}
+                </a>
+              </div>
             </div>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="bg-orange py-16 lg:py-20 text-center">
+    <!-- 為什麼選擇 -->
+    <section class="bg-navy-800 text-white py-14 lg:py-20">
       <div class="container mx-auto px-4">
-        <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">
-          準備好開始你的教練之路了嗎？
+        <div class="flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
+          <span class="w-5 h-0.5 bg-orange" />
+          Why LKK Programs
+          <span class="text-white/65 tracking-normal normal-case font-medium">・為什麼選擇練健康研習課程</span>
+        </div>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black mb-10 leading-snug">
+          不只教你「怎麼做」，<br class="hidden sm:block" />更讓你知道「為什麼這樣做」
         </h2>
-        <p class="text-white/80 mb-8 max-w-md mx-auto">
-          加入練健康學院，成為專業的中高齡訓練教練。
-        </p>
-        <div class="flex flex-wrap justify-center gap-4">
-          <a
-            href="https://www.surveycake.com/s/W2y4Z"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 bg-white text-orange font-bold px-8 py-3.5 rounded-full shadow-lg hover:-translate-y-0.5 transition-transform"
-          >
-            前往報名 →
-          </a>
-          <NuxtLink
-            to="/cooperation"
-            class="inline-flex items-center gap-2 bg-transparent border-2 border-white text-white font-bold px-8 py-3.5 rounded-full hover:bg-white/10 transition-colors"
-          >
-            企業培訓洽詢
-          </NuxtLink>
+        <div class="border-t border-white/15">
+          <div v-for="w in whyUs" :key="w.n" class="grid grid-cols-[40px_1fr] gap-4 lg:gap-8 py-7 border-b border-white/15">
+            <span class="font-serif text-sm font-black text-orange-300 pt-1">{{ w.n }}</span>
+            <div>
+              <h3 class="font-serif text-lg lg:text-xl font-black mb-2">{{ w.t }}</h3>
+              <p class="text-white/70 text-sm lg:text-base leading-relaxed">{{ w.d }}</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
+
+    <!-- 講師團隊 CTA（2026-08-31 業主指定改為米色底，文字改深色）-->
+    <section class="bg-cream py-14 lg:py-20">
+      <div class="container mx-auto px-4">
+        <div class="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+          <div>
+            <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-4">
+              <span class="w-5 h-0.5 bg-orange-700" />
+              Faculty
+              <span class="text-navy-800/70 tracking-normal normal-case font-medium">・講師團隊</span>
+            </div>
+            <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-800 leading-snug mb-4">
+              結合臨床醫療與實務訓練<br class="hidden sm:block" />專業的講師陣容
+            </h2>
+            <p class="text-ink/70 leading-relaxed">
+              所有講師皆經嚴格培訓與實戰驗證，專注提供安全、有效且可持續的訓練解決方案。
+            </p>
+          </div>
+          <div class="lg:justify-self-end">
+            <!-- ⚠️ 設計稿此處寫死 dev 站網址，改為站內相對路徑 -->
+            <NuxtLink to="/lkk-lecturer" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
+              認識講師團隊 →
+            </NuxtLink>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 </template>
