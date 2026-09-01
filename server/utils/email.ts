@@ -342,7 +342,7 @@ const formConfirmationConfig: Record<string, {
     title: '預約確認',
     greeting: '感謝您預約練健康的體驗課程！',
     message: '我們已收到您的預約申請，將盡快與您聯繫確認時間。',
-    closing: '如有任何問題，歡迎直接回覆此信或致電分店。<br>我們期待與您見面！',
+    closing: '如有任何問題，歡迎直接回覆此信、加入練健康 LINE 官方帳號 <a href="https://line.me/R/ti/p/%40201fzruh" style="color:#FB720A;">@201fzruh</a> 或致電各分店。<br>我們期待與您見面！',
   },
   cooperation: {
     subject: '【練健康】感謝您的合作洽詢',
