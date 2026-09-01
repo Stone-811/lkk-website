@@ -1085,7 +1085,11 @@ export default defineNuxtConfig({
 })
 ```
 
-> 目前站上**尚未接任何追蹤碼**，這節是規劃，不是現況。
+> **現況：GA4 已裝**——`plugins/gtag.client.ts`，評估 ID `G-DSQC1NTPJ3`，
+> 且**只在 `lkkwellness.com` / `www.lkkwellness.com` 啟用**，dev 與 hosted.app 網址一律不追蹤，
+> 避免測試流量污染數據。curl 抓不到 `googletagmanager` 是正常的——它由 client 端 JS 注入，
+> 不在 SSR 的 HTML 裡，要用瀏覽器實測才看得到。
+> GTM / Facebook Pixel / LINE Tag 則尚未接，上面那段是規劃。
 
 ### 轉換追蹤
 
