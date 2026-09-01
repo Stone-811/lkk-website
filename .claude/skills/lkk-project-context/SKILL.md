@@ -45,6 +45,32 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - **`/team-intro/coaches`**：刪橘標與人數；主標「專業教練團隊」；**專長標籤全部列出、不再收成 +N**，並移除 `truncate max-w-[90px]`（最長的「肌力訓練與動作優化」會被裁掉），改 `whitespace-nowrap`；`components/CoachCard.vue` 同步（它的註解本來就寫明比照該頁）
 - **`/cooperation`**：Hero 四項全換；刪除「三大核心合作範疇」整個 section 與 科學化／跨國／大數據 三格，連同已無用的 `methodPoints`、`pressStats`
 
+## 2026-08-31～09-01 這批改版（**已上 prod：研習課程／Header／eyebrow；LKK4 與確認信仍只在 dev**）
+
+- **`/lkk-academy`**：由「練健康學院」改版為 **研習課程**，三門課（徵才說明會暨訓練營／中高齡訓練研習／鷹眼大師）。
+  ⚠️「10,000+ 服務人次」必須與 `pages/about.vue` 的 `keyStats` 一致，檔頭有註解標記。
+- **`/about`**：依業主草稿重寫；刪 team / lkk4 / media / locations 四區；Hero 改雙欄含圖表。
+- **Header**：新增「研習課程」；「服務方案」改下拉（所有服務／一對一體驗報名／團體課程報名）。
+  ⚠️ **下拉項在 `v-if` 後面，SSR HTML 沒有** → 驗證要改抓 client chunk，見 [[lkk-web-gotchas]] 第 21 條。
+- **全站 eyebrow 對比修正**（14 檔、71 處）：淺底 `text-orange`→`text-orange-700`、
+  `bg-orange`→`bg-orange-700`、`navy-700/40`→`navy-800/70`。
+  ⚠️ `navy-700` 不管拉到多高透明度都過不了（`/70` 也只有 3.59），**必須換底色到 navy-800**。
+  深底的 7 處 `orange-300` 與 12 條 `bg-orange` 短線刻意不動（本就 4.96–7.60 通過）。
+- **`/lkk4` 全頁重構**（依業主 HTML 草稿，**尚未上 prod**）：
+  Hero → 四詞卡 → 四大功能挑戰 → 自我測驗 → 團體賽 → 賽事緣起 → 賽制與報名 → 成績查詢 → FAQ → CTA。
+  票券視覺做成 `components/lkk4/Ticket.vue`（用 9 次）＋ `components/lkk4/Icon.vue`。
+  **全頁 navy-700 底**，實測白 8.37／cream 7.31／white-75 5.54／orange-300 4.96 過，
+  **orange DEFAULT 只有 2.99** → 票券外橘字一律 `orange-300`。
+  移除了 `highlights` 四個數字卡與「練健康是誰」（後者與 `/about` 重複）。
+  ⚠️ **團體賽規則是草稿帶進來的新資訊**（70 歲以上 2–3 人組隊／可換手／輪椅協助條款／
+  80 歲以上不排名），站上原本沒有、無法核對 Accupass，**上 prod 前要業主確認**。
+  舊的 `public/images/lkk4/hero.webp`（空白框版）已無人引用但保留。
+- **booking 確認信**加上可點選的 LINE 連結（比照團課），見記憶 [[lkk-web-content-data]]。
+
+> 業主再丟版型草稿要改某頁時，走 **`lkk-owner-draft`** skill（拆解方式／要問的四件事／三個坑）。
+> 品牌手冊六色與站上 token 的落差見記憶 **[[lkk-web-brand-colors]]**——
+> **只有米色與白色對得上**，深藍差 ΔE 10.0，且**換品牌橘也救不了橘字對比**（2.91 vs 2.80，都不到 4.5）。
+
 ## 安全（動 /admin 或 server/api/admin 前必看）
 - 已修補：後門帳號（改 `ALLOW_DEV_ADMIN` gate）、`JWT_SECRET` 正式站強制、登入頁明文帳密移除。
 - **部署前必設 `JWT_SECRET` secret**，否則正式站啟動 crash。
