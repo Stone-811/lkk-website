@@ -109,37 +109,16 @@ const timeline = [
   { y: '2026', t: '松江加盟店開幕', d: '第六屆聖誕老人硬舉大賽，加盟版圖持續擴大。' },
 ]
 
-const programGroups = [
-  {
-    t: '練健康學院',
-    items: [
-      '中高齡訓練研習：如何帶學員從衰弱恢復健康',
-      '練健康認證講師培訓（Level 1）',
-      '銀髮動作基礎訓練營（含馬來西亞海外場）',
-      '高效指導語與動作拆解實戰課',
-      '舉重工作坊：奧林匹克舉重於肌力體能之應用',
-    ],
-  },
-  {
-    t: '賽事與公益推廣',
-    items: [
-      'LKK4 聖誕老人功能錦標賽',
-      '高齡產業博覽會六角槓體驗',
-      '骨質疏鬆醫學講座與免費骨密度測量',
-      '社區公益長輩硬舉推廣',
-    ],
-  },
-  {
-    t: '產業與機構合作',
-    items: [
-      '國家衛生研究院、草屯療養院合作',
-      '大專校院產學合作',
-      '異業結盟與企業健康方案',
-      '中高齡健康訓練創業與展店說明會',
-    ],
-  },
-]
-</script>
+// 從知識到行動（2026-08-31 業主定稿，取代原本「把方法，交到更多人手上」的 3 大類 13 項）
+// ⚠️ img 尚未提供，暫時留空 → 版面會顯示占位底色。照片到位後把檔名填進來即可。
+//    規格：4:3、建議 800x600 以上，放 public/images/about/wwd-*.webp
+const whatWeDo = [
+  { t: '知識轉譯', img: '' },
+  { t: '人才培育', img: '' },
+  { t: '訓練服務', img: '' },
+  { t: '產業升級', img: '' },
+  { t: '教練陪伴', img: '' },
+]</script>
 
 <template>
   <div class="bg-cream min-h-screen">
@@ -435,36 +414,36 @@ const programGroups = [
       </div>
     </section>
 
+    <!-- 從知識到行動（2026-08-31 依設計稿：5 張照片卡片橫排）-->
     <section id="programs" class="bg-white py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
         <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
           <span class="w-5 h-0.5 bg-orange" />
-          Programs
-          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・課程與活動</span>
+          What We Do
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-4 max-w-2xl leading-snug">把方法，<span class="text-orange">交到更多人手上</span></h2>
-        <p class="text-ink/70 leading-relaxed mb-10 max-w-2xl">除了分店的一對一與團體課程，我們也把七年來的個案經驗整理成教材，對教練、醫療從業人員與一般民眾開課——讓「怎麼教、為什麼這樣教」能被複製出去。</p>
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10 leading-snug">
+          從知識到行動，<span class="text-orange">陪你一起成長</span>
+        </h2>
 
-        <div class="grid md:grid-cols-3 gap-6">
-          <div
-            v-for="g in programGroups"
-            :key="g.t"
-            class="bg-white rounded-2xl border border-navy-700/12 shadow-sm p-6 lg:p-7"
-          >
-            <h3 class="font-serif text-lg font-black text-navy-700 mb-4 pb-3 border-b border-navy-700/10">{{ g.t }}</h3>
-            <ul class="space-y-2.5">
-              <li v-for="item in g.items" :key="item" class="flex items-start gap-2.5 text-ink/70 text-sm leading-relaxed">
-                <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange flex-shrink-0" />
-                <span>{{ item }}</span>
-              </li>
-            </ul>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-5">
+          <div v-for="w in whatWeDo" :key="w.t">
+            <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-cream-200 border border-navy-700/10">
+              <img
+                v-if="w.img"
+                :src="w.img"
+                :alt="`練健康${w.t}`"
+                loading="lazy"
+                class="w-full h-full object-cover"
+              />
+              <!-- 照片未提供時的占位：不留空白破圖，維持版面高度 -->
+              <div v-else class="w-full h-full flex items-center justify-center text-navy-700/20">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+            <h3 class="font-serif text-lg font-black text-navy-700 mt-4">{{ w.t }}</h3>
           </div>
-        </div>
-
-        <div class="mt-8">
-          <NuxtLink to="/lkk-academy" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-            了解練健康學院 →
-          </NuxtLink>
         </div>
       </div>
     </section>
