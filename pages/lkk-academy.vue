@@ -307,20 +307,20 @@ const whyUs = [
       </div>
     </section>
 
-    <!-- 講師團隊 CTA -->
-    <section class="bg-navy-700 text-white py-14 lg:py-20">
+    <!-- 講師團隊 CTA（2026-08-31 業主指定改為米色底，文字改深色）-->
+    <section class="bg-cream py-14 lg:py-20">
       <div class="container mx-auto px-4">
         <div class="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <div>
-            <div class="flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
+            <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-4">
               <span class="w-5 h-0.5 bg-orange" />
               Faculty
-              <span class="text-white/65 tracking-normal normal-case font-medium">・講師團隊</span>
+              <span class="text-navy-700/40 tracking-normal normal-case font-medium">・講師團隊</span>
             </div>
-            <h2 class="font-serif text-2xl lg:text-3xl font-black leading-snug mb-4">
+            <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-800 leading-snug mb-4">
               結合臨床醫療與實務訓練<br class="hidden sm:block" />專業的講師陣容
             </h2>
-            <p class="text-white/70 leading-relaxed">
+            <p class="text-ink/70 leading-relaxed">
               所有講師皆經嚴格培訓與實戰驗證，專注提供安全、有效且可持續的訓練解決方案。
             </p>
           </div>
