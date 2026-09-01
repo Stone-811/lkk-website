@@ -102,15 +102,8 @@ function cellClass(v: string) {
   return 'text-white/70 text-sm'
 }
 
-const tabs = [
-  { id: 'personal', label: '一對一訓練' },
-  { id: 'group', label: '團體課程' },
-  { id: 'online', label: '線上課程' },
-]
-
-const activeTab = ref('personal')
-const isSticky = ref(false)
-
+// ⚠️ scrollToSection 必須保留——Hero 的三張卡片（一對一／團課／線上）仍靠它捲動。
+// 原本的 tabs / activeTab / isSticky 與捲動監聽只服務於已移除的粘性頁籤，一併刪除。
 const scrollToSection = (id: string) => {
   const element = document.getElementById(id)
   if (element) {
@@ -119,43 +112,6 @@ const scrollToSection = (id: string) => {
     window.scrollTo({ top, behavior: 'smooth' })
   }
 }
-
-onMounted(() => {
-  let ticking = false
-
-  const handleScroll = () => {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        const heroHeight = document.getElementById('hero')?.offsetHeight || 0
-        const newIsSticky = window.scrollY > heroHeight - 60
-
-        if (isSticky.value !== newIsSticky) {
-          isSticky.value = newIsSticky
-        }
-
-        const sections = ['personal', 'group', 'online']
-        for (const section of sections) {
-          const element = document.getElementById(section)
-          if (element) {
-            const rect = element.getBoundingClientRect()
-            if (rect.top <= 150 && rect.bottom >= 150) {
-              if (activeTab.value !== section) {
-                activeTab.value = section
-              }
-              break
-            }
-          }
-        }
-
-        ticking = false
-      })
-      ticking = true
-    }
-  }
-
-  window.addEventListener('scroll', handleScroll, { passive: true })
-  onUnmounted(() => window.removeEventListener('scroll', handleScroll))
-})
 
 const personalFeatures = [
   '訓練前進行身體評估，建立安全個人課表',
@@ -220,32 +176,6 @@ const personalFeatures = [
         </div>
       </div>
     </section>
-
-    <!-- 粘性頁籤 -->
-    <nav
-      :class="[
-        'bg-white border-b border-navy-700/[0.14] z-40 transition-shadow',
-        isSticky ? 'sticky top-0 shadow-sm' : ''
-      ]"
-    >
-      <div class="container mx-auto px-4">
-        <div class="flex justify-center h-[52px]">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            :class="[
-              'px-4 h-full font-medium transition-all border-b-[3px]',
-              activeTab === tab.id
-                ? 'text-[#1a3545] border-orange font-bold'
-                : 'text-[#7a7a7a] border-transparent hover:text-navy-700'
-            ]"
-            @click="scrollToSection(tab.id)"
-          >
-            {{ tab.label }}
-          </button>
-        </div>
-      </div>
-    </nav>
 
     <!-- 一對一訓練區 -->
     <section id="personal" class="py-16 md:py-24">
