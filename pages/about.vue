@@ -86,7 +86,14 @@ const founderStory = [
 ]
 
 // 我們的方式：四個價值（2026-08-31 依設計稿加入）
-const approachValues = ['以人為本', '安全有效', '快樂運動', '長期陪伴']
+// 我們的方式：四個價值（2026-08-31 依設計稿圖二改為深底＋橘色圖示橫排）
+// 圖示為裝飾性質，每個都有對應的文字標籤，故不受 WCAG 非文字對比 3:1 約束。
+const approachValues = [
+  { t: '以人為本', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
+  { t: '安全有效', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
+  { t: '快樂運動', icon: 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+  { t: '長期陪伴', icon: 'M6 20v-4M12 20V10M18 20V4' },
+]
 
 const timeline = [
   { y: '2018', t: '品牌籌備', d: '以「中高齡也能安全重訓」為題籌備第一間中心。' },
@@ -392,29 +399,38 @@ const programGroups = [
       </div>
     </section>
 
-    <!-- 我們的方式：四個價值（2026-08-31 依設計稿新增）-->
-    <section id="approach" class="py-14 lg:py-20 scroll-mt-28">
-      <div class="container mx-auto px-4 text-center">
-        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
-          Our Approach
-          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・我們的方式</span>
-        </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">
-          專業嚴謹，<span class="text-orange">快樂訓練</span>
-        </h2>
-        <p class="text-ink/60 leading-relaxed mb-10 max-w-2xl mx-auto">
-          希望透過練健康的場域，讓你能感受訓練可以很自在開心。
-        </p>
+    <!-- 我們的方式（2026-08-31 依設計稿圖二：深底、左標題、右四個圖示橫排）-->
+    <section id="approach" class="bg-navy-700 text-white py-14 lg:py-20 scroll-mt-28">
+      <div class="container mx-auto px-4">
+        <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
-          <div
-            v-for="v in approachValues"
-            :key="v"
-            class="bg-white rounded-2xl border border-navy-700/10 py-7 px-4 font-serif text-lg font-black text-navy-700"
-          >
-            {{ v }}
+          <div class="text-center lg:text-left">
+            <div class="flex items-center justify-center lg:justify-start gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-3">
+              <span class="w-5 h-0.5 bg-orange" />
+              Our Approach
+              <span class="text-white/65 tracking-normal normal-case font-medium">・我們的方式</span>
+            </div>
+            <h2 class="font-serif text-2xl lg:text-3xl font-black mb-4 leading-snug">
+              專業嚴謹，<span class="text-orange-300">快樂訓練</span>
+            </h2>
+            <p class="text-white/70 leading-relaxed">
+              希望透過練健康的場域，讓你能感受訓練可以很自在開心。
+            </p>
           </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <div v-for="v in approachValues" :key="v.t" class="text-center">
+              <svg
+                class="w-9 h-9 mx-auto mb-3 text-orange"
+                fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" :d="v.icon" />
+              </svg>
+              <div class="font-serif text-base font-black pb-2 border-b border-white/15">{{ v.t }}</div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
