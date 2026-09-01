@@ -25,8 +25,10 @@ const problems = [
 //    規格：16:10、建議 1200x750 以上，放 public/images/academy/*.webp
 const courses = [
   {
+    slug: 'coach-development',
     idx: '01 · COACH DEVELOPMENT PROGRAM',
     t: '徵才說明會暨訓練營',
+    navEn: 'Coach Development',
     img: '',
     quote: '「我想轉職來練健康當教練，但不確定自己是否有能力帶中高齡學員訓練。」',
     desc: [
@@ -45,17 +47,19 @@ const courses = [
       { k: '第一梯次', rows: [{ k: '說明會', v: '2/7' }, { k: '訓練營', v: '03/07–03/08、03/21–03/22' }] },
       { k: '第二梯次', rows: [{ k: '說明會', v: '5/30' }, { k: '訓練營', v: '06/13–06/14、06/27–06/28' }] },
       { k: '第三梯次', rows: [{ k: '說明會', v: '8/22' }, { k: '訓練營', v: '09/05–09/06、09/19–09/20' }] },
-      { k: '第四梯次', rows: [{ k: '說明會', v: '10/31' }, { k: '訓練營', v: '12/05–12/06、12/19–12/20' }] },
+      { k: '第四梯次', rows: [{ k: '說明會', v: '10/31' }, { k: '訓練營', v: '11/07–11/08、11/28–11/29' }] },
     ],
     href: 'https://www.surveycake.com/s/W2y4Z',
     cta: '免費報名說明會點我 →',
   },
   {
+    slug: 'elderly-wellness',
     idx: '02 · WORKSHOP FOR MIDDLE-AGE AND ELDERLY WELLNESS',
     t: '中高齡訓練研習',
+    navEn: 'Elderly Wellness',
     img: '',
     // 業主 2026-08-31 定稿：中標由原本的引號句改為敘述句
-    quote: '培養能安全評估、有效訓練中高齡與特殊族群的實務指導能力。',
+    quote: '帶學員從衰弱恢復健康',
     desc: [
       '練健康累積近萬位個案訓練經驗，過半為中高齡族群。本研習整合醫師、物理治療師與肌力體能教練專業，從身體評估、常見疾病、安全考量，到訓練進退階與課表規劃，透過理論、實作與個案演練，培養教練面對中高齡及特殊族群時，能安全評估、有效訓練並建立醫療轉介判斷的實務能力。',
     ],
@@ -71,11 +75,13 @@ const courses = [
     href: 'https://www.surveycake.com/s/DraAb',
   },
   {
+    slug: 'eagle-eye',
     idx: '03 · EAGLE EYE DETECTIVE WORKSHOP',
     t: '鷹眼大師',
+    navEn: 'Eagle Eye Detective',
     img: '',
     // 業主 2026-08-31 定稿：中標由引號句改為敘述句
-    quote: '鍛鍊敏銳的動態評估能力，一眼看穿代償與瓶頸。',
+    quote: '找出問題根源，真正解決學員問題',
     desc: [
       '培養教練精準判讀學員動作的觀察力，從現場快速抓出動作代償與風險，並掌握對應的調整策略，讓指導更即時、更到位。這堂課要訓練的，不只是「看見不一樣」，而是知道接下來該怎麼處理。',
     ],
@@ -117,7 +123,7 @@ const whyUs = [
   <div class="min-h-screen bg-cream">
 
     <!-- HERO -->
-    <section class="relative bg-navy-800 text-white pt-16 overflow-hidden">
+    <section class="relative bg-navy-700 text-white pt-16 overflow-hidden">
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_82%_25%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_4%_80%,rgba(58,106,133,0.35)_0%,transparent_45%)]" />
       <div class="container mx-auto px-4 relative z-10 py-14 lg:py-20">
         <div class="max-w-3xl">
@@ -140,6 +146,39 @@ const whyUs = [
       </div>
     </section>
 
+    <!--
+      課程快速導覽（2026-09-01 業主指定）：Hero 下方三張卡，點了捲到對應的課程。
+      錨點是 courses 陣列的 slug，article 上有同名 id 與 scroll-mt-24（避開固定 Header）。
+    -->
+    <section class="bg-cream py-8 lg:py-10 border-b border-navy-700/10">
+      <div class="container mx-auto px-4">
+        <div class="grid sm:grid-cols-3 gap-3 lg:gap-4">
+          <a
+            v-for="(c, i) in courses"
+            :key="c.slug"
+            :href="`#${c.slug}`"
+            class="group flex items-center gap-4 bg-white rounded-xl px-5 py-4 border border-navy-700/12 hover:border-orange-700/50 hover:shadow-md transition-all"
+          >
+            <span class="font-serif text-2xl font-black text-orange-700 leading-none shrink-0">
+              {{ String(i + 1).padStart(2, '0') }}
+            </span>
+            <span class="min-w-0">
+              <span class="block text-[11px] font-bold text-navy-700/60 tracking-widest uppercase truncate">
+                {{ c.navEn }}
+              </span>
+              <span class="block font-bold text-navy-700 leading-snug">{{ c.t }}</span>
+            </span>
+            <svg
+              class="w-4 h-4 text-navy-700/35 shrink-0 ml-auto transition-transform group-hover:translate-y-0.5 group-hover:text-orange-700"
+              fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- 為什麼開設研習課程 -->
     <section class="py-14 lg:py-20">
       <div class="container mx-auto px-4">
@@ -151,7 +190,7 @@ const whyUs = [
               Why We Teach
             </div>
             <span class="block font-serif text-6xl lg:text-7xl font-black text-orange leading-none tracking-tight mb-5">10,000+</span>
-            <h2 class="font-serif text-xl lg:text-2xl font-black text-navy-800 mb-4 leading-snug">
+            <h2 class="font-serif text-xl lg:text-2xl font-black text-navy-700 mb-4 leading-snug">
               從真實個案裡，找到教練現場真正需要的方法
             </h2>
             <p class="text-ink/70 leading-relaxed">
@@ -165,7 +204,7 @@ const whyUs = [
               From Knowing to Coaching
               <span class="text-navy-800/70 tracking-normal normal-case font-medium">・從知道，到真的會教</span>
             </div>
-            <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-800 mb-5 leading-snug">
+            <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-5 leading-snug">
               為什麼練健康要開設研習課程？
             </h2>
             <p class="text-ink/70 leading-relaxed mb-8">
@@ -176,7 +215,7 @@ const whyUs = [
               <div v-for="p in problems" :key="p.n" class="grid grid-cols-[40px_1fr] gap-4 py-6 border-b border-navy-700/15">
                 <span class="font-serif text-sm font-black text-orange pt-1">{{ p.n }}</span>
                 <div>
-                  <h3 class="font-serif text-lg font-black text-navy-800 mb-2">{{ p.t }}</h3>
+                  <h3 class="font-serif text-lg font-black text-navy-700 mb-2">{{ p.t }}</h3>
                   <p class="text-ink/65 text-sm leading-relaxed">{{ p.d }}</p>
                 </div>
               </div>
@@ -186,7 +225,7 @@ const whyUs = [
               為了回應這些需求，我們整合學科與術科的專業，設計出循序漸進的研習課程。不論你是剛入門、想補強基礎的教練，還是希望在職涯中持續精進、拓展專業，都能在這裡找到實用且符合現場需求的學習資源。
             </p>
             <p class="text-ink/70 leading-relaxed mt-4">
-              <strong class="text-navy-800">專業教練的養成不只需要知識，更需要能落地的解法。</strong>練健康希望為你搭建一座從「正確練」到「好會教」的橋樑。
+              <strong class="text-navy-700">專業教練的養成不只需要知識，更需要能落地的解法。</strong>練健康希望為你搭建一座從「正確練」到「好會教」的橋樑。
             </p>
           </div>
 
@@ -202,7 +241,7 @@ const whyUs = [
           Current Programs
           <span class="text-navy-800/70 tracking-normal normal-case font-medium">・開放報名</span>
         </div>
-        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-800 mb-4 leading-snug">
+        <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-4 leading-snug">
           把現場遇到的問題，<br class="hidden sm:block" />變成真正用得上的能力
         </h2>
         <p class="text-ink/65 leading-relaxed max-w-3xl mb-10 lg:mb-14">
@@ -212,8 +251,9 @@ const whyUs = [
         <div>
           <article
             v-for="(c, i) in courses"
+            :id="c.slug"
             :key="c.t"
-            class="grid lg:grid-cols-2 gap-8 lg:gap-14 items-start py-10 lg:py-16 border-t border-navy-700/15 first:border-t-0 first:pt-0"
+            class="grid lg:grid-cols-2 gap-8 lg:gap-14 items-start py-10 lg:py-16 border-t border-navy-700/15 first:border-t-0 first:pt-0 scroll-mt-24"
           >
             <!-- 偶數項圖片換到右邊 -->
             <div :class="['relative overflow-hidden rounded-sm bg-cream-200 border border-navy-700/12', i % 2 === 1 ? 'lg:order-2' : '']">
@@ -230,7 +270,7 @@ const whyUs = [
                 {{ c.idx }}
                 <span class="w-8 h-px bg-orange-700" />
               </p>
-              <h3 class="font-serif text-3xl lg:text-4xl font-black text-navy-800 mb-4">{{ c.t }}</h3>
+              <h3 class="font-serif text-3xl lg:text-4xl font-black text-navy-700 mb-4">{{ c.t }}</h3>
               <p class="font-serif font-bold text-lg lg:text-xl text-navy-700 leading-relaxed mb-5 pl-4 border-l-[3px] border-orange">
                 {{ c.quote }}
               </p>
@@ -243,7 +283,7 @@ const whyUs = [
                 </summary>
                 <ul class="mt-5 border-t border-navy-700/15">
                   <li v-for="pt in c.points" :key="pt.k" class="grid sm:grid-cols-[145px_1fr] gap-1 sm:gap-4 py-4 border-b border-navy-700/15 text-sm leading-relaxed text-ink/65">
-                    <strong class="font-serif text-navy-800">{{ pt.k }}</strong>
+                    <strong class="font-serif text-navy-700">{{ pt.k }}</strong>
                     <span>{{ pt.v }}</span>
                   </li>
                 </ul>
@@ -251,21 +291,21 @@ const whyUs = [
 
               <div class="mt-7 pt-6 border-t border-navy-700/15">
                 <div class="flex items-baseline justify-between mb-3">
-                  <b class="font-serif text-navy-800">2026 開課梯次</b>
+                  <b class="font-serif text-navy-700">2026 開課梯次</b>
                   <span class="text-[11px] tracking-widest uppercase text-navy-700/40">Course Dates</span>
                 </div>
                 <ul>
                   <li v-for="d in c.dates" :key="d.k" class="py-2 border-b border-navy-700/10 text-sm">
                     <!-- 有 rows 的梯次（說明會／訓練營）拆成子列，其餘維持單列 -->
                     <template v-if="d.rows">
-                      <b class="text-navy-800 font-serif block mb-1.5">【{{ d.k }}】</b>
+                      <b class="text-navy-700 font-serif block mb-1.5">【{{ d.k }}】</b>
                       <div v-for="r in d.rows" :key="r.k" class="flex flex-wrap items-baseline gap-x-3 pl-4 py-0.5">
                         <span class="text-navy-700 font-medium min-w-[3.5rem]">{{ r.k }}</span>
                         <span class="text-ink/65">{{ r.v }}</span>
                       </div>
                     </template>
                     <div v-else class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                      <b class="text-navy-800 font-serif">{{ d.k }}</b>
+                      <b class="text-navy-700 font-serif">{{ d.k }}</b>
                       <span class="text-ink/65">{{ d.v }}</span>
                     </div>
                   </li>
@@ -285,7 +325,7 @@ const whyUs = [
     </section>
 
     <!-- 為什麼選擇 -->
-    <section class="bg-navy-800 text-white py-14 lg:py-20">
+    <section class="bg-navy-700 text-white py-14 lg:py-20">
       <div class="container mx-auto px-4">
         <div class="flex items-center gap-2 text-sm font-bold text-orange-300 tracking-widest uppercase mb-4">
           <span class="w-5 h-0.5 bg-orange" />
@@ -317,7 +357,7 @@ const whyUs = [
               Faculty
               <span class="text-navy-800/70 tracking-normal normal-case font-medium">・講師團隊</span>
             </div>
-            <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-800 leading-snug mb-4">
+            <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 leading-snug mb-4">
               結合臨床醫療與實務訓練<br class="hidden sm:block" />專業的講師陣容
             </h2>
             <p class="text-ink/70 leading-relaxed">

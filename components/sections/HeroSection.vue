@@ -34,13 +34,12 @@ const pressOutlets = [
           style="filter: brightness(0.4)"
         />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_10%_80%,rgba(42,82,105,0.6)_0%,transparent_50%)]" />
-        <div
-          class="absolute inset-0 opacity-[0.025]"
-          :style="{
-            backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)',
-            backgroundSize: '60px 60px',
-          }"
-        />
+        <!--
+          2026-09-01 移除網格疊層（白線 60px 60px，opacity 0.025）。
+          業主回饋 Hero「主圖不要一格一格的」——這層網格原本是給平面深色底加質感用的，
+          疊在實拍照上會變成明顯的格線。純色底的 Hero（合作洽詢／三個講師頁／全體教練）
+          沒有這個問題，仍保留網格。
+        -->
       </div>
 
       <div class="container mx-auto px-4 relative z-10 py-12 lg:py-16">
