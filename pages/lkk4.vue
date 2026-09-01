@@ -261,7 +261,7 @@ const faqs = [
             主視覺是「有標題的完整版」，標題燒在圖裡，所以 alt 要把圖上的字全部寫出來，
             另外保留一個 sr-only 的 h1 給搜尋引擎與螢幕閱讀器。
           -->
-          <Lkk4Ticket bunting pad="p-3 lg:p-4">
+          <Lkk4Ticket pad="p-3 lg:p-4">
             <img
               src="/images/lkk4/keyvisual.webp"
               alt="2026 年第六屆 聖誕老人 LKK4 功能錦標賽・十二月十三日・台北世貿一館 C 區・健康是練出來的"
