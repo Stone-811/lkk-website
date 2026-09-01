@@ -95,6 +95,15 @@ const approachValues = [
   { t: '長期陪伴', icon: 'M6 20v-4M12 20V10M18 20V4' },
 ]
 
+// 結尾 CTA 的數據（2026-08-31 業主標註定稿）
+// ⚠️ 設計稿原為 4 格：50,000+ 累計服務人次／4 間／300+ 科普內容累積／海外合作中。
+//    業主修正：50,000+ → 10,000+，並刪除「300+ 科普內容累積」整格，故為 3 格。
+const ctaStats = [
+  { n: '10,000+', t: '累計服務人次', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+  { n: '4 間', t: '台北・新北據點', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+  { n: '海外合作中', t: '教育訓練與專業服務', icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9' },
+]
+
 const timeline = [
   { y: '2018', t: '品牌籌備', d: '以「中高齡也能安全重訓」為題籌備第一間中心。' },
   { y: '2019', t: '練健康創立', d: '南京店啟用，提供一對一教練課程。' },
@@ -477,26 +486,41 @@ const whatWeDo = [
       </div>
     </section>
 
-    <!-- 結尾 CTA（2026-08-31 依設計稿新增，取代原本 locations 區的收尾角色）-->
-    <section class="bg-navy-700 text-white py-16 lg:py-20">
-      <div class="container mx-auto px-4 text-center">
-        <h2 class="font-serif text-3xl lg:text-4xl font-black mb-4 leading-tight">
-          一起把健康，<span class="text-orange-300">練成日常</span>
-        </h2>
-        <p class="text-white/70 leading-relaxed mb-9 max-w-2xl mx-auto">
-          無論你是想變更健康的長輩、關心家人的你，或想推動健康的企業與夥伴，我們都在這裡，陪你一起練成更有力量的生活。
-        </p>
-        <div class="flex flex-wrap justify-center gap-4">
-          <NuxtLink to="/booking" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-            立即預約體驗 →
-          </NuxtLink>
-          <NuxtLink to="/locations" class="inline-flex items-center gap-2 border border-white/25 text-white font-bold px-7 py-3 rounded-full hover:border-white transition-colors">
-            查看四間分店 →
-          </NuxtLink>
+    <!-- 結尾 CTA（2026-08-31 依設計稿：左文字＋按鈕、右數據）-->
+    <section class="bg-navy-800 text-white py-16 lg:py-20">
+      <div class="container mx-auto px-4">
+        <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+          <div class="text-center lg:text-left">
+            <h2 class="font-serif text-3xl lg:text-4xl font-black mb-4 leading-tight">
+              一起把健康，<span class="text-orange-300">練成日常</span>
+            </h2>
+            <p class="text-white/70 leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
+              無論你是想變更健康的長輩、關心家人的你，或想推動健康的企業與夥伴，我們都在這裡，陪你一起練成更有力量的生活。
+            </p>
+            <div class="flex flex-wrap justify-center lg:justify-start gap-4">
+              <NuxtLink to="/booking" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
+                立即預約體驗 →
+              </NuxtLink>
+              <NuxtLink to="/locations" class="inline-flex items-center gap-2 border border-white/25 text-white font-bold px-7 py-3 rounded-full hover:border-white transition-colors">
+                查看四間分店 →
+              </NuxtLink>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 lg:gap-6">
+            <div v-for="c in ctaStats" :key="c.t" class="text-center">
+              <svg class="w-7 h-7 mx-auto mb-3 text-orange-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" :d="c.icon" />
+              </svg>
+              <div class="font-serif text-xl lg:text-2xl font-black leading-tight mb-1">{{ c.n }}</div>
+              <div class="text-white/65 text-xs leading-snug">{{ c.t }}</div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
-
 
   </div>
 </template>
