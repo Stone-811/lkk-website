@@ -146,8 +146,8 @@ const whyUs = [
         <div class="grid lg:grid-cols-[.78fr_1.22fr] gap-10 lg:gap-16 items-start">
 
           <div>
-            <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-4">
-              <span class="w-5 h-0.5 bg-orange" />
+            <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-4">
+              <span class="w-5 h-0.5 bg-orange-700" />
               Why We Teach
             </div>
             <span class="block font-serif text-6xl lg:text-7xl font-black text-orange leading-none tracking-tight mb-5">10,000+</span>
@@ -160,10 +160,10 @@ const whyUs = [
           </div>
 
           <div>
-            <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-4">
-              <span class="w-5 h-0.5 bg-orange" />
+            <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-4">
+              <span class="w-5 h-0.5 bg-orange-700" />
               From Knowing to Coaching
-              <span class="text-navy-700/40 tracking-normal normal-case font-medium">・從知道，到真的會教</span>
+              <span class="text-navy-800/70 tracking-normal normal-case font-medium">・從知道，到真的會教</span>
             </div>
             <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-800 mb-5 leading-snug">
               為什麼練健康要開設研習課程？
@@ -197,10 +197,10 @@ const whyUs = [
     <!-- 課程列表 -->
     <section id="courses" class="bg-white py-14 lg:py-20 scroll-mt-20">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-4">
-          <span class="w-5 h-0.5 bg-orange" />
+        <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-4">
+          <span class="w-5 h-0.5 bg-orange-700" />
           Current Programs
-          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・開放報名</span>
+          <span class="text-navy-800/70 tracking-normal normal-case font-medium">・開放報名</span>
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-800 mb-4 leading-snug">
           把現場遇到的問題，<br class="hidden sm:block" />變成真正用得上的能力
@@ -226,9 +226,9 @@ const whyUs = [
             </div>
 
             <div>
-              <p class="flex items-center gap-3 text-xs font-bold text-orange tracking-widest uppercase mb-4">
+              <p class="flex items-center gap-3 text-xs font-bold text-orange-700 tracking-widest uppercase mb-4">
                 {{ c.idx }}
-                <span class="w-8 h-px bg-orange" />
+                <span class="w-8 h-px bg-orange-700" />
               </p>
               <h3 class="font-serif text-3xl lg:text-4xl font-black text-navy-800 mb-4">{{ c.t }}</h3>
               <p class="font-serif font-bold text-lg lg:text-xl text-navy-700 leading-relaxed mb-5 pl-4 border-l-[3px] border-orange">
@@ -312,10 +312,10 @@ const whyUs = [
       <div class="container mx-auto px-4">
         <div class="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <div>
-            <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-4">
-              <span class="w-5 h-0.5 bg-orange" />
+            <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-4">
+              <span class="w-5 h-0.5 bg-orange-700" />
               Faculty
-              <span class="text-navy-700/40 tracking-normal normal-case font-medium">・講師團隊</span>
+              <span class="text-navy-800/70 tracking-normal normal-case font-medium">・講師團隊</span>
             </div>
             <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-800 leading-snug mb-4">
               結合臨床醫療與實務訓練<br class="hidden sm:block" />專業的講師陣容

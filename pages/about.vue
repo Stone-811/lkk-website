@@ -234,10 +234,10 @@ const whatWeDo = [
     <!-- 品牌主張：肌力衰退 vs 持續訓練 -->
     <section id="brand" class="py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4 text-center">
-        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-3">
+          <span class="w-5 h-0.5 bg-orange-700" />
           Our Belief
-          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・品牌主張</span>
+          <span class="text-navy-800/70 tracking-normal normal-case font-medium">・品牌主張</span>
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-4 max-w-3xl mx-auto leading-snug">
           我們相信，年齡<span class="text-orange">不該限制一個人的可能</span>。
@@ -260,10 +260,10 @@ const whatWeDo = [
 
     <section id="who" class="bg-white py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4 text-center">
-        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-3">
+          <span class="w-5 h-0.5 bg-orange-700" />
           Who We Are
-          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・我們是誰</span>
+          <span class="text-navy-800/70 tracking-normal normal-case font-medium">・我們是誰</span>
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-6 max-w-3xl mx-auto leading-snug">
           由醫療與<span class="text-orange">運動科學背景</span>創立的訓練團隊
@@ -302,10 +302,10 @@ const whatWeDo = [
 
     <section id="pillars" class="py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
+        <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-3">
+          <span class="w-5 h-0.5 bg-orange-700" />
           What We Do
-          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・三個支柱</span>
+          <span class="text-navy-800/70 tracking-normal normal-case font-medium">・三個支柱</span>
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10">練健康在做什麼</h2>
 
@@ -341,10 +341,10 @@ const whatWeDo = [
 
           <!-- 左：標題 + 三則故事 -->
           <div>
-            <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-              <span class="w-5 h-0.5 bg-orange" />
+            <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-3">
+              <span class="w-5 h-0.5 bg-orange-700" />
               Founder Story
-              <span class="text-navy-700/40 tracking-normal normal-case font-medium">・創辦人故事</span>
+              <span class="text-navy-800/70 tracking-normal normal-case font-medium">・創辦人故事</span>
             </div>
             <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10 leading-snug">
               一個家庭的經歷，開啟了<span class="text-orange">練健康的使命</span>
@@ -417,8 +417,8 @@ const whatWeDo = [
     <!-- 從知識到行動（2026-08-31 依設計稿：5 張照片卡片橫排）-->
     <section id="programs" class="bg-white py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
+        <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-3">
+          <span class="w-5 h-0.5 bg-orange-700" />
           What We Do
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-10 leading-snug">
@@ -450,10 +450,10 @@ const whatWeDo = [
 
     <section id="history" class="py-14 lg:py-20 scroll-mt-28">
       <div class="container mx-auto px-4">
-        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-3">
-          <span class="w-5 h-0.5 bg-orange" />
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-3">
+          <span class="w-5 h-0.5 bg-orange-700" />
           Milestones
-          <span class="text-navy-700/40 tracking-normal normal-case font-medium">・發展歷程</span>
+          <span class="text-navy-800/70 tracking-normal normal-case font-medium">・發展歷程</span>
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-2 text-center">練健康的旅程</h2>
         <p class="text-ink/40 text-xs mb-6 text-center">← 左右滑動看完整歷程 →</p>

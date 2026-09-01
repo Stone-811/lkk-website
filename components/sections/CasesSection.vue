@@ -40,8 +40,8 @@ const cases = [
   <section class="bg-white py-16 lg:py-24">
     <div class="container mx-auto px-4">
       <!-- Section header -->
-      <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
-        <span class="w-5 h-0.5 bg-orange" />
+      <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-2">
+        <span class="w-5 h-0.5 bg-orange-700" />
         學員見證
       </div>
       <h2 class="font-serif text-3xl lg:text-4xl font-black text-navy-700 mb-3">

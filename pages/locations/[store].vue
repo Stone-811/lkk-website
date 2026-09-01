@@ -240,8 +240,8 @@ const photos = computed(() => {
     <!-- Access Section -->
     <section class="bg-white py-16 lg:py-20">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
-          <span class="w-5 h-0.5 bg-orange" />
+        <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-2">
+          <span class="w-5 h-0.5 bg-orange-700" />
           交通指引
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-8">
@@ -320,8 +320,8 @@ const photos = computed(() => {
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between mb-8">
           <div>
-            <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
-              <span class="w-5 h-0.5 bg-orange" />
+            <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-2">
+              <span class="w-5 h-0.5 bg-orange-700" />
               本店教練
             </div>
             <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-3">
@@ -341,8 +341,8 @@ const photos = computed(() => {
     <!-- Photos Section -->
     <section class="bg-white py-16 lg:py-20">
       <div class="container mx-auto px-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-orange tracking-widest uppercase mb-2">
-          <span class="w-5 h-0.5 bg-orange" />
+        <div class="flex items-center gap-2 text-sm font-bold text-orange-700 tracking-widest uppercase mb-2">
+          <span class="w-5 h-0.5 bg-orange-700" />
           分店環境
         </div>
         <h2 class="font-serif text-2xl lg:text-3xl font-black text-navy-700 mb-8">

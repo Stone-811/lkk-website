@@ -969,8 +969,8 @@ const handleSubmit = async () => {
 
           <!-- Right - Process Steps -->
           <div class="md:sticky md:top-24 md:self-start">
-            <div class="flex items-center gap-2 text-xs md:text-sm font-bold text-orange tracking-widest uppercase mb-2 md:mb-3">
-              <span class="w-4 md:w-5 h-0.5 bg-orange" />
+            <div class="flex items-center gap-2 text-xs md:text-sm font-bold text-orange-700 tracking-widest uppercase mb-2 md:mb-3">
+              <span class="w-4 md:w-5 h-0.5 bg-orange-700" />
               接下來會發生什麼
             </div>
             <h2 class="font-serif text-xl md:text-2xl font-black text-navy-700 mb-4 md:mb-6">
