@@ -398,10 +398,11 @@ const whatWeDo = [
               Our Approach
               <span class="text-white/65 tracking-normal normal-case font-medium">・我們的方式</span>
             </div>
+            <!-- 業主指定整句白字，不上橘色強調 -->
             <h2 class="font-serif text-2xl lg:text-3xl font-black mb-4 leading-snug">
-              專業嚴謹，<span class="text-orange-300">快樂訓練</span>
+              專業嚴謹，快樂訓練
             </h2>
-            <p class="text-white/70 leading-relaxed">
+            <p class="text-white/80 leading-relaxed">
               希望透過練健康的場域，讓你能感受訓練可以很自在開心。
             </p>
           </div>
