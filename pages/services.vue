@@ -281,8 +281,23 @@ const personalFeatures = [
     </section>
 
     <!-- 團體課程區 -->
-    <section id="group" class="py-16 md:py-24 bg-cream-200">
-      <div class="container mx-auto px-4">
+    <!--
+      2026-09-01 業主指定：團課實拍改當整區底圖（調淡），不要單獨一格照片。
+      ⚠️ 這是「淺色區塊加底圖」，改動前實測過整區最暗 5% 的合成亮度：
+         opacity 0.15 → L 0.597（原本純 cream-200 是 0.745）
+         navy-700 標題 6.34 → 5.16（仍過 3.0）
+         ink-600 內文 4.35 → 3.54 ✗ ——內文本來就只有 4.35（既有問題，非底圖造成），
+         所以標題區的內文一併改 ink-700：純 cream 6.40、加底圖後 5.21，兩種情況都過 4.5。
+      卡片區以下全是 bg-white 不透明卡，不受底圖影響。
+    -->
+    <section id="group" class="relative py-16 md:py-24 bg-cream-200 overflow-hidden">
+      <img
+        src="/images/services/group.webp"
+        alt=""
+        aria-hidden="true"
+        class="absolute inset-0 w-full h-full object-cover opacity-[0.15]"
+      />
+      <div class="container mx-auto px-4 relative z-10">
         <div class="text-center mb-12">
           <div class="flex items-center justify-center gap-3 mb-4">
             <span class="bg-orange/10 text-orange font-semibold px-3 py-1 rounded-full text-sm">小班制</span>
@@ -290,21 +305,9 @@ const personalFeatures = [
           <h2 class="text-3xl md:text-4xl font-bold text-navy-700 font-serif mb-4">
             團體課程，互相鼓勵，更有效
           </h2>
-          <p class="text-ink-600 max-w-2xl mx-auto leading-relaxed">
+          <p class="text-ink-700 max-w-2xl mx-auto leading-relaxed">
             精緻小班制（3-6 人），一次買四堂課，不僅有效訓練，教練更能掌握每個人的動作狀況，在互相激勵活潑溫馨的氛圍裡，你也能獲得細緻的動作指導。
           </p>
-        </div>
-
-        <!-- 課程實拍 -->
-        <div class="max-w-3xl mx-auto rounded-3xl overflow-hidden shadow-xl mb-12">
-          <img
-            src="/images/services/group.webp"
-            alt="練健康團體課程：小班制學員一同進行體適能訓練"
-            width="1200"
-            height="900"
-            loading="lazy"
-            class="w-full h-auto"
-          />
         </div>
 
         <!-- 課程卡片 -->
