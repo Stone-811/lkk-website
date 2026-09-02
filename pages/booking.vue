@@ -28,7 +28,7 @@ const pricingCopy = computed(() => variant.value.allAgesFree
       badge: '不限年齡・免費體驗',
       title: '不限年齡',
       titleHighlight: '體驗課完全免費',
-      titleHighlightClass: 'text-orange',
+      titleHighlightClass: 'text-orange-300',
       note: '本活動不限年齡免費・無隱藏費用・不強迫買課',
       faqFee: '本活動不限年齡，首次體驗完全免費。',
       faqPay: '本活動免費，無需付款。',
@@ -409,6 +409,18 @@ const handleSubmit = async () => {
     <section class="relative bg-navy-700 pt-16 overflow-hidden">
       <!-- Background effects -->
       <div class="absolute inset-0">
+        <!-- 底圖壓暗參數與全站一致（opacity-60 + brightness 0.4）。
+             brightness 用 inline style 而非 Tailwind 任意屬性：兩者都會編譯，
+             但 Nuxt 會把 critical CSS 內嵌進 HTML，用 class 寫法驗證時 grep 不到 .css 會誤判。
+             object-top：人物的頭在畫面上緣，寬螢幕上這區會被壓成扁長條，
+             預設置中裁切會把四個人的頭全部切掉。 -->
+        <img
+          src="/images/booking/hero.webp"
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover object-top opacity-60"
+          style="filter: brightness(0.4)"
+        />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
       </div>
 
@@ -417,16 +429,16 @@ const handleSubmit = async () => {
           <!-- Hero content -->
           <div>
             <!-- Free badge -->
-            <div class="inline-flex items-center gap-2 bg-orange/20 border border-orange/40 text-orange text-sm font-medium px-4 py-1.5 rounded-full mb-5">
+            <div class="inline-flex items-center gap-2 bg-orange/20 border border-orange/40 text-orange-200 text-sm font-medium px-4 py-1.5 rounded-full mb-5">
               {{ variant.hero?.badge ?? pricingCopy.badge }}
             </div>
 
             <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-3 sm:mb-4">
               {{ variant.hero?.title ?? pricingCopy.title }}<br />
-              <span :class="variant.hero?.titleHighlight ? 'text-orange' : pricingCopy.titleHighlightClass">{{ variant.hero?.titleHighlight ?? pricingCopy.titleHighlight }}</span>
+              <span :class="variant.hero?.titleHighlight ? 'text-orange-300' : pricingCopy.titleHighlightClass">{{ variant.hero?.titleHighlight ?? pricingCopy.titleHighlight }}</span>
             </h1>
 
-            <p class="text-white/60 text-base sm:text-lg font-light leading-relaxed mb-5 sm:mb-6 max-w-lg mx-auto">
+            <p class="text-white/75 text-base sm:text-lg font-light leading-relaxed mb-5 sm:mb-6 max-w-lg mx-auto">
               {{ variant.hero?.subtitle ?? '不需要準備好，才開始運動。從了解你的身體與需求開始，我們會一對一陪你找到適合自己的訓練方式。你的第一步，就從一堂體驗課開始。' }}
             </p>
 
@@ -434,7 +446,7 @@ const handleSubmit = async () => {
             <div class="inline-flex flex-col items-start space-y-2 mb-6 text-left">
               <div v-for="item in (variant.hero?.checklist ?? whatYouGet)" :key="item" class="flex items-start gap-3 text-white/70 text-sm">
                 <div class="w-5 h-5 rounded-full bg-orange/20 border border-orange/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span class="text-orange text-xs">&#10003;</span>
+                  <span class="text-orange-200 text-xs">&#10003;</span>
                 </div>
                 {{ item }}
               </div>
@@ -446,7 +458,7 @@ const handleSubmit = async () => {
               </a>
             </div>
 
-            <div class="flex items-center justify-center gap-2 text-xs sm:text-sm text-white/40">
+            <div class="flex items-center justify-center gap-2 text-xs sm:text-sm text-white/70">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
