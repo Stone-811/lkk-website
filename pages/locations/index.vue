@@ -50,7 +50,7 @@ const heroTags = ['鄰近捷運站', '專業教練帶領', '中高齡及特殊�
 const stats = [
   { num: '4', label: '間分店' },
   { num: '10,000+', label: '服務學員' },
-  { num: '7 年', label: '深耕中高齡' },
+  { num: '8 年', label: '深耕中高齡' },
 ]
 
 const reasons = [
