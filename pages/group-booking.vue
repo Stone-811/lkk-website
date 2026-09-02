@@ -504,6 +504,19 @@ const inputClass =
                       <option value="" disabled>請選擇偏好的門店地點</option>
                       <option v-for="s in storeOptions" :key="s" :value="s">{{ s }}</option>
                     </select>
+                    <!-- 舉重團班只有南京店開班（與下方課程介紹的「目前僅南京店開班」同一句），
+                         選到該課程時才顯示，其餘兩門課四店皆有開班、不需要這段噪音 -->
+                    <p
+                      v-if="formData.course === '練健康舉重團班'"
+                      class="mt-2 flex items-start gap-2 px-3 py-2 bg-orange/[0.08] border border-orange/30 rounded-lg text-sm text-orange-700"
+                    >
+                      <svg class="w-4 h-4 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <circle cx="10" cy="10" r="8" />
+                        <path d="M10 9.5v4.5" stroke-linecap="round" />
+                        <circle cx="10" cy="6.2" r="1" fill="currentColor" stroke="none" />
+                      </svg>
+                      <span>練健康舉重團班目前僅南京店開班</span>
+                    </p>
                     <p v-if="errors.store" class="text-red-600 text-sm mt-1">{{ errors.store }}</p>
                   </div>
 

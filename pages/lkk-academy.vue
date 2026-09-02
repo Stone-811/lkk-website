@@ -50,7 +50,6 @@ const courses = [
       { k: '第四梯次', rows: [{ k: '說明會', v: '10/31' }, { k: '訓練營', v: '11/07–11/08、11/28–11/29' }] },
     ],
     href: 'https://www.surveycake.com/s/W2y4Z',
-    cta: '免費報名說明會點我 →',
   },
   {
     slug: 'elderly-wellness',
@@ -328,7 +327,7 @@ const whyUs = [
 
               <div class="mt-6">
                 <a :href="c.href" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-                  {{ c.cta || '立即報名 →' }}
+                  {{ c.cta || '報名免費說明會請點我 →' }}
                 </a>
               </div>
             </div>
