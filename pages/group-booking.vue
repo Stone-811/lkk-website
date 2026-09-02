@@ -170,6 +170,36 @@ const lockedCourse = computed(() => {
 })
 watch(lockedCourse, (c) => { if (c) formData.course = c.value }, { immediate: true })
 
+// ── 舉重團班只在南京店開班 ─────────────────────────────────────────────
+// 只給提示擋不住誤填（會產生要人工回撥更正的名單），所以直接限制可選門店。
+const WEIGHTLIFTING_COURSE = '練健康舉重團班'
+const weightliftingStore = computed(
+  () => storeOptions.find((s) => s.startsWith('南京店')) || '',
+)
+const isWeightlifting = computed(() => formData.course === WEIGHTLIFTING_COURSE)
+
+// 下拉選單的可選門店：選到舉重團班就只剩南京店
+const availableStores = computed(() =>
+  isWeightlifting.value ? [weightliftingStore.value].filter(Boolean) : storeOptions,
+)
+
+// 課程可選項：若變體把門店鎖在南京以外，舉重團班就不該出現（避免無解的組合）
+const availableCourses = computed(() => {
+  if (lockedStore.value && lockedStore.value !== weightliftingStore.value) {
+    return courses.filter((c) => c.value !== WEIGHTLIFTING_COURSE)
+  }
+  return courses
+})
+
+// 先選門店再改課程時，把不合法的既有選擇換掉；切回其他課程則還原變體鎖定的門店
+watch(isWeightlifting, (on) => {
+  if (on) {
+    if (weightliftingStore.value) formData.store = weightliftingStore.value
+  } else if (lockedStore.value) {
+    formData.store = lockedStore.value
+  }
+}, { immediate: true })   // immediate：變體用 lockCourse 直接鎖成舉重團班時，門店也要跟著帶入
+
 const steps = [
   { n: '1', title: '填寫報名表單', desc: '約 1~2 分鐘完成，選好課程與偏好門店即可' },
   { n: '2', title: '教練主動電話／LINE聯繫', desc: '2-3 個工作天內確認可開班的梯次日期、名額狀況與繳費方式' },
@@ -231,6 +261,7 @@ function validate() {
   }
   if (!formData.course) e.course = '請選擇想報名的課程'
   if (!formData.store) e.store = '請選擇門店'
+  else if (isWeightlifting.value && formData.store !== weightliftingStore.value) e.store = '舉重團班目前僅南京店開班'
   if (!formData.medicalHistory.trim()) e.medicalHistory = '請填寫（若完全健康請填「無」）'
   errors.value = e
   return Object.keys(e).length === 0
@@ -484,7 +515,7 @@ const inputClass =
                     <div v-else class="grid grid-cols-3 gap-1.5 items-stretch">
                       <!-- label 用 flex 讓卡片撐滿格高；課名字數不同（窄螢幕會折成 2 行）時
                            三張卡仍等高，價格也固定貼底、對齊在同一條水平線上 -->
-                      <label v-for="c in courses" :key="c.value" class="flex cursor-pointer">
+                      <label v-for="c in availableCourses" :key="c.value" class="flex cursor-pointer">
                         <input v-model="formData.course" type="radio" :value="c.value" class="peer sr-only" />
                         <span class="flex-1 flex flex-col px-1 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center leading-tight transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">
                           <span class="flex-1 flex items-center justify-center">{{ c.value }}</span>
@@ -502,7 +533,7 @@ const inputClass =
                     </div>
                     <select v-else v-model="formData.store" :class="inputClass">
                       <option value="" disabled>請選擇偏好的門店地點</option>
-                      <option v-for="s in storeOptions" :key="s" :value="s">{{ s }}</option>
+                      <option v-for="s in availableStores" :key="s" :value="s">{{ s }}</option>
                     </select>
                     <!-- 舉重團班只有南京店開班（與下方課程介紹的「目前僅南京店開班」同一句），
                          選到該課程時才顯示，其餘兩門課四店皆有開班、不需要這段噪音 -->
@@ -515,7 +546,7 @@ const inputClass =
                         <path d="M10 9.5v4.5" stroke-linecap="round" />
                         <circle cx="10" cy="6.2" r="1" fill="currentColor" stroke="none" />
                       </svg>
-                      <span>練健康舉重團班目前僅南京店開班</span>
+                      <span>練健康舉重團班目前僅南京店開班，門店已自動帶入</span>
                     </p>
                     <p v-if="errors.store" class="text-red-600 text-sm mt-1">{{ errors.store }}</p>
                   </div>
