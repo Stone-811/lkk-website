@@ -191,14 +191,18 @@ const availableCourses = computed(() => {
   return courses
 })
 
-// 先選門店再改課程時，把不合法的既有選擇換掉；切回其他課程則還原變體鎖定的門店
+// 先選門店再改課程時，把不合法的既有選擇換掉。
+// ⚠️ 變體鎖定的門店一律優先：lockCourse 鎖成舉重團班、lockStore 又鎖在南京以外時，
+//    課程選項是隱藏的（走 lockedCourse 分支），availableCourses 的過濾會被繞過。
+//    此時若還自動把門店改成南京店，畫面顯示的是鎖定門店、送出的卻是南京店——靜默不一致。
+//    寧可讓 validate() 擋下並顯示錯誤，也不要偷改成使用者沒看到的值。
 watch(isWeightlifting, (on) => {
-  if (on) {
-    if (weightliftingStore.value) formData.store = weightliftingStore.value
-  } else if (lockedStore.value) {
+  if (lockedStore.value) {
     formData.store = lockedStore.value
+    return
   }
-}, { immediate: true })   // immediate：變體用 lockCourse 直接鎖成舉重團班時，門店也要跟著帶入
+  if (on && weightliftingStore.value) formData.store = weightliftingStore.value
+}, { immediate: true })
 
 const steps = [
   { n: '1', title: '填寫報名表單', desc: '約 1~2 分鐘完成，選好課程與偏好門店即可' },
