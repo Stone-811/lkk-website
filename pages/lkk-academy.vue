@@ -50,7 +50,6 @@ const courses = [
       { k: '第四梯次', rows: [{ k: '說明會', v: '10/31' }, { k: '訓練營', v: '11/07–11/08、11/28–11/29' }] },
     ],
     href: 'https://www.surveycake.com/s/W2y4Z',
-    cta: '免費報名說明會點我 →',
   },
   {
     slug: 'elderly-wellness',
@@ -147,35 +146,48 @@ const whyUs = [
     </section>
 
     <!--
-      課程快速導覽（2026-09-01 業主指定）：Hero 下方三張卡，點了捲到對應的課程。
+      課程快速導覽（2026-09-01 業主指定，同日依回饋改版）。
+      改版前是三張白色卡片：桌機上卡片很寬、文字只佔左側，箭頭被 ml-auto 推到最右，
+      中間空一大塊；手機版則是三張全寬卡直接堆疊，很佔高度。
+      現在改成「白色導覽列 + 分隔線切三段」——沒有卡片就沒有空卡問題，
+      手機自然變成緊湊的三列（每列約 56px），桌機由分隔線界定三個區域。
+
+      對比實測（白底）：編號 orange-700 5.18、標題 navy-700 8.37、
+      英文標 navy-800/70 5.04、箭頭 navy-700/70 3.85（圖示門檻 3.0）——全過。
+      ⚠️ 英文標不可改用 navy-700 的半透明版：navy-700 在任何透明度下都過不了 4.5。
+
       錨點是 courses 陣列的 slug，article 上有同名 id 與 scroll-mt-24（避開固定 Header）。
     -->
-    <section class="bg-cream py-8 lg:py-10 border-b border-navy-700/10">
+    <section class="bg-white border-b border-navy-700/12">
       <div class="container mx-auto px-4">
-        <div class="grid sm:grid-cols-3 gap-3 lg:gap-4">
-          <a
-            v-for="(c, i) in courses"
-            :key="c.slug"
-            :href="`#${c.slug}`"
-            class="group flex items-center gap-4 bg-white rounded-xl px-5 py-4 border border-navy-700/12 hover:border-orange-700/50 hover:shadow-md transition-all"
-          >
-            <span class="font-serif text-2xl font-black text-orange-700 leading-none shrink-0">
-              {{ String(i + 1).padStart(2, '0') }}
-            </span>
-            <span class="min-w-0">
-              <span class="block text-[11px] font-bold text-navy-700/60 tracking-widest uppercase truncate">
-                {{ c.navEn }}
-              </span>
-              <span class="block font-bold text-navy-700 leading-snug">{{ c.t }}</span>
-            </span>
-            <svg
-              class="w-4 h-4 text-navy-700/35 shrink-0 ml-auto transition-transform group-hover:translate-y-0.5 group-hover:text-orange-700"
-              fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </a>
-        </div>
+        <nav aria-label="研習課程快速導覽">
+          <ul class="grid sm:grid-cols-3 divide-y divide-navy-700/10 sm:divide-y-0 sm:divide-x">
+            <li v-for="(c, i) in courses" :key="c.slug">
+              <a
+                :href="`#${c.slug}`"
+                class="group flex items-center gap-3.5 py-4 sm:py-5 sm:px-6 sm:first:pl-0 sm:last:pr-0 transition-colors"
+              >
+                <span class="font-serif text-xl lg:text-2xl font-black text-orange-700 leading-none shrink-0 tabular-nums">
+                  {{ String(i + 1).padStart(2, '0') }}
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="hidden lg:block text-[10.5px] font-bold text-navy-800/70 tracking-[0.14em] uppercase truncate mb-0.5">
+                    {{ c.navEn }}
+                  </span>
+                  <span class="block font-bold text-navy-700 leading-snug group-hover:text-orange-700 transition-colors">
+                    {{ c.t }}
+                  </span>
+                </span>
+                <svg
+                  class="w-4 h-4 shrink-0 text-navy-700/70 transition-transform group-hover:translate-y-0.5 group-hover:text-orange-700"
+                  fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </a>
+            </li>
+          </ul>
+        </nav>
       </div>
     </section>
 
@@ -277,7 +289,7 @@ const whyUs = [
               <p v-for="(d, di) in c.desc" :key="di" class="text-ink/65 leading-relaxed mb-4">{{ d }}</p>
 
               <details class="group mt-2">
-                <summary class="cursor-pointer list-none text-sm font-bold text-navy-700 hover:text-orange transition-colors select-none">
+                <summary class="cursor-pointer list-none text-sm font-bold text-navy-700 hover:text-orange-700 transition-colors select-none py-3 -my-1">
                   <span class="group-open:hidden">＋ 查看完整課程介紹</span>
                   <span class="hidden group-open:inline">－ 收起課程介紹</span>
                 </summary>
@@ -315,7 +327,7 @@ const whyUs = [
 
               <div class="mt-6">
                 <a :href="c.href" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-orange text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-orange/35 hover:bg-orange-400 transition-colors">
-                  {{ c.cta || '立即報名 →' }}
+                  {{ c.cta || '報名免費說明會請點我 →' }}
                 </a>
               </div>
             </div>

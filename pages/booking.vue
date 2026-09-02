@@ -28,7 +28,7 @@ const pricingCopy = computed(() => variant.value.allAgesFree
       badge: '不限年齡・免費體驗',
       title: '不限年齡',
       titleHighlight: '體驗課完全免費',
-      titleHighlightClass: 'text-orange',
+      titleHighlightClass: 'text-orange-300',
       note: '本活動不限年齡免費・無隱藏費用・不強迫買課',
       faqFee: '本活動不限年齡，首次體驗完全免費。',
       faqPay: '本活動免費，無需付款。',
@@ -409,6 +409,18 @@ const handleSubmit = async () => {
     <section class="relative bg-navy-700 pt-16 overflow-hidden">
       <!-- Background effects -->
       <div class="absolute inset-0">
+        <!-- 底圖壓暗參數與全站一致（opacity-60 + brightness 0.4）。
+             brightness 用 inline style 而非 Tailwind 任意屬性：兩者都會編譯，
+             但 Nuxt 會把 critical CSS 內嵌進 HTML，用 class 寫法驗證時 grep 不到 .css 會誤判。
+             object-top：人物的頭在畫面上緣，寬螢幕上這區會被壓成扁長條，
+             預設置中裁切會把四個人的頭全部切掉。 -->
+        <img
+          src="/images/booking/hero.webp"
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover object-top opacity-60"
+          style="filter: brightness(0.4)"
+        />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(251,114,10,0.10)_0%,transparent_55%),radial-gradient(circle_at_5%_75%,rgba(58,106,133,0.3)_0%,transparent_45%)]" />
       </div>
 
@@ -417,16 +429,16 @@ const handleSubmit = async () => {
           <!-- Hero content -->
           <div>
             <!-- Free badge -->
-            <div class="inline-flex items-center gap-2 bg-orange/20 border border-orange/40 text-orange text-sm font-medium px-4 py-1.5 rounded-full mb-5">
+            <div class="inline-flex items-center gap-2 bg-orange/20 border border-orange/40 text-orange-200 text-sm font-medium px-4 py-1.5 rounded-full mb-5">
               {{ variant.hero?.badge ?? pricingCopy.badge }}
             </div>
 
             <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-3 sm:mb-4">
               {{ variant.hero?.title ?? pricingCopy.title }}<br />
-              <span :class="variant.hero?.titleHighlight ? 'text-orange' : pricingCopy.titleHighlightClass">{{ variant.hero?.titleHighlight ?? pricingCopy.titleHighlight }}</span>
+              <span :class="variant.hero?.titleHighlight ? 'text-orange-300' : pricingCopy.titleHighlightClass">{{ variant.hero?.titleHighlight ?? pricingCopy.titleHighlight }}</span>
             </h1>
 
-            <p class="text-white/60 text-base sm:text-lg font-light leading-relaxed mb-5 sm:mb-6 max-w-lg mx-auto">
+            <p class="text-white/75 text-base sm:text-lg font-light leading-relaxed mb-5 sm:mb-6 max-w-lg mx-auto">
               {{ variant.hero?.subtitle ?? '不需要準備好，才開始運動。從了解你的身體與需求開始，我們會一對一陪你找到適合自己的訓練方式。你的第一步，就從一堂體驗課開始。' }}
             </p>
 
@@ -434,7 +446,7 @@ const handleSubmit = async () => {
             <div class="inline-flex flex-col items-start space-y-2 mb-6 text-left">
               <div v-for="item in (variant.hero?.checklist ?? whatYouGet)" :key="item" class="flex items-start gap-3 text-white/70 text-sm">
                 <div class="w-5 h-5 rounded-full bg-orange/20 border border-orange/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span class="text-orange text-xs">&#10003;</span>
+                  <span class="text-orange-200 text-xs">&#10003;</span>
                 </div>
                 {{ item }}
               </div>
@@ -446,7 +458,7 @@ const handleSubmit = async () => {
               </a>
             </div>
 
-            <div class="flex items-center justify-center gap-2 text-xs sm:text-sm text-white/40">
+            <div class="flex items-center justify-center gap-2 text-xs sm:text-sm text-white/70">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
@@ -489,7 +501,7 @@ const handleSubmit = async () => {
               </a>
 
               <!-- 尚未加好友的備援 -->
-              <p class="mt-2 text-xs text-ink-400">
+              <p class="mt-2 text-sm text-ink-500">
                 還不是官方 LINE 好友？
                 <a
                   href="https://line.me/R/ti/p/%40201fzruh"
@@ -746,7 +758,7 @@ const handleSubmit = async () => {
                         <option value="">請選擇分店</option>
                         <option v-for="store in stores" :key="store.id" :value="store.id">{{ store.name }}</option>
                       </select>
-                      <p v-if="selectedStore" class="text-xs text-ink/60 mt-1.5">
+                      <p v-if="selectedStore" class="text-sm text-ink/70 mt-1.5">
                         {{ selectedStore.address }}<span v-if="selectedStore.phone"> ・ {{ selectedStore.phone }}</span>
                       </p>
                       <p v-if="errors.storeId" class="text-red-500 text-sm mt-2">{{ errors.storeId }}</p>
@@ -754,7 +766,7 @@ const handleSubmit = async () => {
                     <!-- 變體鎖定分店：唯讀顯示 -->
                     <div v-else class="w-full px-4 py-3 border border-cream-200 rounded-lg bg-cream-50 text-navy-700 font-medium">
                       {{ lockedStore?.name ?? variant.lockStoreId }}
-                      <span v-if="lockedStore?.address" class="block text-xs text-ink/60 font-normal mt-0.5">
+                      <span v-if="lockedStore?.address" class="block text-sm text-ink/70 font-normal mt-0.5">
                         {{ lockedStore.address }}<span v-if="lockedStore.phone"> ・ {{ lockedStore.phone }}</span>
                       </span>
                     </div>
@@ -886,7 +898,7 @@ const handleSubmit = async () => {
                       class="w-full mt-2 px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange"
                       placeholder="例如：改善腰痠背痛、上樓梯更有力、久坐姿態調整、或簡述希望體驗的專項訓練...等等"
                     />
-                    <p class="text-xs text-ink/60 mt-3 leading-relaxed">
+                    <p class="text-sm text-ink/70 mt-3 leading-relaxed">
                       註：訓練無法取代醫療，所有身體疾患務必先尋求醫療人員協助。
                     </p>
                   </div>
@@ -924,7 +936,7 @@ const handleSubmit = async () => {
                 <!-- 同意事項 -->
                 <div class="mt-6 p-4 bg-cream-50 rounded-lg border border-cream-200">
                   <div class="text-sm text-navy-700 font-medium mb-3">參加練健康相關課程，了解並願遵守下列事項：</div>
-                  <div class="text-xs text-ink/70 space-y-2 max-h-48 overflow-y-auto pr-2">
+                  <div class="text-sm text-ink/75 space-y-2 max-h-56 overflow-y-auto pr-2">
                     <p>一、本人若有心臟病、高血壓、癲癇症、具傳染性皮膚病及足以影響運動訓練等病症，或於五年內有重大傷病開刀或住院超過3周以上之病史，將主動告知。</p>
                     <p>二、本人在課程期間除教練指導的使用範圍，不會自行使用以外之場地及各項設備器材，並遵守教練指示及場地使用規範。</p>
                     <p>三、本人了解訓練本身具有發生自己或他人事故或傷害危險，願充分負擔此一危險，並盡力防杜該危險或事故傷害之發生。</p>
@@ -956,10 +968,10 @@ const handleSubmit = async () => {
                   >
                     {{ isSubmitting ? '送出中...' : '送出預約' }}
                   </button>
-                  <p class="text-xs text-ink/60 text-center mt-4 leading-relaxed">
+                  <p class="text-sm text-ink/70 text-center mt-4 leading-relaxed">
                     送出即表示同意我們以電話或 LINE 與你聯繫安排體驗課，個人資料僅用於此目的。
                   </p>
-                  <p class="text-xs text-ink/60 text-center mt-2 leading-relaxed">
+                  <p class="text-sm text-ink/70 text-center mt-2 leading-relaxed">
                     送出後請稍候，頁面將導向加入 LINE 官方帳號，加入後即可收到最新通知；同時我們也會寄送 Email 通知你報名成功。
                   </p>
                 </div>
@@ -986,7 +998,7 @@ const handleSubmit = async () => {
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="text-sm md:text-base font-semibold text-navy-700 mb-0.5">{{ step.title }}</div>
-                  <div class="text-xs md:text-sm text-ink/60 leading-relaxed">{{ step.desc }}</div>
+                  <div class="text-sm text-ink/70 leading-relaxed">{{ step.desc }}</div>
                   <div v-if="step.badges" class="flex flex-wrap gap-1.5 md:gap-2 mt-1.5 md:mt-2">
                     <span
                       v-for="(badge, bIdx) in step.badges"
@@ -1005,8 +1017,8 @@ const handleSubmit = async () => {
 
             <!-- FAQ Accordion -->
             <div class="mt-6 mb-6">
-              <div class="flex items-center gap-2 text-[0.82rem] font-bold tracking-widest text-orange mb-2">
-                <span class="w-4 h-0.5 bg-orange"></span>
+              <div class="flex items-center gap-2 text-sm font-bold tracking-widest text-orange-700 mb-2">
+                <span class="w-4 h-0.5 bg-orange-700"></span>
                 你可能在想
               </div>
               <h3 class="font-serif text-xl font-black text-navy-700 mb-4">
@@ -1043,7 +1055,7 @@ const handleSubmit = async () => {
                           openFaqId === faq.id ? 'max-h-40 pb-3 px-4' : 'max-h-0'
                         ]"
                       >
-                        <p class="text-[0.85rem] text-ink/60 leading-relaxed">{{ faq.a }}</p>
+                        <p class="text-sm text-ink/70 leading-relaxed">{{ faq.a }}</p>
                       </div>
                     </div>
                   </div>
@@ -1053,7 +1065,7 @@ const handleSubmit = async () => {
 
             <!-- Cases Card (cases-teaser style) -->
             <div class="bg-white rounded-[20px] p-6 shadow-sm">
-              <div class="text-[0.82rem] font-bold tracking-widest uppercase text-navy-700/50 mb-4">他們也是這樣開始的</div>
+              <div class="text-sm font-bold tracking-widest uppercase text-navy-800/70 mb-4">他們也是這樣開始的</div>
               <div class="flex flex-col gap-3">
                 <div v-for="c in cases" :key="c.name" class="flex gap-3 items-start">
                   <!-- 頭像：有照片就放照片（object-top 避免切到頭頂），沒有才退回姓氏首字 -->
@@ -1071,12 +1083,12 @@ const handleSubmit = async () => {
                     {{ c.name.charAt(0) }}
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="text-[0.88rem] font-semibold text-navy-800">{{ c.name }}・{{ c.info }}</div>
-                    <div class="text-[0.88rem] text-ink/60 italic">「{{ c.quote }}」</div>
+                    <div class="text-sm font-semibold text-navy-800">{{ c.name }}・{{ c.info }}</div>
+                    <div class="text-sm text-ink/70 italic">「{{ c.quote }}」</div>
                   </div>
                 </div>
               </div>
-              <a href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/" class="block text-center text-xs text-navy-700/50 hover:text-navy-700 mt-4 pt-4 border-t border-navy-700/10">
+              <a href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/" class="block text-center text-sm text-navy-700 hover:text-orange-700 mt-4 pt-4 border-t border-navy-700/10 py-2">
                 看更多學員故事 &rarr;
               </a>
             </div>

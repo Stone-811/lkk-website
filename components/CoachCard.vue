@@ -51,7 +51,7 @@ const imageError = ref(false)
       <h3 class="text-lg font-bold text-navy font-serif group-hover:text-orange transition-colors truncate">
         {{ coach.name }}
       </h3>
-      <p v-if="coach.roleTitle" class="text-orange font-medium text-sm truncate">
+      <p v-if="coach.roleTitle" class="text-orange-700 font-medium text-sm leading-snug">
         {{ coach.roleTitle }}
       </p>
 

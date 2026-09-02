@@ -42,14 +42,14 @@ const currentYear = new Date().getFullYear()
           <p class="text-cream-200 text-sm mb-4">
             練健康中高齡訓練中心
           </p>
-          <div class="flex flex-wrap gap-3">
+          <div class="flex flex-wrap gap-3 -ml-2.5">
             <!-- Facebook -->
             <a
               v-if="site.socialLinks.facebook"
               :href="site.socialLinks.facebook"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-cream-200 hover:text-orange transition-colors"
+              class="text-cream-200 hover:text-orange transition-colors inline-flex items-center justify-center w-11 h-11 -m-2.5"
               aria-label="Facebook"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -62,7 +62,7 @@ const currentYear = new Date().getFullYear()
               :href="site.socialLinks.instagram"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-cream-200 hover:text-orange transition-colors"
+              class="text-cream-200 hover:text-orange transition-colors inline-flex items-center justify-center w-11 h-11 -m-2.5"
               aria-label="Instagram"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -75,7 +75,7 @@ const currentYear = new Date().getFullYear()
               :href="site.socialLinks.youtube"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-cream-200 hover:text-orange transition-colors"
+              class="text-cream-200 hover:text-orange transition-colors inline-flex items-center justify-center w-11 h-11 -m-2.5"
               aria-label="YouTube"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@ const currentYear = new Date().getFullYear()
               :href="site.socialLinks.podcast"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-cream-200 hover:text-orange transition-colors"
+              class="text-cream-200 hover:text-orange transition-colors inline-flex items-center justify-center w-11 h-11 -m-2.5"
               aria-label="Podcast"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -101,7 +101,7 @@ const currentYear = new Date().getFullYear()
               :href="site.socialLinks.line"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-cream-200 hover:text-orange transition-colors"
+              class="text-cream-200 hover:text-orange transition-colors inline-flex items-center justify-center w-11 h-11 -m-2.5"
               aria-label="LINE"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -112,7 +112,7 @@ const currentYear = new Date().getFullYear()
             <a
               v-if="site.contactEmail"
               :href="`mailto:${site.contactEmail}`"
-              class="text-cream-200 hover:text-orange transition-colors"
+              class="text-cream-200 hover:text-orange transition-colors inline-flex items-center justify-center w-11 h-11 -m-2.5"
               aria-label="Email"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -144,11 +144,11 @@ const currentYear = new Date().getFullYear()
             <li v-for="store in stores" :key="store.name">
               <NuxtLink
                 :to="`/locations/${store.slug}`"
-                class="text-cream-200 hover:text-white transition-colors text-xs sm:text-sm block"
+                class="text-cream-200 hover:text-white transition-colors text-sm block py-0.5"
               >
                 {{ store.name }}
               </NuxtLink>
-              <span class="text-cream-300/60 text-[10px] sm:text-xs">{{ store.phone }}</span>
+              <span class="text-cream-200/85 text-sm">{{ store.phone }}</span>
             </li>
           </ul>
         </div>
