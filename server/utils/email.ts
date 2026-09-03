@@ -187,7 +187,7 @@ export function buildLeadNotificationEmail(data: LeadNotificationData): { subjec
   rows += opt('Email', data.email)
   rows += opt('公司/單位', data.organization)
   rows += opt('洽詢類型', data.cooperationType)
-  rows += opt(data.type === 'group_class' ? '上課門店' : '選擇分店', data.storeName)
+  rows += opt(data.type === 'group_class' ? '上課分店' : '選擇分店', data.storeName)
 
   // Group class specific fields
   if (data.type === 'group_class') {
@@ -662,7 +662,7 @@ export async function sendGroupClassConfirmation(data: {
       value: data.courseName + (data.coursePrice ? `（${data.coursePrice}／4 堂一期）` : ''),
     })
   }
-  if (data.storeName) classRows.push({ label: '上課門店', value: data.storeName })
+  if (data.storeName) classRows.push({ label: '上課分店', value: data.storeName })
   if (data.preferredTime) classRows.push({ label: '偏好時段', value: data.preferredTime })
   if (data.sources && data.sources.length > 0) {
     classRows.push({ label: '得知管道', value: data.sources.join('、') })

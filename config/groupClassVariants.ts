@@ -12,8 +12,8 @@ export interface GroupClassVariant {
     checklist?: string[]    // 「立即擁有」清單
     ctaText?: string        // CTA 按鈕文字
   }
-  // 鎖定門店：填門店字串的開頭即可（如 '南京店'）。
-  // 設定後：自動預選該門店、隱藏門店下拉選單。
+  // 鎖定分店：填分店字串的開頭即可（如 '南京店'）。
+  // 設定後：自動預選該分店、隱藏分店下拉選單。
   lockStore?: string
   // 鎖定課程：填課程名稱（如 '樂齡肌力體適能團班'）。設定後：自動預選、隱藏課程選項。
   lockCourse?: string

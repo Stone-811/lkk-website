@@ -65,7 +65,7 @@ const sourceOptions = [
   { value: 'YouTube 影片頻道', label: 'YouTube 影片' },
   { value: '親朋好友推薦分享', label: '親友推薦' },
   { value: '上過體驗課／一對一課程', label: '上過體驗課' },
-  { value: '門店路過看到', label: '路過看到門店' },
+  { value: '門店路過看到', label: '路過看到分店' },
 ]
 
 const heroGets = [
@@ -86,14 +86,14 @@ const courseCards = [
     price: '$2,400',
     unit: '一期 / 4堂',
     desc: '四堂課循序漸進學會深蹲、硬舉、分腿蹲、胸推、肩推、划船六大基礎動作，從徒手到啞鈴、壺鈴、槓鈴都會用。教練隨堂指導與收操，課後你就能自己上健身房訓練。適合完全沒經驗、想快速脫離新手村的人。',
-    tags: [{ t: '新手友善' }, { t: '4間門店皆有開班' }, { t: '課後可自主訓練' }],
+    tags: [{ t: '新手友善' }, { t: '4間分店皆有開班' }, { t: '課後可自主訓練' }],
   },
   {
     title: '樂齡肌力體適能團班',
     price: '$2,400',
     unit: '一期 / 4堂',
     desc: '課程內容與基礎重訓團班相同的動作架構，但教練會依中高齡學員的身體狀況調整強度與節奏，並加強日常生活起居相關的動作模式，目標是預防跌倒臥床，維持晚年自主生活的能力。',
-    tags: [{ t: '中高齡專屬強度' }, { t: '4間門店皆有開班' }],
+    tags: [{ t: '中高齡專屬強度' }, { t: '4間分店皆有開班' }],
   },
   {
     title: '練健康舉重團班',
@@ -154,7 +154,7 @@ const schedule: Record<string, { rows: { day: string; times: string; lift?: stri
 }
 const activeStore = ref('nanjing')
 
-// 鎖定門店（?v= 變體）：以門店字串開頭比對，命中就自動帶入並隱藏下拉選單
+// 鎖定分店（?v= 變體）：以分店字串開頭比對，命中就自動帶入並隱藏下拉選單
 const lockedStore = computed(() => {
   const key = variant.value.lockStore
   if (!key) return null
@@ -171,19 +171,19 @@ const lockedCourse = computed(() => {
 watch(lockedCourse, (c) => { if (c) formData.course = c.value }, { immediate: true })
 
 // ── 舉重團班只在南京店開班 ─────────────────────────────────────────────
-// 只給提示擋不住誤填（會產生要人工回撥更正的名單），所以直接限制可選門店。
+// 只給提示擋不住誤填（會產生要人工回撥更正的名單），所以直接限制可選分店。
 const WEIGHTLIFTING_COURSE = '練健康舉重團班'
 const weightliftingStore = computed(
   () => storeOptions.find((s) => s.startsWith('南京店')) || '',
 )
 const isWeightlifting = computed(() => formData.course === WEIGHTLIFTING_COURSE)
 
-// 下拉選單的可選門店：選到舉重團班就只剩南京店
+// 下拉選單的可選分店：選到舉重團班就只剩南京店
 const availableStores = computed(() =>
   isWeightlifting.value ? [weightliftingStore.value].filter(Boolean) : storeOptions,
 )
 
-// 課程可選項：若變體把門店鎖在南京以外，舉重團班就不該出現（避免無解的組合）
+// 課程可選項：若變體把分店鎖在南京以外，舉重團班就不該出現（避免無解的組合）
 const availableCourses = computed(() => {
   if (lockedStore.value && lockedStore.value !== weightliftingStore.value) {
     return courses.filter((c) => c.value !== WEIGHTLIFTING_COURSE)
@@ -191,10 +191,10 @@ const availableCourses = computed(() => {
   return courses
 })
 
-// 先選門店再改課程時，把不合法的既有選擇換掉。
-// ⚠️ 變體鎖定的門店一律優先：lockCourse 鎖成舉重團班、lockStore 又鎖在南京以外時，
+// 先選分店再改課程時，把不合法的既有選擇換掉。
+// ⚠️ 變體鎖定的分店一律優先：lockCourse 鎖成舉重團班、lockStore 又鎖在南京以外時，
 //    課程選項是隱藏的（走 lockedCourse 分支），availableCourses 的過濾會被繞過。
-//    此時若還自動把門店改成南京店，畫面顯示的是鎖定門店、送出的卻是南京店——靜默不一致。
+//    此時若還自動把分店改成南京店，畫面顯示的是鎖定分店、送出的卻是南京店——靜默不一致。
 //    寧可讓 validate() 擋下並顯示錯誤，也不要偷改成使用者沒看到的值。
 watch(isWeightlifting, (on) => {
   if (lockedStore.value) {
@@ -205,7 +205,7 @@ watch(isWeightlifting, (on) => {
 }, { immediate: true })
 
 const steps = [
-  { n: '1', title: '填寫報名表單', desc: '約 1~2 分鐘完成，選好課程與偏好門店即可' },
+  { n: '1', title: '填寫報名表單', desc: '約 1~2 分鐘完成，選好課程與偏好分店即可' },
   { n: '2', title: '教練主動電話／LINE聯繫', desc: '2-3 個工作天內確認可開班的梯次日期、名額狀況與繳費方式' },
   { n: '3', title: '開始上課', desc: '一期4堂，結束後可直接續課，不用等月初重新報名' },
 ]
@@ -222,14 +222,14 @@ const isSuccess = ref(false)
 
 /**
  * 成功畫面：LINE 官方帳號預填訊息（作法比照 pages/booking.vue）
- * 使用 oaMessage 連結把「學員姓名 + 門店 + 報名課程」直接帶進輸入框，
+ * 使用 oaMessage 連結把「學員姓名 + 分店 + 報名課程」直接帶進輸入框，
  * 使用者只要按下傳送即可，不必自己打字（訊息仍需由使用者親自送出）。
  * 代填的情況會一併寫明報名者與學員，教練才知道要聯繫誰。
  */
 const lineMessage = computed(() => {
   // formData.store 的格式是「南京店｜台北市…」，只取店名
   const store = (formData.store.split('｜')[0] || '').trim()
-  // 門店是必填，沒值只是防禦；用整段組字避免退化成「練健康 的課程」多一個空格
+  // 分店是必填，沒值只是防禦；用整段組字避免退化成「練健康 的課程」多一個空格
   const venue = store ? `練健康 ${store} ` : '練健康'
   const course = formData.course.trim() || '團體課程'
   const student = formData.name.trim()
@@ -264,7 +264,7 @@ function validate() {
     else if (!/^09\d{8}$/.test(cp)) e.contactPhone = '請輸入有效的手機號碼'
   }
   if (!formData.course) e.course = '請選擇想報名的課程'
-  if (!formData.store) e.store = '請選擇門店'
+  if (!formData.store) e.store = '請選擇分店'
   else if (isWeightlifting.value && formData.store !== weightliftingStore.value) e.store = '舉重團班目前僅南京店開班'
   if (!formData.medicalHistory.trim()) e.medicalHistory = '請填寫（若完全健康請填「無」）'
   errors.value = e
@@ -531,12 +531,12 @@ const inputClass =
                   </div>
 
                   <div>
-                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">想去哪一間門店上課？ <span v-if="!lockedStore" class="text-orange">*</span></label>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">想去哪一間分店上課？ <span v-if="!lockedStore" class="text-orange">*</span></label>
                     <div v-if="lockedStore" class="px-3.5 py-2.5 bg-orange/[0.08] border-[1.5px] border-orange rounded-lg text-base font-semibold text-[#d45c04]">
                       {{ lockedStore }}
                     </div>
                     <select v-else v-model="formData.store" :class="inputClass">
-                      <option value="" disabled>請選擇偏好的門店地點</option>
+                      <option value="" disabled>請選擇偏好的分店地點</option>
                       <option v-for="s in availableStores" :key="s" :value="s">{{ s }}</option>
                     </select>
                     <!-- 舉重團班只有南京店開班（與下方課程介紹的「目前僅南京店開班」同一句），
@@ -550,7 +550,7 @@ const inputClass =
                         <path d="M10 9.5v4.5" stroke-linecap="round" />
                         <circle cx="10" cy="6.2" r="1" fill="currentColor" stroke="none" />
                       </svg>
-                      <span>練健康舉重團班目前僅南京店開班，門店已自動帶入</span>
+                      <span>練健康舉重團班目前僅南京店開班</span>
                     </p>
                     <p v-if="errors.store" class="text-red-600 text-sm mt-1">{{ errors.store }}</p>
                   </div>
