@@ -550,7 +550,7 @@ const inputClass =
                         <path d="M10 9.5v4.5" stroke-linecap="round" />
                         <circle cx="10" cy="6.2" r="1" fill="currentColor" stroke="none" />
                       </svg>
-                      <span>練健康舉重團班目前僅南京店開班，分店已自動帶入</span>
+                      <span>練健康舉重團班目前僅南京店開班</span>
                     </p>
                     <p v-if="errors.store" class="text-red-600 text-sm mt-1">{{ errors.store }}</p>
                   </div>
