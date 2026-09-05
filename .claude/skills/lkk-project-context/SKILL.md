@@ -18,7 +18,9 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - 同 repo `Stone-811/lkk-website`，靠「不同專案 backend + 不同分支 + 分支各自 apphosting.yaml」分離：
   - **dev**：專案 `lkkdev`／backend `lkk-website-dev`／分支 `dev`／URL `lkk-website-dev--lkkdev.asia-east1.hosted.app`
   - **prod**：專案 `lkkprod`／backend `lkk-website`／分支 `prod`／URL `lkk-website--lkkprod.asia-east1.hosted.app`／**正式對外網域 ✅ `lkkwellness.com`（2026-07-31 已上線，Cloudflare DNS「DNS only 灰雲」+ Google SSL）**
-- 發 prod＝把 dev 改動帶到 `prod` 分支。**⚠️ `apphosting.yaml` 各分支值不同（dev=`lkkdev`/`lkk-website-dev--lkkdev.asia-east1.hosted.app`、prod=`lkkprod`/`lkkwellness.com`；⚠️ dev 的 SITE_URL 在 2026-08-29 之前誤設為舊 WordPress 站 `l-kk.tw`，已修），絕不能互蓋**。**最穩＝檔案級帶入（2026-08-11 實測）**：`git checkout -B prod origin/prod` → `git checkout origin/dev -- <只要的檔案…>`（只帶目標檔、**不含 apphosting.yaml**）→ commit 前 `git status --short` 確認 staged 沒有 apphosting.yaml、`grep FIREBASE_PROJECT_ID apphosting.yaml` 仍 `lkkprod` → commit（不加 `-a`，避免帶進工作區雜項如 CLAUDE.md）→ `git push origin prod` → 切回 `git checkout dev`。（整支 `git merge dev` 亦可，但要事後 `git diff origin/prod -- apphosting.yaml` 確認為空；檔案級更不易出錯。）部署：push 分支 → 自動 build；或 `apphosting:rollouts:create <backend> --project <proj> --git-branch <branch> --force`。
+- 發 prod＝把 dev 改動帶到 `prod` 分支。**⚠️ `apphosting.yaml` 各分支值不同（dev=`lkkdev`/`lkk-website-dev--lkkdev.asia-east1.hosted.app`、prod=`lkkprod`/`lkkwellness.com`；⚠️ dev 的 SITE_URL 在 2026-08-29 之前誤設為舊 WordPress 站 `l-kk.tw`，已修），絕不能互蓋**。**最穩＝檔案級帶入（2026-08-11 實測）**：`git checkout -B prod origin/prod` → `git checkout origin/dev -- <只要的檔案…>`（只帶目標檔、**不含 apphosting.yaml**）→ commit 前 `git status --short` 確認 staged 沒有 apphosting.yaml、`grep FIREBASE_PROJECT_ID apphosting.yaml` 仍 `lkkprod` → commit（不加 `-a`，避免帶進工作區雜項如 CLAUDE.md）→ `git push origin prod` → 切回 `git checkout dev`。（整支 `git merge dev` 亦可，但要事後 `git diff origin/prod -- apphosting.yaml` 確認為空；檔案級更不易出錯。）
+  - 🔴 **檔案級帶入不會刪除檔案**：`git checkout origin/dev -- <path>` 只覆蓋內容，prod 上有、dev 上已刪的檔案會原封不動留著，而且 checkout 之後 `git diff --stat` 也不再顯示它——看起來乾淨其實沒刪。**改動含刪檔時要另外 `git rm <path>`**。2026-09-05 移除 `/api/admin/seed` 時若漏了這步，那支能清空 coaches/stores 的端點會安然留在正式站。
+  - 部署後怎麼證明真的上線（依改動類型選驗證法、marker 的自爆寫法、查線上 commit）見 `lkk-deploy-verify`。部署：push 分支 → 自動 build；或 `apphosting:rollouts:create <backend> --project <proj> --git-branch <branch> --force`。
 - **prod 現況（2026-07-31）**：已 merge dev→prod、對外 `lkkwellness.com` ＝最新版（含 LKK4 全齡改版等）；**Email 已修好**（有效 lkkwellness App Password，dev/prod 都通）；**prod Auth 尚未開 Google 登入** → 後台用緊急密碼 `lkkwellness@gmail.com`/`lkkwellness-prod`。網域/SMTP/UTM 細節見記憶 [[lkk-web-deploy]]、[[lkk-web-gotchas]]。
 - **hosted.app 已 301 轉到 lkkwellness.com**（`server/middleware/redirect-canonical.ts`，2026-08-03）：正式站醜網址形同停用、SEO 合併。⚠️ **在 App Hosting 上「依網域判斷」要讀 `x-forwarded-host`，不是 `host`**——前面 Envoy CDN 把 `host` 改寫成內部 `…run.app`，原始請求網域落在 `x-forwarded-host`（第一版比對 host 完全沒生效就是踩這個）。middleware 只比對 prod hosted.app 的 xfHost 才轉，故 lkkwellness.com 不迴圈、dev 不受影響。App Hosting 預設 hosted.app 網址無法真正關閉，只能靠轉址。
 - **prod 發佈 2026-08-20**：`/about`、`/news`、`/group-booking` 三個新頁＋團體課系統＋導覽改名（「經營團隊」→「關於練健康」、新增「媒體報導」、「異業結盟」→「合作洽談」）已上正式站，檔案級帶入 23 檔、`apphosting.yaml` 未動（複驗 `lkkprod`/`lkkwellness.com` 原值）。⚠️ **判斷「什麼還沒上 prod」一律用 `git diff --stat origin/prod origin/dev`（檔案級），別看 `git log origin/prod..origin/dev`**——prod 是檔案級帶入、commit 不同但內容可能已同步，commit log 會嚴重高估未上線的量。⚠️ **`/team-intro` 已 301 永久導向 `/about`**（`pages/team-intro/index.vue` 只剩 `navigateTo('/about',{redirectCode:301})`）；`/team-intro/coaches` 子頁不受影響。301 是不可逆的 SEO 訊號（權重併給 `/about`、Google 會逐步從索引移除舊網址），若日後要把「經營團隊」拆回獨立頁會吃虧，要保留彈性就改 `redirectCode: 302`。
@@ -159,7 +161,7 @@ public API 只撈 `where('isActive', '==', true)`。後台新增教練若沒設�
 5. WordPress 代理、reCAPTCHA 皆未實作（CLAUDE.md 有寫）。
 6. **教練卡片 `<button>` 垂直置中 → 圖片下移（2026-08-11 修，已上 prod）**：`pages/team-intro/coaches.vue` 教練卡是 `<button>`（圖 `aspect-[3/4]`＋資訊區 `.p-4`）。grid 同排等高，但各教練專長標籤行數不同→`.p-4` 高度不一→**`<button>` 天生會垂直置中內容**（即使非 flex）、把矮卡多出的空間分到圖片**上方**、圖被下推（實測許雅淇比同排低 13px）。**修法：button class 加 `flex flex-col`**（內容靠上）→ 全教練圖頂端 offset 都 1px、名字橫幅同排對齊。⚠️ 凡「`<button>` 當卡片＋grid 等高拉伸」都可能中招；排查先量 `imgDiv.top - btn.top` 比對同排各卡，別先懷疑圖片本身。**教練圖現況**：全 43 張皆 **500×550**、底部「教練｜姓名」橫幅**燒進圖檔**（與卡片下方 HTML 名字重複）、部分人物構圖偏鬆大小不一。`object-cover` 對此近方形圖**只裁左右不裁上下**→**CSS `object-position` 無法上下移、也無法只靠 CSS 拉齊人物大小差異（除非放大，會連橫幅一起放大變醜）**。根治靠換照片：已請廠商提供「純人像、無橫幅、構圖統一、500×550→建議1000×1100 JPG」，規格文件 `docs/教練照片規格.md`，到時直接覆蓋 `public/images/coaches/<分店>/<檔名>` 不用改程式。
 
-**輪詢 marker 自己有 bug，會把成功的部署誤判成失敗**（同一類錯誤已踩三次）：
+**輪詢 marker 自己有 bug，會把成功的部署誤判成失敗**（詳見 `lkk-deploy-verify`）：
 
 | 寫法 | 為什麼壞 |
 |---|---|
@@ -169,6 +171,8 @@ public API 只撈 `where('isActive', '==', true)`。後台新增教練若沒設�
 | `grep -c 'bg-navy-800'` | 會命中 CSS bundle 裡的**類別定義**，不是版面標籤 |
 
 驗證前先在本機對同一份輸出跑一次 marker，確認它回傳你預期的數字再拿去輪詢。
+更根本的問題是**有些改動根本沒有線上可觀測的訊號**——`/api/admin/*` 未登入一律 401、
+端點存不存在都一樣，所以「等它變 404」這種條件永遠不會成立。依改動類型選驗證法見 `lkk-deploy-verify`。
 
 **全域字串替換前先想「這幾個字是不是別的詞的一部分」**：
 「門店」→「分店」會把**西門店**改成西分店。逐處指定，不做 `replace_all`。
