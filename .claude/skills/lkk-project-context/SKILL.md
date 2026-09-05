@@ -91,6 +91,59 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 **另議**：`/group-booking` 27 處寫死的 `text-[#1a3545]`、標題橘字對比 2.44、
 LKK4 重量表手機要橫拖七欄、頁面過長（LKK4 約 16 螢幕）。
 
+## 🔴 部署會不會蓋掉業主的資料？（會被問，答案要講準）
+
+**不會。** 教練／分店／講師／名單／成績都在 Firestore（`lkkprod` 專案），
+push prod 只重新編譯程式碼、換 Cloud Run 版本，**完全不碰 Firestore**。
+實測正式站 `GET /api/public/coaches` → `_debug: { source: 'firestore', count: 49 }`。
+
+但有兩個「看起來像被還原」的陷阱，答的時候要一起講：
+
+**① Firestore 空了會自動退回程式碼裡的舊資料。**
+`server/api/public/{stores,coaches,stores/[slug]}.get.ts` 都有這段：
+
+```js
+if (coaches.length === 0) { ...改用 fallbackCoaches... }
+```
+
+`server/utils/fallback-data.ts` 寫死 4 間分店 ＋ 48 位教練（2026-07 的快照）。
+Firestore 讀不到或查詢無結果時，畫面會顯示那份舊名單——業主會說「我新增的教練不見了、變回舊的」。
+**資料沒被還原，是讀不到拿備份頂著。** 判斷方式：看 `_debug.source` 是 `firestore` 還是 `fallback`。
+
+**② `isActive` 沒設會整筆消失。**
+public API 只撈 `where('isActive', '==', true)`。後台新增教練若沒設或設 false，
+前台就看不到——也常被誤判成「資料被蓋掉」。
+
+**③（已解除）`/api/admin/seed` 已於 2026-09-05 刪除。**
+那支是 2026-07-21 建置初期用來把 fallback-data 灌進空 Firestore 的工具
+（commit `57f6459`），帶 `clearExisting` 會把 `coaches` 與 `stores` 兩個 collection
+**整個刪掉**再寫回七月快照。後台從來沒有 UI 入口，原本規劃的「資料管理」分頁沒做。
+資料上線後它唯一的作用就是倒退八個月，且無 Firestore 備份可救，所以移除。
+⚠️ **不要因為「初始化很方便」把它加回來。** 真要初始化寫一次性腳本，不要留線上端點。
+⚠️ 移除時 `server/middleware/admin-api-guard.ts` 只拆掉 `/api/admin/seed` 那一行——
+`users` 與 `debug` 是真實存在的端點（`/api/admin/users/*`、`/api/admin/debug/firestore-test`），
+整段刪掉會讓它們對 editor／store_staff 開放。
+
+## 2026-09-02～05 這批（已上 prod）
+
+- **SMTP 停擺與修復**：9/1 起 `535-5.7.8 BadCredentials`，秘密沒變、是 Google 端撤銷了
+  `lkk@l-kk.tw` 的應用程式密碼。換密碼後**必須重新部署**——App Hosting 在 build 時把
+  secret 版本 pin 死，只新增版本不會生效。9/2 06:28–06:31 實測三種表單雙向信全部寄出。
+  ⚠️ 加盟表單（franchise）的信至今仍未實際觸發過。
+- **團課用語**「門店」→「分店」（20 處，含通知信）。
+  🔴 **絕不能全域替換**——「西**門店**」會變成「西**分店**」。逐處指定。
+  來源選項的 `value: '門店路過看到'` **只改 label 不改 value**，value 會寫進 Firestore 並出現在 CSV。
+- **舉重團班限定南京店**：下拉只剩南京店＋自動帶入＋切換課程時換掉不合法的既有選擇＋送出前再驗。
+  變體鎖定的分店優先於自動帶入（避免畫面顯示 A 店、送出資料是 B 店的靜默不一致）。
+- 成立年份 2019 → 2018，全站年資「七年／7 年」→「八年／8 年」（`/franchise` 6 處、`/locations` 1 處）。
+- `/about` 時間軸補回西門店（2023）與松江加盟店（2026）開幕；Hero 圖表換業主新版（失能區間）。
+- `/about`「從知識到行動」五格由破圖占位改為 `components/about/ActionIcon.vue` 的線性圖示。
+- `/lkk-academy` 業主提供的四張照片上架（三張課程卡 16:10、Hero 16:9）。
+- `/booking` Hero 加底圖並修掉五處對比不足。
+
+⚠️ **業主決定不改，別再回報**：`/about` 關鍵數據寫「成立 2018 年」，
+但時間軸仍是 `2018 品牌籌備` / `2019 練健康創立`，兩者對不起來。
+
 ## 安全（動 /admin 或 server/api/admin 前必看）
 - 已修補：後門帳號（改 `ALLOW_DEV_ADMIN` gate）、`JWT_SECRET` 正式站強制、登入頁明文帳密移除。
 - **部署前必設 `JWT_SECRET` secret**，否則正式站啟動 crash。
@@ -105,6 +158,20 @@ LKK4 重量表手機要橫拖七欄、頁面過長（LKK4 約 16 螢幕）。
 4. `pages/locations/index.vue` 用寫死資料，非 API。
 5. WordPress 代理、reCAPTCHA 皆未實作（CLAUDE.md 有寫）。
 6. **教練卡片 `<button>` 垂直置中 → 圖片下移（2026-08-11 修，已上 prod）**：`pages/team-intro/coaches.vue` 教練卡是 `<button>`（圖 `aspect-[3/4]`＋資訊區 `.p-4`）。grid 同排等高，但各教練專長標籤行數不同→`.p-4` 高度不一→**`<button>` 天生會垂直置中內容**（即使非 flex）、把矮卡多出的空間分到圖片**上方**、圖被下推（實測許雅淇比同排低 13px）。**修法：button class 加 `flex flex-col`**（內容靠上）→ 全教練圖頂端 offset 都 1px、名字橫幅同排對齊。⚠️ 凡「`<button>` 當卡片＋grid 等高拉伸」都可能中招；排查先量 `imgDiv.top - btn.top` 比對同排各卡，別先懷疑圖片本身。**教練圖現況**：全 43 張皆 **500×550**、底部「教練｜姓名」橫幅**燒進圖檔**（與卡片下方 HTML 名字重複）、部分人物構圖偏鬆大小不一。`object-cover` 對此近方形圖**只裁左右不裁上下**→**CSS `object-position` 無法上下移、也無法只靠 CSS 拉齊人物大小差異（除非放大，會連橫幅一起放大變醜）**。根治靠換照片：已請廠商提供「純人像、無橫幅、構圖統一、500×550→建議1000×1100 JPG」，規格文件 `docs/教練照片規格.md`，到時直接覆蓋 `public/images/coaches/<分店>/<檔名>` 不用改程式。
+
+**輪詢 marker 自己有 bug，會把成功的部署誤判成失敗**（同一類錯誤已踩三次）：
+
+| 寫法 | 為什麼壞 |
+|---|---|
+| `grep -c "字串"` | 算的是**行數**不是次數。壓縮後的 HTML 全部在一行，三個按鈕只會回 1 |
+| `grep -o 'path/.*\.webp'` | `.*` 貪婪，同一行的四個路徑被吃成**一個** match。用 `[a-z-]+` |
+| `grep "[A-E]-[0-9]"` | 會誤中 `<meta charset="UTF-8">` 裡的「F-8」 |
+| `grep -c 'bg-navy-800'` | 會命中 CSS bundle 裡的**類別定義**，不是版面標籤 |
+
+驗證前先在本機對同一份輸出跑一次 marker，確認它回傳你預期的數字再拿去輪詢。
+
+**全域字串替換前先想「這幾個字是不是別的詞的一部分」**：
+「門店」→「分店」會把**西門店**改成西分店。逐處指定，不做 `replace_all`。
 
 ## 團體課報名系統（`/group-booking` + `/admin/group-classes`，2026-08-19 完成）
 

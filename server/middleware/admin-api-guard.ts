@@ -1,7 +1,7 @@
 // 後台 API 權限鎖（集中控管，不必逐支 handler 改）：
 // - /api/admin/*（auth/ 除外）一律需登入
 // - admin：全部放行
-// - users / seed / debug：僅 admin
+// - users / debug：僅 admin
 // - custom（自訂權限）：依「勾選的頁面 → 對應 API」放行，其餘 403
 // - 舊角色 sales / editor / store_staff：維持原本行為（既有帳號不受影響）
 //
@@ -49,10 +49,9 @@ export default defineEventHandler(async (event) => {
   // 系統管理員：全部放行
   if (role === 'admin') return
 
-  // 僅系統管理員：使用者管理 / 種子資料 / 除錯
+  // 僅系統管理員：使用者管理 / 除錯
   if (
     path.startsWith('/api/admin/users') ||
-    path.startsWith('/api/admin/seed') ||
     path.startsWith('/api/admin/debug')
   ) {
     throw createError({ statusCode: 403, statusMessage: '權限不足', message: '權限不足' })
@@ -81,6 +80,6 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  // editor / store_staff：維持原本存取（users/seed/debug 已於上方擋掉）
+  // editor / store_staff：維持原本存取（users/debug 已於上方擋掉）
   return
 })
