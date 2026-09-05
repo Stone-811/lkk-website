@@ -36,17 +36,44 @@ for enc in ('utf-8', 'big5', 'cp950'):
 **一律轉 WebP**：`Image.open(p).convert('RGB')`，寬度上限依上表，`quality=86, method=6`。
 實測 JPG 147–414 KB → WebP 89–317 KB。舊的 `special.png` 一張 5.4MB，換掉省很多。
 
-## 深色底圖的壓暗參數（全站一致）
+## 深色底圖的壓暗參數（**不是常數，每張都要重量**）
 
 ```html
 <img src="…" alt="" aria-hidden="true"
      class="absolute inset-0 w-full h-full object-cover opacity-60"
-     style="filter: brightness(0.4)" />
+     style="filter: brightness(0.30)" />
 ```
 
 ⚠️ **brightness 用 inline style，不要用 Tailwind 任意屬性** `[filter:brightness(0.4)]`。
 兩種都會編譯，但 Nuxt 把 critical CSS 內嵌進 HTML 的 `<style>`，用 class 寫法在驗證時
 會 grep 不到 `.css` 檔而誤判成沒生效。
+
+**已量過的值**（`opacity-60` 固定，只調 brightness）：
+
+| Hero | brightness | 為什麼 |
+|---|---|---|
+| `/about` | **0.30** | 學員與教練合照 |
+| `/booking` | **0.40** | 四位學員豎拇指，但另有五處文字要一起修（見下表） |
+| `/lkk-academy` | **0.30** | 室內開燈的訓練營合照，比一般實拍亮；0.40 與 0.35 各有三項不及格 |
+
+`/lkk-academy` 的實測（示範為什麼不能照抄）：
+
+| 文字 | 0.40 | 0.35 | 0.30 | 門檻 |
+|---|---|---|---|---|
+| eyebrow `orange-300` | 4.14 ❌ | 4.64 ✅ | 5.21 ✅ | 4.5 |
+| eyebrow 後綴 `white/65` | 4.04 ❌ | 4.41 ❌ | 4.82 ✅ | 4.5 |
+| 副標 `white/70` | 4.40 ❌ | 4.83 ✅ | 5.30 ✅ | 4.5 |
+
+## object-position 怎麼決定：看主體在畫面的哪一段
+
+`object-cover` 在寬螢幕會把 16:9 的圖壓成扁長條，裁掉上下。**先看照片再決定**：
+
+| 主體位置 | 寫法 | 實例 |
+|---|---|---|
+| 頭在畫面上緣 | `object-top` | `/booking` 四人豎拇指、`/services` 團課——預設置中會把頭全切掉 |
+| 主體在中段 | 不加（預設 50% 50%） | `/lkk-academy` 合照——上緣天花板、下緣桌面，置中剛好保住人臉 |
+
+⚠️ 兩者相反，不要養成「一律加 object-top」的習慣。
 
 ## 🔴 換完一定要量對比，而且要算對
 
@@ -71,6 +98,10 @@ ratio(lum(mixed), lum(bg))
 | 橘色 `#FB720A` 小字不足（約 3.2） | 換 **`text-orange-300`**（#fdba74，約 5.2） |
 | `text-white/50` 小字不足（約 3.6） | 提到 `text-white/75`（約 5.8） |
 | 大標橘字 3.16 | **不用改**，大字門檻是 3:1 |
+| 橘字疊在 `bg-orange/20` 徽章上（2.30） | **`orange-300` 不夠**（只有 3.81，底色被墊亮了）→ 用 **`text-orange-200`**（4.75） |
+
+⚠️ 最後一列是 `/booking` 踩到的：知識庫慣用的 `orange-300` 在**純深色底**上夠用，
+但疊在半透明橘底（徽章、清單勾勾的圓圈）上就不夠——底色被自己的橘色墊亮，要再淡一階。
 
 ## 淺色區塊要放底圖 → 是一次配色改版
 
