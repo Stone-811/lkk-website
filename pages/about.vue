@@ -112,12 +112,13 @@ const timeline = [
 // 從知識到行動（2026-08-31 業主定稿，取代原本「把方法，交到更多人手上」的 3 大類 13 項）
 // ⚠️ img 尚未提供，暫時留空 → 版面會顯示占位底色。照片到位後把檔名填進來即可。
 //    規格：4:3、建議 800x600 以上，放 public/images/about/wwd-*.webp
+// icon 對應 components/about/ActionIcon.vue；業主提供照片後填 img，照片會蓋過圖示
 const whatWeDo = [
-  { t: '知識轉譯', img: '' },
-  { t: '人才培育', img: '' },
-  { t: '訓練服務', img: '' },
-  { t: '產業升級', img: '' },
-  { t: '教練陪伴', img: '' },
+  { t: '知識轉譯', icon: 'translate', img: '' },
+  { t: '人才培育', icon: 'cultivate', img: '' },
+  { t: '訓練服務', icon: 'training', img: '' },
+  { t: '產業升級', icon: 'upgrade', img: '' },
+  { t: '教練陪伴', icon: 'companion', img: '' },
 ]</script>
 
 <template>
@@ -433,11 +434,9 @@ const whatWeDo = [
                 loading="lazy"
                 class="w-full h-full object-cover"
               />
-              <!-- 照片未提供時的占位：不留空白破圖，維持版面高度 -->
-              <div v-else class="w-full h-full flex items-center justify-center text-navy-700/20">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+              <!-- 未提供照片時顯示對應圖示；navy-700 疊在 cream-200 上對比 6.38，遠高於圖示門檻 3.0 -->
+              <div v-else class="w-full h-full flex items-center justify-center">
+                <AboutActionIcon :name="w.icon" class="w-14 h-14 lg:w-16 lg:h-16 text-navy-700" />
               </div>
             </div>
             <h3 class="font-serif text-lg font-black text-navy-700 mt-4">{{ w.t }}</h3>
