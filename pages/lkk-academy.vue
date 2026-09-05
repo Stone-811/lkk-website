@@ -29,7 +29,7 @@ const courses = [
     idx: '01 · COACH DEVELOPMENT PROGRAM',
     t: '徵才說明會暨訓練營',
     navEn: 'Coach Development',
-    img: '',
+    img: '/images/academy/coach-development.webp',
     quote: '「我想轉職來練健康當教練，但不確定自己是否有能力帶中高齡學員訓練。」',
     desc: [
       '想一起為中高齡訓練盡一份心力？想要跨領域不知道怎麼跨出那一步？說明會我們將完整說明教練升遷路徑，並分享練健康組織架構及未來展望。第一階段說明會為免費！',
@@ -56,7 +56,7 @@ const courses = [
     idx: '02 · WORKSHOP FOR MIDDLE-AGE AND ELDERLY WELLNESS',
     t: '中高齡訓練研習',
     navEn: 'Elderly Wellness',
-    img: '',
+    img: '/images/academy/elderly-wellness.webp',
     // 業主 2026-08-31 定稿：中標由原本的引號句改為敘述句
     quote: '帶學員從衰弱恢復健康',
     desc: [
@@ -78,7 +78,7 @@ const courses = [
     idx: '03 · EAGLE EYE DETECTIVE WORKSHOP',
     t: '鷹眼大師',
     navEn: 'Eagle Eye Detective',
-    img: '',
+    img: '/images/academy/eagle-eye.webp',
     // 業主 2026-08-31 定稿：中標由引號句改為敘述句
     quote: '找出問題根源，真正解決學員問題',
     desc: [
@@ -123,6 +123,22 @@ const whyUs = [
 
     <!-- HERO -->
     <section class="relative bg-navy-700 text-white pt-16 overflow-hidden">
+      <!--
+        訓練營現場合照。壓暗參數 opacity-60 + brightness(0.30)——與 /about Hero 同值，
+        實測文字區底色 L=0.0755 以下，eyebrow(orange-300 4.5 需求)、後綴 white/65、
+        副標 white/70 三項在 0.40 與 0.35 都不及格，0.30 才全數通過。
+        ⚠️ 換照片要重量一次，brightness 不是通用常數。
+        不加 object-top：人臉集中在畫面中段，上緣是天花板、下緣是桌面，
+        預設置中裁切剛好保住人臉。
+        brightness 用 inline style 而非 Tailwind 任意屬性，理由見 lkk-image-swap skill。
+      -->
+      <img
+        src="/images/academy/hero.webp"
+        alt=""
+        aria-hidden="true"
+        class="absolute inset-0 w-full h-full object-cover opacity-60"
+        style="filter: brightness(0.30)"
+      />
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_82%_25%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_4%_80%,rgba(58,106,133,0.35)_0%,transparent_45%)]" />
       <div class="container mx-auto px-4 relative z-10 py-14 lg:py-20">
         <div class="max-w-3xl">

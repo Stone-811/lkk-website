@@ -47,7 +47,7 @@ const pressOutlets = [
           <!-- Left content -->
           <div class="text-center lg:text-left">
             <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-5">
-              <span class="text-orange">健康，是練出來的。</span><br />
+              <span class="text-orange">健康，是練出來的</span><br />
               現在開始，永遠不嫌晚
             </h1>
 
