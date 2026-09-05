@@ -185,4 +185,6 @@ fetch(`https://firestore.googleapis.com/v1/projects/${p}/databases/(default)/col
 
 逐支 admin 端點大多只 `getSession`、不驗角色，看起來像沒防護。**防護在
 `server/middleware/admin-api-guard.ts`**：`/api/admin/*`（`auth/` 除外）一律要登入，
-`users`/`seed`/`debug` 僅 admin。實測正式站未登入時三者皆 401。
+`users`/`debug` 僅 admin。實測正式站未登入時皆 401。
+（`seed` 端點已於 2026-09-05 刪除——建置初期用來把 fallback-data 灌進空的 Firestore，
+帶 `clearExisting` 會清空 coaches 與 stores 兩個 collection，資料上線後只剩誤觸風險。）
