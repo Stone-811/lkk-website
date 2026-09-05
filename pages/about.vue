@@ -198,7 +198,7 @@ const whatWeDo = [
               src="/images/about/belief-chart.webp"
               alt="提升肌力是延緩失能的關鍵：有在訓練與沒在訓練的身體活動功能隨年齡變化對照圖"
               width="1600"
-              height="904"
+              height="900"
               class="w-full h-auto rounded-xl"
             />
             <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
