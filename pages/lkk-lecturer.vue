@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 useHead({
-  title: '練健康講師｜練健康 LKK Wellness',
+  title: '練健康講師｜練健康 LKK Wellness Center',
   meta: [
     { name: 'description', content: '練健康專業講師團隊，提供中高齡健康訓練課程與專業培訓。' }
   ]

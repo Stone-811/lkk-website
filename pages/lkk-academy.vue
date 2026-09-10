@@ -7,7 +7,7 @@
 // 相對於改版前：刪除「課程總覽」「學習地圖」，課程由 5 門收斂為 3 門
 // （移除【解剖生物力學】與【高效指導語與動作拆解實戰課】）。
 useHead({
-  title: '研習課程｜練健康 LKK Wellness',
+  title: '研習課程｜練健康 LKK Wellness Center',
   meta: [
     {
       name: 'description',
@@ -50,6 +50,7 @@ const courses = [
       { k: '第四梯次', rows: [{ k: '說明會', v: '10/31' }, { k: '訓練營', v: '11/07–11/08、11/28–11/29' }] },
     ],
     href: 'https://www.surveycake.com/s/W2y4Z',
+    cta: '報名說明會(免費)／訓練營請點我 →',
   },
   {
     slug: 'elderly-wellness',
@@ -72,6 +73,7 @@ const courses = [
       { k: '第二梯次', v: '11/14–11/15、11/21–11/22' },
     ],
     href: 'https://www.surveycake.com/s/DraAb',
+    cta: '報名請點我 →',
   },
   {
     slug: 'eagle-eye',
@@ -94,6 +96,7 @@ const courses = [
       { k: '第二梯次', v: '10/17–10/18' },
     ],
     href: 'https://www.surveycake.com/s/1QavK',
+    cta: '報名請點我 →',
   },
 ]
 
@@ -124,9 +127,12 @@ const whyUs = [
     <!-- HERO -->
     <section class="relative bg-navy-700 text-white pt-16 overflow-hidden">
       <!--
-        訓練營現場合照。壓暗參數 opacity-60 + brightness(0.30)——與 /about Hero 同值，
-        實測文字區底色 L=0.0755 以下，eyebrow(orange-300 4.5 需求)、後綴 white/65、
-        副標 white/70 三項在 0.40 與 0.35 都不及格，0.30 才全數通過。
+        訓練營現場合照。壓暗參數 opacity-60 + brightness(0.24)。
+        ⚠️ 本頁比 /about（0.30）更暗，是刻意的——h1 的「變成教得會的方法」用 text-orange
+        (#FB720A，與 CTA 按鈕同色) 而非 orange-300，在 0.30 下對比只有 3.05，
+        大字門檻 3.0 只多 0.05，換張照片就會破。壓到 0.24 後為 3.53（2026-09-10 實測，
+        採樣範圍取自瀏覽器的 object-cover 實際映射：原圖 x380–860, y360–431 最亮點）。
+        eyebrow(orange-300，4.5 需求) 同步從 5.06 升到 5.85。
         ⚠️ 換照片要重量一次，brightness 不是通用常數。
         不加 object-top：人臉集中在畫面中段，上緣是天花板、下緣是桌面，
         預設置中裁切剛好保住人臉。
@@ -137,7 +143,7 @@ const whyUs = [
         alt=""
         aria-hidden="true"
         class="absolute inset-0 w-full h-full object-cover opacity-60"
-        style="filter: brightness(0.30)"
+        style="filter: brightness(0.24)"
       />
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_82%_25%,rgba(251,114,10,0.12)_0%,transparent_55%),radial-gradient(circle_at_4%_80%,rgba(58,106,133,0.35)_0%,transparent_45%)]" />
       <div class="container mx-auto px-4 relative z-10 py-14 lg:py-20">
@@ -148,7 +154,7 @@ const whyUs = [
             <span class="text-white/65 tracking-normal normal-case font-medium">・研習課程</span>
           </div>
           <h1 class="font-serif text-4xl lg:text-5xl font-black leading-tight mb-5">
-            把實務經驗，<span class="text-orange-300">變成教得會的方法</span>
+            把實務經驗，<span class="text-orange">變成教得會的方法</span>
           </h1>
           <div class="w-14 h-1 bg-orange rounded-full mb-6" />
           <p class="text-white/70 text-lg font-light leading-relaxed mb-8">
@@ -190,16 +196,20 @@ const whyUs = [
                   <span class="hidden lg:block text-[10.5px] font-bold text-navy-800/70 tracking-[0.14em] uppercase truncate mb-0.5">
                     {{ c.navEn }}
                   </span>
-                  <span class="block font-bold text-navy-700 leading-snug group-hover:text-orange-700 transition-colors">
-                    {{ c.t }}
+                  <!-- 箭頭放在標題同一行、緊貼文字。
+                       ⚠️ 不要把箭頭放回外層 flex 的第三個子元素——文字區是 flex-1，
+                          會把箭頭推到格子最右邊、貼著 divide-x 分隔線，
+                          視覺上變成「下一格號碼前面的箭頭」（2026-09-10 業主回報）。 -->
+                  <span class="flex items-center gap-1.5 font-bold text-navy-700 leading-snug group-hover:text-orange-700 transition-colors">
+                    <span class="min-w-0">{{ c.t }}</span>
+                    <svg
+                      class="w-4 h-4 shrink-0 text-navy-700/70 transition-transform group-hover:translate-y-0.5 group-hover:text-orange-700"
+                      fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
                   </span>
                 </span>
-                <svg
-                  class="w-4 h-4 shrink-0 text-navy-700/70 transition-transform group-hover:translate-y-0.5 group-hover:text-orange-700"
-                  fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
               </a>
             </li>
           </ul>

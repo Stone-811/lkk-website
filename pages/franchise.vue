@@ -1,6 +1,6 @@
 <script setup lang="ts">
 useHead({
-  title: '加盟說明｜練健康 LKK Wellness',
+  title: '加盟說明｜練健康 LKK Wellness Center',
   meta: [
     { name: 'description', content: '練健康加盟說明，八年深耕中高齡訓練市場，物理治療師主導的訓練體系，LKK4 賽事品牌資產。' },
     { name: 'robots', content: 'noindex' }

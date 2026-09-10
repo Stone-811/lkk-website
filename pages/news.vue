@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 
 useHead({
-  title: '媒體報導｜練健康 LKK Wellness',
+  title: '媒體報導｜練健康 LKK Wellness Center',
   meta: [
     {
       name: 'description',

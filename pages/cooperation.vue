@@ -1,6 +1,6 @@
 <script setup lang="ts">
 useHead({
-  title: '合作洽詢｜練健康 LKK Wellness',
+  title: '合作洽詢｜練健康 LKK Wellness Center',
   meta: [
     {
       name: 'description',

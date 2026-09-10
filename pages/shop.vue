@@ -1,6 +1,6 @@
 <script setup lang="ts">
 useHead({
-  title: '商品導購｜練健康 LKK Wellness',
+  title: '商品導購｜練健康 LKK Wellness Center',
   meta: [
     { name: 'description', content: '練健康商品導購，物理治療師與專業教練團隊嚴選。從精準調理、居家防跌到自主增肌，我們幫你挑選最安全、最科學化的銀髮健康必備品。' }
   ]

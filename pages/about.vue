@@ -1,6 +1,6 @@
 <script setup lang="ts">
 useHead({
-  title: '關於練健康｜LKK Wellness',
+  title: '關於練健康｜LKK Wellness Center',
   meta: [
     {
       name: 'description',
@@ -198,8 +198,8 @@ const whatWeDo = [
             <img
               src="/images/about/belief-chart.webp"
               alt="提升肌力是延緩失能的關鍵：有在訓練與沒在訓練的身體活動功能隨年齡變化對照圖"
-              width="1600"
-              height="900"
+              width="1920"
+              height="1080"
               class="w-full h-auto rounded-xl"
             />
             <div class="mt-3 flex flex-wrap items-center justify-between gap-2">

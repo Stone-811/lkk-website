@@ -8,7 +8,7 @@ const route = useRoute()
 const variant = computed(() => getGroupClassVariant(route.query.v))
 
 useHead({
-  title: '團體課程報名｜練健康 LKK Wellness',
+  title: '團體課程報名｜練健康 LKK Wellness Center',
   meta: [
     {
       name: 'description',
