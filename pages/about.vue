@@ -425,20 +425,20 @@ const whatWeDo = [
         </h2>
 
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-5">
-          <div v-for="w in whatWeDo" :key="w.t">
-            <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-cream-200 border border-navy-700/10">
+          <div v-for="w in whatWeDo" :key="w.t" class="text-center">
+            <!-- 業主提供照片時仍走 4:3 卡片；未提供時用白底圓圈＋圖示，
+                 與上方「創辦人故事」三格同一種形式（2026-09-10 業主指定：不要方框與深色底）。 -->
+            <div v-if="w.img" class="aspect-[4/3] rounded-2xl overflow-hidden bg-cream-200 border border-navy-700/10">
               <img
-                v-if="w.img"
                 :src="w.img"
                 :alt="`練健康${w.t}`"
                 loading="lazy"
                 class="w-full h-full object-cover"
               />
-              <!-- 未提供照片時顯示對應圖示；navy-700 疊在 cream-200 上對比 6.38，遠高於圖示門檻 3.0 -->
-              <div v-else class="w-full h-full flex items-center justify-center">
-                <AboutActionIcon :name="w.icon" class="w-14 h-14 lg:w-16 lg:h-16 text-navy-700" />
-              </div>
             </div>
+            <span v-else class="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-white border border-navy-700/15 flex items-center justify-center mx-auto text-navy-700">
+              <AboutActionIcon :name="w.icon" class="w-8 h-8 lg:w-10 lg:h-10" />
+            </span>
             <h3 class="font-serif text-lg font-black text-navy-700 mt-4">{{ w.t }}</h3>
           </div>
         </div>

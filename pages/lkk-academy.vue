@@ -187,20 +187,21 @@ const whyUs = [
             <li v-for="(c, i) in courses" :key="c.slug">
               <a
                 :href="`#${c.slug}`"
-                class="group flex items-center gap-3.5 py-4 sm:py-5 sm:px-6 sm:first:pl-0 sm:last:pr-0 transition-colors"
+                class="group flex items-center justify-center gap-3.5 py-4 sm:py-5 sm:px-6 transition-colors"
               >
                 <span class="font-serif text-xl lg:text-2xl font-black text-orange-700 leading-none shrink-0 tabular-nums">
                   {{ String(i + 1).padStart(2, '0') }}
                 </span>
-                <span class="min-w-0 flex-1">
-                  <span class="hidden lg:block text-[10.5px] font-bold text-navy-800/70 tracking-[0.14em] uppercase truncate mb-0.5">
+                <!-- ⚠️ 不能留 flex-1：它會把文字區撐滿整格，外層的 justify-center 就沒有餘白可分配、置中失效。 -->
+                <span class="min-w-0">
+                  <span class="hidden lg:block text-center text-[10.5px] font-bold text-navy-800/70 tracking-[0.14em] uppercase truncate mb-0.5">
                     {{ c.navEn }}
                   </span>
                   <!-- 箭頭放在標題同一行、緊貼文字。
                        ⚠️ 不要把箭頭放回外層 flex 的第三個子元素——文字區是 flex-1，
                           會把箭頭推到格子最右邊、貼著 divide-x 分隔線，
                           視覺上變成「下一格號碼前面的箭頭」（2026-09-10 業主回報）。 -->
-                  <span class="flex items-center gap-1.5 font-bold text-navy-700 leading-snug group-hover:text-orange-700 transition-colors">
+                  <span class="flex items-center justify-center gap-1.5 font-bold text-navy-700 leading-snug group-hover:text-orange-700 transition-colors">
                     <span class="min-w-0">{{ c.t }}</span>
                     <svg
                       class="w-4 h-4 shrink-0 text-navy-700/70 transition-transform group-hover:translate-y-0.5 group-hover:text-orange-700"
