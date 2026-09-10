@@ -1,4 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+
+// og:image 必須是絕對網址，dev / prod 各自不同；與下方 runtimeConfig.public.siteUrl 同源。
+const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://l-kk.tw'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: false },
@@ -126,9 +130,26 @@ export default defineNuxtConfig({
         { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
         { name: 'apple-mobile-web-app-title', content: '練健康' },
+
+        // 社群 / LINE 分享預覽。
+        // ⚠️ 這裡刻意不設 og:title 與 og:description——各頁自己用 useHead 設了
+        //    title 與 description，LINE/FB 在缺 og:title 時會退回用它們；
+        //    在站台層寫死反而會讓每一頁的預覽標題都變成同一句。
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: '練健康 LKK Wellness Center' },
+        { property: 'og:image', content: `${siteUrl}/og-image.png` },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { property: 'og:image:alt', content: '練健康 LKK Wellness Center' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:image', content: `${siteUrl}/og-image.png` },
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/lkklogo.png' },
+        // ⚠️ 舊設定指向 /lkklogo.png——那是「透明底 + 白字」的 header 用 logo，
+        //    在 Chrome 淺色頁籤上白字整個看不見，16px 只剩一團橘色。
+        //    現在改用深藍圓底的拳頭標記（favicon.ico 內含 16/32/48 三種尺寸）。
+        { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
+        { rel: 'icon', type: 'image/png', href: '/favicon-32.png', sizes: '32x32' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
       ],
     },
