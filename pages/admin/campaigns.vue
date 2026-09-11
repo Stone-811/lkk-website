@@ -26,18 +26,29 @@ import {
 definePageMeta({ layout: 'admin' })
 useHead({ title: 'UTM 活動｜練健康後台' })
 
-const PROD_ORIGIN = 'https://lkkwellness.com'
-
 const campaigns = ref<any[]>([])
 const loading = ref(true)
 const error = ref('')
 const saving = ref(false)
 
-// 🔴 預設一律用正式網域。dev 後台建的活動若用 dev 網域產連結，
-//    投放出去名單會全進 lkkdev、正式站一筆都沒有，而且沒有任何錯誤訊息。
-const useCurrentOrigin = ref(false)
+// 🔴 連結一律用「目前所在環境」的網域（業主 2026-09-11 指定）：
+//    在 dev 後台就產測試連結、在正式後台就產正式連結。
+//    因為 campaigns 資料本身也是分環境存的（dev 進 lkkdev、prod 進 lkkprod），
+//    兩邊的活動清單本來就不互通，跟著環境走才不會錯亂。
+//    環境用上方的醒目橫幅標示，避免把測試連結拿去投放。
 const currentOrigin = ref('')
-const origin = computed(() => (useCurrentOrigin.value && currentOrigin.value ? currentOrigin.value : PROD_ORIGIN))
+const origin = computed(() => currentOrigin.value)
+const env = computed(() => {
+  if (!currentOrigin.value) return { name: '載入中', isProd: false }
+  let host = ''
+  try {
+    host = new URL(currentOrigin.value).hostname
+  } catch {
+    return { name: '未知環境', isProd: false }
+  }
+  const isProd = host === 'lkkwellness.com' || host.endsWith('.lkkwellness.com')
+  return { name: isProd ? '正式環境' : '測試環境（dev）', isProd }
+})
 
 const showModal = ref(false)
 const editingId = ref<string | null>(null)
@@ -61,10 +72,32 @@ const blank = () => ({
 const form = reactive(blank())
 const formError = ref('')
 
+// 欄位說明（游標停在 ⓘ 上會出現）
+const HELP: Record<string, string> = {
+  name: '給人看的中文名稱，例如「南山健康守護圈 2026 Q4」。後台的名單頁會用它把英文代號翻成看得懂的字。',
+  utmCampaign:
+    '英文代號，會直接出現在連結的 utm_campaign 參數裡，也是名單與這檔活動對照的唯一依據。只能用小寫英文、數字、- 與 _。連結發出去之後就不要再改——已經收到的名單帶的是舊代號，改了對不回來。',
+  targetPath: '這條連結要把人帶到哪一頁。選錯的話人會進到不相干的頁面，但不影響追蹤。',
+  variantKey:
+    '表單變體決定「表單長相」：專屬 Hero 文案、是否不限年齡免費、是否鎖定分店。只有預約體驗與團體課程兩張表單有變體，而且必須由工程師事先寫好，這裡只能挑既有的。',
+  channels:
+    '你要把這條連結放到哪些地方。勾幾個就產生幾條連結，每條帶不同的 utm_source 與 utm_medium，之後才分得出人是從哪個管道來的。',
+  utmSourceOverride:
+    '留空就用該管道的預設值（例如 LINE → line）。只有在需要跟既有作法一致時才覆寫，例如技嘉那檔沿用共用值 website、靠活動代號辨識。',
+  utmContent: '同一個管道有多種素材時用來區分，例如 card-a、banner-b。非必填。',
+  partner: '合作夥伴名稱，純備註用。實際寫進名單的公司欄位是由表單變體決定的，不是這裡。',
+  dates: '純備註用，不會自動停用活動。活動結束請手動按「停用」。',
+  note: '給自己或同事看的補充說明，不會出現在連結裡。',
+}
+
 // ?v= 的選項一律從設定檔現讀，不要抄文件——docs/廠商表單網址規範.md 實測是過期的
 // （漏了 gigabyte，又把 abbott/nanshan 誤寫成隱藏得知管道）
 const bookingSummaries = computed(() => summarizeVariants(bookingVariants, 'booking'))
 const groupSummaries = computed(() => summarizeVariants(groupClassVariants, 'groupClass'))
+const allSummaries = computed(() => [
+  ...bookingSummaries.value.map((v) => ({ ...v, form: '預約體驗', path: '/booking' })),
+  ...groupSummaries.value.map((v) => ({ ...v, form: '團體課程', path: '/group-booking' })),
+])
 const showVariantRef = ref(false)
 
 const variantOptions = computed(() => {
@@ -205,66 +238,81 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-      <div>
-        <h1 class="text-2xl font-bold text-navy-700">UTM 活動</h1>
-        <p class="text-sm text-ink/60 mt-1">建立活動並產生帶追蹤參數的連結，名單進來後可在「客戶預約」用 UTM 活動篩選對照。</p>
-      </div>
-      <button class="bg-orange text-white font-bold px-5 py-2.5 rounded-lg hover:bg-orange-400 transition-colors" @click="openCreate">
-        ＋ 新增活動
-      </button>
+    <div class="mb-5">
+      <h1 class="text-2xl font-bold text-navy-700">UTM 活動</h1>
+      <p class="text-sm text-ink/60 mt-1">建立活動並產生帶追蹤參數的連結，名單進來後可在「客戶預約」用 UTM 活動篩選對照。</p>
+    </div>
+
+    <!-- 環境橫幅：連結跟著目前環境走，所以一定要讓人一眼看出在哪 -->
+    <div
+      class="rounded-lg p-4 mb-5 text-sm border"
+      :class="env.isProd ? 'bg-green-50 border-green-300 text-green-900' : 'bg-amber-50 border-amber-400 text-amber-900'"
+    >
+      <p class="font-bold mb-1">
+        {{ env.isProd ? '✅ 正式環境' : '⚠️ 測試環境（dev）' }}
+        <span class="font-normal">— 這裡產生的連結會指向 <code>{{ origin }}</code></span>
+      </p>
+      <p v-if="env.isProd">這裡建立的活動與連結可以直接對外投放。</p>
+      <p v-else>
+        這裡建的活動與收到的名單都只存在測試站，<strong>不會同步到正式站</strong>。
+        正式要上線的活動請到正式後台再建一次。
+      </p>
     </div>
 
     <!-- 能力界線：寫在頁面上，避免業主以為這裡能改表單長相 -->
-    <div class="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-6 text-sm text-amber-900">
-      <p class="font-bold mb-1">這裡能做與不能做的事</p>
+    <div class="bg-cream-50 border border-navy-700/15 rounded-lg p-4 mb-5 text-sm text-ink/75">
+      <p class="font-bold text-navy-700 mb-1">這裡能做與不能做的事</p>
       <p>✅ 產生帶 <code>utm_*</code> 的追蹤連結、管理活動清單 —— 你自己就能新增，不需要工程師。</p>
-      <p>⚠️ <code>?v=</code>（表單變體）決定的是<strong>表單長相</strong>：專屬 Hero 文案、不限年齡免費、鎖定分店。
-        新的變體仍需工程師改程式並部署，這裡只能從既有的選單挑。</p>
+      <p>⚠️ <code>?v=</code>（合作案表單）決定的是<strong>表單長相</strong>：專屬 Hero 文案、不限年齡免費、鎖定分店。
+        新的合作案表單仍需工程師製作，這裡只能從既有的挑。</p>
     </div>
 
-    <!-- 現有變體一覽：即時從 config 讀，不會像 docs/廠商表單網址規範.md 那樣過期 -->
-    <div class="border border-navy-700/12 rounded-lg bg-white mb-6">
-      <button class="w-full flex items-center justify-between px-4 py-3 text-left" @click="showVariantRef = !showVariantRef">
+    <!-- 現有合作案表單：即時從 config 讀，不會像 docs/廠商表單網址規範.md 那樣過期 -->
+    <div class="border border-navy-700/12 rounded-lg bg-white mb-6 overflow-hidden">
+      <button class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-cream-50 transition-colors" @click="showVariantRef = !showVariantRef">
         <span class="text-sm font-bold text-navy-700">
-          現有的表單變體（{{ bookingSummaries.length + groupSummaries.length }} 個）
+          現有合作案表單（{{ allSummaries.length }} 個）
           <span class="font-normal text-ink/55">— 建活動時可以直接挑</span>
         </span>
         <span class="text-ink/50 text-xs">{{ showVariantRef ? '收合 ▲' : '展開 ▼' }}</span>
       </button>
-      <div v-if="showVariantRef" class="border-t border-navy-700/10 px-4 py-3 space-y-4">
-        <div v-for="grp in [
-          { name: '預約體驗表單 /booking', items: bookingSummaries },
-          { name: '團體課程報名 /group-booking', items: groupSummaries },
-        ]" :key="grp.name">
-          <p class="text-xs font-bold text-ink/60 mb-2">{{ grp.name }}</p>
-          <div v-if="!grp.items.length" class="text-xs text-ink/45">尚無變體</div>
-          <div v-for="v in grp.items" :key="v.key" class="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-1.5 border-b border-navy-700/8 last:border-0">
-            <code class="text-xs bg-cream-100 text-navy-700 px-2 py-0.5 rounded font-bold">?v={{ v.key }}</code>
-            <span class="text-sm text-navy-700 font-bold">{{ v.company || '—' }}</span>
-            <span class="text-xs text-ink/60">{{ v.effects.join('、') }}</span>
-            <span v-if="v.leadSource" class="text-xs text-ink/45">來源：{{ v.leadSource }}</span>
-          </div>
-        </div>
-        <p class="text-xs text-ink/50 pt-1 border-t border-navy-700/10">
-          這份清單直接讀程式設定檔即時產生，工程師加新變體後這裡會自動出現。要新增或修改變體請找工程師。
+      <div v-if="showVariantRef" class="border-t border-navy-700/10 overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-cream-50 text-left">
+              <th class="px-4 py-2.5 font-bold text-navy-700 whitespace-nowrap">代號</th>
+              <th class="px-4 py-2.5 font-bold text-navy-700 whitespace-nowrap">合作夥伴</th>
+              <th class="px-4 py-2.5 font-bold text-navy-700 whitespace-nowrap">適用表單</th>
+              <th class="px-4 py-2.5 font-bold text-navy-700">表單效果</th>
+              <th class="px-4 py-2.5 font-bold text-navy-700 whitespace-nowrap">名單來源</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="v in allSummaries" :key="v.path + v.key" class="border-t border-navy-700/8">
+              <td class="px-4 py-2.5 whitespace-nowrap">
+                <code class="text-xs bg-cream-100 text-navy-700 px-2 py-0.5 rounded font-bold">?v={{ v.key }}</code>
+              </td>
+              <td class="px-4 py-2.5 font-bold text-navy-700 whitespace-nowrap">{{ v.company || '—' }}</td>
+              <td class="px-4 py-2.5 text-ink/70 whitespace-nowrap">{{ v.form }}</td>
+              <td class="px-4 py-2.5 text-ink/70">{{ v.effects.join('、') }}</td>
+              <td class="px-4 py-2.5 text-ink/60 whitespace-nowrap">{{ v.leadSource || '—' }}</td>
+            </tr>
+            <tr v-if="!allSummaries.length">
+              <td colspan="5" class="px-4 py-6 text-center text-ink/45">尚無合作案表單</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text-xs text-ink/50 px-4 py-3 border-t border-navy-700/10 bg-cream-50">
+          這份清單直接讀程式設定檔即時產生，工程師做好新的合作案表單後這裡會自動出現。要新增或修改請找工程師。
         </p>
       </div>
     </div>
 
     <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 mb-4 text-sm">{{ error }}</div>
 
-    <label class="flex items-center gap-2 text-sm mb-4 select-none">
-      <input v-model="useCurrentOrigin" type="checkbox" class="w-4 h-4 accent-orange" />
-      <span :class="useCurrentOrigin ? 'text-red-600 font-bold' : 'text-ink/70'">
-        用目前網域產生連結（測試用）
-      </span>
-      <span class="text-ink/50 text-xs">目前：{{ origin }}</span>
-    </label>
-
     <div v-if="loading" class="text-ink/50 py-12 text-center">載入中…</div>
     <div v-else-if="!campaigns.length" class="text-ink/50 py-12 text-center border border-dashed border-navy-700/20 rounded-lg">
-      還沒有任何活動。點右上角「新增活動」開始。
+      還沒有任何活動。點下方「新增活動」開始。
     </div>
 
     <div v-else class="space-y-3">
@@ -278,7 +326,7 @@ onMounted(() => {
             </div>
             <div class="text-xs text-ink/55 mt-1">
               {{ targetLabel(c.targetPath) }}
-              <template v-if="c.variantKey"> ・變體 {{ c.variantKey }}</template>
+              <template v-if="c.variantKey"> ・合作案 {{ c.variantKey }}</template>
               ・{{ (c.channels || []).join('、') }}
             </div>
           </div>
@@ -305,6 +353,13 @@ onMounted(() => {
       </div>
     </div>
 
+    <!-- 新增按鈕：置中放在列表下方（業主指定，不放右上角） -->
+    <div class="flex justify-center mt-8">
+      <button class="bg-orange text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-orange/30 hover:bg-orange-400 transition-colors" @click="openCreate">
+        ＋ 新增活動
+      </button>
+    </div>
+
     <!-- 新增／編輯 -->
     <div v-if="showModal" class="fixed inset-0 z-50 bg-black/50 flex items-start justify-center overflow-y-auto p-4" @click.self="showModal = false">
       <div class="bg-white rounded-xl w-full max-w-2xl my-8">
@@ -317,26 +372,49 @@ onMounted(() => {
           <div v-if="formError" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm">{{ formError }}</div>
 
           <div>
-            <label class="block text-sm font-medium text-navy-700 mb-1">活動名稱 <span class="text-red-500">*</span></label>
+            <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+              活動名稱 <span class="text-red-500">*</span>
+              <span class="relative group inline-flex">
+                <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
+                <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.name }}</span>
+              </span>
+            </label>
             <input v-model="form.name" type="text" placeholder="南山健康守護圈 2026 Q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
-            <p class="text-xs text-ink/50 mt-1">給人看的中文名稱，後台用它把活動代號翻成看得懂的字。</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-navy-700 mb-1">活動代號（utm_campaign） <span class="text-red-500">*</span></label>
+            <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+              活動代號（utm_campaign） <span class="text-red-500">*</span>
+              <span class="relative group inline-flex">
+                <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
+                <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.utmCampaign }}</span>
+              </span>
+            </label>
             <input v-model="form.utmCampaign" type="text" placeholder="nanshan-2026q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
-            <p class="text-xs text-red-600 mt-1">⚠️ 只能用小寫英文、數字、- 與 _。<strong>連結發出去之後就不要再改</strong>——已經收到的名單帶的是舊代號，改了對不回來。</p>
+            <p class="text-xs text-red-600 mt-1">⚠️ 只能用小寫英文、數字、- 與 _。<strong>連結發出去之後就不要再改</strong>。</p>
           </div>
 
           <div class="grid sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-navy-700 mb-1">目標頁面 <span class="text-red-500">*</span></label>
+              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                目標頁面 <span class="text-red-500">*</span>
+                <span class="relative group inline-flex">
+                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
+                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.targetPath }}</span>
+                </span>
+              </label>
               <select v-model="form.targetPath" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" @change="form.variantKey = ''">
                 <option v-for="t in CAMPAIGN_TARGETS" :key="t.value" :value="t.value">{{ t.label }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-navy-700 mb-1">表單變體（?v=）</label>
+              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                合作案表單（?v=）
+                <span class="relative group inline-flex">
+                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
+                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.variantKey }}</span>
+                </span>
+              </label>
               <select v-model="form.variantKey" :disabled="!variantOptions.length" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 disabled:bg-cream-100 disabled:text-ink/40">
                 <option value="">不使用</option>
                 <option v-for="v in variantOptions" :key="v.key" :value="v.key">{{ v.label }}</option>
@@ -345,12 +423,19 @@ onMounted(() => {
                 <span class="font-bold text-navy-700">{{ selectedVariant.heroTitle || selectedVariant.key }}</span>：
                 {{ selectedVariant.effects.join('、') }}<template v-if="selectedVariant.leadSource">；名單來源記為「{{ selectedVariant.leadSource }}」</template>
               </p>
-              <p v-else class="text-xs text-ink/50 mt-1">{{ variantOptions.length ? '由工程師維護，這裡只能挑既有的。' : '這個頁面沒有變體。' }}</p>
+              <p v-else class="text-xs text-ink/50 mt-1">{{ variantOptions.length ? '由工程師維護，這裡只能挑既有的。' : '這個頁面沒有合作案表單。' }}</p>
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-navy-700 mb-2">投放管道 <span class="text-red-500">*</span><span class="text-ink/50 font-normal">（可複選，勾幾個就產生幾條連結）</span></label>
+            <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-2">
+              投放管道 <span class="text-red-500">*</span>
+              <span class="text-ink/50 font-normal">（可複選，勾幾個就產生幾條連結）</span>
+              <span class="relative group inline-flex">
+                <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
+                <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.channels }}</span>
+              </span>
+            </label>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="ch in SOURCE_CHANNELS"
@@ -369,23 +454,46 @@ onMounted(() => {
 
           <div class="grid sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-navy-700 mb-1">覆寫 utm_source</label>
+              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                覆寫 utm_source
+                <span class="relative group inline-flex">
+                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
+                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.utmSourceOverride }}</span>
+                </span>
+              </label>
               <input v-model="form.utmSourceOverride" type="text" placeholder="留空用管道預設值" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
-              <p class="text-xs text-ink/50 mt-1">技嘉那檔沿用共用值 website，靠 utm_campaign 辨識。</p>
             </div>
             <div>
-              <label class="block text-sm font-medium text-navy-700 mb-1">utm_content</label>
+              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                utm_content
+                <span class="relative group inline-flex">
+                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
+                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.utmContent }}</span>
+                </span>
+              </label>
               <input v-model="form.utmContent" type="text" placeholder="區分同管道的不同素材" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
             </div>
           </div>
 
           <div class="grid sm:grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-navy-700 mb-1">合作夥伴</label>
+              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                合作夥伴
+                <span class="relative group inline-flex">
+                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
+                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.partner }}</span>
+                </span>
+              </label>
               <input v-model="form.partner" type="text" placeholder="南山" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-navy-700 mb-1">開始日</label>
+              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                開始日
+                <span class="relative group inline-flex">
+                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
+                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-64 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.dates }}</span>
+                </span>
+              </label>
               <input v-model="form.startDate" type="date" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
             </div>
             <div>
@@ -395,12 +503,21 @@ onMounted(() => {
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-navy-700 mb-1">備註</label>
+            <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+              備註
+              <span class="relative group inline-flex">
+                <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
+                <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-64 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.note }}</span>
+              </span>
+            </label>
             <textarea v-model="form.note" rows="2" class="w-full border border-navy-700/20 rounded-lg px-3 py-2"></textarea>
           </div>
 
           <div v-if="previewLinks.length" class="border border-navy-700/12 rounded-lg bg-cream-50 p-3">
-            <p class="text-xs font-bold text-navy-700 mb-2">連結預覽（{{ previewLinks.length }} 條）</p>
+            <p class="text-xs font-bold text-navy-700 mb-2">
+              連結預覽（{{ previewLinks.length }} 條）
+              <span class="font-normal" :class="env.isProd ? 'text-green-700' : 'text-amber-700'">— {{ env.name }}</span>
+            </p>
             <div v-for="l in previewLinks" :key="l.channel" class="flex items-start gap-2 mb-1.5 last:mb-0">
               <span class="text-xs font-bold text-navy-700 w-16 shrink-0 pt-0.5">{{ l.channel }}</span>
               <code class="text-xs break-all text-ink/70">{{ l.url }}</code>
