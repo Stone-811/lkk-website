@@ -568,7 +568,7 @@ const filteredLecturers = computed(() => {
             <div>
               <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
                 網址代稱 <span class="text-red-500">*</span>
-                <AdminFieldHelp text="講師的英文識別碼，不可與其他講師重複。上線後修改會讓舊連結失效。" />
+                <AdminFieldHelp text="講師的英文識別碼，不可重複，新增時會依姓名自動產生。目前沒有講師個別頁面，改了不影響任何網址，只會讓之後上傳的照片存到新資料夾。" />
               </label>
               <input
                 type="text"

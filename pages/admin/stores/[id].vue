@@ -386,7 +386,7 @@ function removeImage(key: string) {
           <div>
             <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
               網址代稱 (Slug) <span class="text-red-500">*</span>
-              <AdminFieldHelp text="分店頁網址的最後一段（/locations/○○○）。上線後修改會讓所有舊連結失效，且不會自動轉址。" />
+              <AdminFieldHelp text="分店頁網址的最後一段，例如 nanjing 對應 /locations/nanjing。改掉之後指向舊網址的連結全部變成 404，站上沒有轉址機制。" />
             </label>
             <input
               type="text"
