@@ -62,10 +62,7 @@ const blank = () => ({
   variantKey: '',
   channels: [] as string[],
   utmContent: '',
-  partner: '',
   note: '',
-  startDate: '',
-  endDate: '',
   isActive: true,
 })
 const form = reactive(blank())
@@ -82,8 +79,6 @@ const HELP: Record<string, string> = {
   channels:
     '你要把這條連結放到哪些地方。勾幾個就產生幾條連結，每條自動帶不同的 utm_source 與 utm_medium（例如 LINE → line／social），之後才分得出人是從哪個管道來的。這兩個參數由管道決定，不另外開放修改。',
   utmContent: '同一個管道有多種素材時用來區分，例如 card-a、banner-b。非必填。',
-  partner: '合作夥伴名稱，純備註用。實際寫進名單的公司欄位是由表單變體決定的，不是這裡。',
-  dates: '純備註用，不會自動停用活動。活動結束請手動按「停用」。',
   note: '給自己或同事看的補充說明，不會出現在連結裡。',
 }
 
@@ -155,10 +150,7 @@ function openEdit(c: any) {
     variantKey: c.variantKey || '',
     channels: [...(c.channels || [])],
     utmContent: c.utmContent || '',
-    partner: c.partner || '',
     note: c.note || '',
-    startDate: c.startDate || '',
-    endDate: c.endDate || '',
     isActive: c.isActive ?? true,
   })
   formError.value = ''
@@ -378,26 +370,6 @@ onMounted(() => {
                   <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.name }}</span></span>
                 </label>
                 <input v-model="form.name" type="text" placeholder="南山健康守護圈 2026 Q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
-              </div>
-              <div class="grid sm:grid-cols-3 gap-4">
-                <div>
-                  <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                    合作夥伴
-                    <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.partner }}</span></span>
-                  </label>
-                  <input v-model="form.partner" type="text" placeholder="南山" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
-                </div>
-                <div>
-                  <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                    開始日
-                    <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-64 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.dates }}</span></span>
-                  </label>
-                  <input v-model="form.startDate" type="date" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-navy-700 mb-1">結束日</label>
-                  <input v-model="form.endDate" type="date" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
-                </div>
               </div>
               <div>
                 <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">

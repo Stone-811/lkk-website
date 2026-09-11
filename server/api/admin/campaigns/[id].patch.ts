@@ -13,10 +13,7 @@ const UPDATABLE = [
   'variantKey',
   'channels',
   'utmContent',
-  'partner',
   'note',
-  'startDate',
-  'endDate',
   'isActive',
 ] as const
 

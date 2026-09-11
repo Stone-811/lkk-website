@@ -303,11 +303,8 @@ export interface CampaignDoc extends FirestoreDoc {
   channels: string[];
   /** utm_content，區分同管道的不同素材 */
   utmContent?: string | null;
-  /** 合作夥伴名稱，純備註用（實際歸因仍由 ?v= 的變體決定 payload.company） */
-  partner?: string | null;
+  /** 備註，會顯示在活動列表展開的連結區下方 */
   note?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
   isActive: boolean;
 }
 
