@@ -20,6 +20,7 @@ import {
   normalizeCampaignCode,
   CHANNEL_TO_SOURCE,
   CHANNEL_TO_MEDIUM,
+  summarizeVariants,
 } from '~/utils/campaignLinks'
 
 definePageMeta({ layout: 'admin' })
@@ -61,12 +62,17 @@ const form = reactive(blank())
 const formError = ref('')
 
 // ?v= 的選項一律從設定檔現讀，不要抄文件——docs/廠商表單網址規範.md 實測是過期的
+// （漏了 gigabyte，又把 abbott/nanshan 誤寫成隱藏得知管道）
+const bookingSummaries = computed(() => summarizeVariants(bookingVariants, 'booking'))
+const groupSummaries = computed(() => summarizeVariants(groupClassVariants, 'groupClass'))
+const showVariantRef = ref(false)
+
 const variantOptions = computed(() => {
   const t = CAMPAIGN_TARGETS.find((x) => x.value === form.targetPath)
   if (!t?.variantSource) return []
-  const src = t.variantSource === 'booking' ? bookingVariants : groupClassVariants
-  return Object.keys(src).filter((k) => k !== 'default')
+  return t.variantSource === 'booking' ? bookingSummaries.value : groupSummaries.value
 })
+const selectedVariant = computed(() => variantOptions.value.find((v) => v.key === form.variantKey) || null)
 
 const previewLinks = computed(() => {
   if (!form.utmCampaign || !form.channels.length) return []
@@ -217,6 +223,35 @@ onMounted(() => {
         新的變體仍需工程師改程式並部署，這裡只能從既有的選單挑。</p>
     </div>
 
+    <!-- 現有變體一覽：即時從 config 讀，不會像 docs/廠商表單網址規範.md 那樣過期 -->
+    <div class="border border-navy-700/12 rounded-lg bg-white mb-6">
+      <button class="w-full flex items-center justify-between px-4 py-3 text-left" @click="showVariantRef = !showVariantRef">
+        <span class="text-sm font-bold text-navy-700">
+          現有的表單變體（{{ bookingSummaries.length + groupSummaries.length }} 個）
+          <span class="font-normal text-ink/55">— 建活動時可以直接挑</span>
+        </span>
+        <span class="text-ink/50 text-xs">{{ showVariantRef ? '收合 ▲' : '展開 ▼' }}</span>
+      </button>
+      <div v-if="showVariantRef" class="border-t border-navy-700/10 px-4 py-3 space-y-4">
+        <div v-for="grp in [
+          { name: '預約體驗表單 /booking', items: bookingSummaries },
+          { name: '團體課程報名 /group-booking', items: groupSummaries },
+        ]" :key="grp.name">
+          <p class="text-xs font-bold text-ink/60 mb-2">{{ grp.name }}</p>
+          <div v-if="!grp.items.length" class="text-xs text-ink/45">尚無變體</div>
+          <div v-for="v in grp.items" :key="v.key" class="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-1.5 border-b border-navy-700/8 last:border-0">
+            <code class="text-xs bg-cream-100 text-navy-700 px-2 py-0.5 rounded font-bold">?v={{ v.key }}</code>
+            <span class="text-sm text-navy-700 font-bold">{{ v.company || '—' }}</span>
+            <span class="text-xs text-ink/60">{{ v.effects.join('、') }}</span>
+            <span v-if="v.leadSource" class="text-xs text-ink/45">來源：{{ v.leadSource }}</span>
+          </div>
+        </div>
+        <p class="text-xs text-ink/50 pt-1 border-t border-navy-700/10">
+          這份清單直接讀程式設定檔即時產生，工程師加新變體後這裡會自動出現。要新增或修改變體請找工程師。
+        </p>
+      </div>
+    </div>
+
     <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 mb-4 text-sm">{{ error }}</div>
 
     <label class="flex items-center gap-2 text-sm mb-4 select-none">
@@ -304,9 +339,13 @@ onMounted(() => {
               <label class="block text-sm font-medium text-navy-700 mb-1">表單變體（?v=）</label>
               <select v-model="form.variantKey" :disabled="!variantOptions.length" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 disabled:bg-cream-100 disabled:text-ink/40">
                 <option value="">不使用</option>
-                <option v-for="v in variantOptions" :key="v" :value="v">{{ v }}</option>
+                <option v-for="v in variantOptions" :key="v.key" :value="v.key">{{ v.label }}</option>
               </select>
-              <p class="text-xs text-ink/50 mt-1">{{ variantOptions.length ? '由工程師維護，這裡只能挑既有的。' : '這個頁面沒有變體。' }}</p>
+              <p v-if="selectedVariant" class="text-xs text-ink/60 mt-1 leading-relaxed">
+                <span class="font-bold text-navy-700">{{ selectedVariant.heroTitle || selectedVariant.key }}</span>：
+                {{ selectedVariant.effects.join('、') }}<template v-if="selectedVariant.leadSource">；名單來源記為「{{ selectedVariant.leadSource }}」</template>
+              </p>
+              <p v-else class="text-xs text-ink/50 mt-1">{{ variantOptions.length ? '由工程師維護，這裡只能挑既有的。' : '這個頁面沒有變體。' }}</p>
             </div>
           </div>
 

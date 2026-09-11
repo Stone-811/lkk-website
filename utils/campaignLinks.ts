@@ -127,3 +127,55 @@ export function buildCampaignLinks(
     }),
   }))
 }
+
+// ── 變體摘要 ───────────────────────────────────────────────────────────
+// 🔴 一律從 config 現算，不要寫死清單也不要抄 docs/廠商表單網址規範.md——
+//    那份文件實測已經過期（漏了 gigabyte，又把 abbott/nanshan 誤寫成
+//    「隱藏得知管道」，實際上這兩個 booking 變體都沒有設 hideSources）。
+//    只要有人在設定檔加新變體，後台就會自己長出來。
+
+export interface VariantSummary {
+  key: string
+  /** 給下拉選單用的一行字，例如「nanshan ─ 南山（不限年齡免費）」 */
+  label: string
+  company: string | null
+  heroTitle: string | null
+  /** 這個變體實際會改變的行為，已是人看得懂的中文 */
+  effects: string[]
+  leadSource: string | null
+}
+
+type AnyVariant = Record<string, any>
+
+export function summarizeVariants(
+  source: Record<string, AnyVariant>,
+  kind: 'booking' | 'groupClass',
+): VariantSummary[] {
+  return Object.entries(source)
+    .filter(([key]) => key !== 'default')
+    .map(([key, v]) => {
+      const effects: string[] = []
+      if (v.hero) effects.push('專屬 Hero 文案')
+      if (kind === 'booking') {
+        if (v.allAgesFree) effects.push('不限年齡免費')
+        if (v.lockStoreId) effects.push(`鎖定分店：${v.lockStoreId}`)
+        if (v.extraSources?.length) effects.push(`追加得知管道：${v.extraSources.join('、')}`)
+      } else {
+        if (v.lockStore) effects.push(`鎖定分店：${v.lockStore}`)
+        if (v.lockCourse) effects.push(`鎖定課程：${v.lockCourse}`)
+      }
+      if (v.hideSources) effects.push('隱藏得知管道')
+      if (!effects.length) effects.push('僅做歸因，表單長相不變')
+
+      const company = v.company || null
+      const short = effects.filter((e) => e !== '專屬 Hero 文案')[0]
+      return {
+        key,
+        label: company ? `${key} ─ ${company}${short ? `（${short}）` : ''}` : key,
+        company,
+        heroTitle: v.hero?.title || null,
+        effects,
+        leadSource: v.leadSource || null,
+      }
+    })
+}
