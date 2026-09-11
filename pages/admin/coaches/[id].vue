@@ -290,8 +290,9 @@ async function handlePhotoUpload(event: Event) {
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium mb-1">
+            <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
               所屬分店 <span class="text-red-500">*</span>
+              <AdminFieldHelp text="決定這位教練會出現在哪一間分店的頁面上。全體教練頁會全部列出，但分店詳情頁只列出屬於該店的教練。" />
             </label>
             <select
               :value="formData.storeId"
@@ -307,7 +308,10 @@ async function handlePhotoUpload(event: Event) {
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">排序</label>
+            <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
+              排序
+              <AdminFieldHelp text="決定前台教練列表的顯示順序，數字越小越前面。這裡改的是訪客看到的順序，不是後台列表的順序。" />
+            </label>
             <input
               type="number"
               v-model.number="formData.sortOrder"
@@ -329,7 +333,10 @@ async function handlePhotoUpload(event: Event) {
         </div>
 
         <div>
-          <label class="block text-sm font-medium mb-1">個人簡介</label>
+          <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
+            個人簡介
+            <AdminFieldHelp text="會顯示在全體教練頁點開教練卡片後的詳情彈窗裡。留空的話那一區就不會出現，不會留下空白。" />
+          </label>
           <textarea
             v-model="formData.description"
             class="w-full border border-gray-300 rounded-lg px-3 py-2"
@@ -345,7 +352,10 @@ async function handlePhotoUpload(event: Event) {
             v-model="formData.isActive"
             class="w-4 h-4 text-orange rounded"
           />
-          <label for="isActive" class="text-sm">上架顯示</label>
+          <label for="isActive" class="flex items-center gap-1.5 text-sm">
+            上架顯示
+            <AdminFieldHelp text="取消勾選＝前台完全看不到這位教練：全體教練頁與分店詳情頁都不會列出。資料不會被刪除，重新勾選就會回來。教練離職建議用這個，不要直接刪除。" wide />
+          </label>
         </div>
       </div>
 

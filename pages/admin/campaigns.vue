@@ -70,7 +70,7 @@ const formError = ref('')
 
 // 欄位說明（游標停在 ⓘ 上會出現）
 const HELP: Record<string, string> = {
-  name: '只存在這個後台頁面，給你自己辨識用的中文名稱。它不會出現在連結裡，也不會寫進名單——名單上記的是下面那組英文「活動代號」。所以命名可以隨意改，不影響任何已經發出去的連結或已收到的名單。',
+  name: '選填。只存在這個後台頁面，給你自己辨識用的中文名稱，留空時列表就顯示活動代號。它不會出現在連結裡，也不會寫進名單——名單上記的是下面那組英文「活動代號」。所以命名可以隨意改，不影響任何已發出的連結或已收到的名單。',
   utmCampaign:
     '英文代號，會直接出現在連結的 utm_campaign 參數裡，也是名單與這檔活動對照的唯一依據。只能用小寫英文、數字、- 與 _。連結發出去之後就不要再改——已經收到的名單帶的是舊代號，改了對不回來。',
   targetPath: '這條連結要把人帶到哪一張表單。只列出會收名單的兩張表單——其他頁面沒有表單，帶人過去也產不出可歸因的名單。',
@@ -165,7 +165,6 @@ function toggleChannel(ch: string) {
 
 async function save() {
   formError.value = ''
-  if (!form.name.trim()) return (formError.value = '請填寫活動名稱')
   const codeErr = validateCampaignCode(form.utmCampaign)
   if (codeErr) return (formError.value = codeErr)
   if (!form.channels.length) return (formError.value = '請至少勾選一個投放管道')
@@ -197,7 +196,7 @@ async function toggleActive(c: any) {
 }
 
 async function remove(c: any) {
-  if (!confirm(`確定刪除「${c.name}」？\n\n舊連結仍在流通、名單照樣會帶 ${c.utmCampaign} 進來，\n刪掉只會讓後台少一個中文對照名稱。\n建議改用「停用」。`)) return
+  if (!confirm(`確定刪除「${c.name || c.utmCampaign}」？\n\n舊連結仍在流通、名單照樣會帶 ${c.utmCampaign} 進來，\n刪掉只會讓後台少一個中文對照名稱。\n建議改用「停用」。`)) return
   try {
     await $fetch(`/api/admin/campaigns/${c.id}`, { method: 'DELETE' })
     await load()
@@ -306,7 +305,7 @@ onMounted(() => {
         <div class="flex flex-wrap items-center gap-3 p-4">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="font-bold text-navy-700">{{ c.name }}</span>
+              <span class="font-bold text-navy-700">{{ c.name || c.utmCampaign }}</span>
               <code class="text-xs bg-cream-100 text-ink/70 px-2 py-0.5 rounded">{{ c.utmCampaign }}</code>
               <span v-if="!c.isActive" class="text-xs bg-ink/10 text-ink/60 px-2 py-0.5 rounded">已停用</span>
             </div>
@@ -357,31 +356,15 @@ onMounted(() => {
         <div class="p-6 space-y-6">
           <div v-if="formError" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm">{{ formError }}</div>
 
-          <!-- ① 活動基本資料：只存在後台，不影響連結 -->
-          <section>
-            <h3 class="text-sm font-bold text-navy-700 pb-2 mb-3 border-b border-navy-700/15">
-              活動基本資料
-              <span class="font-normal text-ink/50">— 只存在後台，不會出現在連結裡</span>
-            </h3>
-            <div class="space-y-4">
-              <div>
-                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                  活動名稱 <span class="text-red-500">*</span>
-                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.name }}</span></span>
-                </label>
-                <input v-model="form.name" type="text" placeholder="南山健康守護圈 2026 Q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
-              </div>
-              <div>
-                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                  備註
-                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-64 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.note }}</span></span>
-                </label>
-                <textarea v-model="form.note" rows="2" class="w-full border border-navy-700/20 rounded-lg px-3 py-2"></textarea>
-              </div>
+            <div>
+              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                活動名稱 <span class="text-ink/45 font-normal">（選填）</span>
+                <AdminFieldHelp :text="HELP.name" wide />
+              </label>
+              <input v-model="form.name" type="text" placeholder="南山健康守護圈 2026 Q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
             </div>
-          </section>
 
-          <!-- ② 連結要帶去哪 -->
+          <!-- ① 連結要帶去哪 -->
           <section>
             <h3 class="text-sm font-bold text-navy-700 pb-2 mb-3 border-b border-navy-700/15">
               連結目標
@@ -391,7 +374,7 @@ onMounted(() => {
               <div>
                 <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
                   目標頁面 <span class="text-red-500">*</span>
-                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.targetPath }}</span></span>
+                  <AdminFieldHelp :text="HELP.targetPath" />
                 </label>
                 <select v-model="form.targetPath" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" @change="form.variantKey = ''">
                   <option v-for="t in CAMPAIGN_TARGETS" :key="t.value" :value="t.value">{{ t.label }}</option>
@@ -400,7 +383,7 @@ onMounted(() => {
               <div>
                 <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
                   合作案表單（?v=）
-                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.variantKey }}</span></span>
+                  <AdminFieldHelp :text="HELP.variantKey" wide />
                 </label>
                 <select v-model="form.variantKey" :disabled="!variantOptions.length" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 disabled:bg-cream-100 disabled:text-ink/40">
                   <option value="">不使用</option>
@@ -415,7 +398,7 @@ onMounted(() => {
             </div>
           </section>
 
-          <!-- ③ UTM 追蹤參數：三個欄位全部集中在這一區（業主指定） -->
+          <!-- ② UTM 追蹤參數：三個欄位全部集中在這一區（業主指定） -->
           <section>
             <h3 class="text-sm font-bold text-navy-700 pb-2 mb-3 border-b border-navy-700/15">
               UTM 追蹤參數
@@ -425,7 +408,7 @@ onMounted(() => {
               <div>
                 <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
                   活動代號（utm_campaign） <span class="text-red-500">*</span>
-                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.utmCampaign }}</span></span>
+                  <AdminFieldHelp :text="HELP.utmCampaign" wide />
                 </label>
                 <input v-model="form.utmCampaign" type="text" placeholder="nanshan-2026q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
                 <p class="text-xs text-red-600 mt-1">⚠️ 只能用小寫英文、數字、- 與 _。<strong>連結發出去之後就不要再改</strong>。</p>
@@ -434,7 +417,7 @@ onMounted(() => {
               <div>
                 <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-2">
                   投放管道（utm_source／utm_medium） <span class="text-red-500">*</span>
-                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.channels }}</span></span>
+                  <AdminFieldHelp :text="HELP.channels" wide />
                 </label>
                 <div class="flex flex-wrap gap-2">
                   <button
@@ -455,12 +438,20 @@ onMounted(() => {
               <div>
                 <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
                   素材代號（utm_content）
-                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.utmContent }}</span></span>
+                  <AdminFieldHelp :text="HELP.utmContent" />
                 </label>
                 <input v-model="form.utmContent" type="text" placeholder="區分同管道的不同素材，例如 card-a" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
               </div>
             </div>
           </section>
+
+            <div>
+              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                備註
+                <AdminFieldHelp :text="HELP.note" />
+              </label>
+              <textarea v-model="form.note" rows="2" class="w-full border border-navy-700/20 rounded-lg px-3 py-2"></textarea>
+            </div>
 
           <div v-if="previewLinks.length" class="border border-navy-700/12 rounded-lg bg-cream-50 p-3">
             <p class="text-xs font-bold text-navy-700 mb-2">

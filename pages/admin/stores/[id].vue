@@ -369,8 +369,9 @@ function removeImage(key: string) {
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium mb-1">
+            <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
               分店名稱 <span class="text-red-500">*</span>
+              <AdminFieldHelp text="會顯示在前台的分店總覽、分店詳情頁，也是預約表單「選擇分店」下拉裡的名稱。改名之後這些地方會一起變，但已經送出的舊名單裡記的還是當時的名稱。" wide />
             </label>
             <input
               type="text"
@@ -383,8 +384,9 @@ function removeImage(key: string) {
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">
+            <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
               網址代稱 (Slug) <span class="text-red-500">*</span>
+              <AdminFieldHelp text="這間分店頁面網址的最後一段，例如 taipei-nanjing 會變成 /locations/taipei-nanjing。⚠️ 已經上線之後改這個，所有指向舊網址的連結（廣告、貼文、名片、Google 搜尋結果）全部會失效，而且不會自動轉址。非必要不要改。" wide />
             </label>
             <input
               type="text"
@@ -459,7 +461,10 @@ function removeImage(key: string) {
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">排序</label>
+            <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
+              排序
+              <AdminFieldHelp text="決定前台「分店總覽」的顯示順序，數字越小越前面。這裡改的是訪客看到的順序，不是後台列表的順序。" />
+            </label>
             <input
               type="number"
               v-model.number="formData.sortOrder"
@@ -477,7 +482,10 @@ function removeImage(key: string) {
             v-model="formData.isActive"
             class="w-4 h-4 text-orange rounded"
           />
-          <label for="isActive" class="text-sm">上架顯示</label>
+          <label for="isActive" class="flex items-center gap-1.5 text-sm">
+            上架顯示
+            <AdminFieldHelp text="取消勾選＝前台完全看不到這間分店：分店總覽不列出、分店頁面打不開、預約表單的分店下拉也不會有它。資料本身不會被刪除，重新勾選就會回來。" wide />
+          </label>
         </div>
       </div>
 

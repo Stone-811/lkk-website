@@ -566,7 +566,10 @@ const filteredLecturers = computed(() => {
               />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">網址代稱 <span class="text-red-500">*</span></label>
+              <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
+                網址代稱 <span class="text-red-500">*</span>
+                <AdminFieldHelp text="講師資料的英文識別碼，只能用小寫英文、數字與連字號，而且不能跟其他講師重複。⚠️ 已經上線之後改這個，任何指向舊網址的連結都會失效。非必要不要改。" wide />
+              </label>
               <input
                 type="text"
                 v-model="formData.slug"
@@ -587,7 +590,10 @@ const filteredLecturers = computed(() => {
               />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">講師類型 <span class="text-red-500">*</span></label>
+              <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
+                講師類型 <span class="text-red-500">*</span>
+                <AdminFieldHelp text="決定這位講師會出現在哪一頁：練健康認證講師→/lkk-lecturer、合作講師→/co-lecturer、海外授權講師→/oversea-lecturer。選錯的話講師會出現在錯的頁面上。" wide />
+              </label>
               <select v-model="formData.type" class="w-full border border-gray-300 rounded-lg px-3 py-2">
                 <option value="lkk">練健康認證講師</option>
                 <option value="partner">合作講師</option>
@@ -619,7 +625,10 @@ const filteredLecturers = computed(() => {
 
           <!-- Photo Upload -->
           <div>
-            <label class="block text-sm font-medium mb-2">講師照片</label>
+            <label class="flex items-center gap-1.5 text-sm font-medium mb-2">
+              講師照片
+              <AdminFieldHelp text="建議正方形、人臉置中，前台會裁成圓形或方形卡片顯示。支援 JPG、PNG、WebP，最大 5MB。沒有照片時前台會顯示預設的人形圖示，不會破版。" wide />
+            </label>
             <div class="flex items-start gap-4">
               <!-- Preview -->
               <div v-if="formData.photo" class="relative group">
@@ -659,7 +668,10 @@ const filteredLecturers = computed(() => {
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">專長領域（每行一個）</label>
+            <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
+              專長領域（每行一個）
+              <AdminFieldHelp text="一行一個項目，按 Enter 換行即可，不要自己加「、」或項目符號。前台會自動把每一行渲染成一個標籤。" />
+            </label>
             <textarea
               v-model="formData.specialtiesText"
               rows="4"
@@ -710,7 +722,10 @@ const filteredLecturers = computed(() => {
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium mb-1">排序</label>
+              <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
+                排序
+                <AdminFieldHelp text="決定前台講師列表的顯示順序，數字越小越前面。這裡改的是訪客看到的順序，不是後台列表的順序。" />
+              </label>
               <input
                 type="number"
                 v-model.number="formData.sortOrder"
@@ -720,7 +735,10 @@ const filteredLecturers = computed(() => {
             </div>
             <div class="flex items-center gap-2 pt-6">
               <input type="checkbox" id="isActive" v-model="formData.isActive" class="w-4 h-4 text-orange rounded" />
-              <label for="isActive" class="text-sm">上架顯示</label>
+              <label for="isActive" class="flex items-center gap-1.5 text-sm">
+                上架顯示
+                <AdminFieldHelp text="取消勾選＝前台完全看不到這位講師。資料不會被刪除，重新勾選就會回來。" />
+              </label>
             </div>
           </div>
         </div>
