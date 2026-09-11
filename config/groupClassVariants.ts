@@ -29,29 +29,22 @@ export const groupClassVariants: Record<string, GroupClassVariant> = {
   // 沒帶 ?v= 或未知值 → 用這個（＝原本的表單，什麼都不覆蓋）
   default: {},
 
-  // ── 範例：亞培（不鎖店、隱藏得知管道；來源預設 LINE）──
-  abbott: {
-    hero: {
-      title: '亞培 × 練健康',
-      titleHighlight: '專屬團體課程',
-      ctaText: '立即填寫專屬報名 →',
-    },
-    hideSources: true,
-    company: '亞培',
-    leadSource: 'LINE',
-  },
-
-  // ── 南山（不鎖店、隱藏得知管道；來源預設 網站）──
-  nanshan: {
-    hero: {
-      title: '南山 × 練健康',
-      titleHighlight: '專屬團體課程',
-      ctaText: '立即填寫專屬報名 →',
-    },
-    hideSources: true,
-    company: '南山',
-    leadSource: '網站',
-  },
+  // ── 目前沒有團課的合作案表單（業主 2026-09-11 刪除亞培與南山）──
+  // ⚠️ 舊連結 /group-booking?v=abbott 與 ?v=nanshan 不會壞頁，
+  //    會自動 fallback 成一般團課表單（見下方 getGroupClassVariant）。
+  //    但從那些連結進來的新名單將**不再帶 company 與 leadSource**，
+  //    後台的「公司」「來源」篩選會是空的。已收到的舊名單不受影響
+  //    （這兩個值是送出當下就寫進 leads 的，不是即時查表）。
+  //    要恢復就把下面這段註解還原（git 歷史：本 commit 的前一版）。
+  //
+  //  abbott: {
+  //    hero: { title: '亞培 × 練健康', titleHighlight: '專屬團體課程', ctaText: '立即填寫專屬報名 →' },
+  //    hideSources: true, company: '亞培', leadSource: 'LINE',
+  //  },
+  //  nanshan: {
+  //    hero: { title: '南山 × 練健康', titleHighlight: '專屬團體課程', ctaText: '立即填寫專屬報名 →' },
+  //    hideSources: true, company: '南山', leadSource: '網站',
+  //  },
 }
 
 // 依 ?v= 取變體（陣列/未知/空值都安全 fallback 成 default）
