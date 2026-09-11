@@ -41,7 +41,7 @@ for enc in ('utf-8', 'big5', 'cp950'):
 ```html
 <img src="…" alt="" aria-hidden="true"
      class="absolute inset-0 w-full h-full object-cover opacity-60"
-     style="filter: brightness(0.30)" />
+     style="filter: brightness(0.30)" />   <!-- 值依頁面而異，見下表 -->
 ```
 
 ⚠️ **brightness 用 inline style，不要用 Tailwind 任意屬性** `[filter:brightness(0.4)]`。
@@ -54,7 +54,7 @@ for enc in ('utf-8', 'big5', 'cp950'):
 |---|---|---|
 | `/about` | **0.30** | 學員與教練合照 |
 | `/booking` | **0.40** | 四位學員豎拇指，但另有五處文字要一起修（見下表） |
-| `/lkk-academy` | **0.30** | 室內開燈的訓練營合照，比一般實拍亮；0.40 與 0.35 各有三項不及格 |
+| `/lkk-academy` | **0.24** | 室內開燈的訓練營合照，比一般實拍亮。**2026-09-10 由 0.30 再壓暗**——h1 的橘字改用 `text-orange` (#FB720A，與 CTA 按鈕同色) 而非 orange-300，在 0.30 下對比只有 3.05，大字門檻 3.0 只多 0.05；0.24 後為 3.53。**本頁刻意比 /about 更暗，不要「順手改回一致」** |
 
 `/lkk-academy` 的實測（示範為什麼不能照抄）：
 

@@ -111,8 +111,8 @@ const contactTimeOptions = [
   '其他',
 ]
 
-// 從哪裡得知選項（多選）
-const sourceOptions = [
+// 從哪裡得知選項（多選）——全變體共用的基底，變體可用 extraSources 追加
+const BASE_SOURCE_OPTIONS = [
   '練健康官網',
   '練健康FB',
   '練健康IG',
@@ -122,6 +122,20 @@ const sourceOptions = [
   '傳單',
   '其他',
 ]
+
+// 變體可以「追加」得知管道選項（插在「其他」之前）。
+// ⚠️ 這些字串同時是顯示標籤與存進 Firestore 的值（payload.sources ＋ 頂層 sourceChannel），
+//    也會直接進後台 CSV 匯出與兩封通知信。發出去收到名單之後就不要再改字面，
+//    否則舊名單與新名單會在匯出檔裡裂成兩種寫法，而且 leads 的 PATCH 白名單
+//    只放行 status 與 internalNote，回填不了。
+const sourceOptions = computed(() => {
+  const extra = variant.value.extraSources ?? []
+  if (!extra.length) return BASE_SOURCE_OPTIONS
+  const i = BASE_SOURCE_OPTIONS.indexOf('其他')
+  return i === -1
+    ? [...BASE_SOURCE_OPTIONS, ...extra]
+    : [...BASE_SOURCE_OPTIONS.slice(0, i), ...extra, ...BASE_SOURCE_OPTIONS.slice(i)]
+})
 
 // 與學員關係選項
 

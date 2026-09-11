@@ -106,7 +106,12 @@ async function handlePhotoUpload(event: Event) {
   try {
     const formDataUpload = new FormData()
     formDataUpload.append('file', file)
-    formDataUpload.append('folder', `lecturers/${formData.value.slug || 'temp'}`)
+    // 🔴 不可 fallback 成固定字串（原本是 'temp'）——那會讓所有講師的照片
+    //    寫進同一個路徑 lecturers/temp/photo.jpg 互相覆蓋。沒有就現場產一個。
+    if (!formData.value.slug) {
+      formData.value.slug = generateSlug(formData.value.name || '')
+    }
+    formDataUpload.append('folder', `lecturers/${formData.value.slug}`)
     formDataUpload.append('filename', 'photo')
 
     const response = await $fetch<{ success: boolean; data?: { url: string }; error?: string }>('/api/admin/upload', {
@@ -181,9 +186,14 @@ function closeEditModal() {
 }
 
 async function saveLecturer() {
-  if (!formData.value.name || !formData.value.slug) {
+  if (!formData.value.name) {
     alert('請填寫必填欄位')
     return
+  }
+  // 保險：slug 是隱藏欄位，正常情況 handleNameChange 已產生；
+  // 若因貼上或自動填入沒觸發 input 事件而仍為空，這裡補上。
+  if (!formData.value.slug) {
+    formData.value.slug = generateSlug(formData.value.name)
   }
 
   saving.value = true
@@ -290,6 +300,16 @@ async function moveLecturer(lecturer: Lecturer, direction: 'up' | 'down') {
   }
 }
 
+// 講師的內部識別碼。管理者看不到也不用填（2026-09-11 起隱藏欄位）。
+//
+// 它唯一的實質用途是照片的 Storage 資料夾：lecturers/<slug>/photo.jpg
+// 🔴 上傳是「同路徑直接覆蓋」而且檔名固定叫 photo，所以 slug 一旦重複或為空，
+//    新講師的照片就會把前一位的蓋掉，而且沒有任何錯誤訊息。
+//    因此一律補時間戳後綴，保證唯一。
+//
+// ⚠️ 舊版只對照十個姓（陳林黃張李王吳劉蔡楊），其餘中文字會被 `[^a-z0-9-]`
+//    清光而產生空字串（例：周美玲 → ''），撞上必填檢查；同姓兩人也會都拿到
+//    'chen' 被 API 當重複擋下。兩個問題都由這裡修掉。
 function generateSlug(name: string): string {
   const mapping: Record<string, string> = {
     '陳': 'chen', '林': 'lin', '黃': 'huang', '張': 'zhang', '李': 'li',
@@ -299,11 +319,17 @@ function generateSlug(name: string): string {
   Object.entries(mapping).forEach(([zh, en]) => {
     slug = slug.replace(zh, en)
   })
-  return slug.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+  const base = slug.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/^-+|-+$/g, '')
+  // 亂數取 6 碼（36^6 ≈ 22 億）。原本只取 3 碼，同一毫秒內連續產生會碰撞——
+  // 實測 3000 次有 6 次重複，而碰撞的後果正是照片互相覆蓋，不能冒險。
+  const suffix = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`
+  return base.length >= 2 ? `${base}-${suffix}` : `lecturer-${suffix}`
 }
 
 function handleNameChange() {
-  if (!editingLecturer.value) {
+  // 只在「新增」且尚未產生過時才產生。編輯既有講師不重新產生，
+  // 否則照片資料夾會換位置，舊照片留在舊資料夾變孤兒。
+  if (!editingLecturer.value && !formData.value.slug) {
     formData.value.slug = generateSlug(formData.value.name)
   }
 }
@@ -554,26 +580,17 @@ const filteredLecturers = computed(() => {
         </div>
 
         <div class="p-6 space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium mb-1">姓名 <span class="text-red-500">*</span></label>
-              <input
-                type="text"
-                v-model="formData.name"
-                @input="handleNameChange"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2"
-                placeholder="講師姓名"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">網址代稱 <span class="text-red-500">*</span></label>
-              <input
-                type="text"
-                v-model="formData.slug"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2"
-                placeholder="lecturer-slug"
-              />
-            </div>
+          <!-- 網址代稱（slug）已於 2026-09-11 從畫面移除：管理者不需要知道它，
+               系統會依姓名自動產生並保證唯一（見 generateSlug 的說明）。 -->
+          <div>
+            <label class="block text-sm font-medium mb-1">姓名 <span class="text-red-500">*</span></label>
+            <input
+              type="text"
+              v-model="formData.name"
+              @input="handleNameChange"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2"
+              placeholder="講師姓名"
+            />
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -587,7 +604,10 @@ const filteredLecturers = computed(() => {
               />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">講師類型 <span class="text-red-500">*</span></label>
+              <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
+                講師類型 <span class="text-red-500">*</span>
+                <AdminFieldHelp text="決定講師出現在哪一頁：認證講師／合作講師／海外授權講師各有獨立頁面。選錯會列在錯的頁面上。" />
+              </label>
               <select v-model="formData.type" class="w-full border border-gray-300 rounded-lg px-3 py-2">
                 <option value="lkk">練健康認證講師</option>
                 <option value="partner">合作講師</option>
@@ -619,7 +639,10 @@ const filteredLecturers = computed(() => {
 
           <!-- Photo Upload -->
           <div>
-            <label class="block text-sm font-medium mb-2">講師照片</label>
+            <label class="flex items-center gap-1.5 text-sm font-medium mb-2">
+              講師照片
+              <AdminFieldHelp text="建議正方形、人臉置中，上限 5MB。未上傳則前台顯示預設人形圖示，不會破版。" />
+            </label>
             <div class="flex items-start gap-4">
               <!-- Preview -->
               <div v-if="formData.photo" class="relative group">
@@ -659,7 +682,10 @@ const filteredLecturers = computed(() => {
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">專長領域（每行一個）</label>
+            <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
+              專長領域（每行一個）
+              <AdminFieldHelp text="一行一個項目，前台自動渲染成標籤。不要自己加頓號或項目符號。" />
+            </label>
             <textarea
               v-model="formData.specialtiesText"
               rows="4"
@@ -710,7 +736,10 @@ const filteredLecturers = computed(() => {
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium mb-1">排序</label>
+              <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
+                排序
+                <AdminFieldHelp text="前台講師列表的顯示順序，數字越小越前面。不影響後台列表順序。" />
+              </label>
               <input
                 type="number"
                 v-model.number="formData.sortOrder"
@@ -720,7 +749,10 @@ const filteredLecturers = computed(() => {
             </div>
             <div class="flex items-center gap-2 pt-6">
               <input type="checkbox" id="isActive" v-model="formData.isActive" class="w-4 h-4 text-orange rounded" />
-              <label for="isActive" class="text-sm">上架顯示</label>
+              <label for="isActive" class="flex items-center gap-1.5 text-sm">
+                上架顯示
+                <AdminFieldHelp text="控制前台看不看得到這位講師。取消勾選後前台不列出，資料仍保留。" />
+              </label>
             </div>
           </div>
         </div>

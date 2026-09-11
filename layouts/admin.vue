@@ -15,6 +15,7 @@ const menuItems = [
   { name: '教練管理', path: '/admin/coaches', icon: 'people' },
   { name: '講師管理', path: '/admin/lecturers', icon: 'school' },
   { name: 'LKK4 成績', path: '/admin/lkk4-records', icon: 'chart' },
+  { name: 'UTM 活動', path: '/admin/campaigns', icon: 'link' },
   { name: '系統設定', path: '/admin/settings', icon: 'settings' },
   { name: '使用者管理', path: '/admin/users', icon: 'users' },
 ]
@@ -169,6 +170,10 @@ const isActive = (path: string) => {
               <!-- School Icon -->
               <svg v-else-if="item.icon === 'school'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <!-- Link Icon -->
+              <svg v-else-if="item.icon === 'link'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 010 5.656l-3 3a4 4 0 01-5.656-5.656l1.5-1.5M10.172 13.828a4 4 0 010-5.656l3-3a4 4 0 015.656 5.656l-1.5 1.5" />
               </svg>
               <!-- Chart Icon -->
               <svg v-else-if="item.icon === 'chart'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
