@@ -282,6 +282,37 @@ export interface LecturerDoc extends FirestoreDoc {
   isActive: boolean;
 }
 
+/**
+ * UTM 活動主檔。一個 doc = 一檔活動（不是一條連結）；
+ * 勾 N 個投放管道就現算 N 條連結，連結本身不入庫（見 utils/campaignLinks.ts 的說明）。
+ *
+ * utmCampaign 是這份主檔與名單的天然 join key：
+ * 它就等於 leads.payload.utm.campaign，所以後台可以用它把
+ * `nanshan-2026q4` 這種代號翻成「南山健康守護圈 2026 Q4」。
+ */
+export interface CampaignDoc extends FirestoreDoc {
+  /** 活動名稱（中文，給人看） */
+  name: string;
+  /** 活動代號＝utm_campaign（小寫英數，發出去就不要再改） */
+  utmCampaign: string;
+  /** 目標頁面路徑，例如 /booking */
+  targetPath: string;
+  /** 表單變體 key（?v=），只有 /booking 與 /group-booking 吃得到 */
+  variantKey?: string | null;
+  /** 投放管道（中文，對應 SOURCE_CHANNELS） */
+  channels: string[];
+  /** 覆寫 utm_source；留空用管道預設值 */
+  utmSourceOverride?: string | null;
+  /** utm_content，區分同管道的不同素材 */
+  utmContent?: string | null;
+  /** 合作夥伴名稱，純備註用（實際歸因仍由 ?v= 的變體決定 payload.company） */
+  partner?: string | null;
+  note?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  isActive: boolean;
+}
+
 // Helper function to convert Firestore doc to plain object
 export function docToObject<T extends FirestoreDoc>(
   doc: any

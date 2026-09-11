@@ -22,6 +22,7 @@ export const ASSIGNABLE_PAGES: { path: string; label: string }[] = [
   { path: '/admin/coaches', label: '教練管理' },
   { path: '/admin/lecturers', label: '講師管理' },
   { path: '/admin/lkk4-records', label: 'LKK4 成績' },
+  { path: '/admin/campaigns', label: 'UTM 活動' },
   { path: '/admin/settings', label: '系統設定' },
 ]
 

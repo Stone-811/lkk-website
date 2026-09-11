@@ -18,6 +18,10 @@ export interface BookingVariant {
   lockStoreId?: string
   // 隱藏「從哪裡得知」區塊（來源已知時）
   hideSources?: boolean
+  // 追加「從哪裡得知」的選項（插在「其他」之前），只在這個變體的頁面出現。
+  // ⚠️ 字串即資料值：會寫進 payload.sources 與頂層 sourceChannel，並出現在 CSV 與通知信。
+  //    發出去之後不要改字面（舊名單救不回來，leads 的 PATCH 只放行 status/internalNote）。
+  extraSources?: string[]
   // 不限年齡免費：解除「50 歲以上才免費」規則。開啟後：
   // 隱藏付款方式選擇（自動免費）、Hero/底部/FAQ/服務卡的價格文案改為全齡免費。
   allAgesFree?: boolean
@@ -73,6 +77,8 @@ export const bookingVariants: Record<string, BookingVariant> = {
     allAgesFree: true,
     company: '南山',
     leadSource: '網站',
+    // 2026-09-11 業主：這是個案，只在南山這張表單出現，不進全站清單。
+    extraSources: ['南山健康守護圈'],
   },
 }
 

@@ -20,6 +20,7 @@ function requiredPagesFor(path: string, method: string): string[] | 'ANY_AUTH' {
   if (path.startsWith('/api/admin/coaches')) return ['/admin/coaches']
   if (path.startsWith('/api/admin/lecturers')) return ['/admin/lecturers']
   if (path.startsWith('/api/admin/lkk4-records')) return ['/admin/lkk4-records']
+  if (path.startsWith('/api/admin/campaigns')) return ['/admin/campaigns']
   if (path.startsWith('/api/admin/settings')) return ['/admin/settings']
   if (path.startsWith('/api/admin/upload')) return ['/admin/stores', '/admin/coaches', '/admin/lecturers']
   if (path.startsWith('/api/admin/stores')) {
