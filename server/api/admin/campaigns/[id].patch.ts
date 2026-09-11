@@ -12,7 +12,6 @@ const UPDATABLE = [
   'targetPath',
   'variantKey',
   'channels',
-  'utmSourceOverride',
   'utmContent',
   'partner',
   'note',

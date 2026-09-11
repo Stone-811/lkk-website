@@ -46,7 +46,6 @@ export default defineEventHandler(async (event) => {
       targetPath,
       variantKey: body.variantKey ? String(body.variantKey).trim() : null,
       channels,
-      utmSourceOverride: body.utmSourceOverride ? String(body.utmSourceOverride).trim() : null,
       utmContent: body.utmContent ? String(body.utmContent).trim() : null,
       partner: body.partner ? String(body.partner).trim() : null,
       note: body.note ? String(body.note).trim() : null,

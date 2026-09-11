@@ -299,10 +299,8 @@ export interface CampaignDoc extends FirestoreDoc {
   targetPath: string;
   /** 表單變體 key（?v=），只有 /booking 與 /group-booking 吃得到 */
   variantKey?: string | null;
-  /** 投放管道（中文，對應 SOURCE_CHANNELS） */
+  /** 投放管道（中文，對應 SOURCE_CHANNELS）。utm_source 與 utm_medium 由它決定，不開放覆寫 */
   channels: string[];
-  /** 覆寫 utm_source；留空用管道預設值 */
-  utmSourceOverride?: string | null;
   /** utm_content，區分同管道的不同素材 */
   utmContent?: string | null;
   /** 合作夥伴名稱，純備註用（實際歸因仍由 ?v= 的變體決定 payload.company） */

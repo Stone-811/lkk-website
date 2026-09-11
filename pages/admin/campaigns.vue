@@ -61,7 +61,6 @@ const blank = () => ({
   targetPath: '/booking',
   variantKey: '',
   channels: [] as string[],
-  utmSourceOverride: '',
   utmContent: '',
   partner: '',
   note: '',
@@ -74,16 +73,14 @@ const formError = ref('')
 
 // 欄位說明（游標停在 ⓘ 上會出現）
 const HELP: Record<string, string> = {
-  name: '給人看的中文名稱，例如「南山健康守護圈 2026 Q4」。後台的名單頁會用它把英文代號翻成看得懂的字。',
+  name: '只存在這個後台頁面，給你自己辨識用的中文名稱。它不會出現在連結裡，也不會寫進名單——名單上記的是下面那組英文「活動代號」。所以命名可以隨意改，不影響任何已經發出去的連結或已收到的名單。',
   utmCampaign:
     '英文代號，會直接出現在連結的 utm_campaign 參數裡，也是名單與這檔活動對照的唯一依據。只能用小寫英文、數字、- 與 _。連結發出去之後就不要再改——已經收到的名單帶的是舊代號，改了對不回來。',
-  targetPath: '這條連結要把人帶到哪一頁。選錯的話人會進到不相干的頁面，但不影響追蹤。',
+  targetPath: '這條連結要把人帶到哪一張表單。只列出會收名單的兩張表單——其他頁面沒有表單，帶人過去也產不出可歸因的名單。',
   variantKey:
     '表單變體決定「表單長相」：專屬 Hero 文案、是否不限年齡免費、是否鎖定分店。只有預約體驗與團體課程兩張表單有變體，而且必須由工程師事先寫好，這裡只能挑既有的。',
   channels:
-    '你要把這條連結放到哪些地方。勾幾個就產生幾條連結，每條帶不同的 utm_source 與 utm_medium，之後才分得出人是從哪個管道來的。',
-  utmSourceOverride:
-    '留空就用該管道的預設值（例如 LINE → line）。只有在需要跟既有作法一致時才覆寫，例如技嘉那檔沿用共用值 website、靠活動代號辨識。',
+    '你要把這條連結放到哪些地方。勾幾個就產生幾條連結，每條自動帶不同的 utm_source 與 utm_medium（例如 LINE → line／social），之後才分得出人是從哪個管道來的。這兩個參數由管道決定，不另外開放修改。',
   utmContent: '同一個管道有多種素材時用來區分，例如 card-a、banner-b。非必填。',
   partner: '合作夥伴名稱，純備註用。實際寫進名單的公司欄位是由表單變體決定的，不是這裡。',
   dates: '純備註用，不會自動停用活動。活動結束請手動按「停用」。',
@@ -114,7 +111,6 @@ const previewLinks = computed(() => {
     variantKey: form.variantKey || null,
     utmCampaign: normalizeCampaignCode(form.utmCampaign),
     channels: form.channels,
-    utmSourceOverride: form.utmSourceOverride || null,
     utmContent: form.utmContent || null,
   })
 })
@@ -125,7 +121,6 @@ const linksFor = (c: any) =>
     variantKey: c.variantKey,
     utmCampaign: c.utmCampaign,
     channels: c.channels || [],
-    utmSourceOverride: c.utmSourceOverride,
     utmContent: c.utmContent,
   })
 
@@ -159,7 +154,6 @@ function openEdit(c: any) {
     targetPath: c.targetPath || '/booking',
     variantKey: c.variantKey || '',
     channels: [...(c.channels || [])],
-    utmSourceOverride: c.utmSourceOverride || '',
     utmContent: c.utmContent || '',
     partner: c.partner || '',
     note: c.note || '',
@@ -368,150 +362,133 @@ onMounted(() => {
           <button class="text-ink/50 hover:text-ink text-xl leading-none" @click="showModal = false">×</button>
         </div>
 
-        <div class="p-6 space-y-4">
+        <div class="p-6 space-y-6">
           <div v-if="formError" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm">{{ formError }}</div>
 
-          <div>
-            <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-              活動名稱 <span class="text-red-500">*</span>
-              <span class="relative group inline-flex">
-                <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
-                <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.name }}</span>
-              </span>
-            </label>
-            <input v-model="form.name" type="text" placeholder="南山健康守護圈 2026 Q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
-          </div>
+          <!-- ① 活動基本資料：只存在後台，不影響連結 -->
+          <section>
+            <h3 class="text-sm font-bold text-navy-700 pb-2 mb-3 border-b border-navy-700/15">
+              活動基本資料
+              <span class="font-normal text-ink/50">— 只存在後台，不會出現在連結裡</span>
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                  活動名稱 <span class="text-red-500">*</span>
+                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.name }}</span></span>
+                </label>
+                <input v-model="form.name" type="text" placeholder="南山健康守護圈 2026 Q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
+              </div>
+              <div class="grid sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                    合作夥伴
+                    <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.partner }}</span></span>
+                  </label>
+                  <input v-model="form.partner" type="text" placeholder="南山" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                    開始日
+                    <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-64 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.dates }}</span></span>
+                  </label>
+                  <input v-model="form.startDate" type="date" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-navy-700 mb-1">結束日</label>
+                  <input v-model="form.endDate" type="date" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
+                </div>
+              </div>
+              <div>
+                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                  備註
+                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-64 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.note }}</span></span>
+                </label>
+                <textarea v-model="form.note" rows="2" class="w-full border border-navy-700/20 rounded-lg px-3 py-2"></textarea>
+              </div>
+            </div>
+          </section>
 
-          <div>
-            <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-              活動代號（utm_campaign） <span class="text-red-500">*</span>
-              <span class="relative group inline-flex">
-                <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
-                <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.utmCampaign }}</span>
-              </span>
-            </label>
-            <input v-model="form.utmCampaign" type="text" placeholder="nanshan-2026q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
-            <p class="text-xs text-red-600 mt-1">⚠️ 只能用小寫英文、數字、- 與 _。<strong>連結發出去之後就不要再改</strong>。</p>
-          </div>
+          <!-- ② 連結要帶去哪 -->
+          <section>
+            <h3 class="text-sm font-bold text-navy-700 pb-2 mb-3 border-b border-navy-700/15">
+              連結目標
+              <span class="font-normal text-ink/50">— 決定人點了之後看到哪張表單</span>
+            </h3>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                  目標頁面 <span class="text-red-500">*</span>
+                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.targetPath }}</span></span>
+                </label>
+                <select v-model="form.targetPath" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" @change="form.variantKey = ''">
+                  <option v-for="t in CAMPAIGN_TARGETS" :key="t.value" :value="t.value">{{ t.label }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                  合作案表單（?v=）
+                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.variantKey }}</span></span>
+                </label>
+                <select v-model="form.variantKey" :disabled="!variantOptions.length" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 disabled:bg-cream-100 disabled:text-ink/40">
+                  <option value="">不使用</option>
+                  <option v-for="v in variantOptions" :key="v.key" :value="v.key">{{ v.label }}</option>
+                </select>
+                <p v-if="selectedVariant" class="text-xs text-ink/60 mt-1 leading-relaxed">
+                  <span class="font-bold text-navy-700">{{ selectedVariant.heroTitle || selectedVariant.key }}</span>：
+                  {{ selectedVariant.effects.join('、') }}<template v-if="selectedVariant.leadSource">；名單來源記為「{{ selectedVariant.leadSource }}」</template>
+                </p>
+                <p v-else class="text-xs text-ink/50 mt-1">{{ variantOptions.length ? '由工程師維護，這裡只能挑既有的。' : '這個頁面沒有合作案表單。' }}</p>
+              </div>
+            </div>
+          </section>
 
-          <div class="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                目標頁面 <span class="text-red-500">*</span>
-                <span class="relative group inline-flex">
-                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
-                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.targetPath }}</span>
-                </span>
-              </label>
-              <select v-model="form.targetPath" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" @change="form.variantKey = ''">
-                <option v-for="t in CAMPAIGN_TARGETS" :key="t.value" :value="t.value">{{ t.label }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                合作案表單（?v=）
-                <span class="relative group inline-flex">
-                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
-                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.variantKey }}</span>
-                </span>
-              </label>
-              <select v-model="form.variantKey" :disabled="!variantOptions.length" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 disabled:bg-cream-100 disabled:text-ink/40">
-                <option value="">不使用</option>
-                <option v-for="v in variantOptions" :key="v.key" :value="v.key">{{ v.label }}</option>
-              </select>
-              <p v-if="selectedVariant" class="text-xs text-ink/60 mt-1 leading-relaxed">
-                <span class="font-bold text-navy-700">{{ selectedVariant.heroTitle || selectedVariant.key }}</span>：
-                {{ selectedVariant.effects.join('、') }}<template v-if="selectedVariant.leadSource">；名單來源記為「{{ selectedVariant.leadSource }}」</template>
-              </p>
-              <p v-else class="text-xs text-ink/50 mt-1">{{ variantOptions.length ? '由工程師維護，這裡只能挑既有的。' : '這個頁面沒有合作案表單。' }}</p>
-            </div>
-          </div>
+          <!-- ③ UTM 追蹤參數：三個欄位全部集中在這一區（業主指定） -->
+          <section>
+            <h3 class="text-sm font-bold text-navy-700 pb-2 mb-3 border-b border-navy-700/15">
+              UTM 追蹤參數
+              <span class="font-normal text-ink/50">— 會出現在連結裡，也是名單歸因的依據</span>
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                  活動代號（utm_campaign） <span class="text-red-500">*</span>
+                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.utmCampaign }}</span></span>
+                </label>
+                <input v-model="form.utmCampaign" type="text" placeholder="nanshan-2026q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
+                <p class="text-xs text-red-600 mt-1">⚠️ 只能用小寫英文、數字、- 與 _。<strong>連結發出去之後就不要再改</strong>。</p>
+              </div>
 
-          <div>
-            <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-2">
-              投放管道 <span class="text-red-500">*</span>
-              <span class="text-ink/50 font-normal">（可複選，勾幾個就產生幾條連結）</span>
-              <span class="relative group inline-flex">
-                <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
-                <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.channels }}</span>
-              </span>
-            </label>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="ch in SOURCE_CHANNELS"
-                :key="ch"
-                type="button"
-                class="px-3 py-1.5 rounded-lg border text-sm transition-colors"
-                :class="form.channels.includes(ch) ? 'border-orange bg-orange/10 text-orange font-bold' : 'border-navy-700/20 hover:border-orange/50'"
-                @click="toggleChannel(ch)"
-              >{{ ch }}</button>
-            </div>
-            <p class="text-xs text-ink/50 mt-1.5">
-              每個管道對應固定的 utm_source／utm_medium，例如 LINE →
-              <code>{{ CHANNEL_TO_SOURCE['LINE'] }}</code> / <code>{{ CHANNEL_TO_MEDIUM['LINE'] }}</code>。
-            </p>
-          </div>
+              <div>
+                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-2">
+                  投放管道（utm_source／utm_medium） <span class="text-red-500">*</span>
+                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.channels }}</span></span>
+                </label>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="ch in SOURCE_CHANNELS"
+                    :key="ch"
+                    type="button"
+                    class="px-3 py-1.5 rounded-lg border text-sm transition-colors"
+                    :class="form.channels.includes(ch) ? 'border-orange bg-orange/10 text-orange font-bold' : 'border-navy-700/20 hover:border-orange/50'"
+                    @click="toggleChannel(ch)"
+                  >{{ ch }}</button>
+                </div>
+                <p class="text-xs text-ink/50 mt-1.5">
+                  勾幾個就產生幾條連結。每個管道對應固定的參數，例如 LINE →
+                  <code>utm_source={{ CHANNEL_TO_SOURCE['LINE'] }}</code> ／ <code>utm_medium={{ CHANNEL_TO_MEDIUM['LINE'] }}</code>。
+                </p>
+              </div>
 
-          <div class="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                覆寫 utm_source
-                <span class="relative group inline-flex">
-                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
-                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-80 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.utmSourceOverride }}</span>
-                </span>
-              </label>
-              <input v-model="form.utmSourceOverride" type="text" placeholder="留空用管道預設值" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
+              <div>
+                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+                  素材代號（utm_content）
+                  <span class="relative group inline-flex"><span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span><span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.utmContent }}</span></span>
+                </label>
+                <input v-model="form.utmContent" type="text" placeholder="區分同管道的不同素材，例如 card-a" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
+              </div>
             </div>
-            <div>
-              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                utm_content
-                <span class="relative group inline-flex">
-                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
-                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.utmContent }}</span>
-                </span>
-              </label>
-              <input v-model="form.utmContent" type="text" placeholder="區分同管道的不同素材" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
-            </div>
-          </div>
-
-          <div class="grid sm:grid-cols-3 gap-4">
-            <div>
-              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                合作夥伴
-                <span class="relative group inline-flex">
-                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
-                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-72 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.partner }}</span>
-                </span>
-              </label>
-              <input v-model="form.partner" type="text" placeholder="南山" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
-            </div>
-            <div>
-              <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                開始日
-                <span class="relative group inline-flex">
-                  <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
-                  <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-64 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.dates }}</span>
-                </span>
-              </label>
-              <input v-model="form.startDate" type="date" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-navy-700 mb-1">結束日</label>
-              <input v-model="form.endDate" type="date" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
-            </div>
-          </div>
-
-          <div>
-            <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-              備註
-              <span class="relative group inline-flex">
-                <span class="w-4 h-4 rounded-full border border-navy-700/35 text-navy-700/70 text-[10px] font-bold flex items-center justify-center cursor-help">?</span>
-                <span class="pointer-events-none invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-6 z-20 w-64 bg-navy-700 text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-xl">{{ HELP.note }}</span>
-              </span>
-            </label>
-            <textarea v-model="form.note" rows="2" class="w-full border border-navy-700/20 rounded-lg px-3 py-2"></textarea>
-          </div>
+          </section>
 
           <div v-if="previewLinks.length" class="border border-navy-700/12 rounded-lg bg-cream-50 p-3">
             <p class="text-xs font-bold text-navy-700 mb-2">

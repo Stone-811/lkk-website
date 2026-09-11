@@ -29,15 +29,14 @@ export const CHANNEL_TO_SOURCE: Record<string, string> = {
   Google: 'google',
 }
 
-/** 可投放的目標頁面。key 同時決定 ?v= 要從哪一份變體設定取選項。 */
+/**
+ * 可投放的目標頁面。key 同時決定 ?v= 要從哪一份合作案設定取選項。
+ * 業主 2026-09-11：只保留兩張會收名單的表單——其餘頁面（首頁、研習課程、
+ * LKK4…）沒有表單，帶 utm 進去也產不出可歸因的名單，留著只會誤導。
+ */
 export const CAMPAIGN_TARGETS = [
   { value: '/booking', label: '預約體驗表單', variantSource: 'booking' as const },
   { value: '/group-booking', label: '團體課程報名', variantSource: 'groupClass' as const },
-  { value: '/cooperation', label: '合作洽詢', variantSource: null },
-  { value: '/franchise', label: '加盟說明', variantSource: null },
-  { value: '/', label: '首頁', variantSource: null },
-  { value: '/lkk-academy', label: '研習課程', variantSource: null },
-  { value: '/lkk4', label: 'LKK4 賽事', variantSource: null },
 ]
 
 /**
@@ -71,8 +70,6 @@ export interface CampaignLinkInput {
   utmCampaign: string
   /** 投放管道（中文，對應 CHANNEL_TO_*） */
   channel: string
-  /** 覆寫 utm_source；留空則用該管道的預設值 */
-  utmSourceOverride?: string | null
   /** utm_content，用來區分同一管道的不同素材 */
   utmContent?: string | null
 }
@@ -89,7 +86,10 @@ export function buildCampaignLink(origin: string, input: CampaignLinkInput): str
   const params: [string, string][] = []
   if (input.variantKey) params.push(['v', input.variantKey])
 
-  const source = (input.utmSourceOverride || '').trim() || CHANNEL_TO_SOURCE[input.channel] || 'website'
+  // utm_source 一律由投放管道決定，不開放覆寫。
+  // 業主 2026-09-11：覆寫會讓所有管道的 source 變成同一個值，
+  // 與「勾 N 個管道產生 N 條可區分的連結」直接衝突，留一個就好。
+  const source = CHANNEL_TO_SOURCE[input.channel] || 'website'
   const medium = CHANNEL_TO_MEDIUM[input.channel] || 'referral'
 
   params.push(['utm_source', source])
@@ -111,7 +111,6 @@ export function buildCampaignLinks(
     variantKey?: string | null
     utmCampaign: string
     channels: string[]
-    utmSourceOverride?: string | null
     utmContent?: string | null
   },
 ): { channel: string; url: string }[] {
@@ -122,7 +121,6 @@ export function buildCampaignLinks(
       variantKey: campaign.variantKey,
       utmCampaign: campaign.utmCampaign,
       channel,
-      utmSourceOverride: campaign.utmSourceOverride,
       utmContent: campaign.utmContent,
     }),
   }))
