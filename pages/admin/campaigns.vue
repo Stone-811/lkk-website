@@ -20,8 +20,6 @@ import {
   buildCampaignLinks,
   validateCampaignCode,
   normalizeCampaignCode,
-  CHANNEL_TO_SOURCE,
-  CHANNEL_TO_MEDIUM,
   summarizeVariants,
 } from '~/utils/campaignLinks'
 
@@ -224,7 +222,7 @@ onMounted(() => {
   <div>
     <div class="mb-5">
       <h1 class="text-2xl font-bold text-navy-700">UTM 活動</h1>
-      <p class="text-sm text-ink/60 mt-1">建立活動並產生帶追蹤參數的連結，名單進來後可在「客戶預約」用 UTM 活動篩選對照。</p>
+      <p class="text-sm text-ink/60 mt-1">產生活動專屬連結，投放出去後就能在「客戶預約」看出名單是從哪來的。</p>
     </div>
 
     <!-- 環境橫幅：連結跟著目前環境走，所以一定要讓人一眼看出在哪 -->
@@ -232,23 +230,14 @@ onMounted(() => {
       class="rounded-lg p-4 mb-5 text-sm border"
       :class="env.isProd ? 'bg-green-50 border-green-300 text-green-900' : 'bg-amber-50 border-amber-400 text-amber-900'"
     >
-      <p class="font-bold mb-1">
-        {{ env.isProd ? '✅ 正式環境' : '⚠️ 測試環境（dev）' }}
-        <span class="font-normal">— 這裡產生的連結會指向 <code>{{ origin }}</code></span>
-      </p>
-      <p v-if="env.isProd">這裡建立的活動與連結可以直接對外投放。</p>
-      <p v-else>
-        這裡建的活動與收到的名單都只存在測試站，<strong>不會同步到正式站</strong>。
-        正式要上線的活動請到正式後台再建一次。
-      </p>
+      <p v-if="env.isProd"><strong>✅ 正式環境</strong> — 這裡產生的連結可以直接對外投放。</p>
+      <p v-else><strong>⚠️ 測試環境</strong> — 這裡的活動只在測試站，<strong>要對外投放請到正式後台建</strong>。</p>
     </div>
 
     <!-- 能力界線：寫在頁面上，避免業主以為這裡能改表單長相 -->
     <div class="bg-cream-50 border border-navy-700/15 rounded-lg p-4 mb-5 text-sm text-ink/75">
-      <p class="font-bold text-navy-700 mb-1">這裡能做與不能做的事</p>
-      <p>✅ 產生帶 <code>utm_*</code> 的追蹤連結、管理活動清單 —— 你自己就能新增，不需要工程師。</p>
-      <p>⚠️ <code>?v=</code>（合作案表單）決定的是<strong>表單長相</strong>：專屬 Hero 文案、不限年齡免費、鎖定分店。
-        新的合作案表單仍需工程師製作，這裡只能從既有的挑。</p>
+      <p>✅ 活動與追蹤連結，你自己就能建。</p>
+      <p class="mt-1">⚠️ 表單本身的樣子（專屬文案、免費體驗、指定分店）要請工程師做，這裡只能挑現成的。</p>
     </div>
 
     <!-- 現有合作案表單：即時從 config 讀，不會像 docs/廠商表單網址規範.md 那樣過期 -->
@@ -287,7 +276,7 @@ onMounted(() => {
           </tbody>
         </table>
         <p class="text-xs text-ink/50 px-4 py-3 border-t border-navy-700/10 bg-cream-50">
-          這份清單直接讀程式設定檔即時產生，工程師做好新的合作案表單後這裡會自動出現。要新增或修改請找工程師。
+          新的合作案表單要請工程師做，做好之後這裡會自動出現。
         </p>
       </div>
     </div>
@@ -429,8 +418,7 @@ onMounted(() => {
                   >{{ ch }}</button>
                 </div>
                 <p class="text-xs text-ink/50 mt-1.5">
-                  勾幾個就產生幾條連結。每個管道對應固定的參數，例如 LINE →
-                  <code>utm_source={{ CHANNEL_TO_SOURCE['LINE'] }}</code> ／ <code>utm_medium={{ CHANNEL_TO_MEDIUM['LINE'] }}</code>。
+                  勾幾個就產生幾條連結，各自帶不同參數，名單就分得出是從哪個管道來的。
                 </p>
               </div>
 

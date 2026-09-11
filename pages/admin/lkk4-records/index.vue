@@ -37,6 +37,9 @@ const availableGroups = ref<string[]>([])
 const selectedYear = ref<number | null>(null)
 const selectedGroup = ref('')
 const searchName = ref('')
+// 首次載入前 selectedYear 還是 null（＝還沒選過，讓後端決定最新年度），載完要把它填回下拉選單；
+// 之後 null 的意思就變成「使用者主動選了全部年度」，不能再被覆寫。
+const hasLoadedOnce = ref(false)
 
 // Import state
 const showImportModal = ref(false)
@@ -45,12 +48,21 @@ const isImporting = ref(false)
 const importMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 // Fetch records
+//
+// 預設只載入「最新年度」。歷年累積約 220 筆/年，全部載入等於每次開頁
+// 都把整個 collection 撈一次，所以「全部年度」改成要使用者自己選。
+// 第一次載入時前端還不知道最新年度是哪一年，由後端回傳 appliedYear 對回下拉選單。
 async function fetchRecords() {
   isLoading.value = true
   error.value = ''
   try {
     const params = new URLSearchParams()
-    if (selectedYear.value) params.set('year', selectedYear.value.toString())
+    // 🔴 首次載入「不要帶 year」，讓後端套用最新年度。
+    //    若這裡無條件把 null 翻成 'all'，第一個請求就會變成全部年度＝全表讀取，
+    //    後端那條「預設最新年度」的路徑永遠走不到，最佳化等於沒做。
+    if (hasLoadedOnce.value) {
+      params.set('year', selectedYear.value ? selectedYear.value.toString() : 'all')
+    }
     if (selectedGroup.value) params.set('group', selectedGroup.value)
     if (searchName.value.trim()) params.set('name', searchName.value.trim())
 
@@ -59,6 +71,7 @@ async function fetchRecords() {
       success: boolean
       data: LKK4Record[]
       total: number
+      appliedYear: number | null
       filters: { years: number[]; groups: string[] }
     }>(url)
 
@@ -66,6 +79,11 @@ async function fetchRecords() {
       records.value = response.data
       availableYears.value = response.filters.years
       availableGroups.value = response.filters.groups
+      // 只在首次載入（尚未選過年度）時同步，避免蓋掉使用者剛選的「全部年度」
+      if (!hasLoadedOnce.value) {
+        selectedYear.value = response.appliedYear
+        hasLoadedOnce.value = true
+      }
     }
   } catch (e: any) {
     error.value = e.data?.message || '載入失敗'
@@ -73,6 +91,13 @@ async function fetchRecords() {
   } finally {
     isLoading.value = false
   }
+}
+
+// 組別清單現在是依「目前載入的年度」產生的，換年度時沿用舊選擇會查出一片空白，
+// 所以換年度一併清掉組別篩選。
+function onYearChange() {
+  selectedGroup.value = ''
+  fetchRecords()
 }
 
 // Import handlers
@@ -181,10 +206,10 @@ onMounted(fetchRecords)
           <label class="text-sm font-medium text-gray-700">年度</label>
           <select
             v-model="selectedYear"
-            @change="fetchRecords"
+            @change="onYearChange"
             class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent"
           >
-            <option :value="null">全部年度</option>
+            <option :value="null">全部年度（資料較多，載入較慢）</option>
             <option v-for="year in availableYears" :key="year" :value="year">
               {{ year }}
             </option>
