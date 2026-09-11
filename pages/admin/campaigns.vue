@@ -6,8 +6,10 @@
  * 名單進來後帶著 utm_campaign，後台「UTM 活動」篩選就能對照。
  *
  * 🔴 刻意做成「單頁 ＋ Modal」，不要另開 campaigns/[id].vue。
- *    pages/admin/lecturers/[id].vue 就是那樣變成 527 行的孤兒檔——
- *    lecturers.vue 裡沒有 <NuxtPage/>，全站也沒有連結指向它。
+ *    講師管理踩過這個坑：原本是「列表頁 → 獨立編輯頁」，後來改成列表＋彈窗，
+ *    舊的 lecturers/[id].vue 沒人刪，變成 527 行的孤兒檔（父層沒有 <NuxtPage/>、
+ *    全站零連結，進不去也沒人維護，欄位還比現行少 5 個）。已於 2026-09-11 刪除。
+ *    只要 Nuxt 的 xxx.vue 與 xxx/ 目錄並存，父層就必須放 <NuxtPage/> 子路由才會渲染。
  */
 import { ref, reactive, computed, onMounted } from 'vue'
 import { bookingVariants } from '~/config/bookingVariants'
