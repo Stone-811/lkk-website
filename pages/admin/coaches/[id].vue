@@ -292,7 +292,7 @@ async function handlePhotoUpload(event: Event) {
           <div>
             <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
               所屬分店 <span class="text-red-500">*</span>
-              <AdminFieldHelp text="決定這位教練會出現在哪一間分店的頁面上。全體教練頁會全部列出，但分店詳情頁只列出屬於該店的教練。" />
+              <AdminFieldHelp text="決定這位教練出現在哪一間分店的頁面。全體教練頁不受影響，一律列出。" />
             </label>
             <select
               :value="formData.storeId"
@@ -310,7 +310,7 @@ async function handlePhotoUpload(event: Event) {
           <div>
             <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
               排序
-              <AdminFieldHelp text="決定前台教練列表的顯示順序，數字越小越前面。這裡改的是訪客看到的順序，不是後台列表的順序。" />
+              <AdminFieldHelp text="前台教練列表的顯示順序，數字越小越前面。不影響後台列表順序。" />
             </label>
             <input
               type="number"
@@ -335,7 +335,7 @@ async function handlePhotoUpload(event: Event) {
         <div>
           <label class="flex items-center gap-1.5 text-sm font-medium mb-1">
             個人簡介
-            <AdminFieldHelp text="會顯示在全體教練頁點開教練卡片後的詳情彈窗裡。留空的話那一區就不會出現，不會留下空白。" />
+            <AdminFieldHelp text="控制前台看不看得到這位教練。取消勾選後前台不列出但資料保留——離職請用這個，不要刪除。" />
           </label>
           <textarea
             v-model="formData.description"
@@ -354,7 +354,7 @@ async function handlePhotoUpload(event: Event) {
           />
           <label for="isActive" class="flex items-center gap-1.5 text-sm">
             上架顯示
-            <AdminFieldHelp text="取消勾選＝前台完全看不到這位教練：全體教練頁與分店詳情頁都不會列出。資料不會被刪除，重新勾選就會回來。教練離職建議用這個，不要直接刪除。" wide />
+            <AdminFieldHelp text="顯示在教練卡片點開後的詳情彈窗。留空則該區不出現，不會留白。" />
           </label>
         </div>
       </div>

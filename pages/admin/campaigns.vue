@@ -70,16 +70,13 @@ const formError = ref('')
 
 // 欄位說明（游標停在 ⓘ 上會出現）
 const HELP: Record<string, string> = {
-  name: '選填。只存在這個後台頁面，給你自己辨識用的中文名稱，留空時列表就顯示活動代號。它不會出現在連結裡，也不會寫進名單——名單上記的是下面那組英文「活動代號」。所以命名可以隨意改，不影響任何已發出的連結或已收到的名單。',
-  utmCampaign:
-    '英文代號，會直接出現在連結的 utm_campaign 參數裡，也是名單與這檔活動對照的唯一依據。只能用小寫英文、數字、- 與 _。連結發出去之後就不要再改——已經收到的名單帶的是舊代號，改了對不回來。',
-  targetPath: '這條連結要把人帶到哪一張表單。只列出會收名單的兩張表單——其他頁面沒有表單，帶人過去也產不出可歸因的名單。',
-  variantKey:
-    '表單變體決定「表單長相」：專屬 Hero 文案、是否不限年齡免費、是否鎖定分店。只有預約體驗與團體課程兩張表單有變體，而且必須由工程師事先寫好，這裡只能挑既有的。',
-  channels:
-    '你要把這條連結放到哪些地方。勾幾個就產生幾條連結，每條自動帶不同的 utm_source 與 utm_medium（例如 LINE → line／social），之後才分得出人是從哪個管道來的。這兩個參數由管道決定，不另外開放修改。',
-  utmContent: '同一個管道有多種素材時用來區分，例如 card-a、banner-b。非必填。',
-  note: '給自己或同事看的補充說明，不會出現在連結裡。',
+  name: '只在這個後台頁面顯示，方便你辨識活動。不進連結也不進名單，改名不影響任何已發出的連結。',
+  utmCampaign: '會寫進連結的 utm_campaign，是名單對照活動的唯一依據。發出去之後修改，舊名單就對不回來了。',
+  targetPath: '連結要把人帶到哪一張表單。只列出會收名單的兩張，其他頁面收不到可歸因的名單。',
+  variantKey: '決定表單長相（專屬文案、全齡免費、鎖分店）。需工程師事先製作，這裡只能挑既有的。',
+  channels: '要把連結放到哪些地方。勾幾個產生幾條連結，各自帶不同的 utm_source／utm_medium 以便區分來源。',
+  utmContent: '同一管道有多種素材時用來區分，例如 card-a。非必填。',
+  note: '給自己看的補充說明，顯示在活動列表展開處。不會出現在連結裡。',
 }
 
 // ?v= 的選項一律從設定檔現讀，不要抄文件——docs/廠商表單網址規範.md 實測是過期的
@@ -359,7 +356,7 @@ onMounted(() => {
             <div>
               <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
                 活動名稱 <span class="text-ink/45 font-normal">（選填）</span>
-                <AdminFieldHelp :text="HELP.name" wide />
+                <AdminFieldHelp :text="HELP.name" />
               </label>
               <input v-model="form.name" type="text" placeholder="南山健康守護圈 2026 Q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
             </div>
@@ -383,7 +380,7 @@ onMounted(() => {
               <div>
                 <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
                   合作案表單（?v=）
-                  <AdminFieldHelp :text="HELP.variantKey" wide />
+                  <AdminFieldHelp :text="HELP.variantKey" />
                 </label>
                 <select v-model="form.variantKey" :disabled="!variantOptions.length" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 disabled:bg-cream-100 disabled:text-ink/40">
                   <option value="">不使用</option>
@@ -408,7 +405,7 @@ onMounted(() => {
               <div>
                 <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
                   活動代號（utm_campaign） <span class="text-red-500">*</span>
-                  <AdminFieldHelp :text="HELP.utmCampaign" wide />
+                  <AdminFieldHelp :text="HELP.utmCampaign" />
                 </label>
                 <input v-model="form.utmCampaign" type="text" placeholder="nanshan-2026q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
                 <p class="text-xs text-red-600 mt-1">⚠️ 只能用小寫英文、數字、- 與 _。<strong>連結發出去之後就不要再改</strong>。</p>
@@ -417,7 +414,7 @@ onMounted(() => {
               <div>
                 <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-2">
                   投放管道（utm_source／utm_medium） <span class="text-red-500">*</span>
-                  <AdminFieldHelp :text="HELP.channels" wide />
+                  <AdminFieldHelp :text="HELP.channels" />
                 </label>
                 <div class="flex flex-wrap gap-2">
                   <button
