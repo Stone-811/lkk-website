@@ -1,7 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
 // og:image 必須是絕對網址，dev / prod 各自不同；與下方 runtimeConfig.public.siteUrl 同源。
-const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://l-kk.tw'
+// ⚠️ fallback 原本是 'https://l-kk.tw'——那是舊的 WordPress 站（實測仍回 200）。
+// 萬一環境變數沒讀到，canonical 與 og:image 會整站指向舊站，等於把新官網的
+// 搜尋分數送給舊站。改成正式站網域，讓最糟情況也是安全的。
+// 正常情況兩個環境都由 apphosting.yaml 提供 NUXT_PUBLIC_SITE_URL，走不到這裡。
+const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://lkkwellness.com'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -188,7 +192,8 @@ export default defineNuxtConfig({
     firebaseProjectId: process.env.FIREBASE_PROJECT_ID,
     // Public (client-side)
     public: {
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://l-kk.tw',
+      // fallback 同上，不要用舊 WordPress 站的網址
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://lkkwellness.com',
       // Firebase client (web) config — public values, used for admin Google sign-in
       firebaseApiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY || '',
       firebaseAuthDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
