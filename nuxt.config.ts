@@ -141,6 +141,17 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: '練健康',
+      // 🔴 全站 <html> 原本是裸的，沒有 lang。繁中站缺 lang 時，瀏覽器只能拿
+      //    「訪客裝置自己的語系」去挑漢字備援字型——本站沒有載入任何 webfont
+      //    （字型堆疊是 Microsoft JhengHei / 微軟正黑體 / system-ui），所以在
+      //    非中文語系的裝置上，骨、直、令、者、過這類字可能被渲染成日文或簡體字形。
+      //    2026-09-12 實測：台灣使用者（裝置語系 zh-TW）補上前後是 0 像素差異、
+      //    418 個元素 0 位移，也就是對絕大多數訪客畫面完全不變；受益的是
+      //    非中文語系裝置、螢幕朗讀器（WCAG 3.1.1 A 級），以及 /news——
+      //    那頁中文字元只占 52%（BBC / Reuters / AFP 等外媒名），最容易被
+      //    Chrome 誤判語言而跳出翻譯提示。
+      //    全站沒有任何 :lang() 樣式，所以不會有任何樣式因此改變。
+      htmlAttrs: { lang: 'zh-Hant-TW' },
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
