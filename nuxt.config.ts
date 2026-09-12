@@ -20,10 +20,16 @@ export default defineNuxtConfig({
       name: '練健康',
       short_name: '練健康',
       description: '練健康 - 專業健身訓練，中高齡體適能專家',
+      // vite-plugin-pwa 的預設值是 'en'（寫死在套件裡，不是誰打錯的）。
+      // manifest 現在真的被引用了，這個值就會生效，順手改對。
+      lang: 'zh-Hant-TW',
       theme_color: '#2A5269',
       background_color: '#F5EFE4',
       display: 'standalone',
-      orientation: 'portrait',
+      // 🔴 刻意不設 orientation。原本是 'portrait'，會讓「安裝後」的 App 鎖成直向、
+      //    轉橫看不了——而本站最需要轉橫的正是 LKK4 成績查詢與後台那 9 個寬表格頁
+      //    （都用 overflow-x-auto 的寬表格）。2026-09-12 接上 manifest 時一併移除，
+      //    不設就是跟隨裝置的旋轉設定。
       start_url: '/',
       scope: '/',
       icons: [
