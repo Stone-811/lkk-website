@@ -135,14 +135,27 @@ export default defineNuxtConfig({
         // ⚠️ 這裡刻意不設 og:title 與 og:description——各頁自己用 useHead 設了
         //    title 與 description，LINE/FB 在缺 og:title 時會退回用它們；
         //    在站台層寫死反而會讓每一頁的預覽標題都變成同一句。
+        //
+        // 🔴 og-image-v2.png：LINE 聊天室的預覽卡是「小方形縮圖」，會把 1200x630
+        //    置中裁成 1:1。舊版 og-image.png 的英文行寬到 x260-941，裁切只保留
+        //    x285-915，業主 2026-09-12 實際截圖顯示成「KK WELLNESS CENTE」，
+        //    頭尾字母被吃掉。v2 把整個 lockup 收進 x330-870，1:1 裁切完整保留。
+        //
+        // 🔴 檔名一定要換，不要覆蓋 og-image.png。LINE/FB 有兩層快取：
+        //    「頁面網址→OG 中繼資料」與「圖片網址→縮圖 bytes」。實測 og-image.png
+        //    的回應沒有 Cache-Control（只有 ETag），覆蓋同名檔時第二層很可能
+        //    直接沿用舊 bytes，換圖等於沒換。換檔名才動得到第二層。
+        //    第一層只能靠分享帶參數的網址（例如 ?v=1）或等它自己過期——
+        //    LINE 沒有 Facebook Sharing Debugger 那種公開清快取工具。
+        //    另外：已經送出的 LINE 訊息，預覽卡永遠不會更新。
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: '練健康 LKK Wellness Center' },
-        { property: 'og:image', content: `${siteUrl}/og-image.png` },
+        { property: 'og:image', content: `${siteUrl}/og-image-v2.png` },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
         { property: 'og:image:alt', content: '練健康 LKK Wellness Center' },
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:image', content: `${siteUrl}/og-image.png` },
+        { name: 'twitter:image', content: `${siteUrl}/og-image-v2.png` },
       ],
       link: [
         // ⚠️ 舊設定指向 /lkklogo.png——那是「透明底 + 白字」的 header 用 logo，
