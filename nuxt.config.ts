@@ -95,8 +95,16 @@ export default defineNuxtConfig({
           },
         },
         {
+          // 🔴 這裡刻意用 StaleWhileRevalidate，不要改回 CacheFirst。
+          //    本站換照片一律是「同名覆蓋」（public/images/ 底下直接換檔，
+          //    近三週就做過 7 次，belief-chart.webp 還在 5 天內換了兩次）。
+          //    CacheFirst 會讓回訪者最久 30 天都看到舊照片，而且業主自己驗收
+          //    時也會看到舊的，很容易誤判成「換圖失敗」。
+          //    StaleWhileRevalidate：先給快取裡的舊圖（畫面一樣快），
+          //    同時在背景抓新的存起來，回訪者第二次進站就會看到新照片。
+          //    2026-09-12 從 CacheFirst 改過來。
           urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
-          handler: 'CacheFirst',
+          handler: 'StaleWhileRevalidate',
           options: {
             cacheName: 'images-cache',
             expiration: {
