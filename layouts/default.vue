@@ -13,10 +13,24 @@
  * 例如 /booking、/booking?v=nanshan、/booking?utm_source=line&utm_campaign=xxx
  * 目前全部都回 200，對搜尋引擎是三個獨立頁面。
  *
- * ⚠️ 刻意不把路徑轉小寫。/BOOKING 這種大寫路徑確實也會各自成立，
- *    但分店頁的 slug 是後台自行輸入的（今天四間都是小寫，未來不保證），
- *    一旦某個 slug 帶大寫，轉小寫的 canonical 會指到一個 404 的網址，
- *    那比「多一個大寫變體」嚴重得多。只去掉結尾斜線。
+ * 大小寫：vue-router 的路由比對是不分大小寫的，所以 /BOOKING、/Booking 都會
+ * 開出同一頁、各自回 200。canonical 因此也要收斂它們。
+ *
+ * ⚠️ 但**不能**直接把網址轉小寫——分店頁的 slug 是後台自行輸入的欄位
+ *    （今天四間都是小寫，未來不保證），一旦某個 slug 帶大寫，
+ *    轉小寫會讓 canonical 指向一個 404 的網址，比多一個大寫變體嚴重得多。
+ *
+ * 正確做法是用「路由名稱 + params」重建路徑：路由定義來自檔案系統，
+ * 永遠是小寫；params 則原樣保留。實測結果：
+ *    /BOOKING          → /booking            靜態路徑小寫化
+ *    /LOCATIONS/nanjing → /locations/nanjing  靜態段小寫、參數不動
+ *    /locations/NanJing → /locations/NanJing  參數原樣保留，不會指到 404
+ *
+ * 再去掉結尾斜線。
+ *
+ * ⚠️ 這只是寫給搜尋引擎的宣告，不是轉址——/BOOKING 對訪客照樣正常開啟。
+ *    刻意不做大小寫 301：後台網址帶大小寫混合的 Firestore ID
+ *    （實測 SnGT0pIY7otkM5SuiCci），全站小寫化會讓後台編輯／刪除安靜失效。
  *
  * 🔴 og:url 一定要一起設，而且要用 fullPath（含 query）。
  *    Facebook 在缺 og:url 時會退回讀 canonical——若只有 canonical，
@@ -25,9 +39,21 @@
  *    有了明確的 og:url，FB 就會保留變體，canonical 照樣替 Google 做收斂。
  */
 const route = useRoute()
+const router = useRouter()
 const { siteUrl } = useRuntimeConfig().public
 
-const canonicalUrl = computed(() => siteUrl + (route.path.replace(/\/+$/, '') || '/'))
+// 用路由定義重建路徑，讓 /BOOKING 這類大寫變體也收斂到 /booking。
+// 找不到路由名稱時（例如 404 頁）退回原始路徑，不要讓整個 head 壞掉。
+const canonicalPath = computed(() => {
+  if (!route.name) return route.path
+  try {
+    return router.resolve({ name: route.name, params: route.params }).path
+  } catch {
+    return route.path
+  }
+})
+
+const canonicalUrl = computed(() => siteUrl + (canonicalPath.value.replace(/\/+$/, '') || '/'))
 const ogUrl = computed(() => siteUrl + route.fullPath)
 
 useHead({
