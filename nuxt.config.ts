@@ -1,7 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
 // og:image 必須是絕對網址，dev / prod 各自不同；與下方 runtimeConfig.public.siteUrl 同源。
-const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://l-kk.tw'
+// ⚠️ fallback 原本是 'https://l-kk.tw'——那是舊的 WordPress 站（實測仍回 200）。
+// 萬一環境變數沒讀到，canonical 與 og:image 會整站指向舊站，等於把新官網的
+// 搜尋分數送給舊站。改成正式站網域，讓最糟情況也是安全的。
+// 正常情況兩個環境都由 apphosting.yaml 提供 NUXT_PUBLIC_SITE_URL，走不到這裡。
+const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://lkkwellness.com'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -20,10 +24,16 @@ export default defineNuxtConfig({
       name: '練健康',
       short_name: '練健康',
       description: '練健康 - 專業健身訓練，中高齡體適能專家',
+      // vite-plugin-pwa 的預設值是 'en'（寫死在套件裡，不是誰打錯的）。
+      // manifest 現在真的被引用了，這個值就會生效，順手改對。
+      lang: 'zh-Hant-TW',
       theme_color: '#2A5269',
       background_color: '#F5EFE4',
       display: 'standalone',
-      orientation: 'portrait',
+      // 🔴 刻意不設 orientation。原本是 'portrait'，會讓「安裝後」的 App 鎖成直向、
+      //    轉橫看不了——而本站最需要轉橫的正是 LKK4 成績查詢與後台那 9 個寬表格頁
+      //    （都用 overflow-x-auto 的寬表格）。2026-09-12 接上 manifest 時一併移除，
+      //    不設就是跟隨裝置的旋轉設定。
       start_url: '/',
       scope: '/',
       icons: [
@@ -95,8 +105,16 @@ export default defineNuxtConfig({
           },
         },
         {
+          // 🔴 這裡刻意用 StaleWhileRevalidate，不要改回 CacheFirst。
+          //    本站換照片一律是「同名覆蓋」（public/images/ 底下直接換檔，
+          //    近三週就做過 7 次，belief-chart.webp 還在 5 天內換了兩次）。
+          //    CacheFirst 會讓回訪者最久 30 天都看到舊照片，而且業主自己驗收
+          //    時也會看到舊的，很容易誤判成「換圖失敗」。
+          //    StaleWhileRevalidate：先給快取裡的舊圖（畫面一樣快），
+          //    同時在背景抓新的存起來，回訪者第二次進站就會看到新照片。
+          //    2026-09-12 從 CacheFirst 改過來。
           urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
-          handler: 'CacheFirst',
+          handler: 'StaleWhileRevalidate',
           options: {
             cacheName: 'images-cache',
             expiration: {
@@ -123,6 +141,17 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: '練健康',
+      // 🔴 全站 <html> 原本是裸的，沒有 lang。繁中站缺 lang 時，瀏覽器只能拿
+      //    「訪客裝置自己的語系」去挑漢字備援字型——本站沒有載入任何 webfont
+      //    （字型堆疊是 Microsoft JhengHei / 微軟正黑體 / system-ui），所以在
+      //    非中文語系的裝置上，骨、直、令、者、過這類字可能被渲染成日文或簡體字形。
+      //    2026-09-12 實測：台灣使用者（裝置語系 zh-TW）補上前後是 0 像素差異、
+      //    418 個元素 0 位移，也就是對絕大多數訪客畫面完全不變；受益的是
+      //    非中文語系裝置、螢幕朗讀器（WCAG 3.1.1 A 級），以及 /news——
+      //    那頁中文字元只占 52%（BBC / Reuters / AFP 等外媒名），最容易被
+      //    Chrome 誤判語言而跳出翻譯提示。
+      //    全站沒有任何 :lang() 樣式，所以不會有任何樣式因此改變。
+      htmlAttrs: { lang: 'zh-Hant-TW' },
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -174,7 +203,8 @@ export default defineNuxtConfig({
     firebaseProjectId: process.env.FIREBASE_PROJECT_ID,
     // Public (client-side)
     public: {
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://l-kk.tw',
+      // fallback 同上，不要用舊 WordPress 站的網址
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://lkkwellness.com',
       // Firebase client (web) config — public values, used for admin Google sign-in
       firebaseApiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY || '',
       firebaseAuthDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
