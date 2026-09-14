@@ -27,6 +27,8 @@ definePageMeta({ layout: 'admin' })
 useHead({ title: 'UTM 活動｜練健康後台' })
 
 const campaigns = ref<any[]>([])
+// 流通中但沒登記成活動的代號——後端從真實名單反推出來的（見 index.get.ts 的說明）
+const unregistered = ref<any[]>([])
 const loading = ref(true)
 const error = ref('')
 const saving = ref(false)
@@ -124,6 +126,7 @@ async function load() {
   try {
     const res: any = await $fetch('/api/admin/campaigns')
     campaigns.value = res.data || []
+    unregistered.value = res.unregistered || []
   } catch (e: any) {
     error.value = e?.data?.message || e?.message || '載入失敗'
   } finally {
@@ -136,6 +139,27 @@ function openCreate() {
   Object.assign(form, blank())
   formError.value = ''
   showModal.value = true
+}
+
+/**
+ * 把「流通中但未登記」的代號帶進新增表單。
+ * 只預填代號與能從名單推得的名稱，目標頁面與管道仍要業主自己確認——
+ * 名單只記得 utm_source，推不回當初是勾了哪些管道，猜錯會產生錯的連結。
+ */
+function registerUnregistered(u: any) {
+  editingId.value = null
+  Object.assign(form, blank())
+  form.utmCampaign = u.utmCampaign
+  form.name = u.companies?.[0] ? `${u.companies[0]}（既有連結）` : ''
+  form.note = `從既有名單登記。目前已收到 ${u.leadCount} 筆，來源：${(u.sources || []).join('、') || '未記錄'}。`
+  formError.value = ''
+  showModal.value = true
+}
+
+function fmtDate(iso: string | null) {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '—' : `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`
 }
 
 function openEdit(c: any) {
@@ -282,6 +306,36 @@ onMounted(() => {
     </div>
 
     <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 mb-4 text-sm">{{ error }}</div>
+
+    <!-- 流通中但未登記：UTM 工具做好之前就發出去的連結，業主原本在後台看不到 -->
+    <div v-if="unregistered.length" class="border border-amber-300 bg-amber-50 rounded-lg mb-6 overflow-hidden">
+      <div class="px-4 py-3 border-b border-amber-200">
+        <p class="font-bold text-amber-900">流通中，但不在下方清單裡（{{ unregistered.length }}）</p>
+        <p class="text-sm text-amber-900/75 mt-0.5">
+          這些活動代號已經出現在真實名單裡，代表連結正在外面被使用，但沒有登記成活動。
+          多半是這個工具做好之前就發出去的。按「登記」把它納入管理。
+        </p>
+      </div>
+      <div class="divide-y divide-amber-200">
+        <div v-for="u in unregistered" :key="u.utmCampaign" class="flex flex-wrap items-center gap-3 px-4 py-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <code class="text-sm bg-white border border-amber-300 text-ink px-2 py-0.5 rounded">{{ u.utmCampaign }}</code>
+              <span class="text-sm font-bold text-amber-900">{{ u.leadCount }} 筆名單</span>
+              <span v-for="co in u.companies" :key="co" class="text-xs bg-amber-200/70 text-amber-900 px-2 py-0.5 rounded">{{ co }}</span>
+            </div>
+            <div class="text-xs text-amber-900/70 mt-1">
+              來源 {{ (u.sources || []).join('、') || '未記錄' }}
+              ・{{ fmtDate(u.firstSeen) }} ～ {{ fmtDate(u.lastSeen) }}
+            </div>
+          </div>
+          <button
+            class="text-sm shrink-0 px-3 py-1.5 rounded border border-amber-700/40 text-amber-900 hover:bg-amber-900 hover:text-white transition-colors"
+            @click="registerUnregistered(u)"
+          >登記</button>
+        </div>
+      </div>
+    </div>
 
     <div v-if="loading" class="text-ink/50 py-12 text-center">載入中…</div>
     <div v-else-if="!campaigns.length" class="text-ink/50 py-12 text-center border border-dashed border-navy-700/20 rounded-lg">
