@@ -124,20 +124,35 @@ useHead({
 }
 
 /*
- * 表格：實測 30 篇有 18 篇用到，是最需要處理的一項。
- * 用 display:block + overflow-x 讓寬表格在自己的容器內橫向捲動，
- * 頁面本體永遠不會橫向捲。
+ * 表格。實測 200 篇有 117 個，是文章裡最需要處理的元素。
+ *
+ * 四個實測事實決定了下面的寫法：
+ *   117/117 都有 has-fixed-layout —— 但 WordPress 的 CSS 沒載入，
+ *           這個 class 在本站毫無作用，欄寬要自己指定
+ *   只有 114/117 被 <figure> 包著 —— 所以捲動容器由伺服器端自己補（wrapTables）
+ *   只有 82/117 有真正的 <th> —— 其餘 35 個用 <td><strong> 假裝標頭
+ *   欄數 2 到 13 —— 寬表一定要能橫捲
  */
-.article-body :deep(table) {
-  display: block;
+.article-body :deep(.table-scroll) {
   overflow-x: auto;
-  width: max-content;
-  min-width: 100%;
-  border-collapse: collapse;
+  -webkit-overflow-scrolling: touch;
   margin: 1.8em 0;
+}
+.article-body :deep(figure.wp-block-table) {
+  margin: 0;
+}
+.article-body :deep(table) {
+  /* 🔴 絕對不要寫 width: max-content —— 那會讓表格本身長到內容寬度，
+     overflow-x 永遠不觸發，表格直接把整頁撐寬（375px 視窗量到 792px）。 */
+  width: 100%;
+  /* 窄螢幕時讓容器橫捲，而不是把每欄擠成一行一兩個字 */
+  min-width: 30rem;
+  table-layout: fixed;
+  border-collapse: collapse;
   font-size: 0.9375rem;
   background: #fff;
   border-radius: 0.5rem;
+  overflow: hidden;
 }
 .article-body :deep(th),
 .article-body :deep(td) {
@@ -145,12 +160,17 @@ useHead({
   padding: 0.6em 0.9em;
   text-align: left;
   vertical-align: top;
+  word-break: break-word;
 }
-.article-body :deep(th) {
+/* 標頭：真正的 <th>，以及那 35 個用 <td><strong> 假裝標頭的第一列 */
+.article-body :deep(th),
+.article-body :deep(table tr:first-child td:has(> strong:only-child)) {
   background: #F5EFE4;
   font-weight: 900;
   color: #1a3545;
-  white-space: nowrap;
+}
+.article-body :deep(table tr:first-child td:has(> strong:only-child) strong) {
+  font-weight: 900;
 }
 
 /* Stackable 的重點標示與按鈕（實測 30 篇有 42 處 highlight、54 處按鈕） */

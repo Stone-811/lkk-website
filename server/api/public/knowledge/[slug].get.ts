@@ -1,4 +1,4 @@
-import { WP_BASE, rewriteArticleLinks, toPlainText } from '~/server/utils/wordpress'
+import { WP_BASE, rewriteArticleLinks, wrapTables, toPlainText } from '~/server/utils/wordpress'
 
 /**
  * 單篇文章 —— 依代稱（slug）向舊站 WordPress 查詢。
@@ -35,7 +35,7 @@ export default defineCachedEventHandler(
       data: {
         slug: post.slug,
         title: toPlainText(post.title?.rendered, 200),
-        html: rewriteArticleLinks(post.content?.rendered),
+        html: wrapTables(rewriteArticleLinks(post.content?.rendered)),
         description: toPlainText(post.excerpt?.rendered, 140),
         date: post.date,
         modified: post.modified,
