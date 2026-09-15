@@ -202,13 +202,13 @@ const closeMobileMenu = () => {
             </div>
           </div>
 
-          <!-- 知識分享 -->
-          <a
-            href="https://l-kk.tw/category/knowledge"
+          <!-- 知識分享 —— 文章存放在舊站 WordPress，但頁面由本站渲染，讀者不會離站 -->
+          <NuxtLink
+            to="/knowledge"
             class="text-sm xl:text-base text-cream-100 hover:text-orange transition-colors"
           >
             知識分享
-          </a>
+          </NuxtLink>
 
           <!-- 學員案例 -->
           <a
@@ -419,14 +419,14 @@ const closeMobileMenu = () => {
             </div>
           </div>
 
-          <!-- 知識分享 -->
-          <a
-            href="https://l-kk.tw/category/knowledge"
+          <!-- 知識分享 —— 同桌機版，指向本站頁面 -->
+          <NuxtLink
+            to="/knowledge"
             class="py-3 px-2 text-cream-100 rounded"
             @click="closeMobileMenu"
           >
             知識分享
-          </a>
+          </NuxtLink>
 
           <!-- 學員案例 -->
           <a
