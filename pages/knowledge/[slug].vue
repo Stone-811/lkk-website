@@ -173,6 +173,39 @@ useHead({
   font-weight: 900;
 }
 
+/*
+ * 文章內嵌（延伸閱讀）。WordPress 產生的是 blockquote.wp-embedded-content，
+ * 原本要由 wp-embed.js 換成卡片，本站沒載入那支腳本，所以直接把它做成卡片。
+ * 不套一般引言的樣式 —— 那會讓「延伸閱讀」看起來像引述別人的話。
+ */
+.article-body :deep(blockquote.wp-embedded-content) {
+  border: 1px solid #e3dccf;
+  border-left: 4px solid #FB720A;
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1em 1.2em;
+  margin: 1.8em 0;
+  color: inherit;
+}
+.article-body :deep(blockquote.wp-embedded-content)::before {
+  content: '延伸閱讀';
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #FB720A;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.35em;
+}
+.article-body :deep(blockquote.wp-embedded-content a) {
+  font-weight: 700;
+  text-decoration: none;
+  color: #1a3545;
+}
+.article-body :deep(blockquote.wp-embedded-content a:hover) {
+  color: #FB720A;
+  text-decoration: underline;
+}
+
 /* Stackable 的重點標示與按鈕（實測 30 篇有 42 處 highlight、54 處按鈕） */
 .article-body :deep(.stk-highlight) {
   background: linear-gradient(transparent 62%, #ffd9a8 62%);

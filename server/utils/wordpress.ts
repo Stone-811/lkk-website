@@ -101,6 +101,26 @@ export function rewriteArticleLinks(html: string): string {
 }
 
 /**
+ * 移除 WordPress 文章內嵌（oEmbed）的隱藏 iframe。
+ *
+ * 內嵌區塊的結構是「一個可見的 blockquote 連結 ＋ 一個隱藏的 iframe」，
+ * 本來由 WordPress 的 wp-embed.js 把 iframe 顯示出來取代 blockquote。
+ * 本站沒有載入那支腳本，所以 iframe 永遠是隱藏的，讀者看到的是 blockquote
+ * —— 而那個連結已經被 rewriteArticleLinks 正確改寫成站內網址。
+ *
+ * 但 iframe 還是會發請求到舊站：實測 200 篇有 84 個。留著沒有任何好處，
+ * 而且舊站掛著 HandL 外掛會因此把讀者 IP 寫進 cookie。
+ *
+ * ⚠️ 只移除指向舊站 /embed/ 的內嵌，YouTube 等外部嵌入必須保留。
+ */
+export function stripWpEmbedIframes(html: string): string {
+  return String(html || '').replace(
+    /<iframe[^>]*\bsrc="https:\/\/l-kk\.tw\/[^"]*\/embed\/[^"]*"[^>]*><\/iframe>/g,
+    ''
+  )
+}
+
+/**
  * 每個表格都包一層可橫向捲動的容器。
  *
  * 實測 200 篇有 117 個表格，其中只有 114 個被 <figure> 包著 ——
