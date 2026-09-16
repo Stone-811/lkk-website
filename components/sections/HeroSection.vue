@@ -62,12 +62,12 @@ const pressOutlets = [
               >
                 立即預約體驗課 &rarr;
               </NuxtLink>
-              <a
-                href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/"
+              <NuxtLink
+                to="/cases-center"
                 class="inline-flex items-center gap-2 bg-transparent text-white/75 px-6 py-3.5 rounded-full border border-white/20 hover:border-white/50 hover:text-white transition-colors"
               >
                 看學員成果
-              </a>
+              </NuxtLink>
             </div>
 
             <div class="flex items-center justify-center lg:justify-start gap-2 mt-4 text-sm text-white/75">
@@ -153,7 +153,7 @@ const pressOutlets = [
     <section class="bg-white py-8 lg:py-10">
       <div class="container mx-auto px-4">
         <div class="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12">
-          <a href="https://l-kk.tw/category/news/" class="text-ink/60 text-sm font-medium whitespace-nowrap hover:text-ink transition-colors">報導列表</a>
+          <NuxtLink to="/news" class="text-ink/60 text-sm font-medium whitespace-nowrap hover:text-ink transition-colors">報導列表</NuxtLink>
           <div class="flex flex-wrap items-center justify-center gap-x-8 lg:gap-x-12 gap-y-1">
             <a
               v-for="outlet in pressOutlets"
