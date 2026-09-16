@@ -202,21 +202,21 @@ const closeMobileMenu = () => {
             </div>
           </div>
 
-          <!-- 知識分享 —— 文章與彙整頁都在舊站，直接外連（結尾斜線不可省，否則多一次 301） -->
-          <a
-            href="https://l-kk.tw/knowledge-center/"
+          <!-- 知識科普 —— 彙整頁在本站，文章本體仍在舊站 -->
+          <NuxtLink
+            to="/knowledge-center"
             class="text-sm xl:text-base text-cream-100 hover:text-orange transition-colors"
           >
             知識分享
-          </a>
+          </NuxtLink>
 
-          <!-- 學員案例 -->
-          <a
-            href="https://l-kk.tw/cases-center/"
+          <!-- 學員案例 —— 彙整頁在本站，文章本體仍在舊站 -->
+          <NuxtLink
+            to="/cases-center"
             class="text-sm xl:text-base text-cream-100 hover:text-orange transition-colors"
           >
             學員案例
-          </a>
+          </NuxtLink>
 
           <!-- LKK4 -->
           <NuxtLink
@@ -419,23 +419,23 @@ const closeMobileMenu = () => {
             </div>
           </div>
 
-          <!-- 知識分享 —— 同桌機版，外連舊站彙整頁 -->
-          <a
-            href="https://l-kk.tw/knowledge-center/"
+          <!-- 知識科普 —— 同桌機版，彙整頁在本站 -->
+          <NuxtLink
+            to="/knowledge-center"
             class="py-3 px-2 text-cream-100 rounded"
             @click="closeMobileMenu"
           >
             知識分享
-          </a>
+          </NuxtLink>
 
-          <!-- 學員案例 -->
-          <a
-            href="https://l-kk.tw/cases-center/"
+          <!-- 學員案例 —— 同桌機版 -->
+          <NuxtLink
+            to="/cases-center"
             class="py-3 px-2 text-cream-100 rounded"
             @click="closeMobileMenu"
           >
             學員案例
-          </a>
+          </NuxtLink>
 
           <!-- LKK4 -->
           <NuxtLink
