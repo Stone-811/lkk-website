@@ -202,17 +202,17 @@ const closeMobileMenu = () => {
             </div>
           </div>
 
-          <!-- 知識分享 —— 文章存放在舊站 WordPress，但頁面由本站渲染，讀者不會離站 -->
-          <NuxtLink
-            to="/knowledge"
+          <!-- 知識分享 —— 文章與彙整頁都在舊站，直接外連（結尾斜線不可省，否則多一次 301） -->
+          <a
+            href="https://l-kk.tw/knowledge-center/"
             class="text-sm xl:text-base text-cream-100 hover:text-orange transition-colors"
           >
             知識分享
-          </NuxtLink>
+          </a>
 
           <!-- 學員案例 -->
           <a
-            href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/"
+            href="https://l-kk.tw/cases-center/"
             class="text-sm xl:text-base text-cream-100 hover:text-orange transition-colors"
           >
             學員案例
@@ -419,18 +419,18 @@ const closeMobileMenu = () => {
             </div>
           </div>
 
-          <!-- 知識分享 —— 同桌機版，指向本站頁面 -->
-          <NuxtLink
-            to="/knowledge"
+          <!-- 知識分享 —— 同桌機版，外連舊站彙整頁 -->
+          <a
+            href="https://l-kk.tw/knowledge-center/"
             class="py-3 px-2 text-cream-100 rounded"
             @click="closeMobileMenu"
           >
             知識分享
-          </NuxtLink>
+          </a>
 
           <!-- 學員案例 -->
           <a
-            href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/"
+            href="https://l-kk.tw/cases-center/"
             class="py-3 px-2 text-cream-100 rounded"
             @click="closeMobileMenu"
           >
