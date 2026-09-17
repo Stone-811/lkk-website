@@ -216,6 +216,39 @@ export default defineNuxtConfig({
   // Nitro server config for Firebase App Hosting
   nitro: {
     preset: 'firebase-app-hosting',
+
+    // ── 文章預抓（可行性測試中）──────────────────────────────
+    // 建置時把舊站文章抓下來產生靜態頁，執行期就不必再打 WordPress。
+    // 篇數由 PRERENDER_ARTICLES 控制，未設＝不預抓（維持現狀）。
+    prerender: {
+      crawlLinks: false,
+      failOnError: false,
+    },
+    hooks: {
+      async 'prerender:routes'(routes: Set<string>) {
+        const limit = Number(process.env.PRERENDER_ARTICLES || 0)
+        if (!limit) return
+        const base = process.env.WORDPRESS_API_URL || 'https://l-kk.tw/wp-json'
+        const perPage = Math.min(limit, 100)
+        const added: string[] = []
+        for (let page = 1; added.length < limit; page++) {
+          // 用原生 fetch：nuxt.config 的建置期沒有 $fetch
+          const url = `${base}/wp/v2/posts?per_page=${perPage}&page=${page}&_fields=slug`
+          const res: any = await fetch(url, { signal: AbortSignal.timeout(30000) })
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null)
+          if (!Array.isArray(res) || res.length === 0) break
+          for (const p of res) {
+            if (added.length >= limit) break
+            added.push(p.slug)
+            routes.add(`/${p.slug}/`)
+          }
+          if (res.length < perPage) break
+        }
+        console.log(`[prerender] 加入 ${added.length} 篇文章路由`)
+      },
+    },
+
     // Externalize Node.js modules that shouldn't be bundled
     externals: {
       external: [

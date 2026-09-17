@@ -22,6 +22,11 @@ env:
     value: https://lkk-website-dev--lkkdev.asia-east1.hosted.app
 
   # Firebase (migrated to lkkdev)
+  # 文章預抓篇數（可行性測試中）。設為 0 或移除＝不預抓。
+  # ⚠️ 這是 dev 分支專用的實驗設定，絕對不要帶到 prod。
+  - variable: PRERENDER_ARTICLES
+    value: "20"
+
   - variable: FIREBASE_PROJECT_ID
     value: lkkdev
   # lkkdev's default bucket uses the newer .firebasestorage.app domain
