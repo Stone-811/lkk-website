@@ -65,6 +65,17 @@ async function check({ slug, title }) {
   const decoded = decodeURIComponent(slug)
   if (RESERVED.has(decoded)) return { slug, decoded, problems: ['與新站路由同名，永遠取不到'], reserved: true }
 
+  // 頁面本身也要測，而且要測「帶結尾斜線」的形式 ——
+  // 舊站文章網址全部帶斜線，卡片連結也是，只測 API 會漏掉路由層的問題
+  // （2026-09-17 實測踩過：API 回 200 但 /spine/ 頁面回 404）。
+  const pageStatus = await fetch(`${SITE}/${slug}/`, {
+    method: 'HEAD',
+    signal: AbortSignal.timeout(30000),
+  })
+    .then((r) => r.status)
+    .catch(() => 0)
+  if (pageStatus !== 200) problems.push(`頁面 /${decoded}/ 回 ${pageStatus}`)
+
   const d = await getJson(`${SITE}/api/public/article/${slug}`)
   if (d.__error) return { slug, decoded, problems: [`連線失敗 ${d.__error}`] }
   if (d.__status) return { slug, decoded, problems: [`HTTP ${d.__status}`] }

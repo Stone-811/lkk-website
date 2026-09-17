@@ -8,11 +8,16 @@
 const route = useRoute()
 const slug = computed(() => {
   const p = route.params.slug
-  return Array.isArray(p) ? p.join('/') : String(p || '')
+  // 🔴 空片段一定要濾掉。萬用捕捉路由遇到結尾斜線時會多給一個空字串
+  //    （/spine/ → ['spine', '']），直接 join 會得到 'spine/'，
+  //    被下面的多層路徑判斷誤殺成 404。
+  //    而舊站的文章網址全部帶結尾斜線，卡片連結也是，等於整批進不去。
+  const parts = (Array.isArray(p) ? p : [p]).filter((x) => x !== '' && x != null)
+  return parts.map(String).join('/')
 })
 
 // 多層路徑不是文章（本站沒有這種網址），直接 404，不要浪費一次上游查詢
-if (slug.value.includes('/')) {
+if (slug.value.includes('/') || !slug.value) {
   throw createError({ statusCode: 404, statusMessage: '找不到頁面', fatal: true })
 }
 
