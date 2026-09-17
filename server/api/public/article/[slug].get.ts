@@ -75,7 +75,10 @@ export default defineCachedEventHandler(
       slug: post.slug,
       title: toPlainText(post.title?.rendered, 200),
       html: wrapTables(stripWpEmbedIframes(rewriteArticleLinks(post.content?.rendered))),
-      description: toPlainText(post.excerpt?.rendered, 140),
+      // 摘要欄位可能是空的（實測 666 篇有 4 篇沒填），退回用內文開頭，
+      // 免得 meta description 整個缺席
+      description:
+        toPlainText(post.excerpt?.rendered, 140) || toPlainText(post.content?.rendered, 140),
       date: post.date,
       modified: post.modified,
     }

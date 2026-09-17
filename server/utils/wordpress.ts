@@ -101,9 +101,14 @@ const PAGE_MAP: Record<string, string> = {
 export function rewriteArticleLinks(html: string): string {
   return String(html || '').replace(
     /https:\/\/l-kk\.tw\/([^"'\s<>)]*)/g,
-    (whole, rawPath) => {
-      const path = String(rawPath).replace(/\/+$/, '')
-      if (!path) return '/'
+    (whole, rawUrl) => {
+      // ⚠️ 查詢字串與錨點要先拆掉再判斷。
+      //    否則 /medicine/?utm_source=x 會因為含有 "/" 被當成多層路徑而漏改
+      //    （2026-09-17 全量驗證抓到）。拆掉之後原樣接回去。
+      const parts = String(rawUrl).match(/^([^?#]*)([?#].*)?$/) || ['', String(rawUrl), '']
+      const suffix = parts[2] || ''
+      const path = parts[1].replace(/\/+$/, '')
+      if (!path) return '/' + suffix
 
       let plain = path
       try { plain = decodeURIComponent(path) } catch { /* 編碼壞掉就用原字串比對 */ }
@@ -112,14 +117,14 @@ export function rewriteArticleLinks(html: string): string {
       if (NEVER_TOUCH.test(first)) return whole
 
       const mapped = PAGE_MAP[plain] ?? (plain.includes('/') ? undefined : PAGE_MAP[first])
-      if (mapped) return mapped
+      if (mapped) return mapped + suffix
 
       if (NOT_AN_ARTICLE.test(first)) return whole
       if (plain.includes('/')) return whole
       // 與本站路由同名 → 改寫會連到內容不同的頁，維持指向舊站
       if (RESERVED_ROUTES.has(plain)) return whole
 
-      return `${ARTICLE_BASE}/${path}/`
+      return `${ARTICLE_BASE}/${path}/${suffix}`
     }
   )
 }
