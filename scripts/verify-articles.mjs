@@ -111,6 +111,38 @@ async function check({ slug, title }) {
   return { slug, decoded, problems }
 }
 
+/**
+ * 彙整頁的卡片必須是真的 <a href>。
+ *
+ * 2026-09-17 踩過：卡片用 <component :is> 動態解析元件，解析失敗後
+ * Vue 原樣輸出成 <NUXTLINK> 這個不存在的標籤 —— 沒有 href、點不動，
+ * 但畫面看起來完全正常，API 與直接打網址也全部 200。
+ * 只驗資料層與網址層都驗不出來，一定要驗渲染出來的連結。
+ */
+async function checkListingPages() {
+  const out = []
+  for (const [path, label] of [['/knowledge-center', '知識科普'], ['/cases-center', '學員故事']]) {
+    const html = await fetch(`${SITE}${path}`, { signal: AbortSignal.timeout(30000) })
+      .then((r) => r.text())
+      .catch(() => '')
+    if (!html) { out.push(`${label}：頁面取不到`); continue }
+    if (/<nuxtlink/i.test(html)) out.push(`${label}：渲染出 <NuxtLink> 字面標籤（元件沒解析）`)
+    const links = [...html.matchAll(/<a\s[^>]*href="(\/[^"#][^"]*)"/g)].map((m) => m[1])
+    const articleLinks = links.filter((h) => !h.startsWith('/booking') && h.endsWith('/'))
+    if (articleLinks.length < 5) {
+      out.push(`${label}：卡片連結只有 ${articleLinks.length} 條，預期 12 條`)
+    }
+  }
+  return out
+}
+
+const listingProblems = await checkListingPages()
+if (listingProblems.length) {
+  console.log('▸ 彙整頁的卡片連結有問題：')
+  listingProblems.forEach((p) => console.log(`    ${p}`))
+  console.log('')
+}
+
 const posts = await allSlugs()
 console.log(`站台 ${SITE}`)
 console.log(`全站文章 ${posts.length} 篇，逐篇檢查中…\n`)
