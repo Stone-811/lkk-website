@@ -5,21 +5,39 @@
  * 新站不保存任何文章，只是即時讀取並用自己的版型呈現。
  * 讀者的網址列自始至終只會看到本站網域 —— 下面這些請求全部發生在伺服器端。
  *
- * ⚠️ 目前是 /knowledge 的示範範圍。若日後要讓文章沿用原本的根目錄網址
- *    （l-kk.tw/文章標題/ → 本站/文章標題/），改動的是路由與 ARTICLE_BASE，
- *    這一層不用動。
+ * 文章走根目錄，與舊站網址一對一對應。
  */
 
 export const WP_BASE = process.env.WORDPRESS_API_URL || 'https://l-kk.tw/wp-json'
 
-/** 文章在本站的網址前綴。示範階段放在 /knowledge 底下，不搶既有路由。 */
-export const ARTICLE_BASE = '/knowledge'
+/**
+ * 文章在本站的網址前綴。空字串＝根目錄，與舊站網址結構完全相同
+ * （l-kk.tw/spine/ ↔ 本站/spine/），未來舊站掛 301 時是一對一對應。
+ */
+export const ARTICLE_BASE = ''
 
 /** 這些路徑永遠不能碰：圖片實體與後台都還在舊站。 */
 const NEVER_TOUCH = /^(wp-content|wp-json|wp-admin|wp-includes|wp-login\.php)$/
 
 /** 這些是舊站的彙整頁，本站目前沒有對應頁面，維持連往舊站。 */
 const NOT_AN_ARTICLE = /^(category|tag|author|feed|comments)$/
+
+/**
+ * 本站已經佔用的第一層路由。
+ *
+ * 文章走根目錄之後，靜態路由永遠優先於文章，所以同名的文章網址取不到。
+ * 改寫內文連結時也必須避開這些 —— 例如舊站有一篇代稱是 franchise 的文章
+ * （中高齡健康訓練創業說明會），若把連結改寫成 /franchise/ 會連到本站的
+ * 加盟頁，內容完全不同，比留在舊站更糟。
+ *
+ * ⚠️ 新增頁面時要同步更新這份清單，scripts/verify-articles.mjs 裡也有一份。
+ */
+const RESERVED_ROUTES = new Set([
+  'about', 'booking', 'cases-center', 'co-lecturer', 'cooperation', 'franchise',
+  'group-booking', 'knowledge-center', 'lkk-academy', 'lkk-lecturer', 'lkk4',
+  'news', 'oversea-lecturer', 'personal-record', 'privacy', 'services', 'shop',
+  'admin', 'locations', 'team-intro', 'api',
+])
 
 /**
  * 舊站「頁面」對應到本站頁面。
@@ -61,9 +79,13 @@ const PAGE_MAP: Record<string, string> = {
   '台北南京店-2': '/locations/nanjing',
   checkout: '/shop',
   shoppingcart: '/shop',
-  // 本站目前只有知識分享一個文章彙整頁
-  'category/knowledge': ARTICLE_BASE,
-  knowledge: ARTICLE_BASE,
+  // 本站已有的兩個彙整頁
+  'category/knowledge': '/knowledge-center',
+  knowledge: '/knowledge-center',
+  'knowledge-center': '/knowledge-center',
+  'cases-center': '/cases-center',
+  '案例分享': '/cases-center',
+  'category/案例分享': '/cases-center',
 }
 
 /**
@@ -94,6 +116,8 @@ export function rewriteArticleLinks(html: string): string {
 
       if (NOT_AN_ARTICLE.test(first)) return whole
       if (plain.includes('/')) return whole
+      // 與本站路由同名 → 改寫會連到內容不同的頁，維持指向舊站
+      if (RESERVED_ROUTES.has(plain)) return whole
 
       return `${ARTICLE_BASE}/${path}/`
     }

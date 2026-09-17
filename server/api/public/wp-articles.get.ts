@@ -2,7 +2,7 @@
  * 舊站 WordPress 的文章清單（只取標題、摘要、日期、網址）。
  *
  * 用途是把 l-kk.tw 的「知識科普」與「學員故事」兩個彙整頁，
- * 改用本站的版型呈現。**文章本體仍留在舊站**，這裡不碰文章內容的 HTML
+ * 改用本站的版型呈現。文章內頁由 pages/[...slug].vue 負責，這裡只做清單
  * —— 2026-09-15 曾嘗試由本站渲染文章內文，四個缺陷全部出在那一層，
  *    列表這一層當時沒有出現任何問題。所以這支只做列表。
  *
@@ -17,6 +17,18 @@
  */
 
 const WP_BASE = process.env.WORDPRESS_API_URL || 'https://l-kk.tw/wp-json'
+
+/**
+ * 本站已佔用的第一層路由。與這些同名的文章代稱在本站永遠取不到
+ * （靜態路由優先），所以卡片要改連舊站，否則會連到內容完全不同的頁。
+ * 實測 655 篇裡只有 franchise 這一筆。
+ */
+const RESERVED_ROUTES = new Set([
+  'about', 'booking', 'cases-center', 'co-lecturer', 'cooperation', 'franchise',
+  'group-booking', 'knowledge-center', 'lkk-academy', 'lkk-lecturer', 'lkk4',
+  'news', 'oversea-lecturer', 'personal-record', 'privacy', 'services', 'shop',
+  'admin', 'locations', 'team-intro', 'api',
+])
 
 /** 分類代號白名單。這是公開端點，不接受任意分類，避免被當成任意查詢的跳板。 */
 const TABS = {
@@ -65,14 +77,24 @@ export default defineCachedEventHandler(
           return {
             key: tab.key,
             label: tab.label,
-            posts: (rows || []).map((p) => ({
-              slug: p.slug,
-              title: toPlainText(p.title?.rendered, 120),
-              excerpt: toPlainText(p.excerpt?.rendered, 88),
-              date: p.date,
-              // 文章本體仍在舊站，連結直接用 WordPress 給的絕對網址
-              url: p.link,
-            })),
+            posts: (rows || []).map((p) => {
+              let plain = p.slug
+              try {
+                plain = decodeURIComponent(p.slug)
+              } catch {
+                /* 編碼壞掉就用原字串比對 */
+              }
+              const reserved = RESERVED_ROUTES.has(plain)
+              return {
+                slug: p.slug,
+                title: toPlainText(p.title?.rendered, 120),
+                excerpt: toPlainText(p.excerpt?.rendered, 88),
+                date: p.date,
+                // 一般情況連本站的文章頁；與本站路由同名的只能連回舊站
+                href: reserved ? p.link : `/${p.slug}/`,
+                external: reserved,
+              }
+            }),
           }
         })
       )

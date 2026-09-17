@@ -88,11 +88,11 @@ useHead({
       </div>
 
       <div v-else class="grid gap-6 md:grid-cols-2">
-        <a
+        <component
+          :is="post.external ? 'a' : resolveComponent('NuxtLink')"
           v-for="post in current?.posts"
           :key="post.slug"
-          :href="post.url"
-          rel="noopener"
+          v-bind="post.external ? { href: post.href, rel: 'noopener' } : { to: post.href }"
           class="group bg-white rounded-2xl p-6 flex flex-col hover:shadow-lg hover:-translate-y-0.5 transition-all"
         >
           <h2
@@ -105,7 +105,7 @@ useHead({
             <span class="text-sm font-bold text-orange">閱讀全文 →</span>
             <time class="text-xs text-ink/40">{{ formatDate(post.date) }}</time>
           </div>
-        </a>
+        </component>
       </div>
 
       <div class="mt-12 text-center">
