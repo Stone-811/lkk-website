@@ -18,16 +18,26 @@
 
 const SITE = process.argv[2] || 'https://lkk-website-dev--lkkdev.asia-east1.hosted.app'
 const WP = 'https://l-kk.tw/wp-json'
-const CONCURRENCY = 5
+// 併發刻意壓低：這支會對舊站的正式主機發 666 個請求，
+// 密集執行會造成實際負載（實測到上游開始用 200 回錯誤頁）。
+// 這是驗證工具，不是壓力測試，不需要跑快。
+const CONCURRENCY = 3
 
-async function getJson(url, tries = 2) {
+async function getJson(url, tries = 3) {
   for (let i = 0; i < tries; i++) {
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(30000) })
+      // 503 的語意就是「暫時性、稍後再試」，所以要真的再試一次；
+      // 不重試的話量到的是併發壓力，不是正確性。Google 的爬蟲也是這樣處理。
+      if (res.status === 503 && i < tries - 1) {
+        await new Promise((r) => setTimeout(r, 2000 * (i + 1)))
+        continue
+      }
       if (!res.ok) return { __status: res.status }
       return await res.json()
     } catch (e) {
       if (i === tries - 1) return { __error: String(e).slice(0, 80) }
+      await new Promise((r) => setTimeout(r, 1000))
     }
   }
 }
@@ -61,6 +71,12 @@ async function check({ slug, title }) {
   if (!d.success) return { slug, decoded, problems: ['API 回傳失敗'] }
 
   const a = d.data
+  // ⓪ 「宣稱成功但內容是空的」—— 比錯誤更危險，因為監控不會報，
+  //    而且會被快取。2026-09-17 實測踩過：上游用 200 回非 JSON 時發生。
+  if (!a || !a.slug) {
+    problems.push('回傳成功但沒有資料')
+    return { slug, decoded, problems }
+  }
   // ① 最關鍵：回傳的是不是請求的那一篇
   if (a.slug !== slug) problems.push(`拿到別篇：${String(a.title).slice(0, 18)}`)
   // ② 內容
@@ -77,7 +93,10 @@ async function check({ slug, title }) {
   if (tables && tables !== wraps) problems.push(`表格 ${tables} 個只包了 ${wraps}`)
   // ⑤ SEO 欄位
   if (!a.title) problems.push('標題是空的')
-  if (!a.description) problems.push('description 是空的')
+  // 有文字內容卻沒有 description 才是缺陷。純影片嵌入的媒體報導沒有可用
+  // 文字，此時 Google 會自行產生摘要，硬塞一個與標題重複的字串反而更差。
+  const hasText = html.replace(/<[^>]+>/g, '').trim().length > 0
+  if (!a.description && hasText) problems.push('description 是空的')
   return { slug, decoded, problems }
 }
 

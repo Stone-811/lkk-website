@@ -48,12 +48,20 @@ export default defineCachedEventHandler(
     const store = useStorage('cache')
     const backupKey = 'article-backup:' + createHash('sha1').update(slug).digest('hex').slice(0, 20)
 
-    let rows: any[]
+    let rows: any
     try {
-      rows = await $fetch<any[]>(`${WP_BASE}/wp/v2/posts`, {
+      rows = await $fetch<any>(`${WP_BASE}/wp/v2/posts`, {
         query: { slug, _fields: 'slug,title,content,excerpt,date,modified' },
         timeout: 12000,
       })
+      // 🔴 上游可能用 HTTP 200 回非 JSON（實測：密集請求時 Cloudways 會回
+      //    錯誤頁或限流頁，狀態碼仍是 200）。若不檢查形狀，字串會被當成陣列，
+      //    rows[0] 取到一個字元，每個欄位都是 undefined，結果是產生一篇
+      //    「看起來成功的空白文章」並且被快取 10 分鐘。
+      //    那比回 503 危險得多：監控不會報錯，Google 會收錄空白頁。
+      if (!Array.isArray(rows)) {
+        throw new Error('上游回應不是陣列（可能是錯誤頁或限流頁）')
+      }
     } catch (error: any) {
       // 上游失敗 ≠ 文章不存在。先找上一份成功的內容。
       const backup = await store.getItem<any>(backupKey).catch(() => null)
@@ -71,6 +79,18 @@ export default defineCachedEventHandler(
     }
 
     const post = rows[0]
+    // 形狀再確認一次：缺標題或內文就不是一篇可用的文章，寧可走退路也不要
+    // 產生空白頁並把它快取起來
+    if (!post || typeof post !== 'object' || !post.title?.rendered) {
+      const backup = await store.getItem<any>(backupKey).catch(() => null)
+      if (backup?.data) {
+        console.warn('[Article] 上游回應缺欄位，改用上一份快取:', slug)
+        return { success: true, stale: true, data: backup.data }
+      }
+      setResponseHeader(event, 'Retry-After', '60')
+      throw createError({ statusCode: 503, message: '文章暫時讀取不到，請稍後再試' })
+    }
+
     const data = {
       slug: post.slug,
       title: toPlainText(post.title?.rendered, 200),
