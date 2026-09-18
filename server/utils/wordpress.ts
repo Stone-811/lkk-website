@@ -33,7 +33,7 @@ const NOT_AN_ARTICLE = /^(category|tag|author|feed|comments)$/
  * ⚠️ 新增頁面時要同步更新這份清單，scripts/verify-articles.mjs 裡也有一份。
  */
 const RESERVED_ROUTES = new Set([
-  'about', 'booking', 'cases-center', 'co-lecturer', 'cooperation', 'franchise',
+  'about', 'booking', 'cases-center', 'activity-center', 'co-lecturer', 'cooperation', 'franchise',
   'group-booking', 'knowledge-center', 'lkk-academy', 'lkk-lecturer', 'lkk4',
   'news', 'oversea-lecturer', 'personal-record', 'privacy', 'services', 'shop',
   'admin', 'locations', 'team-intro', 'api',

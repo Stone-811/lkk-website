@@ -54,7 +54,7 @@ async function allSlugs() {
 
 /** 新站第一層路由。與這些同名的文章代稱永遠拿不到（靜態路由優先）。 */
 const RESERVED = new Set([
-  'about', 'booking', 'cases-center', 'co-lecturer', 'cooperation', 'franchise',
+  'about', 'booking', 'cases-center', 'activity-center', 'co-lecturer', 'cooperation', 'franchise',
   'group-booking', 'knowledge-center', 'lkk-academy', 'lkk-lecturer', 'lkk4',
   'news', 'oversea-lecturer', 'personal-record', 'privacy', 'services', 'shop',
   'admin', 'locations', 'team-intro', 'api', '_nuxt', 'sitemap.xml', 'robots.txt',

@@ -20,11 +20,16 @@ const WP_BASE = process.env.WORDPRESS_API_URL || 'https://l-kk.tw/wp-json'
 
 /**
  * 本站已佔用的第一層路由。與這些同名的文章代稱在本站永遠取不到
- * （靜態路由優先），所以卡片要改連舊站，否則會連到內容完全不同的頁。
- * 實測 655 篇裡只有 franchise 這一筆。
+ * （靜態路由優先）—— 例如「中高齡健康訓練創業說明會」的代稱是 franchise，
+ * 而本站的 /franchise 是加盟頁。
+ *
+ * ⚠️ 這類文章從彙整頁「整篇排除」，不列出來。
+ *    先前是列出來但連回舊站，業主決定不要那樣 —— 讀者在新站的列表上
+ *    看到一張卡片卻被送去別的網站，體驗是斷的。
+ *    要根治得在 WordPress 改那篇文章的代稱，並為舊網址補一條 301。
  */
 const RESERVED_ROUTES = new Set([
-  'about', 'booking', 'cases-center', 'co-lecturer', 'cooperation', 'franchise',
+  'about', 'booking', 'cases-center', 'activity-center', 'co-lecturer', 'cooperation', 'franchise',
   'group-booking', 'knowledge-center', 'lkk-academy', 'lkk-lecturer', 'lkk4',
   'news', 'oversea-lecturer', 'personal-record', 'privacy', 'services', 'shop',
   'admin', 'locations', 'team-intro', 'api',
@@ -39,6 +44,7 @@ const TABS = {
     { key: 'fitness', label: '運動人文', id: 9 },
   ],
   cases: [{ key: 'cases', label: '學員故事', id: 1092 }],
+  activity: [{ key: 'activity', label: '活動資訊', id: 448 }],
 } as const
 
 const PER_TAB = 12
@@ -77,24 +83,24 @@ export default defineCachedEventHandler(
           return {
             key: tab.key,
             label: tab.label,
-            posts: (rows || []).map((p) => {
-              let plain = p.slug
-              try {
-                plain = decodeURIComponent(p.slug)
-              } catch {
-                /* 編碼壞掉就用原字串比對 */
-              }
-              const reserved = RESERVED_ROUTES.has(plain)
-              return {
+            posts: (rows || [])
+              .filter((p) => {
+                let plain = p.slug
+                try {
+                  plain = decodeURIComponent(p.slug)
+                } catch {
+                  /* 編碼壞掉就用原字串比對 */
+                }
+                // 與本站路由同名的文章在本站打不開，整篇排除不列出
+                return !RESERVED_ROUTES.has(plain)
+              })
+              .map((p) => ({
                 slug: p.slug,
                 title: toPlainText(p.title?.rendered, 120),
                 excerpt: toPlainText(p.excerpt?.rendered, 88),
                 date: p.date,
-                // 一般情況連本站的文章頁；與本站路由同名的只能連回舊站
-                href: reserved ? p.link : `/${p.slug}/`,
-                external: reserved,
-              }
-            }),
+                href: `/${p.slug}/`,
+              })),
           }
         })
       )
