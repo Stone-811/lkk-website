@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, watch } from 'vue'
 import { getBookingVariant } from '~/config/bookingVariants'
 import { relationshipOptions } from '~/config/formOptions'
+import { REFERRAL_SOURCES, composeReferral } from '~/config/referralSources'
 
 useHead({
   title: '預約體驗 | 練健康',
@@ -111,31 +112,23 @@ const contactTimeOptions = [
   '其他',
 ]
 
-// 從哪裡得知選項（多選）——全變體共用的基底，變體可用 extraSources 追加
-const BASE_SOURCE_OPTIONS = [
-  '練健康官網',
-  '練健康FB',
-  '練健康IG',
-  '練健康YT',
-  '練健康官方LINE',
-  '練健康THREADS',
-  '傳單',
-  '其他',
-]
-
-// 變體可以「追加」得知管道選項（插在「其他」之前）。
-// ⚠️ 這些字串同時是顯示標籤與存進 Firestore 的值（payload.sources ＋ 頂層 sourceChannel），
-//    也會直接進後台 CSV 匯出與兩封通知信。發出去收到名單之後就不要再改字面，
-//    否則舊名單與新名單會在匯出檔裡裂成兩種寫法，而且 leads 的 PATCH 白名單
-//    只放行 status 與 internalNote，回填不了。
+// 從哪裡得知 —— 改為必填單選，選項與展開設定見 config/referralSources.ts
+// （預約體驗與團體課程共用同一份，避免兩邊分歧）
 const sourceOptions = computed(() => {
   const extra = variant.value.extraSources ?? []
-  if (!extra.length) return BASE_SOURCE_OPTIONS
-  const i = BASE_SOURCE_OPTIONS.indexOf('其他')
+  if (!extra.length) return REFERRAL_SOURCES
+  // 變體追加的選項（例如「南山健康守護圈」）插在「其他」之前，且不展開細項
+  const i = REFERRAL_SOURCES.findIndex((o) => o.value === '其他')
+  const extras = extra.map((v) => ({ value: v, expand: { kind: 'none' } as const }))
   return i === -1
-    ? [...BASE_SOURCE_OPTIONS, ...extra]
-    : [...BASE_SOURCE_OPTIONS.slice(0, i), ...extra, ...BASE_SOURCE_OPTIONS.slice(i)]
+    ? [...REFERRAL_SOURCES, ...extras]
+    : [...REFERRAL_SOURCES.slice(0, i), ...extras, ...REFERRAL_SOURCES.slice(i)]
 })
+
+// 目前選到的那一項要不要展開、展開成什麼
+const sourceExpand = computed(
+  () => sourceOptions.value.find((o) => o.value === formData.source)?.expand ?? { kind: 'none' }
+)
 
 // 與學員關係選項
 
@@ -172,8 +165,8 @@ const formData = reactive({
   storeId: '',
   preferredTimes: [] as string[],
   preferredTimeOther: '',
-  sources: [] as string[],
-  sourceOther: '',
+  source: '',
+  sourceDetail: '',
   exerciseGoals: [] as string[],
   exerciseGoalOther: '',
   paymentMethod: '',
@@ -269,14 +262,11 @@ const togglePreferredTime = (time: string) => {
   }
 }
 
-// Toggle source selection
-const toggleSource = (source: string) => {
-  const index = formData.sources.indexOf(source)
-  if (index === -1) {
-    formData.sources.push(source)
-  } else {
-    formData.sources.splice(index, 1)
-  }
+// 單選：換選項時把細項清掉，避免把上一個選項的內容帶過去
+const selectSource = (value: string) => {
+  if (formData.source === value) return
+  formData.source = value
+  formData.sourceDetail = ''
 }
 
 // Toggle exercise goal selection
@@ -321,6 +311,19 @@ const validateForm = () => {
   if (!formData.storeId) newErrors.storeId = '請選擇分店'
   if (formData.preferredTimes.length === 0) newErrors.preferredTimes = '請至少選擇一個時段'
   if (!formData.paymentMethod) newErrors.paymentMethod = '請選擇付款方式'
+
+  // 得知管道：必填單選。有展開細項的選項，細項也要填 ——
+  // 只選「社群」而不說是哪個平台、只選「其他」而不說明，對名單分析沒有意義。
+  // 🔴 部分變體會隱藏這個欄位（variant.hideSources），此時不可要求必填 ——
+  //    否則送出會被擋住，而使用者看不到那個欄位、無從修正。
+  if (variant.value.hideSources) {
+    // 欄位不存在，略過
+  } else if (!formData.source) {
+    newErrors.source = '請選擇從哪裡得知練健康'
+  } else if (sourceExpand.value.kind !== 'none' && !formData.sourceDetail.trim()) {
+    newErrors.source =
+      sourceExpand.value.kind === 'select' ? sourceExpand.value.placeholder : sourceExpand.value.placeholder
+  }
   if (!formData.agreeToTerms) newErrors.agreeToTerms = '請勾選同意事項'
 
   errors.value = newErrors
@@ -342,12 +345,13 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
-    // 組合來源
-    let finalSources = [...formData.sources]
-    if (formData.sources.includes('其他') && formData.sourceOther.trim()) {
-      finalSources = finalSources.filter(s => s !== '其他')
-      finalSources.push(`其他: ${formData.sourceOther}`)
-    }
+    // 組合來源。單選，但仍以陣列送出 —— 後台名單、CSV 匯出與通知信
+    // 都是照陣列寫的，維持形狀就不必動它們，新舊名單格式也一致。
+    // 欄位被變體隱藏時 formData.source 是空的，此時要送空陣列而不是 ['']，
+    // 否則後台名單與 CSV 會出現一個空白的得知管道
+    const finalSources = formData.source
+      ? [composeReferral(formData.source, formData.sourceDetail)]
+      : []
 
     // 組合運動目的
     let finalExerciseGoals = [...formData.exerciseGoals]
@@ -833,43 +837,54 @@ const handleSubmit = async () => {
                   <!-- 從哪裡得知（變體可隱藏）-->
                   <div v-if="!variant.hideSources">
                     <label class="block text-sm font-medium mb-2 text-navy-700">
-                      從哪裡得知練健康？ <span class="text-ink-500 font-normal">（可複選）</span>
+                      從哪裡得知練健康？ <span class="text-orange">*</span>
+                      <span class="text-ink-500 font-normal">（單選）</span>
                     </label>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       <button
-                        v-for="source in sourceOptions"
-                        :key="source"
+                        v-for="opt in sourceOptions"
+                        :key="opt.value"
                         type="button"
                         :class="[
                           'p-2.5 rounded-lg border text-sm text-left transition-all flex items-center justify-start gap-2',
-                          formData.sources.includes(source)
+                          formData.source === opt.value
                             ? 'border-orange bg-orange/10 text-orange'
                             : 'border-cream-200 hover:border-orange/50'
                         ]"
-                        @click="toggleSource(source)"
+                        @click="selectSource(opt.value)"
                       >
+                        <!-- 單選：用圓形而不是方框，讓「只能選一個」一眼看得出來 -->
                         <div
                           :class="[
-                            'w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0',
-                            formData.sources.includes(source)
-                              ? 'border-orange bg-orange'
+                            'w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0',
+                            formData.source === opt.value
+                              ? 'border-orange'
                               : 'border-ink-300'
                           ]"
                         >
-                          <svg v-if="formData.sources.includes(source)" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                          </svg>
+                          <div v-if="formData.source === opt.value" class="w-2 h-2 rounded-full bg-orange"></div>
                         </div>
-                        {{ source }}
+                        {{ opt.value }}
                       </button>
                     </div>
+
+                    <!-- 選到有細項的選項才展開 -->
+                    <select
+                      v-if="sourceExpand.kind === 'select'"
+                      v-model="formData.sourceDetail"
+                      class="w-full mt-2 px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange bg-white"
+                    >
+                      <option value="">{{ sourceExpand.placeholder }}</option>
+                      <option v-for="o in sourceExpand.options" :key="o" :value="o">{{ o }}</option>
+                    </select>
                     <input
-                      v-if="formData.sources.includes('其他')"
-                      v-model="formData.sourceOther"
+                      v-else-if="sourceExpand.kind === 'text'"
+                      v-model="formData.sourceDetail"
                       type="text"
                       class="w-full mt-2 px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange"
-                      placeholder="請說明從哪裡得知"
+                      :placeholder="sourceExpand.placeholder"
                     />
+                    <p v-if="errors.source" class="mt-1.5 text-sm text-red-600">{{ errors.source }}</p>
                   </div>
 
                   <!-- 運動目的 -->
