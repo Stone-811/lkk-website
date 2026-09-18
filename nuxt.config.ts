@@ -239,7 +239,12 @@ export default defineNuxtConfig({
     },
 
     // 由後台維護的頁面：快取短一點，業主改完不必等太久才看得到。
-    // ⚠️ 新增這類頁面時要記得補進來，否則預設會吃到 600 秒。
+    // ⚠️ 新增這類頁面、或讓既有頁面開始依賴後台資料時，都要記得補進來，
+    //    否則會吃到預設的 600 秒 ＋ 一天的 stale-while-revalidate。
+    //    2026-09-18 踩過：兩張表單的「從哪裡得知」選項改為後台可維護之後
+    //    忘了補，業主在後台停用再啟用，表單上看不到變化。
+    '/booking': { headers: { 'cache-control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=120' } },
+    '/group-booking': { headers: { 'cache-control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=120' } },
     '/': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
     '/about': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
     '/locations/**': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },

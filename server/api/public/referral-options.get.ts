@@ -52,8 +52,10 @@ export default defineCachedEventHandler(
     }
   },
   {
-    // 業主改完選項不必等太久；表單本身也有 CDN 快取，這裡不用太短
-    maxAge: 60,
+    // 業主在後台改完，要能很快在表單上看到。
+    // ⚠️ 這一層只是伺服器端的快取；表單頁本身還有 CDN 快取，
+    //    兩層要一起縮短才有意義（routeRules 裡 /booking 與 /group-booking）。
+    maxAge: 30,
     swr: true,
     getKey: () => 'referral-options',
   }
