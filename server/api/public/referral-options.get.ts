@@ -25,13 +25,16 @@ export default defineCachedEventHandler(
       if (!doc.exists) return fallback
 
       const raw: any = doc.data() || {}
+      // 🔴 要區分「沒設定過」與「設定成空的」：
+      //    欄位不存在 → 回 null，呼叫端退回預設清單
+      //    欄位存在但沒有啟用中的 → 回空陣列，代表業主刻意清空，
+      //      前台會把對應的主選項整個隱藏，而不是顯示空下拉
       const pick = (key: 'social' | 'event' | 'doctor'): string[] | null => {
         const list = raw[key]
         if (!Array.isArray(list)) return null
-        const active = list
+        return list
           .filter((o: any) => o && typeof o.label === 'string' && o.label.trim() && o.active !== false)
           .map((o: any) => o.label.trim())
-        return active.length ? active : null
       }
 
       return {

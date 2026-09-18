@@ -66,11 +66,15 @@ async function send(field: string, action: 'add' | 'toggle', label: string) {
     </div>
 
     <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900 leading-relaxed">
-      <p class="font-medium mb-1">為什麼不能修改或刪除既有選項</p>
+      <p class="font-medium mb-1">為什麼只能新增與停用</p>
       <p>
         選項文字會直接存進名單。改了字，之前填過的名單仍是舊字串而且無法回填，
         匯出報表時會變成兩種寫法。<strong>新增</strong>不影響舊資料；
         <strong>停用</strong>只是不再顯示給新填表的人，既有名單照常保留。
+      </p>
+      <p class="mt-2">
+        一份清單若全部停用，表單上對應的主選項會整個隱藏 ——
+        例如沒有任何啟用中的醫師，表單就不會出現「醫師/醫療轉介」這個選項。
       </p>
     </div>
 

@@ -83,8 +83,9 @@ const BASE_SOURCES: ReferralSource[] = [
  * 傳入後台設定就用後台的；沒傳、或某一份是空的，就退回預設值。
  */
 export function buildReferralSources(dynamic?: DynamicOptions): ReferralSource[] {
+  // undefined ＝ 沒設定過，用預設；空陣列 ＝ 業主刻意清空，要尊重
   const pick = (k: keyof typeof DEFAULT_DYNAMIC_OPTIONS) =>
-    dynamic?.[k]?.length ? (dynamic[k] as string[]) : DEFAULT_DYNAMIC_OPTIONS[k]
+    dynamic?.[k] === undefined ? DEFAULT_DYNAMIC_OPTIONS[k] : (dynamic[k] as string[])
   const byValue: Record<string, keyof typeof DEFAULT_DYNAMIC_OPTIONS> = {
     社群: 'social',
     實體活動: 'event',
@@ -95,7 +96,11 @@ export function buildReferralSources(dynamic?: DynamicOptions): ReferralSource[]
     return key && s.expand.kind === 'select'
       ? { ...s, expand: { ...s.expand, options: pick(key) } }
       : s
-  })
+  }).filter(
+    // 下拉一個選項都沒有時，整個主選項不顯示 ——
+    // 提供一個選不了東西的空下拉，使用者會卡在必填而送不出表單
+    (s) => !(s.expand.kind === 'select' && s.expand.options.length === 0)
+  )
 }
 
 /** 未接後台設定時的靜態清單（保留給不需要動態選項的地方）。 */
