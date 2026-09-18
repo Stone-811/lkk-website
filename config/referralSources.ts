@@ -24,7 +24,25 @@ export interface ReferralSource {
   expand: ReferralExpand
 }
 
-export const REFERRAL_SOURCES: ReferralSource[] = [
+/**
+ * 兩份「可由後台維護」的下拉清單。
+ *
+ * 這裡的值是預設，同時也是**退路** —— 後台設定讀不到時（Firestore 故障、
+ * 文件不存在）表單必須照常運作，不能因為選項讀不到就讓人送不出表單。
+ *
+ * ⚠️ 後台只開放「新增」與「停用」，不開放修改既有選項的文字。
+ *    理由：這些字串會直接存進名單，而名單的 PATCH 白名單只放行
+ *    status 與 internalNote，改了字面就回填不了，舊名單與新名單會
+ *    在 CSV 匯出裡裂成兩種寫法。新增不會破壞舊資料，停用只是不再顯示。
+ */
+export const DEFAULT_DYNAMIC_OPTIONS = {
+  social: ['IG', 'FB', 'Threads', 'Line', 'YT', 'Podcast'],
+  event: ['聖誕老人賽事', '高齡博覽會'],
+}
+
+export type DynamicOptions = Partial<Record<keyof typeof DEFAULT_DYNAMIC_OPTIONS, string[]>>
+
+const BASE_SOURCES: ReferralSource[] = [
   { value: '官網', expand: { kind: 'none' } },
   {
     value: '社群',
@@ -59,6 +77,27 @@ export const REFERRAL_SOURCES: ReferralSource[] = [
   { value: '其他', expand: { kind: 'text', placeholder: '請說明從哪裡得知' } },
 ]
 
+/**
+ * 產生最終的選項清單。
+ * 傳入後台設定就用後台的；沒傳、或某一份是空的，就退回預設值。
+ */
+export function buildReferralSources(dynamic?: DynamicOptions): ReferralSource[] {
+  const social = dynamic?.social?.length ? dynamic.social : DEFAULT_DYNAMIC_OPTIONS.social
+  const event = dynamic?.event?.length ? dynamic.event : DEFAULT_DYNAMIC_OPTIONS.event
+  return BASE_SOURCES.map((s) => {
+    if (s.value === '社群' && s.expand.kind === 'select') {
+      return { ...s, expand: { ...s.expand, options: social } }
+    }
+    if (s.value === '實體活動' && s.expand.kind === 'select') {
+      return { ...s, expand: { ...s.expand, options: event } }
+    }
+    return s
+  })
+}
+
+/** 未接後台設定時的靜態清單（保留給不需要動態選項的地方）。 */
+export const REFERRAL_SOURCES = buildReferralSources()
+
 /** 值與細項組成最終要存的字串。格式沿用既有的「其他: xxx」，冒號後有一個半形空格。 */
 export function composeReferral(value: string, detail: string): string {
   const d = (detail || '').trim()
@@ -66,6 +105,6 @@ export function composeReferral(value: string, detail: string): string {
 }
 
 /** 取某個選項的展開設定；找不到就是不展開。 */
-export function getReferralExpand(value: string): ReferralExpand {
-  return REFERRAL_SOURCES.find((s) => s.value === value)?.expand ?? { kind: 'none' }
+export function getReferralExpand(value: string, list = REFERRAL_SOURCES): ReferralExpand {
+  return list.find((s) => s.value === value)?.expand ?? { kind: 'none' }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { REFERRAL_SOURCES, composeReferral } from '~/config/referralSources'
+import { buildReferralSources, composeReferral } from '~/config/referralSources'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { getGroupClassVariant } from '~/config/groupClassVariants'
 import { relationshipOptions } from '~/config/formOptions'
@@ -62,9 +62,11 @@ const experiences = [
   { value: '有規律訓練習慣', label: '規律訓練中' },
 ]
 // 從哪裡得知 —— 必填單選，與預約體驗共用同一份清單（config/referralSources.ts）
-const sourceOptions = REFERRAL_SOURCES
+// 兩個下拉選單的選項由後台維護；讀不到就用程式裡的預設值
+const { data: dynamicOptions } = await useFetch('/api/public/referral-options')
+const sourceOptions = computed(() => buildReferralSources(dynamicOptions.value?.data))
 const sourceExpand = computed(
-  () => sourceOptions.find((o) => o.value === formData.source)?.expand ?? { kind: 'none' as const }
+  () => sourceOptions.value.find((o) => o.value === formData.source)?.expand ?? { kind: 'none' as const }
 )
 // 單選：換選項時清掉細項，避免把上一個選項的內容帶過去
 const selectSource = (value: string) => {

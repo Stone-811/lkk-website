@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, watch } from 'vue'
 import { getBookingVariant } from '~/config/bookingVariants'
 import { relationshipOptions } from '~/config/formOptions'
-import { REFERRAL_SOURCES, composeReferral } from '~/config/referralSources'
+import { buildReferralSources, composeReferral } from '~/config/referralSources'
 
 useHead({
   title: '預約體驗 | 練健康',
@@ -114,7 +114,13 @@ const contactTimeOptions = [
 
 // 從哪裡得知 —— 改為必填單選，選項與展開設定見 config/referralSources.ts
 // （預約體驗與團體課程共用同一份，避免兩邊分歧）
+// 兩個下拉選單的選項由後台維護；讀不到就用程式裡的預設值（API 自己會退回，
+// 這裡再擋一層是為了連請求都失敗的情況）
+const { data: dynamicOptions } = await useFetch('/api/public/referral-options')
+const baseSources = computed(() => buildReferralSources(dynamicOptions.value?.data))
+
 const sourceOptions = computed(() => {
+  const REFERRAL_SOURCES = baseSources.value
   const extra = variant.value.extraSources ?? []
   if (!extra.length) return REFERRAL_SOURCES
   // 變體追加的選項（例如「南山健康守護圈」）插在「其他」之前，且不展開細項
@@ -884,7 +890,7 @@ const handleSubmit = async () => {
                       class="w-full mt-2 px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange"
                       :placeholder="sourceExpand.placeholder"
                     />
-                    <p v-if="errors.source" class="mt-1.5 text-sm text-red-600">{{ errors.source }}</p>
+                    <p v-if="errors.source" class="text-red-500 text-sm mt-1">{{ errors.source }}</p>
                   </div>
 
                   <!-- 運動目的 -->
