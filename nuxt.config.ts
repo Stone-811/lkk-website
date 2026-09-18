@@ -214,6 +214,47 @@ export default defineNuxtConfig({
   },
 
   // Nitro server config for Firebase App Hosting
+  /**
+   * 快取標頭。
+   *
+   * 🔴 為什麼要加：App Hosting 前面有一層 Google CDN，但實測 cdn-cache-status
+   *    永遠是 miss —— 因為回應沒有任何 Cache-Control，CDN 依規則不會快取。
+   *    每一個請求都因此回到 Cloud Run，文章頁還會再回源打 WordPress。
+   *    補上標頭之後，重複請求由 CDN 擋下，Cloud Run 與 Cloudways 都不用醒來。
+   *
+   * max-age=0  瀏覽器每次都重新驗證（使用者不會看到自己瀏覽器裡的舊版）
+   * s-maxage   只有共用快取（CDN）能留，這是我們要的
+   * stale-while-revalidate  過期後先回舊的、背景更新，讀者不必等
+   *
+   * ⚠️ 公開頁面實測沒有 Set-Cookie，所以 CDN 願意快取；
+   *    若日後有頁面開始設 cookie，它就會自動不被快取（這是 CDN 的規則，不是設定）。
+   */
+  routeRules: {
+    // 預設：文章頁走這條（根目錄萬用捕捉，無法用路徑區分）。
+    // 文章內容很少改，快取久一點，這正是減少 WordPress 負載的地方。
+    '/**': {
+      headers: {
+        'cache-control': 'public, max-age=0, s-maxage=600, stale-while-revalidate=86400',
+      },
+    },
+
+    // 由後台維護的頁面：快取短一點，業主改完不必等太久才看得到。
+    // ⚠️ 新增這類頁面時要記得補進來，否則預設會吃到 600 秒。
+    '/': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/about': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/locations/**': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/team-intro/**': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/lkk-lecturer': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/co-lecturer': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/oversea-lecturer': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/personal-record': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+
+    // 🔴 後台與 API 絕對不可進共用快取。
+    //    後台頁面若被 CDN 快取，等於把一個人的畫面發給所有人。
+    '/admin/**': { headers: { 'cache-control': 'private, no-store' } },
+    '/api/**': { headers: { 'cache-control': 'private, no-store' } },
+  },
+
   nitro: {
     preset: 'firebase-app-hosting',
 
