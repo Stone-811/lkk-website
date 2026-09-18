@@ -4,7 +4,7 @@ import { hasPagePermission } from '~/utils/adminAccess'
 import { DEFAULT_DYNAMIC_OPTIONS } from '~/config/referralSources'
 
 /**
- * 後台讀取「得知管道」的兩份下拉清單（含已停用的；前台只拿啟用中的）。
+ * 後台讀取「得知管道」的三份下拉清單（含已停用的；前台只拿啟用中的）。
  * 文件不存在時回傳程式裡的預設值當起始內容，業主第一次進來就看得到東西。
  */
 export default defineEventHandler(async (event) => {
@@ -24,6 +24,7 @@ export default defineEventHandler(async (event) => {
       data: {
         social: Array.isArray(raw.social) ? raw.social : seed(DEFAULT_DYNAMIC_OPTIONS.social),
         event: Array.isArray(raw.event) ? raw.event : seed(DEFAULT_DYNAMIC_OPTIONS.event),
+        doctor: Array.isArray(raw.doctor) ? raw.doctor : seed(DEFAULT_DYNAMIC_OPTIONS.doctor),
       },
       initialized: doc.exists,
     }

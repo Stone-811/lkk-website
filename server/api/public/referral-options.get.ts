@@ -2,7 +2,7 @@ import { getDb } from '~/server/utils/firebase'
 import { DEFAULT_DYNAMIC_OPTIONS } from '~/config/referralSources'
 
 /**
- * 「從哪裡得知練健康」裡兩個下拉選單的選項（社群平台、實體活動）。
+ * 「從哪裡得知練健康」裡三個下拉選單的選項（社群平台、實體活動、醫師／院所）。
  *
  * 🔴 這支永遠不能讓表單壞掉。
  *    選項讀不到時要退回程式裡的預設值，而不是回錯誤 ——
@@ -25,7 +25,7 @@ export default defineCachedEventHandler(
       if (!doc.exists) return fallback
 
       const raw: any = doc.data() || {}
-      const pick = (key: 'social' | 'event'): string[] | null => {
+      const pick = (key: 'social' | 'event' | 'doctor'): string[] | null => {
         const list = raw[key]
         if (!Array.isArray(list)) return null
         const active = list
@@ -39,6 +39,7 @@ export default defineCachedEventHandler(
         data: {
           social: pick('social') ?? DEFAULT_DYNAMIC_OPTIONS.social,
           event: pick('event') ?? DEFAULT_DYNAMIC_OPTIONS.event,
+          doctor: pick('doctor') ?? DEFAULT_DYNAMIC_OPTIONS.doctor,
         },
         source: 'firestore' as const,
       }

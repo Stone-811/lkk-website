@@ -38,6 +38,9 @@ export interface ReferralSource {
 export const DEFAULT_DYNAMIC_OPTIONS = {
   social: ['IG', 'FB', 'Threads', 'Line', 'YT', 'Podcast'],
   event: ['聖誕老人賽事', '高齡博覽會'],
+  // ⚠️ 「張文穎」是範例資料，請業主在後台換成實際的合作醫師或院所。
+  //    這裡留一筆是為了讓下拉選單不會是空的（空清單會退回預設，等於沒設定）。
+  doctor: ['張文穎'],
 }
 
 export type DynamicOptions = Partial<Record<keyof typeof DEFAULT_DYNAMIC_OPTIONS, string[]>>
@@ -61,10 +64,8 @@ const BASE_SOURCES: ReferralSource[] = [
     expand: { kind: 'text', placeholder: '請填寫同仁姓名' },
   },
   {
-    // ⚠️ 規格只寫「動態展開」沒有列出選項，這裡先做成文字欄位：
-    //    文字能記下的資訊比未知的下拉清單多，日後要改成下拉也只需改這一處。
     value: '醫師/醫療轉介',
-    expand: { kind: 'text', placeholder: '請填寫醫師或院所名稱' },
+    expand: { kind: 'select', options: [], placeholder: '請選擇醫師或院所' },
   },
   {
     value: '實體活動',
@@ -82,16 +83,18 @@ const BASE_SOURCES: ReferralSource[] = [
  * 傳入後台設定就用後台的；沒傳、或某一份是空的，就退回預設值。
  */
 export function buildReferralSources(dynamic?: DynamicOptions): ReferralSource[] {
-  const social = dynamic?.social?.length ? dynamic.social : DEFAULT_DYNAMIC_OPTIONS.social
-  const event = dynamic?.event?.length ? dynamic.event : DEFAULT_DYNAMIC_OPTIONS.event
+  const pick = (k: keyof typeof DEFAULT_DYNAMIC_OPTIONS) =>
+    dynamic?.[k]?.length ? (dynamic[k] as string[]) : DEFAULT_DYNAMIC_OPTIONS[k]
+  const byValue: Record<string, keyof typeof DEFAULT_DYNAMIC_OPTIONS> = {
+    社群: 'social',
+    實體活動: 'event',
+    '醫師/醫療轉介': 'doctor',
+  }
   return BASE_SOURCES.map((s) => {
-    if (s.value === '社群' && s.expand.kind === 'select') {
-      return { ...s, expand: { ...s.expand, options: social } }
-    }
-    if (s.value === '實體活動' && s.expand.kind === 'select') {
-      return { ...s, expand: { ...s.expand, options: event } }
-    }
-    return s
+    const key = byValue[s.value]
+    return key && s.expand.kind === 'select'
+      ? { ...s, expand: { ...s.expand, options: pick(key) } }
+      : s
   })
 }
 

@@ -11,10 +11,19 @@
 const LISTS = [
   { field: 'social' as const, title: '社群平台', hint: '選「社群」之後展開的下拉選單' },
   { field: 'event' as const, title: '實體活動', hint: '選「實體活動」之後展開的下拉選單' },
+  {
+    field: 'doctor' as const,
+    title: '醫師／院所',
+    hint: '選「醫師/醫療轉介」之後展開的下拉選單。預設的「張文穎」是範例資料，請換成實際的合作對象',
+  },
 ]
 
-const data = ref<Record<string, { label: string; active: boolean }[]>>({ social: [], event: [] })
-const newLabel = reactive<Record<string, string>>({ social: '', event: '' })
+const data = ref<Record<string, { label: string; active: boolean }[]>>({
+  social: [],
+  event: [],
+  doctor: [],
+})
+const newLabel = reactive<Record<string, string>>({ social: '', event: '', doctor: '' })
 const busy = ref('')
 const message = ref<{ type: 'ok' | 'err'; text: string } | null>(null)
 

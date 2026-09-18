@@ -14,7 +14,7 @@ import { hasPagePermission } from '~/utils/adminAccess'
  * 🔴 也不提供「刪除」。刪掉之後那個字串仍存在於既有名單裡，
  *    但後台再也查不到它曾經是個正式選項。停用能達到同樣效果又留下紀錄。
  */
-const FIELDS = ['social', 'event'] as const
+const FIELDS = ['social', 'event', 'doctor'] as const
 type Field = (typeof FIELDS)[number]
 
 export default defineEventHandler(async (event) => {
