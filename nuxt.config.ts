@@ -258,9 +258,15 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'firebase-app-hosting',
 
-    // ── 文章預抓（可行性測試中）──────────────────────────────
+    // ── 文章預抓（目前休眠）──────────────────────────────
     // 建置時把舊站文章抓下來產生靜態頁，執行期就不必再打 WordPress。
-    // 篇數由 PRERENDER_ARTICLES 控制，未設＝不預抓（維持現狀）。
+    // 篇數由環境變數 PRERENDER_ARTICLES 控制，未設或為 0 就完全不作用。
+    //
+    // 2026-09-18 實測（Cloud Build）：每篇約 1.5 秒，20 篇讓建置從 2.5 分變 3.0 分，
+    // 外推 666 篇約 17 分鐘、每月會超出 Cloud Build 的免費額度。
+    // 補上 Cache-Control 之後 CDN 命中只要 0.06 秒，比預抓的靜態檔還快，
+    // 預抓只影響「每篇文章的第一個訪客」，效益不足以抵銷建置時間，因此關閉。
+    // 日後若要預抓熱門文章（例如兩個彙整頁上的 60 篇），設這個變數即可。
     prerender: {
       crawlLinks: false,
       failOnError: false,
