@@ -179,6 +179,42 @@ useHead({
 }
 
 /*
+ * 內嵌影片與外部嵌入（iframe）。實測 667 篇有 143 篇含可見嵌入、共 236 個 iframe。
+ *
+ * 🔴 WordPress 把原始尺寸寫死在 iframe 的 width/height 屬性上，
+ *    其中 159 個是 width="1290"，遠寬於內容欄。不處理的話整頁會被撐寬——
+ *    2026-09-19 實測 1024px 視窗量到 docW=1450，頁面可以左右捲。
+ *    這跟表格是同一類問題（元素自己比容器寬），但當初只想到表格，
+ *    iframe 漏掉了，全量驗證腳本也沒查這一層。
+ *
+ * 分兩段處理，依實測的尺寸分布：
+ *   151 個  figure.wp-embed-aspect-16-9  1290×726  → 高度跟著寬度走
+ *     2 個  figure.is-type-video（沒有 16-9 class）→ 同上
+ *    83 個  其他嵌入（600×338 的外站預覽卡為主，另有 1290×968、1290×1000）
+ *           → 只收寬度、保留原本高度。硬套 16:9 會把那兩個高版面的壓扁。
+ *
+ * ⚠️ 有些文章「整篇就是一支影片」（實測 4 篇，去標籤後文字長度是 0），
+ *    媒體報導那一類尤其多。影片沒渲染出來 = 整頁空白，不是小問題。
+ */
+.article-body :deep(.wp-block-embed) {
+  margin: 1.8em 0;
+}
+.article-body :deep(.wp-block-embed__wrapper) {
+  max-width: 100%;
+}
+.article-body :deep(iframe) {
+  width: 100%;
+  max-width: 100%;
+  border: 0;
+  display: block;
+}
+.article-body :deep(.wp-embed-aspect-16-9 iframe),
+.article-body :deep(.is-type-video iframe) {
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+/*
  * 表格。實測 200 篇有 117 個，是文章裡最需要處理的元素。
  *
  * 四個實測事實決定了下面的寫法：

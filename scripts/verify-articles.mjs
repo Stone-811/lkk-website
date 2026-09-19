@@ -102,12 +102,26 @@ async function check({ slug, title }) {
   const tables = (html.match(/<table/g) || []).length
   const wraps = (html.match(/table-scroll/g) || []).length
   if (tables && tables !== wraps) problems.push(`表格 ${tables} 個只包了 ${wraps}`)
+  // ④-2 嵌入的 iframe 不可以比內容欄寬
+  //     🔴 2026-09-19 補上。WordPress 把原始尺寸寫死在屬性上（實測 159 個是
+  //        width="1290"），會把整頁撐寬。這一層原本沒查——表格查了、iframe 漏了，
+  //        結果是業主問「媒體報導點進去原本是 youtube 嗎」才翻出來。
+  //     內容欄實測約 720px，這裡抓 800 當門檻。
+  const wide = [...html.matchAll(/<iframe[^>]*\swidth="(\d+)"/g)]
+    .map((m) => Number(m[1]))
+    .filter((w) => w > 800)
+  if (wide.length) problems.push(`iframe 寬度寫死 ${wide.join('/')}，會撐寬頁面`)
+
+  // ④-3 整篇只有一支影片的文章，影片一定要在
+  //     媒體報導那一類的內文去掉標籤後是空的，嵌入被拿掉就等於整頁空白。
+  const plain = html.replace(/<[^>]+>/g, '').trim()
+  if (!plain && !/<iframe/.test(html)) problems.push('整篇沒有文字也沒有嵌入影片')
+
   // ⑤ SEO 欄位
   if (!a.title) problems.push('標題是空的')
   // 有文字內容卻沒有 description 才是缺陷。純影片嵌入的媒體報導沒有可用
   // 文字，此時 Google 會自行產生摘要，硬塞一個與標題重複的字串反而更差。
-  const hasText = html.replace(/<[^>]+>/g, '').trim().length > 0
-  if (!a.description && hasText) problems.push('description 是空的')
+  if (!a.description && plain.length > 0) problems.push('description 是空的')
   return { slug, decoded, problems }
 }
 
