@@ -1123,9 +1123,9 @@ const handleSubmit = async () => {
                   </div>
                 </div>
               </div>
-              <a href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/" class="block text-center text-sm text-navy-700 hover:text-orange-700 mt-4 pt-4 border-t border-navy-700/10 py-2">
+              <NuxtLink to="/cases-center" class="block text-center text-sm text-navy-700 hover:text-orange-700 mt-4 pt-4 border-t border-navy-700/10 py-2">
                 看更多學員故事 &rarr;
-              </a>
+              </NuxtLink>
             </div>
           </div>
         </div>

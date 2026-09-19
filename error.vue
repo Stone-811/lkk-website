@@ -57,12 +57,12 @@ const quickLinks = [
             </svg>
             回到首頁
           </button>
-          <a
-            href="https://l-kk.tw/category/knowledge"
+          <NuxtLink
+            to="/knowledge-center"
             class="inline-flex items-center gap-2 bg-white border border-navy/15 text-navy font-semibold px-6 py-3 rounded-full hover:border-orange/40 transition-colors"
           >
             瀏覽知識分享
-          </a>
+          </NuxtLink>
         </div>
 
         <!-- 快速連結 -->
