@@ -1,6 +1,6 @@
 ---
 name: lkk-wp-articles
-description: 新站以根目錄網址渲染舊站 WordPress 文章的那一層（headless）。要動 pages/[...slug].vue、server/api/public/article、wp-articles、三個彙整頁（知識科普／學員故事／活動資訊），或被問「文章為什麼打不開／跑版／拿到別篇／dev 站會不會被 Google 收錄」時使用。內含七個實測過的地雷、全量驗證腳本的用法，以及一條比程式碼更重要的教訓：驗證沒覆蓋到的那一層，就是會壞的那一層。
+description: 新站以根目錄網址渲染舊站 WordPress 文章的那一層（headless）。要動 pages/[...slug].vue、server/api/public/article、wp-articles、三個彙整頁（知識科普／學員故事／活動資訊），或被問「文章為什麼打不開／跑版／拿到別篇／dev 站會不會被 Google 收錄」時使用。內含八個實測過的地雷、全量驗證腳本的用法，以及一條比程式碼更重要的教訓：驗證沒覆蓋到的那一層，就是會壞的那一層。
 ---
 
 # WordPress 文章渲染層
@@ -22,7 +22,7 @@ description: 新站以根目錄網址渲染舊站 WordPress 文章的那一層�
 文章網址走**根目錄**，與舊站一對一（`l-kk.tw/spine/` ↔ `本站/spine/`），
 未來舊站掛 301 不需要逐條對照表。
 
-## 🔴 七個實測過的地雷
+## 🔴 八個實測過的地雷
 
 ### 1. Nitro 的快取鍵會把中文清光
 
@@ -130,6 +130,38 @@ canonical       指向 dev 自己的 hosted.app 網址
 不必擔心舊的 `robots.txt` 被 `stale-while-revalidate=86400` 卡一天。
 
 
+### 8. 內嵌影片會把整頁撐寬（跟表格同一類，但當初漏了）
+
+實測 667 篇有 **143 篇含可見嵌入、共 236 個 iframe**。WordPress 把原始尺寸
+寫死在 `width`／`height` 屬性上：
+
+```
+151 個  figure.wp-embed-aspect-16-9   1290×726
+  2 個  figure.is-type-video（無 16-9）1290×…
+ 83 個  其他嵌入                        600×338 為主，另有 1290×968、1290×1000
+```
+
+不處理的話 1024px 視窗實測 `docW=1450`，**頁面可以左右捲**；手機更嚴重。
+（外站預覽卡的 600×338 在手機同樣超過內容欄的 327px。）
+
+寫法要分兩段，不要一條規則套死：
+
+```css
+.article-body :deep(iframe) { width:100%; max-width:100%; border:0; display:block; }
+/* WordPress 自己標成影片的才套 16:9 —— 高度跟著寬度走 */
+.article-body :deep(.wp-embed-aspect-16-9 iframe),
+.article-body :deep(.is-type-video iframe) { height:auto; aspect-ratio:16/9; }
+```
+
+🔴 **其他嵌入只收寬度、保留原高度**。硬套 16:9 會把 1290×968、1290×1000
+那兩個高版面壓扁。實測結果：600×338 → 375×338、1290×1000 → 327×1000，
+都沒有溢出，內容也沒被壓。
+
+⚠️ **有 4 篇「整篇就是一支影片」**（內文去掉標籤後長度是 0），媒體報導那一類尤其多。
+   嵌入沒渲染出來 = 整頁空白，而原本的 description 檢查不會報
+   （它只在「有文字卻沒 description」時才報）。驗證腳本已補上這一項。
+
+
 ## 全量驗證：功能完成的定義
 
 ```bash
@@ -172,6 +204,12 @@ done
 | 只測 API | 頁面路由 | API 200 但 `/spine/` 404 |
 | 只測 API 與網址 | 渲染出的連結 | 卡片變成 `<NUXTLINK>`，沒有 href、點不動 |
 | 用 curl 驗導覽列 | `v-if` 控制的下拉選單 | curl 看不到 → 誤判「六個連結全不見」 |
+| 驗了表格會不會撐寬 | **iframe 會不會撐寬** | 159 個 `width="1290"` 的嵌入把整頁撐寬 |
+
+第六個最值得記：表格的問題處理得很完整（還特地寫下「絕對不要用 `width: max-content`」），
+但**同一個道理沒有推廣到其他會比容器寬的元素**。全量驗證 640/667 通過，
+是業主問「媒體報導點進去原本是 youtube 嗎」才翻出來的。
+凡是「元素自帶尺寸」的東西——table、iframe、img、pre、svg、embed——都要一起檢查。
 
 最後一個是 2026-09-19：導覽列下拉是 `v-if="openDropdown === 'team'"`，
 **根本不會進 SSR 的 HTML**，curl 永遠驗不到。要用瀏覽器點開才算數。
