@@ -254,6 +254,10 @@ export default defineNuxtConfig({
     '/oversea-lecturer': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
     '/personal-record': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
 
+    // robots.txt 依主機名決定內容（server/routes/robots.txt.ts），不能吃到預設的
+    // 一天 stale-while-revalidate —— 改了設定要等一天才生效太久。
+    '/robots.txt': { headers: { 'cache-control': 'public, max-age=0, s-maxage=300' } },
+
     // 🔴 後台與 API 絕對不可進共用快取。
     //    後台頁面若被 CDN 快取，等於把一個人的畫面發給所有人。
     '/admin/**': { headers: { 'cache-control': 'private, no-store' } },

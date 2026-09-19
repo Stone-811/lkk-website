@@ -4,11 +4,12 @@
 // 安全：只比對「正式站 lkkprod 的 hosted.app 主機名」才轉——
 //   - lkkwellness.com 本身不符合條件 → 放行（不會無窮轉址）
 //   - dev（lkk-website-dev--lkkdev…）主機名不同 → 完全不受影響
-const PROD_DEFAULT_HOST = 'lkk-website--lkkprod.asia-east1.hosted.app'
-const CANONICAL_ORIGIN = 'https://lkkwellness.com'
-
+//
+// ⚠️ 這裡是「host 或 x-forwarded-host 任一命中就轉」，跟 site-hosts.ts 的
+//    getRequestHostname（xfh 優先、只取一個）刻意不同 —— 這支在 prod 上
+//    已經正常運作，2026-09-19 補 noindex 時不順手改它的判斷方式。
+//    主機名常數共用同一份，行為維持原樣。
 export default defineEventHandler((event) => {
-  // App Hosting 前面的 Envoy CDN 可能改寫 Host，原始網域可能落在 x-forwarded-host
   const host = (getRequestHeader(event, 'host') || '').toLowerCase()
   const xfHost = (getRequestHeader(event, 'x-forwarded-host') || '').toLowerCase()
   if (host === PROD_DEFAULT_HOST || xfHost === PROD_DEFAULT_HOST) {

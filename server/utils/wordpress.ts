@@ -79,6 +79,27 @@ const PAGE_MAP: Record<string, string> = {
   '台北南京店-2': '/locations/nanjing',
   checkout: '/shop',
   shoppingcart: '/shop',
+  // ── 舊站內部靠 301 才活著的多層路徑（2026-09-19 全量驗證追出來的）──────
+  //
+  // 全量掃描剩下 26 篇有殘留舊站連結，一共指向 54 個舊站路徑。逐一打過之後：
+  //   45 個 → 舊站本來就 404（舊分類結構早就不存在，是文章裡既有的死連結，
+  //           維持指向舊站是對的，改寫成本站只會把死連結搬家）
+  //    9 個 → 舊站仍然活著，但是靠「舊站自己的 301」轉到根目錄文章
+  //
+  // 🔴 這 9 條今天能用、切轉後會斷：舊站掛上 l-kk.tw/* 的萬用 301 之後，
+  //    多層路徑會被原樣丟到 lkkwellness.com/<多層路徑>，而本站對多層路徑是
+  //    直接 404（pages/[...slug].vue 一進來就擋）。舊站那層 301 永遠輪不到。
+  //    下面 9 個最終目標在本站都已實測 200。
+  'lkk-medical-and-sports-science/diabetes': '/diabetes/',
+  'lkk-medical-and-sports-science/shoulder': '/shoulder-and-elbow-injury-analysis/',
+  'lkk-medical-and-sports-science/running': '/running-econony-and-strength-training/',
+  'lkk-medical-and-sports-science/strength-training': '/strength-training/',
+  'lkk-medical-and-sports-science/pathological-aging': '/pathological-aging-2/',
+  'workout-learning/weight-training': '/weight-training-program-for-senior-citizens/',
+  'workout-learning/running-training': '/running-training-guide/',
+  'exercise/1398': '/exercise-and-diet/',
+  'dietitian/nutrition': '/nutrition-2/',
+
   // 本站已有的兩個彙整頁
   'category/knowledge': '/knowledge-center',
   knowledge: '/knowledge-center',
