@@ -265,7 +265,7 @@ grep -rnoE 'https://l-kk\.tw[^"'"'"' )]*' --include="*.vue" --include="*.ts" \
 
 | 檔案 | 數量 | 性質 |
 |---|---|---|
-| `pages/news.vue` | 14 | 媒體報導外連，新站沒有對應內容 |
+| `pages/news.vue` | 14 | 🔴 **不是外部媒體原文，是舊站文章網址**（見下） |
 | `pages/knowledge-center.vue` | 2 | 「瀏覽更多」＋讀取失敗時的退路 |
 | `pages/cases-center.vue` | 2 | 同上 |
 | `pages/activity-center.vue` | 2 | 同上 |
@@ -284,7 +284,21 @@ grep -rnoE 'https://l-kk\.tw[^"'"'"' )]*' --include="*.vue" --include="*.ts" \
 還沒處理的部分。
 
 ⚠️ **在替代目的地存在之前不要先改這些連結**——會把還能用的入口換成 404，比現況更糟。
-`pages/news.vue` 那 14 條就屬於這種：它們是各家媒體的原文連結，新站沒有對應內容。
+
+🔴 但 `pages/news.vue` 那 14 條**不適用這條警告，要逐一查證再下結論**。
+它們看起來像「各家媒體的原文連結」，實際上是 `l-kk.tw/<slug>/` 形式的**舊站文章網址**
+（媒體報導在舊站是一篇一篇的文章）。10 個不重複目標 2026-09-19 實測在新站**全部 200**——
+因為新站本來就以根目錄渲染全站文章。
+
+```bash
+# 判斷一條舊站連結能不能改成站內：直接打新站同一個 slug
+curl -s -o /dev/null -w '%{http_code}\n' "https://lkk-website-dev--lkkdev.asia-east1.hosted.app/<slug>/"
+```
+
+⚠️ 教訓：**「外連舊站」不等於「新站沒有」**。文章改由根目錄渲染之後，
+任何 `l-kk.tw/<單層 slug>/` 在新站都有對應頁。憑檔名或連結文字猜性質會猜錯
+（2026-09-19 就把這 14 條誤判成外部媒體原文）。
+
 （同頁的「查看全部報導」原本外連 `l-kk.tw/category/news/`，2026-09-19 依業主指定
 改連站內的 `/activity-center`。）
 
