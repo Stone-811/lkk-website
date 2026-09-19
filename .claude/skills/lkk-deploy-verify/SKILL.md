@@ -44,6 +44,45 @@ git ls-tree -r origin/prod --name-only | grep 'api/admin/'   # 檔案樹
 ls .output/server/chunks/routes/api/admin/                    # 建置產物
 ```
 
+## 🔴 輪詢 rollouts 一定要翻完所有分頁
+
+dev 有 **350 筆以上**的 rollout，而 API **不保證排序**。只抓第一頁 100 筆
+會拿到一堆舊的，誤判成「沒有部署」——2026-09-15 因此對業主回報過錯誤結論。
+
+```python
+url, rs, n = base, [], 0
+while url and n < 20:
+    d = json.loads(...)
+    rs += d.get('rollouts', [])
+    tk = d.get('nextPageToken'); n += 1
+    url = f"{base}&pageToken={tk}" if tk else None
+new = [r for r in rs if fromisoformat(r['createTime']) > push_time]
+```
+
+prod 只有幾十筆，不翻頁也碰巧會對——**不要用 prod 的經驗推論 dev**。
+
+## 🔴 驗證要覆蓋每一層，不是抽樣其中一層
+
+2026-09-15～18 同一類問題出現四次，每次都是「每一層單獨看都正常」：
+
+| 驗了什麼 | 漏了什麼 | 症狀 |
+|---|---|---|
+| 只測英文代稱 | 中文代稱 | 全部中文文章拿到同一篇 |
+| 只測單筆 | 互相比對 | 共用狀態被覆寫，單筆一定通過 |
+| 只測 API | 頁面路由 | API 200 但頁面 404 |
+| 只測 API 與網址 | 渲染出的連結 | 卡片不是 `<a>`，沒有 href、點不動 |
+
+**「共用狀態被覆寫」這一類的缺陷，單筆測試必定通過。**
+要驗就要比對「請求的」與「回傳的」是不是同一個。
+
+## 測試方法本身出錯的三種（都誤報過）
+
+- **導到同一個網址不會重新載入**（含只差 hash 的情況），Vue 狀態留著，
+  驗不出初始狀態。要先導到別頁再回來。
+- **`className.includes()` 會誤判**：未選中的樣式可能含 `hover:border-orange/50`，
+  字串裡也有 `border-orange`。
+- **`timeout` 在 macOS 不存在**（那是 GNU coreutils）。指令失敗會被誤讀成服務故障。
+
 ## marker 的四種自爆寫法（都實際踩過）
 
 | 寫法 | 為什麼壞 |

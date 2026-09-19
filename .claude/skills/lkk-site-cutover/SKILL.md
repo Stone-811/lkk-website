@@ -121,6 +121,64 @@ canonical 與 og:url 都指向它，事實上已經選了「舊網域併進新�
 20. 處置舊站過期外掛與 WooCommerce 空殼
 21. 確立舊站長期定位與維護責任
 
+## 憑證：Cloudflare 那條路有時限（2026-09-17 查證）
+
+```
+lkkwellness.com 憑證   Google Trust Services，SAN 含 *.lkkwellness.com
+                       到期 2026-10-29，Google 在到期前約 30 天自動續簽
+_acme-challenge        不存在
+```
+
+沒有 `_acme-challenge` 紀錄，代表用的是**負載平衡器授權**：憑證機構直接連到
+網域解析出的 IP 驗證。Google 文件明說 A/AAAA 必須指向負載平衡器 IP，
+**配發與續簽都需要**，而且「請求路徑上的第三方 CDN 可能讓驗證失敗」。
+
+**含意**：開 Cloudflare 橘雲代理後，對外解析到 Cloudflare 的 IP，續簽可能失敗。
+而且**不會當場壞**——現有憑證仍有效，要到到期日才整站無法連線，
+中間一個月一切看起來正常。
+
+若要走 Cloudflare：先確認 App Hosting 能不能改用 DNS 驗證（補 `_acme-challenge` CNAME），
+或等續簽完成後再動（那時有三個月的安全窗口）。
+
+費用不是障礙：Origin Rules 免費方案有 10 條，一條規則的表達式可比對多個路徑，
+新站約 20 個路徑一條就寫得完。
+
+## 萬用 301 的排除清單（實測過的規則缺口）
+
+業主提供的規則排除了 `wp-admin`、`wp-login.php`、`wp-json`、`wp-content/uploads`、
+`xmlrpc.php`、`wp-cron.php`。實測**還少三類，而且會讓後台破版**：
+
+```
+/wp-includes/**          後台的 CSS/JS 都在這      實測 200
+/wp-content/themes/**    佈景主題資源              實測 200
+/wp-content/plugins/**   外掛資源                  實測 200
+```
+
+另外三個會被轉成壞網址（規則的 `$1` 後面固定補斜線）：
+
+```
+/robots.txt         → …/robots.txt/
+/sitemap_index.xml  → …/sitemap_index.xml/    ← Google 正在讀這份
+/feed/
+```
+
+還有兩個會從「正常」變成「404」：`/category/*`（27 個分類，新站沒有對應路由）、
+以及 Header 現在指的兩個彙整頁。
+
+## 舊站的 `www` 憑證：要修的是那一張，不是另外一張
+
+`l-kk.tw` 與 `www.l-kk.tw` **共用同一張憑證**（指紋相同），
+而那張的 SAN 只有 `DNS:l-kk.tw`。openssl 說得很明白：`verify error:num=62: hostname mismatch`。
+
+```
+curl https://www.l-kk.tw/       → 000（TLS 握手就失敗）
+curl -k https://www.l-kk.tw/    → 301（忽略憑證後其實有轉址！）
+```
+
+**伺服器上已經設好 www → 非 www 的 301，但沒有人到得了。**
+修法是在 Cloudways 重新簽發一張同時涵蓋兩個名字的憑證，
+而且要在掛任何 301 之前做。
+
 ## 🔴 做錯順序會無法回復的三件事
 
 1. **在對應表完成前就把 l-kk.tw 直接改指向新站** → 644 篇文章當場全數 404，

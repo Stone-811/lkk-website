@@ -240,6 +240,72 @@ public API 只撈 `where('isActive', '==', true)`。後台新增教練若沒設�
   因為前端無條件把 `null` 翻成 `year=all`，讀取量反而從 656 變 1312。
   改後端邏輯時，**一定要看前端實際送出什麼**。
 
+## 2026-09-16～19 這批（**只在 dev，全部尚未上 prod**）
+
+這批改動量很大，而且 dev 與 prod 已經明顯分歧。動任何東西前先跑
+`git diff --name-status origin/prod origin/dev` 確認現況。
+
+### 文章渲染（headless WordPress）
+新站以**根目錄網址**渲染舊站的 666 篇文章，內容仍存在 WordPress。
+細節、六個地雷與全量驗證腳本見 [[lkk-wp-articles]]，這裡不重複。
+
+### 三個彙整頁
+`/knowledge-center`、`/cases-center`、`/activity-center`，
+文案與分區都對照舊站的同名頁面（分區是反推 WordPress 的 Query Loop 區塊得到的）。
+`activity-center` 的 hero 文案是新寫的——舊站 `/activity/` 沒有文案，就是純列表。
+
+### CDN 快取標頭（`nuxt.config.ts` 的 `routeRules`）
+補之前 `cdn-cache-status` **永遠是 miss**：App Hosting 前面有 Google CDN，
+但回應沒有 `Cache-Control` 就不會被快取，每個請求都回到 Cloud Run。
+
+補上之後實測 0.06 秒命中（原本冷請求 0.7–3.1 秒）。分三層：
+文章 600 秒、後台維護的頁面 60 秒、兩張表單 30 秒、`/admin/**` 與 `/api/**` 是 `no-store`。
+
+🔴 後台頁面若被 CDN 快取，等於把一個人的畫面發給所有人。
+   實測後台目前**沒有** `Set-Cookie`，不能依賴「有 cookie 就不會被快取」那條規則，必須明寫排除。
+
+⚠️ 讓既有頁面開始依賴後台資料時，快取也要跟著縮短。踩過一次（見下方）。
+
+### 得知管道改為必填單選
+兩張表單共用 `config/referralSources.ts`。十個選項，其中三個展開下拉
+（社群／實體活動／醫師院所），兩個展開文字欄。
+
+🔴 **存進 Firestore 的形狀刻意維持陣列**（只是長度為 1），值是 `社群: IG` 這種格式。
+   後台名單、CSV 匯出、兩封通知信全部是照陣列寫的，維持形狀就不必動它們。
+
+三份下拉清單可在 `/admin/settings` 維護，**只能新增與停用，不能改字也不能刪除**——
+字串會存進名單，而 leads 的 PATCH 白名單只放行 status 與 internalNote，改了回填不了。
+這個理由也寫在後台介面上給業主看，不是只藏在註解裡。
+
+### UTM 改用 cookie 保存 30 天
+`composables/useUtm.ts` 從 sessionStorage 換成 `useCookie`，與舊站 HandL 一致。
+多了 `capturedAt` 時間戳——沒有它就分不出「兩小時前點的廣告」和「29 天前點的」。
+**刻意不記訪客 IP**（舊站 HandL 會記，那是個資，不照抄）。
+
+### 導覽列「團隊介紹」改為兩個分組
+關於練健康（可點）底下放教練團隊與活動資訊；講師團隊是**不可點的分組標題**，
+用 `<p>` 不用 `<NuxtLink>`——做成看起來可點但點不動的連結，使用者會一直試。
+
+## 這批踩到的四個教訓（都實際發生過）
+
+**① 驗證沒覆蓋的那一層，就是會壞的那一層。**
+一週內同類問題出現四次：只測英文 slug、只測單篇、只測 API 不測頁面、
+只測 API 與網址不測渲染出的連結。每次都是「每一層單獨看都正常」。
+細節見 [[lkk-wp-articles]]。
+
+**② `git add` 不要吃掉 stderr。**
+路徑清單裡含已刪除的路徑會讓 git 整批中止，而 `2>/dev/null` 把錯誤藏起來——
+結果那個 commit 只帶進一個檔案，其餘全漏。
+
+**③ 讓既有頁面開始依賴後台資料時，快取也要跟著改。**
+表單的選項改為後台可維護之後忘了調快取，業主在後台停用再啟用、表單上看不到變化。
+`s-maxage=600` 加 `stale-while-revalidate=86400` 最長可拖一天。
+
+**④ 後台的 GET 與 PATCH 對「文件還不存在」的處理必須一致。**
+GET 在文件不存在時回傳程式裡的預設清單（畫面因此看得到選項），
+PATCH 卻拿到空陣列 → 在空陣列裡找不到那個選項 → 回 404。
+業主回報「無法停用」就是這個。同一個 bug 也會讓第一次新增把預設值全部弄丟。
+
 ## 安全（動 /admin 或 server/api/admin 前必看）
 - 已修補：後門帳號（改 `ALLOW_DEV_ADMIN` gate）、`JWT_SECRET` 正式站強制、登入頁明文帳密移除。
 - **部署前必設 `JWT_SECRET` secret**，否則正式站啟動 crash。
