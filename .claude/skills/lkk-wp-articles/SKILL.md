@@ -1,6 +1,6 @@
 ---
 name: lkk-wp-articles
-description: 新站以根目錄網址渲染舊站 WordPress 文章的那一層（headless）。要動 pages/[...slug].vue、server/api/public/article、wp-articles、三個彙整頁（知識科普／學員故事／活動資訊），或被問「文章為什麼打不開／跑版／拿到別篇」時使用。內含六個實測過的地雷、全量驗證腳本的用法，以及一條比程式碼更重要的教訓：驗證沒覆蓋到的那一層，就是會壞的那一層。
+description: 新站以根目錄網址渲染舊站 WordPress 文章的那一層（headless）。要動 pages/[...slug].vue、server/api/public/article、wp-articles、三個彙整頁（知識科普／學員故事／活動資訊），或被問「文章為什麼打不開／跑版／拿到別篇／dev 站會不會被 Google 收錄」時使用。內含七個實測過的地雷、全量驗證腳本的用法，以及一條比程式碼更重要的教訓：驗證沒覆蓋到的那一層，就是會壞的那一層。
 ---
 
 # WordPress 文章渲染層
@@ -22,7 +22,7 @@ description: 新站以根目錄網址渲染舊站 WordPress 文章的那一層�
 文章網址走**根目錄**，與舊站一對一（`l-kk.tw/spine/` ↔ `本站/spine/`），
 未來舊站掛 301 不需要逐條對照表。
 
-## 🔴 六個實測過的地雷
+## 🔴 七個實測過的地雷
 
 ### 1. Nitro 的快取鍵會把中文清光
 
@@ -94,6 +94,42 @@ WordPress REST 實測 **0.8–1.3 秒**，併發時會逾時。
 `server/api/public/wp-articles.get.ts`、`server/utils/wordpress.ts`、
 `scripts/verify-articles.mjs`。
 
+### 7. 文章一上線，dev 站就變成 667 頁重複內容
+
+文章改由根目錄渲染之後，dev 從 20 幾頁變成 **667 頁，而且每一頁都跟 l-kk.tw 上的那一篇一字不差**。
+2026-09-19 實測 dev 的收錄狀態：
+
+```
+robots.txt      User-agent: *  /  Disallow:     ← 全部允許
+X-Robots-Tag    無
+<meta robots>   無
+canonical       指向 dev 自己的 hosted.app 網址
+```
+
+也就是完全對 Google 敞開，跟正式站互相稀釋。**這跟推不推 prod 無關，是即時發生的。**
+
+🔴 不能直接改 `public/robots.txt`——那個檔 dev 與 prod **共用同一份原始碼**，
+改了會連正式站一起 noindex。正確做法是改成依主機名判斷：
+
+| 檔案 | 作用 |
+|---|---|
+| `server/utils/site-hosts.ts` | 主機名白名單，單一來源 |
+| `server/routes/robots.txt.ts` | 依主機回 `Allow: /` 或 `Disallow: /`（`public/robots.txt` 必須刪掉） |
+| `server/middleware/noindex-nonproduction.ts` | 非正式主機補 `X-Robots-Tag: noindex, nofollow` |
+
+⚠️ 判斷方式一定要是**白名單正式主機、其餘一律 noindex**，不能寫成黑名單——
+兩個方向的後果不對稱：漏擋一個預覽網址只是重複內容，**誤擋正式站是流量歸零**。
+
+⚠️ 正式站的 hosted.app 網址要跳過，交給 `redirect-canonical` 轉址。
+在 301 回應上掛 noindex 會讓 Google 可能不追那個轉址。
+
+⚠️ middleware 是按檔名字母序執行的，`noindex-` 排在 `redirect-` 前面。
+所以跳過的判斷要寫在 noindex 那支裡，不能指望轉址先攔下來。
+
+實測部署後 **3 分鐘內** 就換成新版——App Hosting 在 rollout 時會清 CDN，
+不必擔心舊的 `robots.txt` 被 `stale-while-revalidate=86400` 卡一天。
+
+
 ## 全量驗證：功能完成的定義
 
 ```bash
@@ -107,9 +143,27 @@ SEO 欄位、**帶結尾斜線的頁面回應碼**、彙整頁卡片是不是真
 ⚠️ 併發刻意壓到 3。這支會對舊站正式主機發 666 個請求，
    密集執行正是誘發「200 回錯誤頁」的原因。它是驗證工具不是壓力測試。
 
+⚠️ **小改動不要重跑全掃**。改動範圍窄的時候（例如只動 `PAGE_MAP`），
+   先算出受影響的文章再針對那幾篇複驗——2026-09-19 改 9 筆對照表，
+   複驗 26 篇就夠了，不必再打舊站 667 次。
+
+### 要查「內文還連著舊站哪裡」時，不要逐篇打新站
+
+從 WordPress 批次抓完整內文，**7 個請求**就能拿到全部 667 篇：
+
+```bash
+for p in 1 2 3 4 5 6 7; do
+  curl -s "https://l-kk.tw/wp-json/wp/v2/posts?per_page=100&page=$p&_fields=slug,content" -o wp-p$p.json
+done
+```
+
+⚠️ 但**離線比對改寫結果會失準**。試過把改寫規則在本機重寫一遍，算出 187 篇有殘留，
+實際掃描是 26 篇——差別在於離線版沒有模擬「隱藏 iframe 已被移除」那一步，
+把 `…/embed` 網址也算進去了。**批次抓內文是為了省請求，判斷仍要以實際輸出為準。**
+
 ## 🔴 最重要的一條：驗證沒覆蓋的那一層，就是會壞的那一層
 
-一週內同一類問題出現**四次**，每次都是「每一層單獨看都正常」：
+同一類問題出現**五次**，每次都是「每一層單獨看都正常」：
 
 | 驗了什麼 | 漏了什麼 | 症狀 |
 |---|---|---|
@@ -117,6 +171,11 @@ SEO 欄位、**帶結尾斜線的頁面回應碼**、彙整頁卡片是不是真
 | 只測單篇 | 互相比對 | 覆寫看不出來 |
 | 只測 API | 頁面路由 | API 200 但 `/spine/` 404 |
 | 只測 API 與網址 | 渲染出的連結 | 卡片變成 `<NUXTLINK>`，沒有 href、點不動 |
+| 用 curl 驗導覽列 | `v-if` 控制的下拉選單 | curl 看不到 → 誤判「六個連結全不見」 |
+
+最後一個是 2026-09-19：導覽列下拉是 `v-if="openDropdown === 'team'"`，
+**根本不會進 SSR 的 HTML**，curl 永遠驗不到。要用瀏覽器點開才算數。
+凡是條件渲染、hover 才出現、或要互動才載入的東西，curl 一律無效。
 
 最後一個特別值得記：模板裡用 `<component :is="resolveComponent('NuxtLink')">`
 解析失敗時，Vue 會把名字當自訂元素**原樣輸出**，畫面完全正常但不是連結。

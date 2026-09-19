@@ -165,6 +165,49 @@ _acme-challenge        不存在
 還有兩個會從「正常」變成「404」：`/category/*`（27 個分類，新站沒有對應路由）、
 以及 Header 現在指的兩個彙整頁。
 
+### 🔴 萬用規則必須逐條指定的第三類：舊站「頁面」路徑
+
+`PAGE_MAP`（`server/utils/wordpress.ts`）裡的路徑**不是文章**，新站對它們一律 404。
+最要命的是 `/bodytest/`——舊站的預約頁，被內文連了 **51 次**，是全站被連最多的目標。
+
+```
+l-kk.tw/bodytest/  ──萬用 301──▶  lkkwellness.com/bodytest/  ──▶  404
+                   ──應該是────▶  lkkwellness.com/booking
+```
+
+內文裡的那 51 條已由 `rewriteArticleLinks` 改寫成站內，但**外部連結與書籤打的是舊站網址**，
+只有 301 規則救得了。`PAGE_MAP` 那張表就是要逐條寫進轉址設定的那份清單。
+
+### 🔴 會被萬用規則「打斷既有 301 鏈」的 9 條（2026-09-19 實測）
+
+舊站有一批多層路徑，靠**舊站自己的 301** 轉到根目錄文章。萬用規則會先命中，
+把多層路徑原樣丟到新站，而新站對多層路徑是直接 404（`pages/[...slug].vue` 一進來就擋），
+舊站那層 301 永遠輪不到：
+
+```
+l-kk.tw/lkk-medical-and-sports-science/diabetes/
+   今天： ──301(舊站自己)──▶ l-kk.tw/diabetes/            200
+   切轉後：──301(萬用)────▶ lkkwellness.com/lkk-medical-and-sports-science/diabetes/   404
+```
+
+九條的最終目標在新站都是 200，已補進 `PAGE_MAP`（站內改寫已生效），
+**但轉址設定也要同樣補這 9 筆**，否則外部流量照樣斷。
+
+查法（這是可重跑的，日後舊站再長出新的多層連結時照做）：
+
+```bash
+# 1. 批次抓完整內文（7 個請求，不要逐篇打）
+for p in 1 2 3 4 5 6 7; do
+  curl -s "https://l-kk.tw/wp-json/wp/v2/posts?per_page=100&page=$p&_fields=slug,content" -o wp-p$p.json
+done
+# 2. 取出所有指向 l-kk.tw 的非圖片連結，挑出多層路徑
+# 3. 逐一 curl -L，看最終是 200 還是 404
+```
+
+2026-09-19 的結果：54 個目標裡 **45 個舊站本來就 404**（舊分類結構早已不存在，
+是文章裡既有的死連結，維持指向舊站是對的——改寫過來只是把死連結搬家），
+**9 個仍然活著**，就是上面那批。
+
 ## 舊站的 `www` 憑證：要修的是那一張，不是另外一張
 
 `l-kk.tw` 與 `www.l-kk.tw` **共用同一張憑證**（指紋相同），
@@ -179,6 +222,30 @@ curl -k https://www.l-kk.tw/    → 301（忽略憑證後其實有轉址！）
 修法是在 Cloudways 重新簽發一張同時涵蓋兩個名字的憑證，
 而且要在掛任何 301 之前做。
 
+## 非正式主機必須 noindex（2026-09-19 補上）
+
+文章改由新站以根目錄網址渲染之後，**dev 站從 20 幾頁變成 667 頁，
+而且每一頁都跟 l-kk.tw 上的那一篇一字不差**。實測當時 dev 完全對 Google 敞開：
+`robots.txt` 是「全部允許」、沒有 `X-Robots-Tag`、canonical 還指向 dev 自己。
+
+這會讓搜尋引擎同時看到三份相同內容（舊站、正式站、dev），彼此稀釋。
+**跟切轉排程無關，是即時發生的**，所以獨立於四階段先處理掉了。
+
+🔴 `public/robots.txt` 是 dev 與 prod **共用的原始碼**，改它會連正式站一起擋。
+做法是改成依主機名判斷的路由（`server/routes/robots.txt.ts`）＋
+`server/middleware/noindex-nonproduction.ts`，清單集中在 `server/utils/site-hosts.ts`。
+細節與注意事項見 [[lkk-wp-articles]] 的地雷 7。
+
+⚠️ 正式網域上線前務必確認 `PRODUCTION_HOSTS` 已含該網域——
+判斷是白名單制，**沒列到的主機一律 noindex**。這是刻意的（漏擋只是重複內容，
+誤擋是流量歸零），但也代表換網域時這份清單是必改項。
+
+```bash
+# 切轉後第一件事：確認正式站沒有被自己擋掉
+curl -s https://lkkwellness.com/robots.txt          # 預期 Allow: /
+curl -sI https://lkkwellness.com/ | grep -i x-robots # 預期沒有這個標頭
+```
+
 ## 🔴 做錯順序會無法回復的三件事
 
 1. **在對應表完成前就把 l-kk.tw 直接改指向新站** → 644 篇文章當場全數 404，
@@ -186,9 +253,9 @@ curl -k https://www.l-kk.tw/    → 301（忽略憑證後其實有轉址！）
 2. **在 CyberDNS 面板上「清乾淨重設」** → MX 與 SPF 一起消失（見上，完全無聲）。
 3. **先關舊站、之後再補 301** → 權重歸零且無法回收。**轉址必須在舊站還活著時掛上去。**
 
-## 新站硬連回舊站的連結：25 處
+## 新站硬連回舊站的連結：25 處（2026-09-19 重新量測）
 
-⚠️ 不同來源給過 25／36／13 三個數字，**25 是正確的**——
+⚠️ 這個數字會隨改動變動，**引用前先重跑**。曾經有 25／36／13 三個說法，
 36 是把 10 個 `@l-kk.tw` 信箱誤算進去。正確算法：
 
 ```bash
@@ -196,11 +263,30 @@ grep -rnoE 'https://l-kk\.tw[^"'"'"' )]*' --include="*.vue" --include="*.ts" \
   pages components layouts error.vue server utils config | grep -v "@l-kk.tw" | wc -l
 ```
 
-分布：`pages/news.vue` 15、`components/layout/Header.vue` 4（桌機與手機選單各一組）、
-`components/sections/HeroSection.vue` 2、`pages/locations/index.vue` 1、
-`pages/booking.vue` 1、`error.vue` 1、`components/sections/CasesSection.vue` 1。
+| 檔案 | 數量 | 性質 |
+|---|---|---|
+| `pages/news.vue` | 14 | 媒體報導外連，新站沒有對應內容 |
+| `pages/knowledge-center.vue` | 2 | 「瀏覽更多」＋讀取失敗時的退路 |
+| `pages/cases-center.vue` | 2 | 同上 |
+| `pages/activity-center.vue` | 2 | 同上 |
+| `server/utils/wordpress.ts` | 1 | **WP API base，不是使用者連結**，不要動 |
+| `server/api/public/wp-articles.get.ts` | 1 | 同上 |
+| `pages/locations/index.vue` | 1 | `category/案例分享` |
+| `pages/booking.vue` | 1 | `category/案例分享` |
+| `error.vue` | 1 | `category/knowledge` |
+
+跟 2026-09-12 那次相比：Header 的 4 條、HeroSection 的 2 條、CasesSection 的 1 條
+**已經改成站內連結**（`/knowledge-center`、`/cases-center`），三個彙整頁則新增了 6 條。
+
+📌 最後那三條（`locations`、`booking`、`error.vue`）指向舊站的分類彙整頁，
+而新站**現在已經有對應頁面**了（`/cases-center`、`/knowledge-center`）。
+它們是彙整頁做出來之前留下的，可以改成站內——這是三個彙整頁那 6 條以外、
+還沒處理的部分。
 
 ⚠️ **在替代目的地存在之前不要先改這些連結**——會把還能用的入口換成 404，比現況更糟。
+`pages/news.vue` 那 14 條就屬於這種：它們是各家媒體的原文連結，新站沒有對應內容。
+（同頁的「查看全部報導」原本外連 `l-kk.tw/category/news/`，2026-09-19 依業主指定
+改連站內的 `/activity-center`。）
 
 ## 快速查證指令
 

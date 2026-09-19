@@ -370,14 +370,14 @@ const showMore = computed(() => fMore.value.length > 0)
         </div>
 
         <div class="mt-8">
-          <a
-            href="https://l-kk.tw/category/news/"
-            target="_blank"
-            rel="noopener noreferrer"
+          <!-- 2026-09-19 業主指定改連站內的活動資訊彙整頁。
+               原本是外連舊站的 l-kk.tw/category/news/，切轉後那個網址會消失。 -->
+          <NuxtLink
+            to="/activity-center"
             class="inline-flex items-center gap-2 text-navy-700 border border-navy-700/15 px-6 py-2.5 rounded-full hover:border-navy-700 transition-colors font-medium"
           >
             查看全部報導 →
-          </a>
+          </NuxtLink>
         </div>
       </div>
     </section>
