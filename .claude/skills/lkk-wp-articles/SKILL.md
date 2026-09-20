@@ -161,6 +161,25 @@ canonical       指向 dev 自己的 hosted.app 網址
    嵌入沒渲染出來 = 整頁空白，而原本的 description 檢查不會報
    （它只在「有文字卻沒 description」時才報）。驗證腳本已補上這一項。
 
+🔴 **不要檢查 iframe 的 `width` 屬性。** 2026-09-19 我加了「width > 800 就報錯」，
+   隔天對正式站跑第一次就產生 **122 筆誤報、真問題 0 筆**——WordPress 一定會把
+   原始尺寸寫進屬性（全站都是 1290），而修正是在 CSS 端覆蓋掉它。
+   屬性永遠是 1290，不代表頁面壞了。
+
+   **檢查要對著「會不會壞」的那一層，不是對著「原始資料長什麼樣」。**
+   逐篇看 HTML 驗不出這件事，決定結果的是文章頁的 CSS。腳本改成
+   `checkEmbedCss()`：抓一篇有嵌入的文章頁，確認那兩條規則在線上。
+   量實際寬度仍然只能用瀏覽器：
+
+```js
+// 瀏覽器主控台（或 browser 工具）——這才是唯一能證明「沒有撐寬」的量法
+const fs=[...document.querySelectorAll('.article-body iframe')]
+;({ horizOverflow: document.documentElement.scrollWidth > innerWidth,
+    attrWidths:[...new Set(fs.map(f=>f.getAttribute('width')))],
+    renderedWidths:[...new Set(fs.map(f=>Math.round(f.getBoundingClientRect().width)))] })
+// typhoon（10 個 iframe）實測：attr 全是 1290、rendered 全是 704、無溢出
+```
+
 
 ## 全量驗證：功能完成的定義
 
