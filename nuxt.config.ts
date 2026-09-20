@@ -205,6 +205,27 @@ export default defineNuxtConfig({
     public: {
       // fallback 同上，不要用舊 WordPress 站的網址
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://lkkwellness.com',
+
+      /**
+       * 文章頁的 canonical 與 og:url 要指到哪個網域。
+       *
+       * 🔴 為什麼需要這個變數：文章由本站以根目錄網址渲染，但**內容仍存放在
+       *    舊站 WordPress，而舊站 l-kk.tw 目前仍在線上**——2026-09-20 實測它是
+       *    `index, follow`、自我 canonical、而且已經提交 sitemap 給 Google。
+       *    如果本站的文章 canonical 指向自己，就會變成兩個都能被收錄的正式網域、
+       *    667 篇相同內容、各自宣稱自己是正本，而排名目前全在舊站那邊。
+       *
+       * 🔴 預設值刻意是舊站，不是本站。少設一個環境變數的後果必須是安全的那邊：
+       *    指向舊站 → 我們什麼都沒損失（本來權重就在那）；
+       *    指向本站 → 跟舊站互打，而且要等 Google 重新評估才救得回來。
+       *
+       * 切轉當天改成 https://lkkwellness.com（在 prod 的 apphosting.yaml 設定）。
+       * ⚠️ 順序很重要：**要在舊站掛上 301 之前或同時改**。
+       *    如果先掛 301 才改，canonical 會指向一個「轉回本站」的網址，
+       *    形成 本站 → 舊站 → 本站 的繞路，是多餘且容易出錯的訊號。
+       */
+      articleCanonicalOrigin:
+        process.env.NUXT_PUBLIC_ARTICLE_CANONICAL_ORIGIN || 'https://l-kk.tw',
       // Firebase client (web) config — public values, used for admin Google sign-in
       firebaseApiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY || '',
       firebaseAuthDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',

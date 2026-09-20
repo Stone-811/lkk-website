@@ -38,8 +38,24 @@ if (error.value || !data.value?.data) {
 
 const post = computed(() => data.value!.data)
 const { formatDate } = useFormatDate()
-const { siteUrl } = useRuntimeConfig().public
-const canonical = computed(() => `${siteUrl}/${slug.value}/`)
+/**
+ * 🔴 文章的 canonical 指向「文章正本所在的網域」，切轉前是舊站 l-kk.tw。
+ *
+ * 文章由本站渲染、網址列也只看得到本站，但內容仍存放在舊站 WordPress，
+ * 而舊站目前仍在線上且被 Google 收錄（2026-09-20 實測：index, follow
+ * ＋ 自我 canonical ＋ 已提交 sitemap）。canonical 若指向自己，等於兩個
+ * 正式網域搶同一批內容的正本，而排名全在舊站那邊。
+ *
+ * 由 NUXT_PUBLIC_ARTICLE_CANONICAL_ORIGIN 控制，預設是舊站（見 nuxt.config.ts
+ * 那段說明：少設環境變數的後果必須落在安全的一邊）。切轉當天改成本站網域。
+ *
+ * ⚠️ og:url 一起改，不要只改 canonical。layout 會用 siteUrl 設一個 og:url，
+ *    這裡覆蓋掉——否則 Facebook／LINE 會把分享歸戶到本站，
+ *    跟 canonical 宣告的正本不一致，等於自己給出兩個互相矛盾的答案。
+ */
+const { siteUrl, articleCanonicalOrigin } = useRuntimeConfig().public
+const canonicalOrigin = computed(() => articleCanonicalOrigin || siteUrl)
+const canonical = computed(() => `${canonicalOrigin.value}/${slug.value}/`)
 
 useHead({
   title: `${post.value.title}｜練健康`,
@@ -49,6 +65,7 @@ useHead({
     { property: 'og:type', content: 'article' },
     { property: 'og:title', content: post.value.title },
     { property: 'og:description', content: post.value.description },
+    { property: 'og:url', content: canonical },
     { property: 'article:published_time', content: post.value.date },
     { property: 'article:modified_time', content: post.value.modified },
   ],
