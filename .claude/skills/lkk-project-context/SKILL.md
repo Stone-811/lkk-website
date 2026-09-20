@@ -13,6 +13,8 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - 後台 `/admin` 用**自建 JWT + bcrypt**（cookie `lkk-admin-token`），**不是 Firebase Auth**。
 - 資料在 Firestore（Admin SDK，`server/utils/firebase.ts` 延遲載入）；`stores`/`coaches`/`lkk4_records` 有 `server/utils/fallback-data.ts` 保底。
 - 字型是系統微軟正黑體（非文件寫的 Noto；`@nuxtjs/google-fonts` 裝了沒啟用）。
+  **2026-09-12 瀏覽器實證 `document.fonts.size === 0`——全站沒有載入任何 webfont**，
+  堆疊是 `Microsoft JhengHei, 微軟正黑體, system-ui, …`。這也是補 `<html lang>` 有意義的原因（見下）。
 
 ## 部署 / Firebase / CLI（dev/prod 雙環境，皆上線）
 - 同 repo `Stone-811/lkk-website`，靠「不同專案 backend + 不同分支 + 分支各自 apphosting.yaml」分離：
@@ -145,6 +147,164 @@ public API 只撈 `where('isActive', '==', true)`。後台新增教練若沒設�
 
 ⚠️ **業主決定不改，別再回報**：`/about` 關鍵數據寫「成立 2018 年」，
 但時間軸仍是 `2018 品牌籌備` / `2019 練健康創立`，兩者對不起來。
+
+## 2026-09-11～12 這批（已上 prod）
+
+### UTM 活動產生器 `/admin/campaigns`（業主可自助建連結）
+- 在此之前，廠商變體與 UTM 連結只能由工程師手寫網址給業主——這正是業主管不動的原因。
+  現在後台可自行新增活動並產生各管道的連結。
+- 檔案：`pages/admin/campaigns.vue`、`utils/campaignLinks.ts`（純函式共用層）、
+  `server/api/admin/campaigns/{index.get,index.post,[id].patch,[id].delete}.ts`。
+- **連結網域跟著所在環境走**（dev 後台產測試連結、prod 後台產正式連結），
+  因為 campaigns 資料本身也分環境存，兩邊清單本來就不互通。環境用橫幅標示（綠/琥珀）。
+- **勾 N 個管道就產 N 條連結**，`utm_source`/`utm_medium` 由管道決定、**不開放覆寫**
+  （覆寫會讓所有管道的 source 變成同一值，與「可區分來源」直接衝突）。
+- 目標頁面只列 `/booking` 與 `/group-booking`（其餘頁面收不到可歸因的名單）。
+- 🔴 **活動代號強制小寫**（`/^[a-z0-9][a-z0-9_-]{1,59}$/`）：`composables/useUtm.ts` 擷取時
+  只做 trim 與截長，**不做 lowercase 也不比對白名單**，所以 `Nanshan` 與 `nanshan` 會在後台
+  下拉裂成兩個選項；而 leads 的 PATCH 白名單只放行 `status` 與 `internalNote`，
+  **沒有任何 API 能回填 payload → 裂了就救不回來**。
+- **「流通中但未登記」區塊**：`index.get.ts` 反過來掃 leads、依 `payload.utm.campaign` 聚合，
+  扣掉已登記的，列在活動清單上方。2026-09-12 實測正式站 campaigns 是空的，但名單裡有
+  `abbott`（9 筆）與 `gigabyte-50plus-free-trial`（2 筆，company=技嘉）——
+  UTM 工具做好之前發出去的連結，業主原本完全看不到。
+  ⚠️ 該查詢掃整個 leads（實測 prod 24／dev 81 筆，可忽略）。超過數千筆時要改成只掃最近 N 個月。
+- 刻意**不猜**目標頁面與管道：名單只記得 `utm_source`，推不回當初勾了哪些管道。
+
+### 社群預覽與 PWA
+- `og-image-v2.png`：**LINE 聊天室的預覽卡是小方形縮圖**，會把 1200×630 置中裁成 1:1
+  （只保留 x285–915）。舊圖英文行寬到 x260–941，業主實際看到「KK WELLNESS CENTE」。
+  v2 把 lockup 收進 x330–870，1:1 裁切左右各留 45px。
+  🔴 **換圖一定要換檔名**：該檔回應沒有 Cache-Control（只有 ETag），
+  LINE/FB 的「圖片網址→縮圖 bytes」那層會沿用舊 bytes，覆蓋同名等於沒換。
+  舊檔保留不刪，避免打斷還在快取中的舊預覽。
+- **LINE 有兩層快取**：頁面網址→OG 中繼資料、圖片網址→縮圖 bytes。換檔名只解第二層；
+  第一層只能靠分享帶參數的網址（`?v=1`）或等它過期，**LINE 沒有公開的清快取工具**。
+  **已送出的 LINE 訊息，預覽卡永遠不會更新**——先跟業主講清楚，否則他會一直盯舊訊息。
+- **PWA manifest 接上了**：`app.vue` 加 `<VitePwaManifest />`。在此之前 manifest 與
+  pwa-192/512 圖示全是空轉（全站 `<link rel="manifest">` 數量為 0）。
+  Chrome 可安裝四條件原本已滿足三條，只缺這行。
+  ⚠️ iPhone Safari 的「加入主畫面」**不吃 manifest、本來就能用**，這行補的是 Android 與桌機 Chrome。
+- 同時**移除 `orientation: 'portrait'`**——會讓安裝後的 App 鎖直向，
+  而最需要轉橫的正是 LKK4 成績查詢與後台 9 個 `overflow-x-auto` 寬表格頁。
+- manifest 的 `lang` 由 vite-plugin-pwa 寫死的預設值 `'en'` 改為 `zh-Hant-TW`。
+
+### canonical / og:url / html lang
+- canonical 與 og:url 寫在 **`layouts/default.vue`**，🔴 **不能寫進 `nuxt.config.ts` 的 app.head**
+  （那是固定值，全站每頁宣告同一個 canonical，Google 會把所有頁併成一頁而從搜尋結果消失）。
+  後台 14 頁都指定 admin/auth layout，不受影響也不該被索引。
+- canonical 用 `router.resolve({name, params})` **重建路徑**，不是拿 `route.path`：
+  vue-router 比對不分大小寫，`/BOOKING` 會回 200 且原本 canonical 會宣告自己是 `/BOOKING`。
+  重建後靜態段小寫化、params 原樣保留（`/LOCATIONS/nanjing` → `/locations/nanjing`；
+  `/locations/NanJing` → 保留）。⚠️ **不能直接 toLowerCase**——分店 slug 是後台自行輸入的欄位，
+  某個 slug 帶大寫時會讓 canonical 指向 404。
+- 🔴 **og:url 一定要一起設，且用 fullPath（含 query）**：FB 缺 og:url 時會退回讀 canonical，
+  只有 canonical 的話 `/booking?v=nanshan` 貼到 FB 會被正規化成 `/booking`，南山文案與 utm 全掉。
+- **大小寫 301 刻意不做**：後台網址帶大小寫混合的 Firestore ID（實測 `SnGT0pIY7otkM5SuiCci`），
+  全站小寫化會讓後台編輯／刪除**安靜失效**；若連 query 也小寫，`?src=LINE` 會變 `line`，
+  名單來源欄永久裂成兩個值。
+- `htmlAttrs: { lang: 'zh-Hant-TW' }`（全站原本是裸的 `<html>`）。
+  實測台灣使用者（裝置語系 zh-TW）補上前後是 **0 像素差異、418 個元素 0 位移**；
+  對照組 `lang=ja` 差 1689–3772 像素，證明量測有效。受益的是非中文語系裝置、
+  螢幕朗讀器（WCAG 3.1.1 A 級），以及 `/news`——該頁中文字元只占 52%（BBC/Reuters/AFP），最易被誤判。
+- `siteUrl` 的 fallback 由舊 WordPress 站 `https://l-kk.tw`（實測仍回 200）改為 `https://lkkwellness.com`。
+
+### 圖片快取策略
+- Service Worker 的圖片規則 `CacheFirst` → **`StaleWhileRevalidate`**。
+  本站換照片一律**同名覆蓋**（近三週 7 次，`belief-chart.webp` 5 天內換兩次），
+  CacheFirst 會讓回訪者最久 **30 天**看到舊照片——**這個毛病在改動前就存在，只是沒人發現**。
+- 🔴 **不要用 routeRules 給 `/images/**` 補長效 Cache-Control**：會讓同名覆蓋的問題更嚴重
+  （CDN 那層連硬重新整理都繞不過去），而且**解錯問題**——冷啟動 2.06 秒是容器起來的時間，
+  與圖片快取無關，實測補了標頭那 2 秒依然存在。
+- ⚠️ **每次部署後，回訪者會被 SW 自動整頁重載一次**（`activated(isUpdate) → location.reload()`）。
+  若那一刻有人在填預約表單，資料會消失。**上 prod 建議挑非營業時段**。本次實測遇到兩次。
+
+### LKK4 成績查詢效能
+- 後台 `/admin/lkk4-records` 與前台 `/personal-record` 原本都是**全表讀取再在記憶體 filter**。
+- 後台改成三段：年度清單用**游標式跳躍**（`orderBy('year','desc').limit(1)`，
+  再 `where('year','<',前一個).limit(1)`），成本＝年度數；成績只查目標年度；
+  組別清單從已讀資料推導。實測預設載入 **656 → 210** 筆讀取。
+- 🔴 **不要用 `.select()` 投影掃全表省讀取**：Firestore Native 依**回傳文件數**計費，
+  投影只省頻寬不省讀取次數，掃 656 筆就是 656 次。
+- 前台改成：年度＋姓名走既有複合索引 `year ASC + name ASC` 精確查詢（**656 → 1 筆**）；
+  沒命中**且**查詢字串含大小寫可折疊字元才退回該年度掃描
+  （654/656 筆是純中文，`toLowerCase` 是 no-op，查不到就是真的沒有）。
+  `year` 改為必填，未帶不再退化成全表掃描。
+- ⚠️ 後台表格排序是 **finalScore 由大到小**（原碼註解寫 "within each group" 但實際是全域），
+  不要改成 year 排序。
+
+### 兩個曾經誤判的教訓
+- **判斷部署成功要看 rollouts 不是 builds**：曾比對到 push 之前就存在的 READY build 而誤報成功。
+  正確做法是過濾 `createTime > push 時間` 的 **rollouts**。
+- **前端送出的參數會讓後端的預設路徑永遠走不到**：後台 LKK4 的「預設最新年度」原本沒生效，
+  因為前端無條件把 `null` 翻成 `year=all`，讀取量反而從 656 變 1312。
+  改後端邏輯時，**一定要看前端實際送出什麼**。
+
+## 2026-09-16～19 這批（**只在 dev，全部尚未上 prod**）
+
+這批改動量很大，而且 dev 與 prod 已經明顯分歧。動任何東西前先跑
+`git diff --name-status origin/prod origin/dev` 確認現況。
+
+### 文章渲染（headless WordPress）
+新站以**根目錄網址**渲染舊站的 666 篇文章，內容仍存在 WordPress。
+細節、六個地雷與全量驗證腳本見 [[lkk-wp-articles]]，這裡不重複。
+
+### 三個彙整頁
+`/knowledge-center`、`/cases-center`、`/activity-center`，
+文案與分區都對照舊站的同名頁面（分區是反推 WordPress 的 Query Loop 區塊得到的）。
+`activity-center` 的 hero 文案是新寫的——舊站 `/activity/` 沒有文案，就是純列表。
+
+### CDN 快取標頭（`nuxt.config.ts` 的 `routeRules`）
+補之前 `cdn-cache-status` **永遠是 miss**：App Hosting 前面有 Google CDN，
+但回應沒有 `Cache-Control` 就不會被快取，每個請求都回到 Cloud Run。
+
+補上之後實測 0.06 秒命中（原本冷請求 0.7–3.1 秒）。分三層：
+文章 600 秒、後台維護的頁面 60 秒、兩張表單 30 秒、`/admin/**` 與 `/api/**` 是 `no-store`。
+
+🔴 後台頁面若被 CDN 快取，等於把一個人的畫面發給所有人。
+   實測後台目前**沒有** `Set-Cookie`，不能依賴「有 cookie 就不會被快取」那條規則，必須明寫排除。
+
+⚠️ 讓既有頁面開始依賴後台資料時，快取也要跟著縮短。踩過一次（見下方）。
+
+### 得知管道改為必填單選
+兩張表單共用 `config/referralSources.ts`。十個選項，其中三個展開下拉
+（社群／實體活動／醫師院所），兩個展開文字欄。
+
+🔴 **存進 Firestore 的形狀刻意維持陣列**（只是長度為 1），值是 `社群: IG` 這種格式。
+   後台名單、CSV 匯出、兩封通知信全部是照陣列寫的，維持形狀就不必動它們。
+
+三份下拉清單可在 `/admin/settings` 維護，**只能新增與停用，不能改字也不能刪除**——
+字串會存進名單，而 leads 的 PATCH 白名單只放行 status 與 internalNote，改了回填不了。
+這個理由也寫在後台介面上給業主看，不是只藏在註解裡。
+
+### UTM 改用 cookie 保存 30 天
+`composables/useUtm.ts` 從 sessionStorage 換成 `useCookie`，與舊站 HandL 一致。
+多了 `capturedAt` 時間戳——沒有它就分不出「兩小時前點的廣告」和「29 天前點的」。
+**刻意不記訪客 IP**（舊站 HandL 會記，那是個資，不照抄）。
+
+### 導覽列「團隊介紹」改為兩個分組
+關於練健康（可點）底下放教練團隊與活動資訊；講師團隊是**不可點的分組標題**，
+用 `<p>` 不用 `<NuxtLink>`——做成看起來可點但點不動的連結，使用者會一直試。
+
+## 這批踩到的四個教訓（都實際發生過）
+
+**① 驗證沒覆蓋的那一層，就是會壞的那一層。**
+一週內同類問題出現四次：只測英文 slug、只測單篇、只測 API 不測頁面、
+只測 API 與網址不測渲染出的連結。每次都是「每一層單獨看都正常」。
+細節見 [[lkk-wp-articles]]。
+
+**② `git add` 不要吃掉 stderr。**
+路徑清單裡含已刪除的路徑會讓 git 整批中止，而 `2>/dev/null` 把錯誤藏起來——
+結果那個 commit 只帶進一個檔案，其餘全漏。
+
+**③ 讓既有頁面開始依賴後台資料時，快取也要跟著改。**
+表單的選項改為後台可維護之後忘了調快取，業主在後台停用再啟用、表單上看不到變化。
+`s-maxage=600` 加 `stale-while-revalidate=86400` 最長可拖一天。
+
+**④ 後台的 GET 與 PATCH 對「文件還不存在」的處理必須一致。**
+GET 在文件不存在時回傳程式裡的預設清單（畫面因此看得到選項），
+PATCH 卻拿到空陣列 → 在空陣列裡找不到那個選項 → 回 404。
+業主回報「無法停用」就是這個。同一個 bug 也會讓第一次新增把預設值全部弄丟。
 
 ## 安全（動 /admin 或 server/api/admin 前必看）
 - 已修補：後門帳號（改 `ALLOW_DEV_ADMIN` gate）、`JWT_SECRET` 正式站強制、登入頁明文帳密移除。

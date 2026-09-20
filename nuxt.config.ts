@@ -214,8 +214,97 @@ export default defineNuxtConfig({
   },
 
   // Nitro server config for Firebase App Hosting
+  /**
+   * 快取標頭。
+   *
+   * 🔴 為什麼要加：App Hosting 前面有一層 Google CDN，但實測 cdn-cache-status
+   *    永遠是 miss —— 因為回應沒有任何 Cache-Control，CDN 依規則不會快取。
+   *    每一個請求都因此回到 Cloud Run，文章頁還會再回源打 WordPress。
+   *    補上標頭之後，重複請求由 CDN 擋下，Cloud Run 與 Cloudways 都不用醒來。
+   *
+   * max-age=0  瀏覽器每次都重新驗證（使用者不會看到自己瀏覽器裡的舊版）
+   * s-maxage   只有共用快取（CDN）能留，這是我們要的
+   * stale-while-revalidate  過期後先回舊的、背景更新，讀者不必等
+   *
+   * ⚠️ 公開頁面實測沒有 Set-Cookie，所以 CDN 願意快取；
+   *    若日後有頁面開始設 cookie，它就會自動不被快取（這是 CDN 的規則，不是設定）。
+   */
+  routeRules: {
+    // 預設：文章頁走這條（根目錄萬用捕捉，無法用路徑區分）。
+    // 文章內容很少改，快取久一點，這正是減少 WordPress 負載的地方。
+    '/**': {
+      headers: {
+        'cache-control': 'public, max-age=0, s-maxage=600, stale-while-revalidate=86400',
+      },
+    },
+
+    // 由後台維護的頁面：快取短一點，業主改完不必等太久才看得到。
+    // ⚠️ 新增這類頁面、或讓既有頁面開始依賴後台資料時，都要記得補進來，
+    //    否則會吃到預設的 600 秒 ＋ 一天的 stale-while-revalidate。
+    //    2026-09-18 踩過：兩張表單的「從哪裡得知」選項改為後台可維護之後
+    //    忘了補，業主在後台停用再啟用，表單上看不到變化。
+    '/booking': { headers: { 'cache-control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=120' } },
+    '/group-booking': { headers: { 'cache-control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=120' } },
+    '/': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/about': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/locations/**': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/team-intro/**': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/lkk-lecturer': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/co-lecturer': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/oversea-lecturer': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+    '/personal-record': { headers: { 'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=600' } },
+
+    // robots.txt 依主機名決定內容（server/routes/robots.txt.ts），不能吃到預設的
+    // 一天 stale-while-revalidate —— 改了設定要等一天才生效太久。
+    '/robots.txt': { headers: { 'cache-control': 'public, max-age=0, s-maxage=300' } },
+
+    // 🔴 後台與 API 絕對不可進共用快取。
+    //    後台頁面若被 CDN 快取，等於把一個人的畫面發給所有人。
+    '/admin/**': { headers: { 'cache-control': 'private, no-store' } },
+    '/api/**': { headers: { 'cache-control': 'private, no-store' } },
+  },
+
   nitro: {
     preset: 'firebase-app-hosting',
+
+    // ── 文章預抓（目前休眠）──────────────────────────────
+    // 建置時把舊站文章抓下來產生靜態頁，執行期就不必再打 WordPress。
+    // 篇數由環境變數 PRERENDER_ARTICLES 控制，未設或為 0 就完全不作用。
+    //
+    // 2026-09-18 實測（Cloud Build）：每篇約 1.5 秒，20 篇讓建置從 2.5 分變 3.0 分，
+    // 外推 666 篇約 17 分鐘、每月會超出 Cloud Build 的免費額度。
+    // 補上 Cache-Control 之後 CDN 命中只要 0.06 秒，比預抓的靜態檔還快，
+    // 預抓只影響「每篇文章的第一個訪客」，效益不足以抵銷建置時間，因此關閉。
+    // 日後若要預抓熱門文章（例如兩個彙整頁上的 60 篇），設這個變數即可。
+    prerender: {
+      crawlLinks: false,
+      failOnError: false,
+    },
+    hooks: {
+      async 'prerender:routes'(routes: Set<string>) {
+        const limit = Number(process.env.PRERENDER_ARTICLES || 0)
+        if (!limit) return
+        const base = process.env.WORDPRESS_API_URL || 'https://l-kk.tw/wp-json'
+        const perPage = Math.min(limit, 100)
+        const added: string[] = []
+        for (let page = 1; added.length < limit; page++) {
+          // 用原生 fetch：nuxt.config 的建置期沒有 $fetch
+          const url = `${base}/wp/v2/posts?per_page=${perPage}&page=${page}&_fields=slug`
+          const res: any = await fetch(url, { signal: AbortSignal.timeout(30000) })
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null)
+          if (!Array.isArray(res) || res.length === 0) break
+          for (const p of res) {
+            if (added.length >= limit) break
+            added.push(p.slug)
+            routes.add(`/${p.slug}/`)
+          }
+          if (res.length < perPage) break
+        }
+        console.log(`[prerender] 加入 ${added.length} 篇文章路由`)
+      },
+    },
+
     // Externalize Node.js modules that shouldn't be bundled
     externals: {
       external: [
