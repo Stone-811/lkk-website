@@ -255,17 +255,15 @@ const reasons = [
               <p class="text-ink/60 leading-relaxed mb-6">
                 從 50 歲到 90 歲，從術後復健到慢性病改善——每一位學員都是我們最驕傲的成果。
               </p>
-              <a
-                href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/"
-                target="_blank"
-                rel="noopener noreferrer"
+              <NuxtLink
+                to="/cases-center"
                 class="inline-flex items-center gap-2 text-orange font-semibold hover:gap-3 transition-all"
               >
                 查看所有學員案例
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </a>
+              </NuxtLink>
             </div>
 
             <!-- Right: Stats -->

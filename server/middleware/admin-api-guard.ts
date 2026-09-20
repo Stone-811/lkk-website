@@ -22,6 +22,8 @@ function requiredPagesFor(path: string, method: string): string[] | 'ANY_AUTH' {
   if (path.startsWith('/api/admin/lkk4-records')) return ['/admin/lkk4-records']
   if (path.startsWith('/api/admin/campaigns')) return ['/admin/campaigns']
   if (path.startsWith('/api/admin/settings')) return ['/admin/settings']
+  // 得知管道的選項維護放在系統設定頁裡，權限跟著那一頁走
+  if (path.startsWith('/api/admin/referral-options')) return ['/admin/settings']
   if (path.startsWith('/api/admin/upload')) return ['/admin/stores', '/admin/coaches', '/admin/lecturers']
   if (path.startsWith('/api/admin/stores')) {
     // GET 供名單類頁面讀分店名稱；寫入僅分店管理

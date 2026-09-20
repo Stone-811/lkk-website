@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { buildReferralSources, composeReferral } from '~/config/referralSources'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { getGroupClassVariant } from '~/config/groupClassVariants'
 import { relationshipOptions } from '~/config/formOptions'
@@ -37,7 +38,8 @@ const formData = reactive({
   preferredTime: '',
   experience: '',
   medicalHistory: '',
-  source: [] as string[],
+  source: '',
+  sourceDetail: '',
   note: '',
 })
 
@@ -59,14 +61,19 @@ const experiences = [
   { value: '有一些基礎', label: '有一些基礎' },
   { value: '有規律訓練習慣', label: '規律訓練中' },
 ]
-const sourceOptions = [
-  { value: 'Facebook 臉書粉專', label: 'Facebook 粉專' },
-  { value: 'Instagram 視覺社群', label: 'Instagram' },
-  { value: 'YouTube 影片頻道', label: 'YouTube 影片' },
-  { value: '親朋好友推薦分享', label: '親友推薦' },
-  { value: '上過體驗課／一對一課程', label: '上過體驗課' },
-  { value: '門店路過看到', label: '路過看到分店' },
-]
+// 從哪裡得知 —— 必填單選，與預約體驗共用同一份清單（config/referralSources.ts）
+// 兩個下拉選單的選項由後台維護；讀不到就用程式裡的預設值
+const { data: dynamicOptions } = await useFetch('/api/public/referral-options')
+const sourceOptions = computed(() => buildReferralSources(dynamicOptions.value?.data))
+const sourceExpand = computed(
+  () => sourceOptions.value.find((o) => o.value === formData.source)?.expand ?? { kind: 'none' as const }
+)
+// 單選：換選項時清掉細項，避免把上一個選項的內容帶過去
+const selectSource = (value: string) => {
+  if (formData.source === value) return
+  formData.source = value
+  formData.sourceDetail = ''
+}
 
 const heroGets = [
   '四堂學會重訓六大基礎動作',
@@ -256,6 +263,16 @@ function validate() {
   if (!formData.email.trim()) e.email = '請填寫電子郵件'
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = 'Email 格式不正確'
   if (!formData.isFillerSelf) e.isFillerSelf = '請選擇'
+
+  // 得知管道：必填單選，有細項的也要填。
+  // 🔴 被變體隱藏時不可要求必填 —— 使用者看不到那個欄位、無從修正。
+  if (!variant.value?.hideSources) {
+    if (!formData.source) {
+      e.source = '請選擇從哪裡得知練健康'
+    } else if (sourceExpand.value.kind !== 'none' && !formData.sourceDetail.trim()) {
+      e.source = sourceExpand.value.placeholder
+    }
+  }
   if (formData.isFillerSelf === '否') {
     if (!formData.relationship) e.relationship = '請選擇與學員的關係'
     if (!formData.fillerName.trim()) e.fillerName = '請輸入報名者姓名'
@@ -280,6 +297,10 @@ async function handleSubmit() {
       method: 'POST',
       body: {
         ...formData,
+        // 得知管道改為單選，但仍以陣列送出 —— 後端與後台名單、CSV 匯出、
+        // 通知信都是照陣列寫的，維持形狀就不必動它們，新舊名單格式也一致。
+        // 欄位被變體隱藏時送空陣列，不要送 ['']。
+        source: formData.source ? [composeReferral(formData.source, formData.sourceDetail)] : [],
         sourcePage: '/group-booking',
         // 廠商變體表單標記（?v= / ?src=），與 UTM 一併寫進名單供後台篩選
         formVariant: (route.query.v as string) || null,
@@ -580,16 +601,38 @@ const inputClass =
                   <div class="font-serif text-[1.05rem] font-bold text-navy-700 border-b-2 border-navy-700/15 pb-1 pt-2">第三部分：其他調查</div>
 
                   <div v-if="!variant.hideSources">
-                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">你是從哪裡得知練健康團體課程資訊的呢？ <span class="text-ink/65 font-normal text-sm">（可複選）</span></label>
+                    <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">你是從哪裡得知練健康團體課程資訊的呢？ <span class="text-orange">*</span> <span class="text-ink/65 font-normal text-sm">（單選）</span></label>
                     <div class="grid grid-cols-2 gap-1.5">
-                      <label v-for="s in sourceOptions" :key="s.value" class="flex items-center gap-1.5 px-2.5 py-2 bg-cream border-[1.5px] border-navy-700/15 rounded-lg text-sm text-ink/70 cursor-pointer transition has-[:checked]:border-navy-700 has-[:checked]:bg-navy-700/[0.07] has-[:checked]:text-[#1a3545] has-[:checked]:font-medium">
-                        <input v-model="formData.source" type="checkbox" :value="s.value" class="peer sr-only" />
-                        <span class="w-[15px] h-[15px] rounded border-[1.5px] border-navy-700/25 bg-white flex-shrink-0 flex items-center justify-center peer-checked:bg-navy-700 peer-checked:border-navy-700 transition">
-                          <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <label v-for="opt in sourceOptions" :key="opt.value" class="flex items-center gap-1.5 px-2.5 py-2 bg-cream border-[1.5px] border-navy-700/15 rounded-lg text-sm text-ink/70 cursor-pointer transition has-[:checked]:border-navy-700 has-[:checked]:bg-navy-700/[0.07] has-[:checked]:text-[#1a3545] has-[:checked]:font-medium">
+                        <input
+                          :checked="formData.source === opt.value"
+                          type="radio"
+                          name="group-source"
+                          class="peer sr-only"
+                          @change="selectSource(opt.value)"
+                        />
+                        <span class="w-[15px] h-[15px] rounded-full border-[1.5px] border-navy-700/25 bg-white flex-shrink-0 flex items-center justify-center peer-checked:border-navy-700 transition">
+                          <span class="w-[7px] h-[7px] rounded-full bg-navy-700 opacity-0 peer-checked:opacity-100 transition"></span>
                         </span>
-                        {{ s.label }}
+                        {{ opt.value }}
                       </label>
                     </div>
+                    <select
+                      v-if="sourceExpand.kind === 'select'"
+                      v-model="formData.sourceDetail"
+                      class="w-full mt-2 px-3 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-lg text-sm"
+                    >
+                      <option value="">{{ sourceExpand.placeholder }}</option>
+                      <option v-for="o in sourceExpand.options" :key="o" :value="o">{{ o }}</option>
+                    </select>
+                    <input
+                      v-else-if="sourceExpand.kind === 'text'"
+                      v-model="formData.sourceDetail"
+                      type="text"
+                      class="w-full mt-2 px-3 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-lg text-sm"
+                      :placeholder="sourceExpand.placeholder"
+                    />
+                    <p v-if="errors.source" class="mt-1.5 text-sm text-red-600">{{ errors.source }}</p>
                   </div>
 
                   <div>

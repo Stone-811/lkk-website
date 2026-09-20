@@ -9,13 +9,30 @@ const stores = [
   { id: 'xindian', name: '七張店' },
 ]
 
-// 團隊介紹子選單
+// 團隊介紹子選單（2026-09-19 業主指定的結構）。
+//
+// 分兩組。組標題有 href 就是可點的連結，沒有就純粹是分區標示：
+//   關於練健康（可點，/about）
+//     教練團隊 / 活動資訊
+//   講師團隊（不可點，只是標題）
+//     練健康講師 / 合作講師 / 海外授權講師
 const teamSubMenu = [
-  { name: '關於練健康', href: '/about' },
-  { name: '教練團隊', href: '/team-intro/coaches' },
-  { name: '練健康講師', href: '/lkk-lecturer' },
-  { name: '合作講師', href: '/co-lecturer' },
-  { name: '海外授權講師', href: '/oversea-lecturer' },
+  {
+    group: '關於練健康',
+    href: '/about',
+    items: [
+      { name: '教練團隊', href: '/team-intro/coaches' },
+      { name: '活動資訊', href: '/activity-center' },
+    ],
+  },
+  {
+    group: '講師團隊',
+    items: [
+      { name: '練健康講師', href: '/lkk-lecturer' },
+      { name: '合作講師', href: '/co-lecturer' },
+      { name: '海外授權講師', href: '/oversea-lecturer' },
+    ],
+  },
 ]
 
 const mobileMenuOpen = ref(false)
@@ -144,15 +161,30 @@ const closeMobileMenu = () => {
             </button>
             <div v-if="openDropdown === 'team'" class="absolute top-full left-0 pt-2 z-50">
               <div class="w-48 bg-white rounded-lg shadow-lg py-2">
-                <NuxtLink
-                  v-for="item in teamSubMenu"
-                  :key="item.href"
-                  :to="item.href"
-                  class="block px-4 py-2 text-sm text-navy-700 hover:bg-cream-100 hover:text-orange transition-colors"
-                  @click="openDropdown = null"
-                >
-                  {{ item.name }}
-                </NuxtLink>
+                <template v-for="(item, gi) in teamSubMenu" :key="item.group">
+                  <div v-if="gi > 0" class="border-t border-cream-200 mt-1.5 mb-1" />
+                  <!-- 組標題：有 href 就可點，沒有就純標示 -->
+                  <NuxtLink
+                    v-if="item.href"
+                    :to="item.href"
+                    class="block px-4 py-2 text-sm font-medium text-navy-700 hover:bg-cream-100 hover:text-orange transition-colors"
+                    @click="openDropdown = null"
+                  >
+                    {{ item.group }}
+                  </NuxtLink>
+                  <p v-else class="px-4 pt-1 pb-1 text-xs font-semibold text-ink/45 tracking-wide">
+                    {{ item.group }}
+                  </p>
+                  <NuxtLink
+                    v-for="sub in item.items"
+                    :key="sub.href"
+                    :to="sub.href"
+                    class="block pl-7 pr-4 py-2 text-sm text-navy-700 hover:bg-cream-100 hover:text-orange transition-colors"
+                    @click="openDropdown = null"
+                  >
+                    {{ sub.name }}
+                  </NuxtLink>
+                </template>
               </div>
             </div>
           </div>
@@ -202,21 +234,21 @@ const closeMobileMenu = () => {
             </div>
           </div>
 
-          <!-- 知識分享 -->
-          <a
-            href="https://l-kk.tw/category/knowledge"
+          <!-- 知識科普 —— 彙整頁在本站，文章本體仍在舊站 -->
+          <NuxtLink
+            to="/knowledge-center"
             class="text-sm xl:text-base text-cream-100 hover:text-orange transition-colors"
           >
             知識分享
-          </a>
+          </NuxtLink>
 
-          <!-- 學員案例 -->
-          <a
-            href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/"
+          <!-- 學員案例 —— 彙整頁在本站，文章本體仍在舊站 -->
+          <NuxtLink
+            to="/cases-center"
             class="text-sm xl:text-base text-cream-100 hover:text-orange transition-colors"
           >
             學員案例
-          </a>
+          </NuxtLink>
 
           <!-- LKK4 -->
           <NuxtLink
@@ -368,15 +400,31 @@ const closeMobileMenu = () => {
               </svg>
             </button>
             <div v-if="mobileOpenDropdown === 'team'" class="ml-4 mt-1 space-y-1">
-              <NuxtLink
-                v-for="item in teamSubMenu"
-                :key="item.href"
-                :to="item.href"
-                class="block py-2 px-3 text-sm text-cream-200 hover:text-orange rounded"
-                @click="closeMobileMenu"
-              >
-                {{ item.name }}
-              </NuxtLink>
+              <template v-for="(item, gi) in teamSubMenu" :key="item.group">
+                <NuxtLink
+                  v-if="item.href"
+                  :to="item.href"
+                  :class="['block py-2 px-3 text-sm font-medium text-cream-100 hover:text-orange rounded', gi > 0 ? 'mt-2' : '']"
+                  @click="closeMobileMenu"
+                >
+                  {{ item.group }}
+                </NuxtLink>
+                <p
+                  v-else
+                  :class="['pb-1 px-3 text-xs font-semibold text-cream-200/50 tracking-wide', gi > 0 ? 'pt-3' : 'pt-1']"
+                >
+                  {{ item.group }}
+                </p>
+                <NuxtLink
+                  v-for="sub in item.items"
+                  :key="sub.href"
+                  :to="sub.href"
+                  class="block py-2 pl-6 pr-3 text-sm text-cream-200 hover:text-orange rounded"
+                  @click="closeMobileMenu"
+                >
+                  {{ sub.name }}
+                </NuxtLink>
+              </template>
             </div>
           </div>
 
@@ -419,23 +467,23 @@ const closeMobileMenu = () => {
             </div>
           </div>
 
-          <!-- 知識分享 -->
-          <a
-            href="https://l-kk.tw/category/knowledge"
+          <!-- 知識科普 —— 同桌機版，彙整頁在本站 -->
+          <NuxtLink
+            to="/knowledge-center"
             class="py-3 px-2 text-cream-100 rounded"
             @click="closeMobileMenu"
           >
             知識分享
-          </a>
+          </NuxtLink>
 
-          <!-- 學員案例 -->
-          <a
-            href="https://l-kk.tw/category/%e6%a1%88%e4%be%8b%e5%88%86%e4%ba%ab/"
+          <!-- 學員案例 —— 同桌機版 -->
+          <NuxtLink
+            to="/cases-center"
             class="py-3 px-2 text-cream-100 rounded"
             @click="closeMobileMenu"
           >
             學員案例
-          </a>
+          </NuxtLink>
 
           <!-- LKK4 -->
           <NuxtLink

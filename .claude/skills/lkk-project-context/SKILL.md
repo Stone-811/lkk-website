@@ -240,14 +240,42 @@ public API 只撈 `where('isActive', '==', true)`。後台新增教練若沒設�
   因為前端無條件把 `null` 翻成 `year=all`，讀取量反而從 656 變 1312。
   改後端邏輯時，**一定要看前端實際送出什麼**。
 
-## 2026-09-16～19 這批（**只在 dev，全部尚未上 prod**）
+## 2026-09-16～20 這批（**部分已上 prod，見下表**）
 
-這批改動量很大，而且 dev 與 prod 已經明顯分歧。動任何東西前先跑
-`git diff --name-status origin/prod origin/dev` 確認現況。
+這批改動量很大，而且 dev 與 prod 仍有分歧。動任何東西前先跑
+`git diff --name-status origin/prod origin/dev` 確認現況，**不要看 commit log**
+（prod 走檔案級帶入，兩邊各有各的 commit，比不出東西）。
+
+| 區塊 | prod | 備註 |
+|---|---|---|
+| 非正式主機 noindex | ✅ 2026-09-20 | `site-hosts.ts` ＋ middleware ＋ `routes/robots.txt.ts`，已刪 `public/robots.txt` |
+| CDN 快取標頭 | ✅ 2026-09-20 | 實測 prod CDN 命中 0.08 秒 |
+| UTM 改 cookie 30 天 | ✅ 2026-09-20 | 含 `/team-intro` 轉址保留查詢字串 |
+| 四支 skill 與文件 | ✅ 2026-09-20 | |
+| **文章渲染（含三個彙整頁）** | ❌ 仍在 dev | 見下方阻擋原因 |
+| **得知管道改版** | ❌ 仍在 dev | 被 `booking.vue` 綁住，見下 |
+| Header 分組／首頁與各頁的站內連結 | ❌ 仍在 dev | 都連到文章系統的頁面 |
+
+### 🔴 文章系統為什麼還不能上 prod
+
+prod 的 `NUXT_PUBLIC_SITE_URL` 是 `https://lkkwellness.com`，而文章頁的
+canonical 是 `${siteUrl}/${slug}/`。舊站 `l-kk.tw` **仍在線上、`index, follow`、
+自我 canonical、且已提交 sitemap**（2026-09-20 實測）。兩邊一上就變成
+兩個都能被收錄的正式網域、667 篇相同內容、各自宣稱自己是正本，
+而排名目前全在舊站那邊。
+
+dev 可以直接 noindex 解決，prod 不行。解法是切轉前讓文章 canonical
+指回舊站（用環境變數控制，切轉當天改一個值翻過來），或等切轉一起上。
+
+### ⚠️ 得知管道改版被一支檔案綁住
+
+`pages/booking.vue` 同時包含「得知管道必填單選改版」與「看更多學員故事 →
+`/cases-center`」。檔案級帶入是整支帶，沒辦法只帶一半；硬拆會讓同一支檔案
+在兩個分支長期分歧，比多等幾天更糟。所以它跟著文章系統一起等。
 
 ### 文章渲染（headless WordPress）
 新站以**根目錄網址**渲染舊站的 666 篇文章，內容仍存在 WordPress。
-細節、六個地雷與全量驗證腳本見 [[lkk-wp-articles]]，這裡不重複。
+細節、八個地雷與全量驗證腳本見 [[lkk-wp-articles]]，這裡不重複。
 
 ### 三個彙整頁
 `/knowledge-center`、`/cases-center`、`/activity-center`，

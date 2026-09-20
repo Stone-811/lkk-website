@@ -158,6 +158,9 @@ async function handleTestNotification() {
         </div>
       </div>
 
+      <!-- 表單的得知管道選項 -->
+      <AdminReferralOptionsPanel />
+
       <!-- 社群連結 -->
       <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
         <h2 class="text-lg font-semibold text-gray-900">社群連結</h2>
