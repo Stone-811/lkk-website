@@ -55,7 +55,16 @@ const { formatDate } = useFormatDate()
  */
 const { siteUrl, articleCanonicalOrigin } = useRuntimeConfig().public
 const canonicalOrigin = computed(() => articleCanonicalOrigin || siteUrl)
-const canonical = computed(() => `${canonicalOrigin.value}/${slug.value}/`)
+
+/**
+ * ⚠️ 用 post.slug（WordPress 回的），不要用路由參數的 slug。
+ *    vue-router 會把網址參數解碼，中文文章拿到的是「帕金森氏症運動處方」，
+ *    而舊站自己宣告的 canonical 是百分號編碼的小寫形式
+ *    （%e5%b8%95%e9%87%91…）。兩種形式雖然都解得開、規範上也等價，
+ *    但既然目標頁面自己就宣告了一種寫法，就用一模一樣的那一種，
+ *    不要留下「應該等價」的空間。2026-09-20 比對過兩邊字串確認一致。
+ */
+const canonical = computed(() => `${canonicalOrigin.value}/${post.value.slug}/`)
 
 useHead({
   title: `${post.value.title}｜練健康`,
