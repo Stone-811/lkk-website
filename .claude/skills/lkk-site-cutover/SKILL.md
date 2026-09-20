@@ -246,6 +246,30 @@ curl -s https://lkkwellness.com/robots.txt          # 預期 Allow: /
 curl -sI https://lkkwellness.com/ | grep -i x-robots # 預期沒有這個標頭
 ```
 
+## 🔴 切轉當天要翻的那個開關：文章 canonical
+
+文章由新站渲染，但切轉前**正本仍在舊站**（l-kk.tw 還在線上、`index, follow`、
+自我 canonical、已提交 sitemap）。所以新站的文章 canonical 與 og:url
+目前指向舊站，由環境變數控制：
+
+```yaml
+# prod 的 apphosting.yaml，切轉當天改這一個值
+- variable: NUXT_PUBLIC_ARTICLE_CANONICAL_ORIGIN
+  value: https://lkkwellness.com      # 切轉前不設，預設就是 https://l-kk.tw
+```
+
+🔴 **預設值是舊站**，這是刻意的：少設一個變數的後果必須落在安全的一邊。
+指向舊站 = 什麼都沒損失（權重本來就在那）；指向新站 = 跟舊站互打。
+
+⚠️ **順序：要在舊站掛上 301 之前、或同時翻。**
+不要先掛 301 才翻——那樣 canonical 會指向一個「轉回新站」的網址，
+形成 新站 → 舊站 → 新站 的繞路，是多餘且容易出錯的訊號。
+
+```bash
+# 翻完立刻驗（三處要一致）
+curl -s https://lkkwellness.com/spine/ | grep -oE '<link[^>]*canonical[^>]*>|og:url[^>]*>|"mainEntityOfPage":"[^"]*"'
+```
+
 ## 🔴 做錯順序會無法回復的三件事
 
 1. **在對應表完成前就把 l-kk.tw 直接改指向新站** → 644 篇文章當場全數 404，
