@@ -90,6 +90,22 @@ useHead({
             <p class="text-ink/70 leading-relaxed mb-6">
               為了提供你最佳的服務，本網站會在你的電腦中放置並取用我們的 Cookie，若你不願接受 Cookie 的寫入，你可在你使用的瀏覽器功能項中設定隱私權等級為高，即可拒絕 Cookie 的寫入，但可能會導致網站某些功能無法正常執行。
             </p>
+            <p class="text-ink/70 leading-relaxed mb-4">
+              本網站使用的 Cookie 分為兩類：
+            </p>
+            <ul class="list-disc pl-6 text-ink/70 leading-relaxed mb-6 space-y-2">
+              <li>
+                <strong class="text-navy-700">本網站自行放置的 Cookie</strong>：用於記錄你是從哪個管道連到本站（例如廣告或社群貼文），以便在你填寫表單時一併記錄來源，作為服務改善與行銷成效評估之用。此類 Cookie 保存 30 天，不包含你的姓名、電話或其他可直接識別身分的資料。
+              </li>
+              <li>
+                <strong class="text-navy-700">第三方服務放置的 Cookie</strong>：本網站使用 Google（Google Analytics、Google 代碼管理工具、Google Ads）與 Meta（Facebook Pixel）等第三方服務，協助我們了解網站使用情形並衡量廣告成效。這些服務會在你的裝置放置它們自己的 Cookie，並可能蒐集你的瀏覽行為、裝置資訊與概略地理位置。相關資料由各該服務提供者依其隱私權政策處理，本網站無法存取其原始資料。
+              </li>
+            </ul>
+            <p class="text-ink/70 leading-relaxed mb-6">
+              你可以透過瀏覽器設定拒絕 Cookie，或使用
+              <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" class="text-orange hover:underline">Google Analytics 停用瀏覽器外掛程式</a>
+              、以及各服務提供者的廣告偏好設定，限制上述第三方服務的蒐集。
+            </p>
 
             <h2 class="font-serif text-xl font-bold text-navy-700 mt-8 mb-4">
               七、隱私權保護政策之修正
