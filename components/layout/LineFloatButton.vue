@@ -5,7 +5,7 @@ const LINE_URL = 'https://line.me/R/ti/p/%40201fzruh'
 
 <template>
   <!-- 常駐於右下、疊在「回到頂部」鈕正上方 -->
-  <div class="fixed right-4 md:right-6 bottom-40 md:bottom-24 z-40 group">
+  <div class="fixed right-4 md:right-6 bottom-40 z-40 group">
     <!-- QR 彈出卡片：僅桌機、hover 顯示（手機無 hover，掃自己的 QR 無意義） -->
     <div
       class="hidden md:block absolute bottom-full right-0 pb-3 w-56
