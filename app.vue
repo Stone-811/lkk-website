@@ -11,7 +11,16 @@
  * 實務上影響很小（關閉 JavaScript 的訪客極少），但業主的安裝說明有寫，照做。
  */
 const GTM_ID = 'GTM-5X328JSM'
-const isProductionHost = useRequestURL().hostname === 'lkkwellness.com'
+
+// 🔴 一定要帶 { xForwardedHost: true }。
+//    App Hosting 前面的 Envoy 會把 Host 改寫成內部主機名，真正的對外網域落在
+//    x-forwarded-host。useRequestURL() 預設只讀 Host，在正式站會拿到內部主機名，
+//    判斷結果永遠是 false —— noscript 就整段不會輸出。
+//    2026-09-25 實測踩過：本機用 Host: lkkwellness.com 測是正常的，
+//    上 prod 之後 noscript 完全不見，因為本機測試從沒走過 x-forwarded-host 那條路。
+//    （server/utils/site-hosts.ts 早就是這樣處理的，這裡當初沒跟上。）
+const isProductionHost =
+  useRequestURL({ xForwardedHost: true }).hostname === 'lkkwellness.com'
 
 useHead({
   noscript: isProductionHost
