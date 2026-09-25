@@ -330,7 +330,7 @@ const inputClass =
 <template>
   <div class="bg-cream text-ink">
     <!-- ===== SUCCESS ===== -->
-    <section v-if="isSuccess" class="py-16 lg:py-24">
+    <section v-if="isSuccess" id="lead-success" data-form="group-booking" class="py-16 lg:py-24">
       <div class="max-w-xl mx-auto px-4 text-center">
         <div class="w-[76px] h-[76px] rounded-full bg-[#2d8a5e]/12 border-2 border-[#2d8a5e] flex items-center justify-center mx-auto mb-6 text-[#2d8a5e]">
           <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">

@@ -102,15 +102,14 @@ async function check({ slug, title }) {
   const tables = (html.match(/<table/g) || []).length
   const wraps = (html.match(/table-scroll/g) || []).length
   if (tables && tables !== wraps) problems.push(`表格 ${tables} 個只包了 ${wraps}`)
-  // ④-2 嵌入的 iframe 不可以比內容欄寬
-  //     🔴 2026-09-19 補上。WordPress 把原始尺寸寫死在屬性上（實測 159 個是
-  //        width="1290"），會把整頁撐寬。這一層原本沒查——表格查了、iframe 漏了，
-  //        結果是業主問「媒體報導點進去原本是 youtube 嗎」才翻出來。
-  //     內容欄實測約 720px，這裡抓 800 當門檻。
-  const wide = [...html.matchAll(/<iframe[^>]*\swidth="(\d+)"/g)]
-    .map((m) => Number(m[1]))
-    .filter((w) => w > 800)
-  if (wide.length) problems.push(`iframe 寬度寫死 ${wide.join('/')}，會撐寬頁面`)
+  // ④-2 嵌入的 iframe：這裡刻意「不」檢查 width 屬性。
+  //     🔴 2026-09-19 我加過一版檢查「width 屬性 > 800 就報錯」，2026-09-20 對
+  //        正式站跑第一次就產生 122 筆誤報、真問題 0 筆。原因是 WordPress 一定會
+  //        把原始尺寸寫進屬性（實測全部是 1290），而修正是在 CSS 端覆蓋掉它——
+  //        屬性永遠是 1290，不代表頁面壞了。實測最糟的一篇（typhoon，10 個 iframe）
+  //        全部渲染成 704px、頁面沒有橫向溢出。
+  //     教訓：**檢查要對著「會不會壞」的那一層，不是對著「原始資料長什麼樣」。**
+  //     這一層要靠下面的 checkEmbedCss()（確認 CSS 修正有部署）＋ 瀏覽器實測量寬度。
 
   // ④-3 整篇只有一支影片的文章，影片一定要在
   //     媒體報導那一類的內文去掉標籤後是空的，嵌入被拿掉就等於整頁空白。
@@ -148,6 +147,37 @@ async function checkListingPages() {
     }
   }
   return out
+}
+
+/**
+ * 確認「iframe 不要撐寬頁面」的 CSS 修正真的部署到線上了。
+ *
+ * 逐篇檢查 HTML 是驗不出這件事的——原始 HTML 裡 iframe 永遠帶著 width="1290"，
+ * 真正決定結果的是文章頁的 CSS。所以改成抓一篇有嵌入的文章頁，
+ * 直接確認那兩條規則在。規則被誰改掉或漏部署，這裡就會報。
+ *
+ * ⚠️ 這只證明規則存在，不證明渲染結果正確。量實際寬度要用瀏覽器，
+ *    參考 [[lkk-wp-articles]] 裡記的量法。
+ */
+async function checkEmbedCss() {
+  const problems = []
+  const res = await fetch(`${SITE}/typhoon/`, { signal: AbortSignal.timeout(30000) }).catch(() => null)
+  if (!res || res.status !== 200) return ['抓不到用來驗 CSS 的文章頁 /typhoon/']
+  const page = await res.text()
+  if (!/\.article-body\[data-v-[a-z0-9]+\] iframe\{[^}]*max-width:100%/.test(page)) {
+    problems.push('文章頁缺少 iframe 的 max-width:100% 規則 → 嵌入會撐寬頁面')
+  }
+  if (!/wp-embed-aspect-16-9 iframe\{[^}]*aspect-ratio:16\/9/.test(page)) {
+    problems.push('文章頁缺少影片 16:9 規則 → 影片會被壓扁或留白')
+  }
+  return problems
+}
+
+const embedCssProblems = await checkEmbedCss()
+if (embedCssProblems.length) {
+  console.log('▸ 嵌入影片的 CSS 修正沒有生效：')
+  embedCssProblems.forEach((p) => console.log(`    ${p}`))
+  console.log('')
 }
 
 const listingProblems = await checkListingPages()
