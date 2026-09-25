@@ -98,7 +98,16 @@ useHead({
                 <strong class="text-navy-700">本網站自行放置的 Cookie</strong>：用於記錄你是從哪個管道連到本站（例如廣告或社群貼文），以便在你填寫表單時一併記錄來源，作為服務改善與行銷成效評估之用。此類 Cookie 保存 30 天，不包含你的姓名、電話或其他可直接識別身分的資料。
               </li>
               <li>
-                <strong class="text-navy-700">第三方服務放置的 Cookie</strong>：本網站使用 Google（Google Analytics、Google 代碼管理工具、Google Ads）與 Meta（Facebook Pixel）等第三方服務，協助我們了解網站使用情形並衡量廣告成效。這些服務會在你的裝置放置它們自己的 Cookie，並可能蒐集你的瀏覽行為、裝置資訊與概略地理位置。相關資料由各該服務提供者依其隱私權政策處理，本網站無法存取其原始資料。
+                <strong class="text-navy-700">第三方服務放置的 Cookie</strong>：本網站透過 Google 代碼管理工具載入下列第三方服務，協助我們了解網站使用情形、改善使用體驗並衡量廣告成效。這些服務會在你的裝置放置它們自己的 Cookie，並可能蒐集你的瀏覽行為、裝置資訊與概略地理位置。相關資料由各該服務提供者依其隱私權政策處理，本網站無法存取其原始資料。
+                <ul class="list-disc pl-6 mt-3 space-y-1.5">
+                  <li><strong class="text-navy-700">Google</strong>（Google Analytics、Google 代碼管理工具、Google Ads）：網站流量分析與廣告成效衡量。</li>
+                  <li><strong class="text-navy-700">Meta</strong>（Facebook Pixel）：廣告成效衡量與受眾分析。</li>
+                  <li>
+                    <strong class="text-navy-700">Microsoft Clarity</strong>：分析使用者如何使用本網站。此服務會<strong class="text-navy-700">記錄你在頁面上的操作行為</strong>（例如點擊位置、捲動與滑鼠移動軌跡），並將這些操作重建為工作階段記錄與熱點圖，供我們改善頁面設計之用。詳見
+                    <a href="https://privacy.microsoft.com/zh-tw/privacystatement" target="_blank" rel="noopener noreferrer" class="text-orange hover:underline">Microsoft 隱私權聲明</a>。
+                  </li>
+                  <li><strong class="text-navy-700">漸強實驗室（Crescendo Lab）</strong>：提供本網站的線上通訊功能，並記錄相關的互動與瀏覽資訊。</li>
+                </ul>
               </li>
             </ul>
             <p class="text-ink/70 leading-relaxed mb-6">
