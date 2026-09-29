@@ -16,6 +16,19 @@ env:
   - variable: NUXT_PUBLIC_SITE_URL
     value: https://lkkwellness.com
 
+  # 文章的 canonical / og:url / JSON-LD，以及 sitemap 要不要列入文章，都看這一個值。
+  #
+  # 🔴 2026-09-29 切轉：從「未設定（預設 https://l-kk.tw）」改為本站網域。
+  #    在此之前文章的正本在舊站——舊站仍在線上、index/follow、自我 canonical、
+  #    且已提交 sitemap，本站若同時宣告自己是正本會變成兩個正式網域互打。
+  #
+  # ⚠️ 這一步必須在舊站掛 301 之前或同時做。先掛 301 才翻的話，
+  #    canonical 會指向一個「轉回本站」的網址，形成 本站→舊站→本站 的繞路。
+  #
+  # 要回滾就把這兩行刪掉，預設值會回到舊站。
+  - variable: NUXT_PUBLIC_ARTICLE_CANONICAL_ORIGIN
+    value: https://lkkwellness.com
+
   # Firebase — PRODUCTION project (this is the `production` branch; dev stays on main=lkkdev)
   - variable: FIREBASE_PROJECT_ID
     value: lkkprod
