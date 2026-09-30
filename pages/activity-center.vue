@@ -3,12 +3,30 @@
 //
 // ⚠️ 舊站的 /activity/ 沒有 hero 文案（就是一個純列表），
 //    所以這裡的標題與說明是新寫的，業主可自行調整。
+//
+// ⚠️ 2026-09-30 移除了兩條連往 l-kk.tw/activity/ 的連結（頁尾的「瀏覽更多活動」
+//    與讀取失敗時的退路）。切轉之後那個網址會 301 到 lkkwellness.com/activity/，
+//    而本站沒有這個路由，實測最終回 404。
+//    同一批死連結在 knowledge-center 與 cases-center 已於當天清掉，這頁是漏網的。
+//    「瀏覽更多」的功能現在由下方的「載入更多」取代。
 const { data, pending } = await useFetch('/api/public/wp-articles', {
   query: { group: 'activity' },
 })
 
-const posts = computed(() => data.value?.groups?.[0]?.posts ?? [])
-const failed = computed(() => data.value?.ok === false)
+const {
+  input, submitted, searching, canSubmit,
+  current, initialFailed,
+  submit, clear, loadMore,
+} = useArticleBrowser(data)
+
+// 挑的是實際搜得到的詞（2026-09-30 實測，括號內為命中篇數）
+// 硬舉 14、研習 3、骨質疏鬆 3、肌少症 3、講座 2
+const SUGGESTIONS = ['硬舉', '研習', '講座', '骨質疏鬆']
+
+function onSuggest(keyword: string) {
+  input.value = keyword
+  submit()
+}
 
 useHead({
   title: '活動資訊｜練健康 LKK Wellness Center',
@@ -39,6 +57,16 @@ useHead({
     </section>
 
     <section class="max-w-7xl mx-auto px-6 lg:px-8 py-12 lg:py-16">
+      <CommonArticleSearch
+        v-model="input"
+        :can-submit="canSubmit"
+        :loading="current.loading"
+        :active="searching"
+        placeholder="輸入關鍵字，例如：硬舉、研習、講座"
+        @submit="submit"
+        @clear="clear"
+      />
+
       <div v-if="pending" class="grid gap-6 md:grid-cols-2">
         <div v-for="n in 4" :key="n" class="bg-white rounded-2xl p-6 animate-pulse">
           <div class="h-5 bg-cream-dark rounded w-4/5 mb-3"></div>
@@ -47,33 +75,20 @@ useHead({
         </div>
       </div>
 
-      <div
-        v-else-if="failed"
-        class="bg-white rounded-2xl p-8 text-center border border-orange/30"
-      >
-        <p class="font-serif text-xl font-black text-navy mb-2">活動清單暫時讀取不到</p>
-        <p class="text-ink/70 text-sm leading-relaxed">
-          內容由知識庫系統提供，目前連線沒有回應。你可以
-          <a href="https://l-kk.tw/activity/" class="text-orange font-bold underline" rel="noopener">
-            直接前往活動資訊
-          </a>
-          瀏覽。
-        </p>
-      </div>
-
-      <div v-else class="grid gap-6 md:grid-cols-2">
-        <CommonArticleCard v-for="post in posts" :key="post.slug" :post="post" />
-      </div>
-
-      <div class="mt-12 text-center">
-        <a
-          href="https://l-kk.tw/activity/"
-          rel="noopener"
-          class="inline-block text-sm text-ink/55 hover:text-orange transition-colors"
-        >
-          瀏覽更多活動 →
-        </a>
-      </div>
+      <CommonArticleResults
+        v-else
+        :posts="current.posts"
+        :total="current.total"
+        :has-more="current.hasMore"
+        :loading="current.loading"
+        :failed="current.failed"
+        :initial-failed="initialFailed"
+        :query="submitted"
+        :suggestions="SUGGESTIONS"
+        empty-label="活動"
+        @load-more="loadMore"
+        @suggest="onSuggest"
+      />
 
       <div class="mt-14 pt-10 border-t border-navy/10 text-center">
         <p class="font-serif text-2xl font-black text-navy-700 mb-3">想先試試看再決定？</p>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { MIN_SEARCH_LENGTH } from '~/composables/useArticleBrowser'
 
 useHead({
   title: '媒體報導｜練健康 LKK Wellness Center',
@@ -34,7 +35,36 @@ const filters = [
   { key: 'lkk4', label: 'LKK4 賽事' },
 ] as const
 const active = ref<'all' | 'video' | 'print' | 'lkk4'>('all')
+
+// 文字搜尋。這頁跟其他三個彙整頁不一樣 —— 報導是寫死在這支檔案裡的陣列，
+// 不打 WordPress，所以純粹是前端字串比對，不會有任何網路請求。
+// 互動維持成「按送出才查」，跟知識科普／學員故事／活動資訊一致，
+// 讀者不用為了不同頁面學兩套操作。
+const input = ref('')
+const submitted = ref('')
+const canSubmit = computed(() => input.value.trim().length >= MIN_SEARCH_LENGTH)
+
+function submitSearch() {
+  const q = input.value.trim().replace(/\s+/g, ' ')
+  if (q.length < MIN_SEARCH_LENGTH) return
+  submitted.value = q
+}
+
+function clearSearch() {
+  input.value = ''
+  submitted.value = ''
+}
+
+function matchesQuery(item: Report) {
+  if (!submitted.value) return true
+  const q = submitted.value.toLowerCase()
+  return [item.outlet, item.title, item.excerpt, item.cat].some(
+    (field) => field && String(field).toLowerCase().includes(q)
+  )
+}
+
 function matches(item: Report) {
+  if (!matchesQuery(item)) return false
   if (active.value === 'all') return true
   if (active.value === 'lkk4') return !!item.lkk4
   return item.type === active.value
@@ -156,6 +186,18 @@ const fMore = computed(() => more.filter((i) => matches(i)))
 const showIntl = computed(() => apShown.value || fIntl.value.length > 0)
 const showTw = computed(() => fTw.value.length > 0)
 const showMore = computed(() => fMore.value.length > 0)
+
+// 三個區塊是刻意重疊的（「所有報導」本來就包含前面出現過的），
+// 所以筆數要用網址去重，不能把三個陣列長度相加
+const matchedCount = computed(() => {
+  const hrefs = new Set<string>()
+  if (apShown.value) hrefs.add(apFeatured.link.href)
+  for (const list of [fIntl.value, fTw.value, fMore.value]) {
+    for (const item of list) hrefs.add(item.link.href)
+  }
+  return hrefs.size
+})
+const noResults = computed(() => matchedCount.value === 0)
 </script>
 
 <template>
@@ -222,6 +264,22 @@ const showMore = computed(() => fMore.value.length > 0)
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- 文字搜尋。這頁的報導是寫死的陣列，純前端過濾，不會打舊站 -->
+    <div class="container mx-auto px-4 pt-10">
+      <CommonArticleSearch
+        v-model="input"
+        :can-submit="canSubmit"
+        :active="!!submitted"
+        placeholder="輸入關鍵字，例如：肌少症、重訓、BBC"
+        label="搜尋媒體報導"
+        @submit="submitSearch"
+        @clear="clearSearch"
+      />
+      <p v-if="submitted && !noResults" class="text-sm text-ink/55 -mt-2 text-center">
+        找到 <strong class="text-navy-700 font-bold">{{ matchedCount }}</strong> 則包含「{{ submitted }}」的報導
+      </p>
     </div>
 
     <!-- 國際通訊社 -->
@@ -374,6 +432,32 @@ const showMore = computed(() => fMore.value.length > 0)
           >
             查看全部報導 →
           </NuxtLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- 三個區塊都沒有命中 -->
+    <section v-if="noResults" class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="bg-white rounded-2xl p-8 md:p-10 text-center max-w-2xl mx-auto">
+          <p class="font-serif text-xl font-black text-navy-700 mb-3">
+            <template v-if="submitted">找不到包含「{{ submitted }}」的報導</template>
+            <template v-else>這個分類目前沒有報導</template>
+          </p>
+          <p v-if="submitted" class="text-ink/70 text-sm leading-relaxed max-w-md mx-auto">
+            搜尋是比對媒體名稱、標題與摘要。試著改用較短的關鍵字，或先把上方的分類切回「全部」。
+          </p>
+          <div v-if="submitted" class="flex flex-wrap justify-center gap-2 mt-6">
+            <button
+              v-for="k in ['肌少症', '重訓', '銀髮', '硬舉', 'BBC']"
+              :key="k"
+              type="button"
+              class="bg-cream hover:bg-cream-dark text-navy-700 text-sm font-bold px-4 py-2 rounded-full transition-colors"
+              @click="input = k; submitSearch()"
+            >
+              {{ k }}
+            </button>
+          </div>
         </div>
       </div>
     </section>

@@ -7,10 +7,20 @@ const { data, pending } = await useFetch('/api/public/wp-articles', {
   query: { group: 'cases' },
 })
 
-const posts = computed(() => data.value?.groups?.[0]?.posts ?? [])
-const failed = computed(() => data.value?.ok === false)
+const {
+  input, submitted, searching, canSubmit,
+  current, initialFailed,
+  submit, clear, loadMore,
+} = useArticleBrowser(data)
 
-const { formatDate } = useFormatDate()
+// 挑的是實際搜得到的詞（2026-09-30 實測，括號內為命中篇數）
+// 膝蓋 20、復健 16、中風 10、帕金森 8、關節炎 7
+const SUGGESTIONS = ['中風', '帕金森', '關節炎', '膝蓋', '復健']
+
+function onSuggest(keyword: string) {
+  input.value = keyword
+  submit()
+}
 
 useHead({
   title: '學員故事｜練健康 LKK Wellness Center',
@@ -41,6 +51,16 @@ useHead({
     </section>
 
     <section class="max-w-7xl mx-auto px-6 lg:px-8 py-12 lg:py-16">
+      <CommonArticleSearch
+        v-model="input"
+        :can-submit="canSubmit"
+        :loading="current.loading"
+        :active="searching"
+        placeholder="輸入關鍵字，例如：中風、帕金森、膝蓋"
+        @submit="submit"
+        @clear="clear"
+      />
+
       <div v-if="pending" class="grid gap-6 md:grid-cols-2">
         <div v-for="n in 4" :key="n" class="bg-white rounded-2xl p-6 animate-pulse">
           <div class="h-5 bg-cream-dark rounded w-4/5 mb-3"></div>
@@ -49,24 +69,20 @@ useHead({
         </div>
       </div>
 
-      <div
-        v-else-if="failed"
-        class="bg-white rounded-2xl p-8 text-center border border-orange/30"
-      >
-        <p class="font-serif text-xl font-black text-navy mb-2">案例清單暫時讀取不到</p>
-        <p class="text-ink/70 text-sm leading-relaxed">
-          內容由知識庫系統提供，目前連線沒有回應。
-          請稍後重新整理，或從上方導覽列瀏覽其他內容。
-        </p>
-      </div>
-
-      <div v-else class="grid gap-6 md:grid-cols-2">
-        <CommonArticleCard
-          v-for="post in posts"
-          :key="post.slug"
-          :post="post"
-        />
-      </div>
+      <CommonArticleResults
+        v-else
+        :posts="current.posts"
+        :total="current.total"
+        :has-more="current.hasMore"
+        :loading="current.loading"
+        :failed="current.failed"
+        :initial-failed="initialFailed"
+        :query="submitted"
+        :suggestions="SUGGESTIONS"
+        empty-label="故事"
+        @load-more="loadMore"
+        @suggest="onSuggest"
+      />
 
       <div class="mt-14 pt-10 border-t border-navy/10 text-center">
         <p class="font-serif text-2xl font-black text-navy-700 mb-3">你的改變也可以從這裡開始</p>

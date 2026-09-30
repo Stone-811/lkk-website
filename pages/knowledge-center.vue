@@ -3,18 +3,32 @@
 // 文章本體仍存放在舊站 WordPress，但由本站以根目錄網址渲染，卡片是站內連結。
 // ⚠️ 2026-09-30 移除了連往 l-kk.tw/knowledge-center/ 的「瀏覽更多」與讀取失敗退路 ——
 //    那個頁面在舊站已被丟進垃圾桶，實測最終回 404。
+//
+// 首屏維持原本的行為：一次拿回四個分區的第一頁，前端切換不再發請求。
+// 搜尋與「載入更多」才會發新請求，而且只打「目前這個分區」——
+// 四個分區同時搜會變成 4 個並發，舊站的併發表現不穩定，不值得為此冒險。
 const { data, pending } = await useFetch('/api/public/wp-articles', {
   query: { group: 'knowledge' },
 })
 
-const groups = computed(() => data.value?.groups ?? [])
-const failed = computed(() => data.value?.ok === false)
-const active = ref('sports')
-const current = computed(
-  () => groups.value.find((g: any) => g.key === active.value) ?? groups.value[0]
+const {
+  tabs, active, setActive,
+  input, submitted, searching, canSubmit,
+  current, initialFailed,
+  submit, clear, loadMore,
+} = useArticleBrowser(data)
+
+const activeLabel = computed(
+  () => tabs.value.find((t) => t.key === active.value)?.label ?? ''
 )
 
-const { formatDate } = useFormatDate()
+// 空結果時提供的範例關鍵字。挑的是實際搜得到的詞（2026-09-30 實測）
+const SUGGESTIONS = ['肌少症', '深蹲', '膝蓋', '骨質疏鬆', '蛋白質']
+
+function onSuggest(keyword: string) {
+  input.value = keyword
+  submit()
+}
 
 useHead({
   title: '知識科普｜練健康 LKK Wellness Center',
@@ -45,10 +59,19 @@ useHead({
     </section>
 
     <section class="max-w-7xl mx-auto px-6 lg:px-8 py-12 lg:py-16">
-      <!-- 分區切換 -->
+      <CommonArticleSearch
+        v-model="input"
+        :can-submit="canSubmit"
+        :loading="current.loading"
+        :active="searching"
+        @submit="submit"
+        @clear="clear"
+      />
+
+      <!-- 分區切換。搜尋狀態下切分區＝在新分區裡重搜同一個關鍵字 -->
       <div class="flex flex-wrap justify-center gap-2 mb-10">
         <button
-          v-for="g in groups"
+          v-for="g in tabs"
           :key="g.key"
           type="button"
           :class="[
@@ -57,7 +80,7 @@ useHead({
               ? 'bg-navy text-cream-50'
               : 'bg-white text-navy hover:bg-cream-dark',
           ]"
-          @click="active = g.key"
+          @click="setActive(g.key)"
         >
           {{ g.label }}
         </button>
@@ -71,25 +94,20 @@ useHead({
         </div>
       </div>
 
-      <!-- 上游取不到時，頁面仍完整顯示，只換掉清單區塊 -->
-      <div
-        v-else-if="failed"
-        class="bg-white rounded-2xl p-8 text-center border border-orange/30"
-      >
-        <p class="font-serif text-xl font-black text-navy mb-2">文章清單暫時讀取不到</p>
-        <p class="text-ink/70 text-sm leading-relaxed">
-          文章由知識庫系統提供，目前連線沒有回應。
-          請稍後重新整理，或從上方導覽列瀏覽其他內容。
-        </p>
-      </div>
-
-      <div v-else class="grid gap-6 md:grid-cols-2">
-        <CommonArticleCard
-          v-for="post in current?.posts"
-          :key="post.slug"
-          :post="post"
-        />
-      </div>
+      <CommonArticleResults
+        v-else
+        :posts="current.posts"
+        :total="current.total"
+        :has-more="current.hasMore"
+        :loading="current.loading"
+        :failed="current.failed"
+        :initial-failed="initialFailed"
+        :query="submitted"
+        :scope-label="activeLabel"
+        :suggestions="SUGGESTIONS"
+        @load-more="loadMore"
+        @suggest="onSuggest"
+      />
     </section>
   </div>
 </template>
