@@ -1,6 +1,8 @@
 <script setup lang="ts">
 // 知識科普。文案與分區沿用舊站 l-kk.tw/knowledge-center/，改用本站版型呈現。
-// ⚠️ 文章本體仍在舊站，卡片連結會離開本站 —— 這是目前刻意的取捨。
+// 文章本體仍存放在舊站 WordPress，但由本站以根目錄網址渲染，卡片是站內連結。
+// ⚠️ 2026-09-30 移除了連往 l-kk.tw/knowledge-center/ 的「瀏覽更多」與讀取失敗退路 ——
+//    那個頁面在舊站已被丟進垃圾桶，實測最終回 404。
 const { data, pending } = await useFetch('/api/public/wp-articles', {
   query: { group: 'knowledge' },
 })
@@ -77,13 +79,7 @@ useHead({
         <p class="font-serif text-xl font-black text-navy mb-2">文章清單暫時讀取不到</p>
         <p class="text-ink/70 text-sm leading-relaxed">
           文章由知識庫系統提供，目前連線沒有回應。
-          你可以
-          <a
-            href="https://l-kk.tw/knowledge-center/"
-            class="text-orange font-bold underline"
-            rel="noopener"
-          >直接前往知識科普</a>
-          瀏覽。
+          請稍後重新整理，或從上方導覽列瀏覽其他內容。
         </p>
       </div>
 
@@ -93,16 +89,6 @@ useHead({
           :key="post.slug"
           :post="post"
         />
-      </div>
-
-      <div class="mt-12 text-center">
-        <a
-          href="https://l-kk.tw/knowledge-center/"
-          rel="noopener"
-          class="inline-block text-sm text-ink/55 hover:text-orange transition-colors"
-        >
-          瀏覽更多文章 →
-        </a>
       </div>
     </section>
   </div>
