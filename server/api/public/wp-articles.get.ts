@@ -57,6 +57,7 @@ const TABS = {
     { key: 'elderly', label: '特殊族群', id: 11 },
     { key: 'fitness', label: '運動人文', id: 9 },
   ],
+  // 學員故事只有一個 WordPress 分類（1092）。主題篩選另外處理，見 CASE_THEMES。
   cases: [{ key: 'cases', label: '學員故事', id: 1092 }],
   activity: [{ key: 'activity', label: '活動資訊', id: 448 }],
   // 媒體報導。/news 上半部是編輯挑選的精選版面（寫死在頁面裡，而且有 3 筆是
@@ -72,6 +73,47 @@ const TAB_BY_KEY = new Map<string, Tab>()
 for (const tabs of Object.values(TABS)) {
   for (const tab of tabs) TAB_BY_KEY.set(tab.key, tab)
 }
+
+/**
+ * 學員故事的主題篩選。
+ *
+ * 🔴 為什麼不能像知識科普那樣一個主題一個 WordPress 分類查詢：
+ *    WP REST 的 categories 參數是 **OR**（實測 1092+1119 回 77 篇，
+ *    而 58+23=81、重疊 4，確認是聯集不是交集），做不出
+ *    「案例分享 AND 肌少症」這種交集。核心 REST 也沒有 tax_relation。
+ *    所以這一組改成「一次把案例分享整批抓回來，再在記憶體裡依主題篩」。
+ *    全部只有 58 篇，一次請求就抓得完，比逐主題各打一次上游便宜也精確。
+ *
+ * 🔴 這些主題在 WordPress 裡掛的是「知識分享」底下（或頂層），不是「案例分享」底下 ——
+ *    WordPress 一個分類只能有一個上層，所以同一個「肌少症」不可能同時掛兩邊。
+ *    這裡是靠「文章同時具備 1092 與主題 id」來認定，不靠分類樹。
+ *
+ * ⚠️ 代稱只能用英數與底線：它會進 Nitro 的快取鍵，而 escapeKey 會把
+ *    連字號與中文一起清掉（見上方說明）。
+ *
+ * ⚠️ 目前沒有任何案例文章掛到的主題**不會顯示**（由 buildCaseGroups 過濾）。
+ *    這是刻意的 —— 提供一個點了永遠是空的分頁比不提供更糟。
+ *    業主在 WordPress 幫案例文章補上主題分類之後，該分頁會自動出現，不必改程式。
+ */
+const CASES_CATEGORY = 1092
+
+const CASE_THEMES: { key: string; label: string; id: number | null }[] = [
+  { key: 'cases', label: '全部', id: null },
+  { key: 'metabolic', label: '三高', id: 1291 },
+  { key: 'arthritis', label: '關節炎', id: 1117 },
+  { key: 'parkinsons', label: '帕金森氏症', id: 1116 },
+  { key: 'cancer', label: '癌症', id: 1118 },
+  { key: 'menopause', label: '更年期', id: 1156 },
+  { key: 'sarcopenia', label: '肌少症', id: 1119 },
+  { key: 'osteoporosis', label: '骨質疏鬆', id: 1157 },
+  { key: 'pain', label: '疼痛排解', id: 1093 },
+  { key: 'ligament', label: '韌帶損傷', id: 1219 },
+  { key: 'alzheimers', label: '阿茲海默症', id: 1310 },
+  { key: 'sport_specific', label: '專項化訓練', id: 1186 },
+  { key: 'special_group', label: '特殊族群', id: 11 },
+]
+
+const CASE_THEME_BY_KEY = new Map(CASE_THEMES.map((t) => [t.key, t]))
 
 const PER_PAGE = 12
 
@@ -222,6 +264,96 @@ const cachedFetchTab = defineCachedFunction(
   }
 )
 
+/**
+ * 學員故事：一次把整個「案例分享」分類抓回來（含每篇的分類 id），
+ * 讓主題篩選可以在記憶體裡做交集。
+ *
+ * ⚠️ per_page 上限是 100。案例分享目前 58 篇，一次抓得完，
+ *    但不能假設永遠如此 —— 依 x-wp-totalpages 循序補抓，上限 3 頁（300 篇）。
+ *    循序不並發：舊站是全站文章的唯一資料來源，而且併發表現不穩定。
+ */
+async function fetchAllCases(q: string) {
+  const rows: any[] = []
+  let totalPages = 1
+
+  for (let page = 1; page <= Math.min(totalPages, 3); page++) {
+    const query: Record<string, string | number> = {
+      categories: CASES_CATEGORY,
+      per_page: 100,
+      page,
+      // categories 是主題篩選要用的，其餘欄位與別的分頁一致
+      _fields: 'slug,title,excerpt,date,categories',
+    }
+    if (q) {
+      query.search = q
+      query.orderby = 'relevance'
+    }
+
+    const res = await $fetch.raw<any[]>(`${WP_BASE}/wp/v2/posts`, { query, timeout: 12000 })
+    if (!Array.isArray(res._data)) {
+      throw createError({ statusCode: 502, message: '上游回應不是文章清單' })
+    }
+    totalPages = Number(res.headers.get('x-wp-totalpages') || 1)
+    rows.push(...res._data)
+    if (res._data.length === 0) break
+  }
+
+  return rows
+    .filter((p) => {
+      let plain = p.slug
+      try {
+        plain = decodeURIComponent(p.slug)
+      } catch {
+        /* 編碼壞掉就用原字串比對 */
+      }
+      return !RESERVED_ROUTES.has(plain)
+    })
+    .map((p) => ({
+      slug: p.slug,
+      title: toPlainText(p.title?.rendered, 120),
+      excerpt: toPlainText(p.excerpt?.rendered, 88),
+      date: p.date,
+      href: `/${p.slug}/`,
+      cats: Array.isArray(p.categories) ? p.categories : [],
+    }))
+}
+
+/** 瀏覽模式的整批結果可以快取（鍵是固定字串，有界）；搜尋不快取，理由同 cachedFetchTab。 */
+const cachedFetchAllCases = defineCachedFunction(() => fetchAllCases(''), {
+  name: 'wp-articles',
+  maxAge: 300,
+  swr: true,
+  getKey: () => 'cases_all',
+})
+
+/** 把整批案例依主題切成分頁結構。沒有任何文章的主題直接不出現。 */
+function buildCaseGroups(
+  all: Awaited<ReturnType<typeof fetchAllCases>>,
+  themes: { key: string; label: string; id: number | null }[],
+  page: number,
+  dropEmpty: boolean
+) {
+  return themes
+    .map((theme) => {
+      const matched = theme.id === null ? all : all.filter((p) => p.cats.includes(theme.id!))
+      const start = (page - 1) * PER_PAGE
+      const posts = matched.slice(start, start + PER_PAGE).map(({ cats, ...rest }) => rest)
+      return {
+        key: theme.key,
+        label: theme.label,
+        posts,
+        total: matched.length,
+        totalPages: Math.max(1, Math.ceil(matched.length / PER_PAGE)),
+        page,
+        hasMore: start + PER_PAGE < matched.length,
+        failed: false,
+      }
+    })
+    // ⚠️ 只有整組模式才隱藏空主題。單一主題查詢回 0 筆是「這個關鍵字沒有結果」，
+    //    不是讀取失敗 —— groups 若變成空陣列，前端取 groups[0] 會判定成失敗。
+    .filter((g) => !dropEmpty || g.total > 0)
+}
+
 export default defineEventHandler(async (event) => {
   const params = getQuery(event)
   const q = normalizeQuery(params.q)
@@ -231,6 +363,35 @@ export default defineEventHandler(async (event) => {
   //    前端拿到的是瀏覽結果，卻會標成「找到 N 篇包含 X 的文章」。
   const hasTab = params.tab !== undefined
   const tabKey = hasTab ? String(params.tab) : ''
+
+  // ── 學員故事：主題交集做不到上游查詢，走自己的整批抓取＋記憶體篩選 ──
+  //    這個判斷必須排在 TAB_BY_KEY 之前：'cases' 兩邊都有，要走新的路徑。
+  const caseTheme = hasTab ? CASE_THEME_BY_KEY.get(tabKey) : undefined
+  if (caseTheme || (!hasTab && String(params.group) === 'cases')) {
+    const effectiveQ = hasTab ? q : ''
+    const effectivePage = hasTab ? page : 1
+    const themes = caseTheme ? [caseTheme] : CASE_THEMES
+    try {
+      const all = effectiveQ ? await fetchAllCases(effectiveQ) : await cachedFetchAllCases()
+      return {
+        ok: true,
+        query: effectiveQ,
+        page: effectivePage,
+        groups: buildCaseGroups(all, themes, effectivePage, !caseTheme),
+      }
+    } catch (error: any) {
+      console.error('[WP Articles] 取不到學員故事:', error?.message)
+      return {
+        ok: false,
+        query: effectiveQ,
+        page: effectivePage,
+        groups: themes.map((t) => ({
+          key: t.key, label: t.label, posts: [], total: 0, totalPages: 0,
+          page: effectivePage, hasMore: false, failed: true,
+        })),
+      }
+    }
+  }
 
   // 單一分頁模式（搜尋與載入更多），或整組模式（首屏）
   let tabs: readonly Tab[] | undefined

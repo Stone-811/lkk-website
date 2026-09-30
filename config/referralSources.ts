@@ -38,8 +38,10 @@ export interface ReferralSource {
 export const DEFAULT_DYNAMIC_OPTIONS = {
   social: ['IG', 'FB', 'Threads', 'Line', 'YT', 'Podcast'],
   event: ['聖誕老人賽事', '高齡博覽會'],
-  // ⚠️ 「張文穎」是範例資料，請業主在後台換成實際的合作醫師或院所。
-  //    這裡留一筆是為了讓下拉選單不會是空的（空清單會退回預設，等於沒設定）。
+  // ⚠️ doctor 這一份表單已經不用了 —— 「醫師/醫療轉介」2026-10-01 改成自行填寫。
+  //    保留是因為 /api/admin/referral-options 的兩支端點還讀寫它，
+  //    砍掉要連同那兩支一起動，而留著不會出現在表單上。
+  //    日後若要改回下拉，把 BASE_SOURCES 那一筆的 expand 換回 select 即可。
   doctor: ['張文穎'],
 }
 
@@ -64,8 +66,12 @@ const BASE_SOURCES: ReferralSource[] = [
     expand: { kind: 'text', placeholder: '請填寫同仁姓名' },
   },
   {
+    // 2026-10-01 業主指定改為自行填寫。原本是第二層下拉，選項由 Firestore 的
+    // referralOptions.doctor 維護 —— 但後台沒有對應的維護頁面（只有 API 端點），
+    // 合作醫師與院所也一直在變，下拉永遠追不上。改成文字輸入後：
+    //   ① 不必再維護清單 ② 下拉為空時整個選項會消失的問題也一併不存在
     value: '醫師/醫療轉介',
-    expand: { kind: 'select', options: [], placeholder: '請選擇醫師或院所' },
+    expand: { kind: 'text', placeholder: '請填寫醫師或院所名稱' },
   },
   {
     value: '實體活動',
@@ -86,10 +92,10 @@ export function buildReferralSources(dynamic?: DynamicOptions): ReferralSource[]
   // undefined ＝ 沒設定過，用預設；空陣列 ＝ 業主刻意清空，要尊重
   const pick = (k: keyof typeof DEFAULT_DYNAMIC_OPTIONS) =>
     dynamic?.[k] === undefined ? DEFAULT_DYNAMIC_OPTIONS[k] : (dynamic[k] as string[])
+  // 只列還在用下拉的選項。「醫師/醫療轉介」已改為自行填寫，不在這裡
   const byValue: Record<string, keyof typeof DEFAULT_DYNAMIC_OPTIONS> = {
     社群: 'social',
     實體活動: 'event',
-    '醫師/醫療轉介': 'doctor',
   }
   return BASE_SOURCES.map((s) => {
     const key = byValue[s.value]
