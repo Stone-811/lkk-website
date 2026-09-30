@@ -248,8 +248,19 @@ done
 | 層 | 設定位置 | 目前值 |
 |---|---|---|
 | 文章 API | `defineCachedEventHandler` | 600 秒 |
-| 彙整頁 API | 同上 | 300 秒 |
+| 彙整頁 **瀏覽** | `defineCachedFunction`（在 `wp-articles.get.ts` 內層） | 300 秒 |
+| 彙整頁 **搜尋** | **刻意不快取** | — |
 | **CDN（頁面層）** | `nuxt.config.ts` 的 `routeRules` | 文章 600 秒／表單 30 秒 |
+
+⚠️ 2026-09-30 起 `wp-articles.get.ts` 不再是 `defineCachedEventHandler`。
+   它改成一般的 `defineEventHandler`，內層用 `defineCachedFunction` 只快取瀏覽模式。
+   原因是搜尋加進來之後，快取鍵的基數變成「關鍵字」而無上限，而 Nitro 的快取底層
+   是 unstorage 的裸 Map——沒有容量上限也沒有逐出機制（過期項目只是讀取時判定為舊，
+   不會被刪掉），容器只有 512MiB。瀏覽模式的鍵是 `分頁代稱_頁碼`，有界，可以快取。
+
+⚠️ 快取鍵只能用英數與底線。Nitro 的 `escapeKey` 是 `String(key).replace(/\W/g,'')`，
+   中文會被整串清光、連字號也會被清掉——三個不同的中文查詢會共用同一個鍵、互相覆蓋。
+   只測英文永遠驗不出這個問題。
 
 補上 `Cache-Control` 之前，App Hosting 前面那層 Google CDN **永遠是 miss**
 （沒有 Cache-Control 就不快取）。補上之後實測：

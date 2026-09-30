@@ -1,16 +1,17 @@
 <script setup lang="ts">
-// 活動資訊。文章仍由舊站 WordPress 管理，這頁只是用本站版型呈現清單。
+// 新聞報導。文章本體仍存放在舊站 WordPress（分類「新聞報導」，共 36 篇），
+// 由本站以根目錄網址渲染，卡片是站內連結。
 //
-// ⚠️ 舊站的 /activity/ 沒有 hero 文案（就是一個純列表），
-//    所以這裡的標題與說明是新寫的，業主可自行調整。
+// 與 /news「媒體報導」的分工：
+//   /news         編輯挑選的精選版面（大圖、國際／台灣分區），資料寫死在頁面裡。
+//                 其中 AFP 法新社與 CNA Insider 只有站外連結（臉書影片、YouTube），
+//                 WordPress 沒有對應文章，所以那一頁不能被這一頁取代。
+//   /news-center  這一頁，完整的文章彙整，可搜尋、可載入更多。
 //
-// ⚠️ 2026-09-30 移除了兩條連往 l-kk.tw/activity/ 的連結（頁尾的「瀏覽更多活動」
-//    與讀取失敗時的退路）。切轉之後那個網址會 301 到 lkkwellness.com/activity/，
-//    而本站沒有這個路由，實測最終回 404。
-//    同一批死連結在 knowledge-center 與 cases-center 已於當天清掉，這頁是漏網的。
-//    「瀏覽更多」的功能現在由下方的「載入更多」取代。
+// 🔴 建這一頁之前，WordPress 的 36 篇新聞報導有 12 篇在新站沒有任何入口
+//    （網址直接打得開，但站上沒有任何頁面連到）。2026-09-30 實測追出來的。
 const { data, pending } = await useFetch('/api/public/wp-articles', {
-  query: { group: 'activity' },
+  query: { group: 'news' },
 })
 
 const {
@@ -19,9 +20,9 @@ const {
   submit, clear, loadMore,
 } = useArticleBrowser(data)
 
-// 挑的是實際搜得到的詞（2026-09-30 實測，括號內為命中篇數）
-// 硬舉 14、研習 3、骨質疏鬆 3、肌少症 3、講座 2
-const SUGGESTIONS = ['硬舉', '研習', '講座', '骨質疏鬆']
+// 挑的是實際搜得到的詞（2026-09-30 實測，括號內為在此分類的命中篇數）
+// 硬舉 18、教練 17、重訓 14、阿嬤 12、銀髮 11
+const SUGGESTIONS = ['硬舉', '重訓', '阿嬤', '銀髮', '肌少症']
 
 function onSuggest(keyword: string) {
   input.value = keyword
@@ -29,12 +30,12 @@ function onSuggest(keyword: string) {
 }
 
 useHead({
-  title: '活動資訊｜練健康 LKK Wellness Center',
+  title: '新聞報導｜練健康 LKK Wellness Center',
   meta: [
     {
       name: 'description',
       content:
-        '練健康的講座、研習、賽事與免費體驗活動。中高齡訓練研習、六角槓體驗、骨質疏鬆醫學講座與 LKK4 賽事資訊都在這裡。',
+        '練健康歷年媒體報導的完整紀錄。從國際通訊社到台灣電視、雜誌與 Podcast，看中高齡肌力訓練如何被看見。',
     },
   ],
 })
@@ -45,13 +46,14 @@ useHead({
     <section class="bg-navy text-cream-50">
       <div class="max-w-5xl mx-auto px-6 lg:px-8 py-16 lg:py-24 text-center">
         <p class="text-orange font-bold tracking-wider text-sm mb-4">
-          News &amp; Events
+          Press Archive ・新聞報導
         </p>
         <h1 class="font-serif text-3xl lg:text-5xl font-black leading-tight mb-6">
-          最新消息與活動資訊
+          每一次被看見，<br class="sm:hidden" >都是一次信任累積
         </h1>
         <p class="text-cream-100/80 leading-relaxed max-w-2xl mx-auto">
-          我們將不定時的更新講座、研習、賽事與課程等最新消息。
+          從國際通訊社到台灣的電視、雜誌與 Podcast，這裡是歷年媒體報導的完整紀錄。
+          可依關鍵字搜尋媒體名稱或標題。
         </p>
       </div>
     </section>
@@ -62,7 +64,8 @@ useHead({
         :can-submit="canSubmit"
         :loading="current.loading"
         :active="searching"
-        placeholder="輸入關鍵字，例如：硬舉、研習、講座"
+        placeholder="輸入關鍵字，例如：硬舉、重訓、阿嬤"
+        label="搜尋新聞報導"
         @submit="submit"
         @clear="clear"
       />
@@ -85,22 +88,22 @@ useHead({
         :show-initial-error="showInitialError"
         :query="submitted"
         :suggestions="SUGGESTIONS"
-        empty-label="活動"
+        empty-label="報導"
         unit="則"
         @load-more="loadMore"
         @suggest="onSuggest"
       />
 
       <div class="mt-14 pt-10 border-t border-navy/10 text-center">
-        <p class="font-serif text-2xl font-black text-navy-700 mb-3">想先試試看再決定？</p>
+        <p class="font-serif text-2xl font-black text-navy-700 mb-3">歡迎媒體採訪與合作</p>
         <p class="text-ink/70 leading-relaxed mb-6 max-w-xl mx-auto">
-          不必等活動，隨時可以預約一次體能評估，由教練依你的身體狀況安排訓練。
+          針對高齡肌力訓練、健康老化與跨世代運動等議題，我們樂於分享第一線經驗與真實故事。
         </p>
         <NuxtLink
-          to="/booking"
+          to="/cooperation"
           class="inline-block bg-orange hover:bg-orange-light text-white font-bold px-8 py-3.5 rounded-full transition-colors"
         >
-          預約體驗
+          媒體採訪洽詢
         </NuxtLink>
       </div>
     </section>

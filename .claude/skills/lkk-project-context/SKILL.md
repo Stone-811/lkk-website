@@ -240,6 +240,18 @@ public API 只撈 `where('isActive', '==', true)`。後台新增教練若沒設�
   因為前端無條件把 `null` 翻成 `year=all`，讀取量反而從 656 變 1312。
   改後端邏輯時，**一定要看前端實際送出什麼**。
 
+## 2026-09-29～30：新舊站切轉已完成
+
+`l-kk.tw` 的首頁、672 篇文章與 39 條頁面全部 301 到 `lkkwellness.com`，
+文章 canonical 已翻向新站。細節與教訓見 [[lkk-site-cutover]]。
+
+🔴 **舊站不能關** —— 新站的文章即時去 `l-kk.tw/wp-json/` 抓，
+舊站已從「內容站」變成「新站的資料庫」。
+
+🔴 **追蹤全面改用業主的 GTM 容器**，本站已移除獨立的 GA4 碼。
+容器裡有兩個 GA4、Google Ads、Facebook Pixel、Microsoft Clarity 與漸強實驗室，
+其中兩個是實測才發現、業主文件沒提到的。見 [[lkk-tracking]]。
+
 ## 2026-09-16～20 這批（**部分已上 prod，見下表**）
 
 這批改動量很大，而且 dev 與 prod 仍有分歧。動任何東西前先跑
