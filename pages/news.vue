@@ -188,14 +188,19 @@ const showTw = computed(() => fTw.value.length > 0)
 const showMore = computed(() => fMore.value.length > 0)
 
 // 三個區塊是刻意重疊的（「所有報導」本來就包含前面出現過的），
-// 所以筆數要用網址去重，不能把三個陣列長度相加
+// 所以筆數要去重，不能把三個陣列長度相加。
+//
+// ⚠️ 去重的鍵用「標題」不能用網址。天下雜誌與財訊是兩則不同媒體的報導，
+//    但 link.href 指向同一篇站內文章 —— 用網址去重會把畫面上明明兩張卡片算成 1 則。
+//    反過來 BBC 在「國際媒體報導」與「所有報導」各出現一次，outlet 字串不同
+//    （BBC / BBC 英國廣播公司）但標題相同，用標題才會正確併成 1 則。
 const matchedCount = computed(() => {
-  const hrefs = new Set<string>()
-  if (apShown.value) hrefs.add(apFeatured.link.href)
+  const titles = new Set<string>()
+  if (apShown.value) titles.add(apFeatured.title)
   for (const list of [fIntl.value, fTw.value, fMore.value]) {
-    for (const item of list) hrefs.add(item.link.href)
+    for (const item of list) titles.add(item.title)
   }
-  return hrefs.size
+  return titles.size
 })
 const noResults = computed(() => matchedCount.value === 0)
 </script>
@@ -452,7 +457,7 @@ const noResults = computed(() => matchedCount.value === 0)
               v-for="k in ['肌少症', '重訓', '銀髮', '硬舉', 'BBC']"
               :key="k"
               type="button"
-              class="bg-cream hover:bg-cream-dark text-navy-700 text-sm font-bold px-4 py-2 rounded-full transition-colors"
+              class="bg-cream hover:bg-cream-200 text-navy-700 text-sm font-bold px-4 py-2 rounded-full transition-colors"
               @click="input = k; submitSearch()"
             >
               {{ k }}

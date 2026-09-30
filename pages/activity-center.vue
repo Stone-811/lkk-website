@@ -15,7 +15,7 @@ const { data, pending } = await useFetch('/api/public/wp-articles', {
 
 const {
   input, submitted, searching, canSubmit,
-  current, initialFailed,
+  current, showInitialError,
   submit, clear, loadMore,
 } = useArticleBrowser(data)
 
@@ -69,9 +69,9 @@ useHead({
 
       <div v-if="pending" class="grid gap-6 md:grid-cols-2">
         <div v-for="n in 4" :key="n" class="bg-white rounded-2xl p-6 animate-pulse">
-          <div class="h-5 bg-cream-dark rounded w-4/5 mb-3"></div>
-          <div class="h-3 bg-cream-dark rounded w-full mb-2"></div>
-          <div class="h-3 bg-cream-dark rounded w-2/3"></div>
+          <div class="h-5 bg-cream-200 rounded w-4/5 mb-3"></div>
+          <div class="h-3 bg-cream-200 rounded w-full mb-2"></div>
+          <div class="h-3 bg-cream-200 rounded w-2/3"></div>
         </div>
       </div>
 
@@ -82,10 +82,11 @@ useHead({
         :has-more="current.hasMore"
         :loading="current.loading"
         :failed="current.failed"
-        :initial-failed="initialFailed"
+        :show-initial-error="showInitialError"
         :query="submitted"
         :suggestions="SUGGESTIONS"
         empty-label="活動"
+        unit="則"
         @load-more="loadMore"
         @suggest="onSuggest"
       />

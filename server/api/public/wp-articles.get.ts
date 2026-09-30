@@ -105,7 +105,10 @@ function toPlainText(html: string, max: number): string {
 function normalizeQuery(raw: unknown): string {
   const q = String(raw ?? '').trim().replace(/\s+/g, ' ')
   if (q.length < MIN_QUERY) return ''
-  return q.slice(0, MAX_QUERY)
+  // ⚠️ 用 Array.from 以「字元」為單位截斷，不要用 slice ——
+  //    slice 是以 UTF-16 code unit 計，會把 emoji 的代理對切成孤兒高位字元，
+  //    接著組查詢字串時會丟 URIError，讀者換幾次關鍵字都一樣失敗。
+  return Array.from(q).slice(0, MAX_QUERY).join('')
 }
 
 function clampPage(raw: unknown): number {
@@ -114,8 +117,9 @@ function clampPage(raw: unknown): number {
   return Math.min(n, MAX_PAGE)
 }
 
-function emptyGroup(tab: Tab, page: number) {
-  return { key: tab.key, label: tab.label, posts: [], total: 0, totalPages: 0, page, hasMore: false }
+/** 取不到資料時的佔位。failed 讓前端能分辨「真的沒有結果」與「這次沒讀到」。 */
+function emptyGroup(tab: Tab, page: number, failed = true) {
+  return { key: tab.key, label: tab.label, posts: [], total: 0, totalPages: 0, page, hasMore: false, failed }
 }
 
 /**
@@ -147,7 +151,16 @@ async function fetchTab(tab: Tab, opts: { q?: string; page?: number }) {
 
   try {
     const res = await $fetch.raw<any[]>(`${WP_BASE}/wp/v2/posts`, { query, timeout: 12000 })
-    const rows = Array.isArray(res._data) ? res._data : []
+
+    // 🔴 舊站在密集請求下會用 HTTP 200 回一頁 HTML 限流頁（本專案實測記錄過）。
+    //    ofetch 依 content-type 判型，這時 _data 是字串不是陣列。
+    //    當成空清單靜默放行的話：讀者看到一片空白而且沒有任何說明，
+    //    而且 defineCachedFunction 會把這個「成功的空結果」快取 300 秒。
+    //    所以要丟出去，讓外層走 ok:false 的說明畫面。
+    if (!Array.isArray(res._data)) {
+      throw createError({ statusCode: 502, message: '上游回應不是文章清單' })
+    }
+    const rows = res._data
     const total = Number(res.headers.get('x-wp-total') || 0)
     const totalPages = Number(res.headers.get('x-wp-totalpages') || 0)
 
@@ -209,11 +222,15 @@ export default defineEventHandler(async (event) => {
   const params = getQuery(event)
   const q = normalizeQuery(params.q)
   const page = clampPage(params.page)
-  const tabKey = typeof params.tab === 'string' ? params.tab : ''
+  // ⚠️ 「有沒有帶 tab」要看參數在不在，不能看它是不是 truthy。
+  //    ?tab= （空字串）若被當成沒帶，會悄悄退回整組模式、而且把 q 丟掉 ——
+  //    前端拿到的是瀏覽結果，卻會標成「找到 N 篇包含 X 的文章」。
+  const hasTab = params.tab !== undefined
+  const tabKey = hasTab ? String(params.tab) : ''
 
   // 單一分頁模式（搜尋與載入更多），或整組模式（首屏）
   let tabs: readonly Tab[] | undefined
-  if (tabKey) {
+  if (hasTab) {
     const tab = TAB_BY_KEY.get(tabKey)
     tabs = tab ? [tab] : undefined
   } else {
@@ -224,25 +241,32 @@ export default defineEventHandler(async (event) => {
   // 整組模式一律是第一頁、不帶搜尋：它是首屏用的，而且一次要打 4 個分類。
   // 讓它也吃 q 或 page 等於把搜尋變成 4 個並發 —— 舊站的併發表現不穩定
   // （實測同樣 6 個並發，量過 4 秒也量過 26 秒），不值得為此冒險。
-  const single = Boolean(tabKey)
+  const single = hasTab
   const effectiveQ = single ? q : ''
   const effectivePage = single ? page : 1
 
-  try {
-    const groups = await Promise.all(
-      tabs.map((tab) =>
-        effectiveQ ? fetchTab(tab, { q: effectiveQ, page: effectivePage }) : cachedFetchTab(tab, effectivePage)
-      )
+  // 🔴 用 allSettled 不是 all。整組模式一次打 4 個分類，若用 Promise.all，
+  //    只要「運動人文」逾時就會讓另外 3 個（可能根本是快取命中、沒碰上游）
+  //    的結果一起被丟掉，整個 /knowledge-center 變成「清單暫時讀取不到」。
+  //    而那張失敗的 SSR 頁還會被 CDN 依 routeRules '/**' 快取 10 分鐘。
+  //    改成逐個分類各自成敗，讀者至少看得到能讀到的那幾個分頁。
+  const settled = await Promise.allSettled(
+    tabs.map((tab) =>
+      effectiveQ ? fetchTab(tab, { q: effectiveQ, page: effectivePage }) : cachedFetchTab(tab, effectivePage)
     )
-    return { ok: true, query: effectiveQ, page: effectivePage, groups }
-  } catch (error: any) {
-    console.error('[WP Articles] 取不到舊站文章清單:', error?.message)
-    // 不往上拋：頁面要能正常顯示，只是清單區塊改成說明文字
-    return {
-      ok: false,
-      query: effectiveQ,
-      page: effectivePage,
-      groups: tabs.map((tab) => emptyGroup(tab, effectivePage)),
-    }
+  )
+
+  const groups = settled.map((r, i) => {
+    if (r.status === 'fulfilled') return { ...r.value, failed: false }
+    console.error(`[WP Articles] ${tabs[i].label} 取不到舊站文章清單:`, r.reason?.message)
+    return emptyGroup(tabs[i], effectivePage)
+  })
+
+  // ok 只有在「每一個分類都失敗」時才是 false —— 那才是整塊清單真的沒東西可顯示
+  return {
+    ok: groups.some((g) => !g.failed),
+    query: effectiveQ,
+    page: effectivePage,
+    groups,
   }
 })

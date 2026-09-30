@@ -14,7 +14,7 @@ const { data, pending } = await useFetch('/api/public/wp-articles', {
 const {
   tabs, active, setActive,
   input, submitted, searching, canSubmit,
-  current, initialFailed,
+  current, showInitialError,
   submit, clear, loadMore,
 } = useArticleBrowser(data)
 
@@ -78,7 +78,7 @@ useHead({
             'px-5 py-2.5 rounded-full text-sm font-bold transition-colors',
             g.key === active
               ? 'bg-navy text-cream-50'
-              : 'bg-white text-navy hover:bg-cream-dark',
+              : 'bg-white text-navy hover:bg-cream-200',
           ]"
           @click="setActive(g.key)"
         >
@@ -88,9 +88,9 @@ useHead({
 
       <div v-if="pending" class="grid gap-6 md:grid-cols-2">
         <div v-for="n in 6" :key="n" class="bg-white rounded-2xl p-6 animate-pulse">
-          <div class="h-5 bg-cream-dark rounded w-4/5 mb-3"></div>
-          <div class="h-3 bg-cream-dark rounded w-full mb-2"></div>
-          <div class="h-3 bg-cream-dark rounded w-2/3"></div>
+          <div class="h-5 bg-cream-200 rounded w-4/5 mb-3"></div>
+          <div class="h-3 bg-cream-200 rounded w-full mb-2"></div>
+          <div class="h-3 bg-cream-200 rounded w-2/3"></div>
         </div>
       </div>
 
@@ -101,7 +101,7 @@ useHead({
         :has-more="current.hasMore"
         :loading="current.loading"
         :failed="current.failed"
-        :initial-failed="initialFailed"
+        :show-initial-error="showInitialError"
         :query="submitted"
         :scope-label="activeLabel"
         :suggestions="SUGGESTIONS"

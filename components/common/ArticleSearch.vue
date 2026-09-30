@@ -12,6 +12,14 @@
  *    沒擋的話注音使用者每選一個字就送出一次查詢。
  *    這裡在 keydown 檢查 isComposing（部分瀏覽器改用 keyCode 229），
  *    組字中的 Enter 直接 preventDefault，表單根本不會收到 submit。
+ *
+ * ⚠️ 輸入框的字級一定要 16px（text-base），不能用 text-sm。
+ *    iOS Safari 對 font-size < 16px 的輸入框，一聚焦就會自動放大整頁，
+ *    讀者得自己縮回去。這是 lkk-mobile-audit 記過的四個常見問題之一。
+ *
+ * ⚠️ type="search" 會由瀏覽器自己畫一顆清除鈕（::-webkit-search-cancel-button），
+ *    跟下面自訂的清除鈕重疊成兩個 × —— 實測在 dev 站確認過，所以把原生那顆藏掉。
+ *    不能改用 type="text"：type="search" 才會讓手機鍵盤出現「搜尋」鍵。
  */
 import { MIN_SEARCH_LENGTH } from '~/composables/useArticleBrowser'
 
@@ -78,7 +86,7 @@ function onSubmit() {
         enterkeyhint="search"
         autocomplete="off"
         :placeholder="placeholder"
-        class="flex-1 min-w-0 bg-transparent text-ink placeholder:text-ink/35 text-sm md:text-base py-1.5 focus:outline-none"
+        class="flex-1 min-w-0 bg-transparent text-ink placeholder:text-ink/35 text-base py-1.5 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
         @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
         @keydown.enter="onKeydownEnter"
       >
@@ -98,7 +106,7 @@ function onSubmit() {
       <button
         type="submit"
         :disabled="!canSubmit || loading"
-        class="shrink-0 bg-navy hover:bg-navy-dark disabled:bg-navy/25 disabled:cursor-not-allowed text-cream-50 text-sm font-bold px-5 py-2 rounded-full transition-colors"
+        class="shrink-0 bg-navy hover:bg-navy-800 disabled:bg-navy/25 disabled:cursor-not-allowed text-cream-50 text-sm font-bold px-4 md:px-5 py-2 rounded-full transition-colors"
       >
         {{ loading ? '搜尋中' : '搜尋' }}
       </button>
