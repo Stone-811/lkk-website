@@ -45,13 +45,13 @@ useHead({
     <section class="bg-navy text-cream-50">
       <div class="max-w-5xl mx-auto px-6 lg:px-8 py-16 lg:py-24 text-center">
         <p class="text-orange font-bold tracking-wider text-sm mb-4">
-          Events &amp; Workshops ・活動資訊
+          News &amp; Events
         </p>
         <h1 class="font-serif text-3xl lg:text-5xl font-black leading-tight mb-6">
-          講座、研習與賽事，<br class="sm:hidden" >現場見
+          最新消息與活動資訊
         </h1>
         <p class="text-cream-100/80 leading-relaxed max-w-2xl mx-auto">
-          中高齡訓練研習、六角槓體驗、醫學講座與 LKK4 賽事。想親自試試看、或想更深入了解訓練背後的科學，從這裡開始。
+          我們將不定時的更新講座、研習、賽事與課程等最新消息。
         </p>
       </div>
     </section>
