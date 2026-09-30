@@ -35,7 +35,7 @@ const NOT_AN_ARTICLE = /^(category|tag|author|feed|comments)$/
 export const RESERVED_ROUTES = new Set([
   'about', 'booking', 'cases-center', 'activity-center', 'co-lecturer', 'cooperation', 'franchise',
   'group-booking', 'knowledge-center', 'lkk-academy', 'lkk-lecturer', 'lkk4',
-  'news', 'oversea-lecturer', 'personal-record', 'privacy', 'services', 'shop',
+  'news', 'news-center', 'oversea-lecturer', 'personal-record', 'privacy', 'services', 'shop',
   'admin', 'locations', 'team-intro', 'api',
 ])
 

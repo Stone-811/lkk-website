@@ -45,7 +45,7 @@ const WP_BASE = process.env.WORDPRESS_API_URL || 'https://l-kk.tw/wp-json'
 const RESERVED_ROUTES = new Set([
   'about', 'booking', 'cases-center', 'activity-center', 'co-lecturer', 'cooperation', 'franchise',
   'group-booking', 'knowledge-center', 'lkk-academy', 'lkk-lecturer', 'lkk4',
-  'news', 'oversea-lecturer', 'personal-record', 'privacy', 'services', 'shop',
+  'news', 'news-center', 'oversea-lecturer', 'personal-record', 'privacy', 'services', 'shop',
   'admin', 'locations', 'team-intro', 'api',
 ])
 
@@ -59,6 +59,10 @@ const TABS = {
   ],
   cases: [{ key: 'cases', label: '學員故事', id: 1092 }],
   activity: [{ key: 'activity', label: '活動資訊', id: 448 }],
+  // 媒體報導。/news 上半部是編輯挑選的精選版面（寫死在頁面裡，而且有 3 筆是
+  // 站外連結、WordPress 沒有），下半部的「所有報導」才走這一組。
+  // 實測 2026-09-30：精選區 10 個站內連結全部都在這個分類裡，所以這一組是超集。
+  news: [{ key: 'news', label: '媒體報導', id: 14 }],
 } as const
 
 type Tab = { key: string; label: string; id: number }

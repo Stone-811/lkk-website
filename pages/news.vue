@@ -429,10 +429,11 @@ const noResults = computed(() => matchedCount.value === 0)
         </div>
 
         <div class="mt-8">
-          <!-- 2026-09-19 業主指定改連站內的活動資訊彙整頁。
-               原本是外連舊站的 l-kk.tw/category/news/，切轉後那個網址會消失。 -->
+          <!-- 2026-09-30 改連 /news-center（WordPress 新聞報導分類的完整彙整）。
+               9/19 當時還沒有那一頁，暫時指向活動資訊，標籤與目的地對不上
+               （報導 vs 活動）—— 現在有正確的目的地了。 -->
           <NuxtLink
-            to="/activity-center"
+            to="/news-center"
             class="inline-flex items-center gap-2 text-navy-700 border border-navy-700/15 px-6 py-2.5 rounded-full hover:border-navy-700 transition-colors font-medium"
           >
             查看全部報導 →

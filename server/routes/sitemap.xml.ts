@@ -30,6 +30,7 @@ const STATIC_PATHS = [
   '/knowledge-center',
   '/cases-center',
   '/activity-center',
+  '/news-center',
   '/news',
   '/franchise',
   '/cooperation',

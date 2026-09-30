@@ -56,7 +56,7 @@ async function allSlugs() {
 const RESERVED = new Set([
   'about', 'booking', 'cases-center', 'activity-center', 'co-lecturer', 'cooperation', 'franchise',
   'group-booking', 'knowledge-center', 'lkk-academy', 'lkk-lecturer', 'lkk4',
-  'news', 'oversea-lecturer', 'personal-record', 'privacy', 'services', 'shop',
+  'news', 'news-center', 'oversea-lecturer', 'personal-record', 'privacy', 'services', 'shop',
   'admin', 'locations', 'team-intro', 'api', '_nuxt', 'sitemap.xml', 'robots.txt',
 ])
 
