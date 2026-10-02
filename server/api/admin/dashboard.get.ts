@@ -35,7 +35,10 @@ export default defineEventHandler(async (event) => {
     const pendingLeads = allLeads.filter(lead => lead.status === 'new');
 
     const thisMonthBookings = thisMonthLeads.filter(lead => lead.type === 'booking');
+    // 團課報名表單寫入的是 type:'group_class'（見 server/api/leads/group-class.post.ts）
+    const thisMonthGroupClasses = thisMonthLeads.filter(lead => lead.type === 'group_class');
     const thisMonthCooperations = thisMonthLeads.filter(lead => lead.type === 'cooperation');
+    // 加盟洽詢 2026-10-02 起不在儀表板顯示，但統計保留 —— 名單本身還在，日後要加回來不必改這支
     const thisMonthFranchises = thisMonthLeads.filter(lead => lead.type === 'franchise');
 
     // Get store count
@@ -81,6 +84,7 @@ export default defineEventHandler(async (event) => {
           thisMonthLeads: thisMonthLeads.length,
           pendingLeads: pendingLeads.length,
           thisMonthBookings: thisMonthBookings.length,
+          thisMonthGroupClasses: thisMonthGroupClasses.length,
           thisMonthCooperations: thisMonthCooperations.length,
           thisMonthFranchises: thisMonthFranchises.length,
           storeCount,

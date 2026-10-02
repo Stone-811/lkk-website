@@ -17,6 +17,7 @@ interface DashboardStats {
   pendingLeads: number
   thisMonthBookings: number
   thisMonthCooperations: number
+  thisMonthGroupClasses: number
   thisMonthFranchises: number
   storeCount: number
   coachCount: number
@@ -27,7 +28,7 @@ interface RecentLead {
   id: string
   name: string
   phone: string
-  type: 'booking' | 'franchise' | 'cooperation'
+  type: 'booking' | 'group_class' | 'cooperation' | 'franchise'
   storeId?: string
   storeName: string
   status: string
@@ -41,6 +42,7 @@ const stats = ref<DashboardStats>({
   pendingLeads: 0,
   thisMonthBookings: 0,
   thisMonthCooperations: 0,
+  thisMonthGroupClasses: 0,
   thisMonthFranchises: 0,
   storeCount: 0,
   coachCount: 0,
@@ -72,14 +74,14 @@ const statCards = computed(() => [
   { label: '本月新名單', value: stats.value.thisMonthLeads.toString(), href: '/admin/leads' },
   { label: '待處理名單', value: stats.value.pendingLeads.toString(), href: '/admin/leads?status=new' },
   { label: '本月預約體驗', value: stats.value.thisMonthBookings.toString(), href: '/admin/leads?type=booking' },
-  { label: '本月合作洽詢', value: stats.value.thisMonthCooperations.toString(), href: '/admin/cooperation' },
+  { label: '本月團課預約', value: stats.value.thisMonthGroupClasses.toString(), href: '/admin/group-classes' },
 ])
 
 // Secondary stats
 const secondaryStats = computed(() => [
   { label: '分店數', value: stats.value.storeCount.toString(), href: '/admin/stores' },
   { label: '教練數', value: stats.value.coachCount.toString(), href: '/admin/coaches' },
-  { label: '本月加盟洽詢', value: stats.value.thisMonthFranchises.toString(), href: '/admin/leads?type=franchise' },
+  { label: '本月合作洽詢', value: stats.value.thisMonthCooperations.toString(), href: '/admin/cooperation' },
   { label: '總名單數', value: stats.value.totalLeads.toString(), href: '/admin/leads' },
 ])
 
