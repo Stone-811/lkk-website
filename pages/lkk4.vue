@@ -628,7 +628,9 @@ const faqs = [
             <p class="text-[15px] text-ink/70 leading-relaxed mb-6">
               39 歲以下、40–49 歲、50–59 歲、60–69 歲、70–79 歲，各分男女組共十組，另特別加開 80 歲以上不分性別的長者推廣組。
             </p>
-            <div class="grid md:grid-cols-3 gap-4 mb-12">
+            <!-- 四張卡一列。768px 只有約 170px/張，「鼓勵長輩及特殊族群一同參與」
+                 會擠成好幾行，所以平板維持兩欄，桌機才攤成一列 -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
               <div
                 v-for="g in competitionGroups"
                 :key="g.key"
@@ -649,7 +651,9 @@ const faqs = [
 
             <!-- 報名費用 -->
             <h3 class="font-serif text-2xl font-black text-navy-800 mb-6">報名費用</h3>
-            <div class="grid sm:grid-cols-2 gap-4 mb-4">
+            <!-- 三張卡一列。640px 三欄會把「2026/6/29 12:00 – 2026/7/12 23:55」
+                 這種日期區間擠到換行，所以小螢幕維持兩欄 -->
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               <div
                 v-for="fee in entryFees"
                 :key="fee.name"
