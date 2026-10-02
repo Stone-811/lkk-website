@@ -24,6 +24,9 @@ export function useLeadStatus() {
 
   const leadTypeLabels: Record<string, LeadTypeConfig> = {
     booking: { label: '預約體驗', class: 'bg-blue-100 text-blue-700' },
+    // 團課報名寫入的 type 是 group_class。少了這一筆，後台最近名單會直接
+    // 把原始字串「group_class」印在畫面上（getLeadTypeLabel 找不到就回傳 type 本身）
+    group_class: { label: '團課預約', class: 'bg-amber-100 text-amber-700' },
     franchise: { label: '加盟洽詢', class: 'bg-purple-100 text-purple-700' },
     cooperation: { label: '合作洽詢', class: 'bg-green-100 text-green-700' },
   }
@@ -40,6 +43,7 @@ export function useLeadStatus() {
   const leadTypeOptions = [
     { value: '', label: '全部來源' },
     { value: 'booking', label: '預約體驗' },
+    { value: 'group_class', label: '團課預約' },
     { value: 'cooperation', label: '合作洽詢' },
     { value: 'franchise', label: '加盟洽詢' },
   ]
