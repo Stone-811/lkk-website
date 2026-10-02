@@ -285,6 +285,17 @@ const toggleExerciseGoal = (goal: string) => {
   }
 }
 
+/**
+ * 「參觀」與「電話詢問」代表這位學員已經到店、或已經與同仁通過電話，
+ * 同意事項在現場已經說明過，線上再勾一次是重複的 ——
+ * 2026-10 業主指定這兩種來源改為非必填。
+ *
+ * 條款文字照常顯示（讀者仍該看得到），只是不強制勾選、也不擋送出。
+ * agreeToTerms 本來就只是前端的送出閘門，沒有進 payload，所以後端不受影響。
+ */
+const TERMS_OPTIONAL_SOURCES = ['參觀', '電話詢問']
+const termsOptional = computed(() => TERMS_OPTIONAL_SOURCES.includes(formData.source))
+
 const validateForm = () => {
   const newErrors: Record<string, string> = {}
 
@@ -294,14 +305,14 @@ const validateForm = () => {
   if (formData.phone && !/^09\d{8}$/.test(formData.phone)) newErrors.phone = '請輸入有效的手機號碼'
   if (!formData.gender) newErrors.gender = '請選擇性別'
   if (!formData.birthDate) newErrors.birthDate = '請選擇出生年月日'
-  if (!formData.email.trim()) {
-    newErrors.email = '請輸入 Email'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+  // Email 為選填（2026-10 業主指定）。有填才驗格式 ——
+  // 後端本來就是選填：沒有 email 就不寄客戶確認信（server/api/leads/booking.post.ts）
+  if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
     newErrors.email = '請輸入有效的 Email'
   }
 
   // 填寫者資料驗證
-  if (formData.filledBySelf === '親友代填') {
+  if (formData.filledBySelf === '他人代填') {
     if (!formData.relationship) newErrors.relationship = '請選擇與學員的關係'
     if (!formData.bookerName.trim()) newErrors.bookerName = '請輸入預約者姓名'
     if (!formData.contactPhone.trim()) newErrors.contactPhone = '請輸入方便聯繫的電話'
@@ -330,7 +341,7 @@ const validateForm = () => {
     newErrors.source =
       sourceExpand.value.kind === 'select' ? sourceExpand.value.placeholder : sourceExpand.value.placeholder
   }
-  if (!formData.agreeToTerms) newErrors.agreeToTerms = '請勾選同意事項'
+  if (!termsOptional.value && !formData.agreeToTerms) newErrors.agreeToTerms = '請勾選同意事項'
 
   errors.value = newErrors
   return Object.keys(newErrors).length === 0
@@ -386,9 +397,9 @@ const handleSubmit = async () => {
         line: formData.line || null,
         // 填寫者資料
         filledBySelf: formData.filledBySelf === '本人填寫',
-        relationship: formData.filledBySelf === '親友代填' ? formData.relationship : null,
-        bookerName: formData.filledBySelf === '親友代填' ? formData.bookerName : null,
-        contactPhone: formData.filledBySelf === '親友代填' ? formData.contactPhone : formData.phone,
+        relationship: formData.filledBySelf === '他人代填' ? formData.relationship : null,
+        bookerName: formData.filledBySelf === '他人代填' ? formData.bookerName : null,
+        contactPhone: formData.filledBySelf === '他人代填' ? formData.contactPhone : formData.phone,
         // 健康狀況
         hasMedicalCondition: formData.hasMedicalCondition === '是',
         medicalConditionNote: formData.hasMedicalCondition === '是' ? formData.medicalConditionNote : null,
@@ -508,7 +519,7 @@ const handleSubmit = async () => {
                 </svg>
               </div>
               <h2 class="text-2xl font-bold mb-4 text-navy-700 font-serif">預約成功！</h2>
-              <p class="text-ink-600 mb-2">我們將於 2~3 天內主動與你聯繫確認體驗課時間，並寄送 Email 通知你。</p>
+              <p class="text-ink-600 mb-2">我們將於 2~3 天內主動與你聯繫確認體驗課時間<template v-if="formData.email">，並寄送 Email 通知你</template>。</p>
               <p class="text-navy-700 font-medium mb-8">為了更快為你服務，我們已為你預填預約資訊，請點下方按鈕加入官方 LINE，直接送出即可（訊息需由你親自按下傳送）。</p>
 
               <!-- LINE CTA（已預填預約資訊） -->
@@ -630,7 +641,7 @@ const handleSubmit = async () => {
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-medium mb-2 text-navy-700">
-                        Email <span class="text-red-500">*</span>
+                        Email <span class="text-ink-500 font-normal">（選填）</span>
                       </label>
                       <input
                         v-model="formData.email"
@@ -666,7 +677,9 @@ const handleSubmit = async () => {
                     填寫者資料 & 健康狀況
                   </h2>
 
-                  <!-- 本人填寫 / 親友代填 -->
+                  <!-- 本人填寫 / 他人代填。
+                       ⚠️ 存進 Firestore 的是布林值 filledBySelf，不是這兩個字串，
+                          所以改字面不會讓新舊名單在後台與 CSV 裡裂成兩種寫法 -->
                   <div>
                     <label class="block text-sm font-medium mb-2 text-navy-700">
                       是否為本人填寫 <span class="text-red-500">*</span>
@@ -676,12 +689,12 @@ const handleSubmit = async () => {
                       class="w-full px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange focus:border-orange"
                     >
                       <option value="本人填寫">本人填寫</option>
-                      <option value="親友代填">親友代填</option>
+                      <option value="他人代填">他人代填</option>
                     </select>
                   </div>
 
-                  <!-- 親友代填欄位 -->
-                  <div v-if="formData.filledBySelf === '親友代填'" class="bg-cream-50 rounded-lg p-4 space-y-4">
+                  <!-- 他人代填欄位 -->
+                  <div v-if="formData.filledBySelf === '他人代填'" class="bg-cream-50 rounded-lg p-4 space-y-4">
                     <div>
                       <label class="block text-sm font-medium mb-2 text-navy-700">
                         與學員的關係 <span class="text-red-500">*</span>
@@ -988,7 +1001,11 @@ const handleSubmit = async () => {
                       type="checkbox"
                       class="w-5 h-5 rounded border-cream-300 text-orange focus:ring-orange"
                     />
-                    <span class="text-sm font-medium text-navy-700">我已詳閱並同意以上事項 <span class="text-red-500">*</span></span>
+                    <span class="text-sm font-medium text-navy-700">
+                      我已詳閱並同意以上事項
+                      <span v-if="!termsOptional" class="text-red-500">*</span>
+                      <span v-else class="text-ink-500 font-normal">（選填）</span>
+                    </span>
                   </label>
                   <p v-if="errors.agreeToTerms" class="text-red-500 text-sm mt-1">{{ errors.agreeToTerms }}</p>
                 </div>
@@ -997,7 +1014,7 @@ const handleSubmit = async () => {
                 <div class="mt-8 pt-6 border-t border-cream-200">
                   <button
                     type="button"
-                    :disabled="isSubmitting || !formData.agreeToTerms"
+                    :disabled="isSubmitting || (!termsOptional && !formData.agreeToTerms)"
                     class="w-full btn btn-primary py-4 text-lg disabled:opacity-50"
                     @click="handleSubmit"
                   >
@@ -1007,7 +1024,7 @@ const handleSubmit = async () => {
                     送出即表示同意我們以電話或 LINE 與你聯繫安排體驗課，個人資料僅用於此目的。
                   </p>
                   <p class="text-sm text-ink/70 text-center mt-2 leading-relaxed">
-                    送出後請稍候，頁面將導向加入 LINE 官方帳號，加入後即可收到最新通知；同時我們也會寄送 Email 通知你報名成功。
+                    送出後請稍候，頁面將導向加入 LINE 官方帳號，加入後即可收到最新通知。
                   </p>
                 </div>
               </div>
