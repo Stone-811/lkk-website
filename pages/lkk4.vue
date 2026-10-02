@@ -636,9 +636,11 @@ const faqs = [
                 :key="g.key"
                 class="bg-white rounded-2xl p-6 border-2 border-cream-200"
               >
-                <div class="flex items-baseline gap-2 mb-4">
-                  <h4 class="font-serif text-xl font-black text-navy-800">{{ g.label }}</h4>
-                  <span class="text-xs font-bold text-orange-700 bg-orange-50 rounded-full px-2.5 py-0.5">{{ g.count }}</span>
+                <!-- 攤成四欄之後每張卡只剩約 230px，標題與標籤併排會把標題擠到換行。
+                     flex-wrap 讓標籤在放不下時掉到下一行，標題維持單行 -->
+                <div class="flex items-baseline flex-wrap gap-x-2 gap-y-1 mb-4">
+                  <h4 class="font-serif text-xl font-black text-navy-800 whitespace-nowrap">{{ g.label }}</h4>
+                  <span class="text-xs font-bold text-orange-700 bg-orange-50 rounded-full px-2.5 py-0.5 whitespace-nowrap">{{ g.count }}</span>
                 </div>
                 <ul class="space-y-1.5">
                   <li v-for="item in g.items" :key="item" class="flex items-center gap-2 text-sm text-ink/70">
