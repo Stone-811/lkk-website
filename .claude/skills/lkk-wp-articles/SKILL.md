@@ -1,6 +1,6 @@
 ---
 name: lkk-wp-articles
-description: 新站以根目錄網址渲染舊站 WordPress 文章的那一層（headless）。要動 pages/[...slug].vue、server/api/public/article、wp-articles、三個彙整頁（知識科普／學員故事／活動資訊），或被問「文章為什麼打不開／跑版／拿到別篇／dev 站會不會被 Google 收錄」時使用。內含八個實測過的地雷、全量驗證腳本的用法，以及一條比程式碼更重要的教訓：驗證沒覆蓋到的那一層，就是會壞的那一層。
+description: 新站以根目錄網址渲染舊站 WordPress 文章的那一層（headless），以及四個彙整頁的分頁內搜尋、載入更多與主題分頁。要動 pages/[...slug].vue、server/api/public/article、wp-articles、四個彙整頁（知識科普／學員故事／活動資訊／新聞報導）、components/common/ArticleSearch.vue、ArticleResults.vue、composables/useArticleBrowser.ts，或被問「文章為什麼打不開／跑版／拿到別篇／搜不到／載入更多卡住／dev 站會不會被 Google 收錄」時使用。內含九個實測過的地雷、WP REST 搜尋的實際行為、全量驗證腳本的用法，以及一條比程式碼更重要的教訓：驗證沒覆蓋到的那一層，就是會壞的那一層。
 ---
 
 # WordPress 文章渲染層
@@ -22,7 +22,11 @@ description: 新站以根目錄網址渲染舊站 WordPress 文章的那一層�
 文章網址走**根目錄**，與舊站一對一（`l-kk.tw/spine/` ↔ `本站/spine/`），
 未來舊站掛 301 不需要逐條對照表。
 
-## 🔴 八個實測過的地雷
+另有**四個彙整頁**用同一套資料來源列出文章，各自帶分頁內搜尋與載入更多：
+`/knowledge-center`、`/cases-center`、`/activity-center`、`/news-center`。
+詳見下方「四個彙整頁」那一節。
+
+## 🔴 九個實測過的地雷
 
 ### 1. Nitro 的快取鍵會把中文清光
 
@@ -90,9 +94,20 @@ WordPress REST 實測 **0.8–1.3 秒**，併發時會逾時。
 
 那篇在本站永遠取不到，已從彙整頁整篇排除。根治要在 WordPress 改代稱並補 301。
 
-⚠️ 新增第一層路由時要同步更新三處保留清單：
-`server/api/public/wp-articles.get.ts`、`server/utils/wordpress.ts`、
-`scripts/verify-articles.mjs`。
+⚠️ **新增第一層路由時有四個地方要登記**，少一個就會出事：
+
+| # | 檔案 | 少了會怎樣 |
+|---|---|---|
+| 1 | `server/utils/wordpress.ts` 的 `RESERVED_ROUTES` | 內文連結會被改寫到同名的本站頁 |
+| 2 | `server/api/public/wp-articles.get.ts` 的 `RESERVED_ROUTES` | 同名文章會出現在彙整頁卡片上，點了去別的頁 |
+| 3 | `scripts/verify-articles.mjs` 的 `RESERVED_ROUTES` | 全量驗證會把那個路由誤判成壞掉的文章 |
+| 4 | `server/routes/sitemap.xml.ts` 的 `STATIC_PATHS` | 新頁不會進 sitemap |
+
+兩個容易找錯的點：
+- `sitemap.xml.ts` **沒有自己那一份** `RESERVED_ROUTES`，它靠 Nitro 的自動匯入
+  取用 `server/utils/wordpress.ts` 那一份。照「三處」去 grep 會以為它漏了。
+- `verify-articles.mjs` 那份**多了** `_nuxt`、`sitemap.xml`、`robots.txt` 三個
+  建置產物路徑，另外兩份沒有。不要當成純複製。
 
 ### 7. 文章一上線，dev 站就變成 667 頁重複內容
 
@@ -181,6 +196,33 @@ const fs=[...document.querySelectorAll('.article-body iframe')]
 ```
 
 
+### 9. 防競態用「共用計數器」，會讓分頁永久卡在載入中
+
+2026-09-30 對抗式複查抓到的最嚴重一條，六個面向各自獨立發現同一個根因。
+
+第一版 `useArticleBrowser` 用一個 composable 層級的 `token` 擋過期回應，
+但 `loading` 是**每個分頁各一份**。於是：
+
+```
+在「訓練知識」按載入更多（token=1，view.sports.loading=true）
+→ 不等回應就切到「醫療衛教」也按一次（token=2）
+→ 訓練知識那一發回來時 mine(1) !== token(2)，直接 return
+→ 它在送出前寫下的 loading:true 再也沒有人負責歸位
+→ 切回訓練知識：按鈕永遠是 disabled 的「載入中…」
+```
+
+而且瀏覽模式下連清除鈕都不會渲染，讀者**只能重新整理整頁**。
+搜尋狀態下的版本更慘：分頁永久停在骨架畫面，連搜尋鈕都跟著被 disable。
+
+正解是**每筆狀態自己記住是哪一個請求建立的**（`view[tabKey].rid`）：
+別的分頁發請求不會動到這個分頁的 `rid`，所以「被別的分頁搶先」不再誤判成過期；
+而 `submit()`／`clear()` 會刪掉整個 `view`，過期回應的 `rid` 自然對不上，仍然被丟棄。
+
+⚠️ 這類競態**手點幾乎測不出來**，上游要慢到足以讓人切分頁才會現形
+（舊站實測 0.8–26 秒，時間窗很大）。驗證方式是把 composable 用真的 Vue
+reactivity 跑模擬，手動控制回應的 resolve 順序 —— 寫完測試先拿**舊版**跑一次，
+確認它真的抓得到（當時舊版 8 項失敗、新版 0 項），否則測試可能是空轉的。
+
 ## 全量驗證：功能完成的定義
 
 ```bash
@@ -191,6 +233,25 @@ node scripts/verify-articles.mjs https://lkkwellness.com
 逐篇斷言：回傳的是不是請求的那一篇、內容長度、殘留舊站連結、表格容器、
 SEO 欄位、**帶結尾斜線的頁面回應碼**、彙整頁卡片是不是真的 `<a href>`。
 
+🔴 **它的覆蓋範圍比名字聽起來小，動手前先知道哪裡沒驗到：**
+
+| 這支有驗 | 這支沒驗 |
+|---|---|
+| 文章 API 與文章頁（全量） | `/activity-center`、`/news-center` 兩個彙整頁 |
+| `/knowledge-center`、`/cases-center` 兩頁的卡片 | **搜尋與載入更多整條路徑**（完全零自動驗證） |
+
+`checkListingPages()` 的迴圈只跑知識科普與學員故事兩頁，連「卡片渲染成
+`<NUXTLINK>` 字面標籤」那個歷史缺陷都不會在另外兩頁上被攔下。
+腳本也從來沒打過 `/api/public/wp-articles?tab=…&q=…`。
+
+**搜尋與載入更多目前只能手動驗，至少跑這五項**（2026-09-30 實際抓到 bug 的那幾項）：
+
+1. `?tab=sports&q=膝蓋` 的回傳筆數與 `?tab=…&page=2` 的第二頁內容
+2. 載入更多一路按到底：卡片數對、按鈕收起、收尾文字出現
+3. **搜尋中切分頁，再切回來** ← 競態最容易壞的地方
+4. **按載入更多之後不等回應就切分頁，再切回來** ← 同上
+5. 上游失敗時：筆數不被 0 覆蓋、按鈕不會無聲消失
+
 ⚠️ 併發刻意壓到 3。這支會對舊站正式主機發 666 個請求，
    密集執行正是誘發「200 回錯誤頁」的原因。它是驗證工具不是壓力測試。
 
@@ -200,13 +261,20 @@ SEO 欄位、**帶結尾斜線的頁面回應碼**、彙整頁卡片是不是真
 
 ### 要查「內文還連著舊站哪裡」時，不要逐篇打新站
 
-從 WordPress 批次抓完整內文，**7 個請求**就能拿到全部 667 篇：
+從 WordPress 批次抓完整內文，每頁 100 篇，幾個請求就能拿到全部：
 
 ```bash
-for p in 1 2 3 4 5 6 7; do
+# 🔴 先問頁數，不要寫死 —— 文章數一直在長（2026-09-16 約 667 篇、
+#    09-30 是 675、10-02 已經 680）。寫死 7 頁在超過 700 篇那天會靜默少抓一頁，
+#    而這段的用途正是「查內文還殘留哪些舊站連結」，少抓會被誤判成清乾淨了。
+PAGES=$(curl -sI 'https://l-kk.tw/wp-json/wp/v2/posts?per_page=100&_fields=slug' \
+        | grep -i x-wp-totalpages | tr -dc 0-9)
+for p in $(seq 1 $PAGES); do
   curl -s "https://l-kk.tw/wp-json/wp/v2/posts?per_page=100&page=$p&_fields=slug,content" -o wp-p$p.json
 done
 ```
+
+⚠️ 本文件所有篇數都是當下量測值，**不要當成常數**。要現查就用 `x-wp-total`。
 
 ⚠️ 但**離線比對改寫結果會失準**。試過把改寫規則在本機重寫一遍，算出 187 篇有殘留，
 實際掃描是 26 篇——差別在於離線版沒有模擬「隱藏 iframe 已被移除」那一步，
@@ -243,20 +311,30 @@ done
 - `className.includes('border-orange')` 會誤判——未選中的樣式含 `hover:border-orange/50`
 - **導到同一個網址（含 hash）不會重新載入**，Vue 狀態留著，驗不出初始狀態
 
-## 快取：三層，改一層沒用
+## 快取：五個點，每一個都要算進來
 
-| 層 | 設定位置 | 目前值 |
-|---|---|---|
-| 文章 API | `defineCachedEventHandler` | 600 秒 |
-| 彙整頁 **瀏覽** | `defineCachedFunction`（在 `wp-articles.get.ts` 內層） | 300 秒 |
-| 彙整頁 **搜尋** | **刻意不快取** | — |
-| **CDN（頁面層）** | `nuxt.config.ts` 的 `routeRules` | 文章 600 秒／表單 30 秒 |
+「清掉文章 API ＋ CDN 就看得到新內容」是錯的。會影響文章新鮮度、或會回源打 WordPress 的有五處：
+
+| 快取點 | 位置 | 鍵 | 時間 |
+|---|---|---|---|
+| 文章 API | `server/api/public/article/[slug].get.ts` | slug 的 sha1 | 600 秒 |
+| 彙整頁瀏覽 | `cachedFetchTab`（`wp-articles.get.ts`） | `分頁代稱_頁碼` | 300 秒 |
+| **學員故事整批** | `cachedFetchAllCases`（同檔） | **固定 `cases_all`** | 300 秒 |
+| 彙整頁搜尋 | — | **刻意不快取** | — |
+| **sitemap.xml** | `server/routes/sitemap.xml.ts` | `sitemap` | 3600 秒 |
+| CDN（頁面層） | `nuxt.config.ts` 的 `routeRules` | 完整網址含 query | 文章 600 秒／表單 30 秒 |
+
+⚠️ **`sitemap.xml` 會自己打 WordPress**（最多 20 頁），不經過 wp-articles，是獨立的一條回源路徑。
+
+⚠️ **學員故事不走 `分頁代稱_頁碼`。**所有主題分頁共用 `cases_all` 這一筆
+   （整個案例分類一次抓回、主題篩選在記憶體裡做），不存在 `metabolic_1` 這種鍵。
+   這也是為什麼「業主在 WordPress 幫案例補上主題分類之後，新分頁最久要等 300 秒才出現」。
 
 ⚠️ 2026-09-30 起 `wp-articles.get.ts` 不再是 `defineCachedEventHandler`。
    它改成一般的 `defineEventHandler`，內層用 `defineCachedFunction` 只快取瀏覽模式。
    原因是搜尋加進來之後，快取鍵的基數變成「關鍵字」而無上限，而 Nitro 的快取底層
    是 unstorage 的裸 Map——沒有容量上限也沒有逐出機制（過期項目只是讀取時判定為舊，
-   不會被刪掉），容器只有 512MiB。瀏覽模式的鍵是 `分頁代稱_頁碼`，有界，可以快取。
+   不會被刪掉），容器只有 512MiB。瀏覽模式的鍵（`分頁代稱_頁碼`、`cases_all`）有界，可以快取。
 
 ⚠️ 快取鍵只能用英數與底線。Nitro 的 `escapeKey` 是 `String(key).replace(/\W/g,'')`，
    中文會被整串清光、連字號也會被清掉——三個不同的中文查詢會共用同一個鍵、互相覆蓋。
@@ -303,6 +381,117 @@ CDN 命中代表請求**根本沒到 Cloud Run**，也就不會回源打 WordPre
   這不是缺陷——Google 會自行產生摘要，硬塞與標題重複的字串更差。
 - **圖片仍在 `l-kk.tw/wp-content/uploads/`**：666 篇只有 15% 有特色圖片，
   內文圖片也少，量太小不值得為它做遷移。
+
+## 四個彙整頁：搜尋、載入更多、主題分頁
+
+> 2026-09-30～10-02 建置。篇數為當下量測，會長。
+
+| 頁面 | 資料來源 | 分頁 |
+|---|---|---|
+| `/knowledge-center` | WP 分類 17／18／11／9 | 訓練知識・醫療衛教・特殊族群・運動人文 |
+| `/cases-center` | WP 分類 1092 | 全部 ＋ 主題（見下） |
+| `/activity-center` | WP 分類 448 | 無 |
+| `/news-center` | WP 分類 14 | 無 |
+
+`/news`（媒體報導）**不在這一層**：它上半部是寫死在頁面裡的精選版面，
+其中 AFP 與 CNA 兩則只有站外連結、WordPress 沒有對應文章，所以彙整頁取代不了它。
+底部的「查看全部報導」指向 `/news-center`。
+
+建 `/news-center` 之前，WP 新聞報導分類裡**有 12 篇在站上沒有任何入口** ——
+網址直接打得開，但沒有任何頁面連到。這是「只看頁面不看分類」會漏掉的缺口。
+
+### WP REST 的搜尋：先知道這些再設計
+
+全部 2026-09-30 實測，不是文件推論。
+
+| 行為 | 實際結果 |
+|---|---|
+| `categories=a,b` | **OR**（聯集），**做不出交集** |
+| `search` ＋ `categories` | **AND**（交集），所以「分頁內搜尋」做得到 |
+| `orderby=relevance` | **只有帶 search 時才合法**，沒 search 回 400 |
+| `per_page` | 上限 100，101 直接回 400 |
+| `page` 超出總頁數 | 回 **HTTP 400**（`rest_post_invalid_page_number`），**不是空陣列** |
+| `search_columns=post_title` | 可用，但與分類篩選疊加會見底 |
+| 中文 | 純 `LIKE '%整串%'`，**不斷詞** |
+
+🔴 **`orderby=relevance` 是搜尋好不好用的分水嶺。**實測「訓練知識」搜「膝蓋」：
+
+```
+預設（日期排序）：具備什麼條件練增強式訓練更安全有效？   ← 標題根本沒有「膝蓋」
+orderby=relevance：深蹲時膝蓋會發出咔咔聲就一定有問題嗎？
+```
+
+🔴 **不要再疊 `search_columns=post_title`。**分類已經過濾過一次，再限制只比對標題會見底：
+「訓練知識」搜「蛋白質」→ 全文 20 篇、只搜標題 **0 篇**。
+
+🔴 **中文自然語句一律 0 筆**，這是 WP 的本質不是 bug：
+
+```
+膝蓋痛怎麼辦      0 筆        深蹲   163 筆
+老人家可以重訓嗎  0 筆        膝蓋   140 筆
+高血壓可以運動嗎  0 筆
+```
+
+打一個詞回全站的 1/5（等於沒篩選），打一句話回 0 筆。
+所以空結果頁的重點是**引導改用短關鍵字 ＋ 給可點的範例詞**，不是只說「找不到」。
+範例詞要先實測有命中再放上去。
+
+⚠️ **第 2 頁之後品質會掉**：第 1 頁標題幾乎都命中，第 2 頁只剩內文提到。
+這是 relevance 的特性，代表讀者看到的前 12 筆是最好的那批。
+
+### API 契約（`server/api/public/wp-articles.get.ts`）
+
+```
+?group=knowledge      首屏：一次回整組分頁的第一頁（SSR，有快取）
+?tab=sports&page=2    載入更多：單一分頁的第 N 頁（有快取）
+?tab=sports&q=膝蓋    分頁內搜尋（刻意不快取，理由見快取那節）
+```
+
+四個刻意的設計，動之前先知道為什麼：
+
+- **整組模式一律第一頁、不吃 q。**它要同時打 4 個分類；讓它也吃 q
+  等於把每次搜尋變成 4 個並發。舊站的併發表現不穩定（同樣 6 個並發，
+  量過 4 秒也量過 26 秒），而它是全站文章的唯一資料來源。
+- **`Promise.allSettled` 不是 `Promise.all`。**一個分類逾時不該讓另外三個
+  （可能根本是快取命中、沒碰上游）一起被丟掉，而且那張失敗的 SSR 頁
+  會被 CDN 依 `/**` 快取 10 分鐘。整組都失敗時才回 `ok:false`，並補 `no-store`。
+- **「有沒有帶 tab」要看參數在不在，不能看 truthy。**`?tab=`（空字串）若被當成沒帶，
+  會悄悄退回整組模式**而且把 q 丟掉** —— 前端拿到瀏覽結果，卻標成「找到 N 篇包含 X」。
+- **上游回 200 但不是陣列要丟出去。**當成空清單靜默放行的話，讀者看到一片空白
+  沒有任何說明，而且那個「成功的空結果」會被快取 300 秒。
+
+### 學員故事的主題分頁：為什麼在記憶體裡做
+
+那 12 個主題（三高／關節炎／帕金森氏症…）在 WordPress 裡掛的是**「知識分享」底下**，
+不是「案例分享」底下 —— 一個分類只能有一個上層，同一個「肌少症」不可能掛兩邊。
+而 `categories` 是 OR，問不出「案例分享 **且** 肌少症」。
+
+所以這一組改成：**一次把整個案例分類抓回來（含每篇的 `categories`），在記憶體裡做交集**。
+好處是筆數精確、主題 ∩ 搜尋可以疊加、翻頁不會出現筆數對不上。
+
+⚠️ **沒有文章的主題不顯示**（`buildCaseGroups` 的 `dropEmpty`）。提供一個點了永遠是空的
+分頁比不提供更糟。業主在 WordPress 幫案例補上主題分類後會自動出現，不必改程式。
+2026-10-02 實測：更年期／韌帶損傷／阿茲海默症／專項化訓練四個主題是 0 篇，
+查過內容後確認**不是漏標，是真的沒有那類案例**。
+
+⚠️ `dropEmpty` 只在整組模式開。單一主題查詢回 0 筆是「這個關鍵字沒有結果」不是失敗，
+`groups` 若變成空陣列，前端取 `groups[0]` 會判定成讀取失敗。
+
+### 前端（三個共用檔）
+
+- `composables/useArticleBrowser.ts` — 瀏覽／搜尋/載入更多的狀態機（含上面第 9 條的 rid）
+- `components/common/ArticleSearch.vue` — 搜尋框
+- `components/common/ArticleResults.vue` — 筆數／卡片／空結果／載入更多
+
+三個只有瀏覽器看得到的點：
+
+| 點 | 為什麼 |
+|---|---|
+| 輸入框字級必須 **16px** | iOS Safari 對 `font-size < 16px` 的輸入框，一聚焦就自動放大整頁 |
+| `type="search"` 的原生清除鈕要藏掉 | 否則跟自訂的清除鈕重疊成**兩個 ×**。但不能改 `type="text"`，那樣手機鍵盤就沒有「搜尋」鍵 |
+| 中文輸入法的 Enter 要擋 | 組字中的 Enter 是**選字**，沒擋的話注音使用者每選一個字就送出一次查詢。在 keydown 檢查 `isComposing`（部分瀏覽器是 `keyCode === 229`）|
+
+⚠️ **按送出才查，不做邊打邊查。**每一次查詢都打到舊站，而它是全站文章的唯一資料來源。
 
 ## 相關
 
