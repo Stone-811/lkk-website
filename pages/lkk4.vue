@@ -175,11 +175,43 @@ const competitionGroups = [
   { key: 'female', label: '女子組', count: '共五組', items: ['39 歲以下', '40–49 歲', '50–59 歲', '60–69 歲', '70–79 歲'] },
   { key: 'male', label: '男子組', count: '共五組', items: ['39 歲以下', '40–49 歲', '50–59 歲', '60–69 歲', '70–79 歲'] },
   { key: 'senior', label: '長者推廣組', count: '不分性別', items: ['80 歲以上，一同挑戰！'] },
+  {
+    key: 'relay',
+    label: '團體接力賽',
+    count: '9/23 新增',
+    items: [
+      '每隊 2–4 人',
+      '同伴不限年齡性別',
+      '鼓勵長輩及特殊族群一同參與',
+      '鼓勵性質，不參與排名',
+    ],
+  },
 ]
 
-const entryFees = [
+/** 個人賽是「每人一價」，團體接力賽是「依隊伍人數分級」，兩種版面共用同一個陣列。 */
+interface EntryFee {
+  name: string
+  period: string
+  price?: string
+  current?: boolean
+  isNew?: boolean
+  tiers?: { size: string; price: string }[]
+}
+const entryFees: EntryFee[] = [
   { name: '早鳥優惠價', price: '2,700', period: '2026/6/29 12:00 – 2026/7/12 23:55' },
   { name: '一般報名費', price: '3,000', period: '2026/7/13 00:00 – 2026/10/30 23:55', current: true },
+  // 團體接力賽依隊伍人數分三種價格，不是「每人一價」——
+  // 所以用 tiers 而不是 price，卡片會改走另一種版面（見下方 v-if）
+  {
+    name: '團體接力賽',
+    isNew: true,
+    period: '依隊伍人數',
+    tiers: [
+      { size: '2 人', price: '3,350' },
+      { size: '3 人', price: '3,700' },
+      { size: '4 人', price: '4,000' },
+    ],
+  },
 ]
 
 const raceRules = [
@@ -188,6 +220,7 @@ const raceRules = [
   '每位選手入場後，需依序完成 3 個關卡。',
   '每位選手比賽總時間為 20 分鐘。',
   '成績計算方式為三個關卡完成時間加總，總時間越短，名次越前面。',
+  '團體接力賽－重量參照「70 歲（含）以上・女」，不參與排名。需於 14 分鐘內完成比賽，未完成者也需離場。',
 ]
 
 const stations = [
@@ -216,6 +249,8 @@ const weightTable = [
   { group: '69 歲（含）以下・女', light: '50', mid: '60', heavy: '80', sled: '75', farmer: '20', bike: '3' },
   { group: '70 歲（含）以上・男', light: '40', mid: '50', heavy: '60', sled: '60', farmer: '20', bike: '3' },
   { group: '70 歲（含）以上・女', light: '30', mid: '40', heavy: '50', sled: '40', farmer: '12', bike: '3' },
+  // 接力賽的重量就是比照上面那一列，數值刻意一致
+  { group: '團體接力賽（新增）', light: '30', mid: '40', heavy: '50', sled: '40', farmer: '12', bike: '3' },
 ]
 
 const tshirtFits = [
@@ -593,15 +628,19 @@ const faqs = [
             <p class="text-[15px] text-ink/70 leading-relaxed mb-6">
               39 歲以下、40–49 歲、50–59 歲、60–69 歲、70–79 歲，各分男女組共十組，另特別加開 80 歲以上不分性別的長者推廣組。
             </p>
-            <div class="grid md:grid-cols-3 gap-4 mb-12">
+            <!-- 四張卡一列。768px 只有約 170px/張，「鼓勵長輩及特殊族群一同參與」
+                 會擠成好幾行，所以平板維持兩欄，桌機才攤成一列 -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
               <div
                 v-for="g in competitionGroups"
                 :key="g.key"
                 class="bg-white rounded-2xl p-6 border-2 border-cream-200"
               >
-                <div class="flex items-baseline gap-2 mb-4">
-                  <h4 class="font-serif text-xl font-black text-navy-800">{{ g.label }}</h4>
-                  <span class="text-xs font-bold text-orange-700 bg-orange-50 rounded-full px-2.5 py-0.5">{{ g.count }}</span>
+                <!-- 攤成四欄之後每張卡只剩約 230px，標題與標籤併排會把標題擠到換行。
+                     flex-wrap 讓標籤在放不下時掉到下一行，標題維持單行 -->
+                <div class="flex items-baseline flex-wrap gap-x-2 gap-y-1 mb-4">
+                  <h4 class="font-serif text-xl font-black text-navy-800 whitespace-nowrap">{{ g.label }}</h4>
+                  <span class="text-xs font-bold text-orange-700 bg-orange-50 rounded-full px-2.5 py-0.5 whitespace-nowrap">{{ g.count }}</span>
                 </div>
                 <ul class="space-y-1.5">
                   <li v-for="item in g.items" :key="item" class="flex items-center gap-2 text-sm text-ink/70">
@@ -614,15 +653,27 @@ const faqs = [
 
             <!-- 報名費用 -->
             <h3 class="font-serif text-2xl font-black text-navy-800 mb-6">報名費用</h3>
-            <div class="grid sm:grid-cols-2 gap-4 mb-4">
+            <!-- 三張卡一列。640px 三欄會把「2026/6/29 12:00 – 2026/7/12 23:55」
+                 這種日期區間擠到換行，所以小螢幕維持兩欄 -->
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               <div
                 v-for="fee in entryFees"
                 :key="fee.name"
                 class="rounded-2xl p-6 border-2"
                 :class="fee.current ? 'bg-orange-50 border-orange-700/35' : 'bg-white border-cream-200'"
               >
-                <div class="text-sm font-bold mb-1" :class="fee.current ? 'text-orange-700' : 'text-ink/55'">{{ fee.name }}</div>
-                <div class="font-serif text-3xl font-black text-navy-800 mb-2">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-bold" :class="fee.current ? 'text-orange-700' : 'text-ink/55'">{{ fee.name }}</span>
+                  <span v-if="fee.isNew" class="text-xs font-bold text-orange-700 bg-orange-50 rounded-full px-2.5 py-0.5">新增</span>
+                </div>
+                <!-- 團體接力賽是整隊報名、依人數分級，不能套個人賽那行「/ 人」 -->
+                <div v-if="fee.tiers" class="space-y-1 mb-2">
+                  <div v-for="t in fee.tiers" :key="t.size" class="flex items-baseline gap-2.5">
+                    <span class="text-sm font-bold text-ink/60 w-9 shrink-0">{{ t.size }}</span>
+                    <span class="font-serif text-2xl font-black text-navy-800">NT$ {{ t.price }}</span>
+                  </div>
+                </div>
+                <div v-else class="font-serif text-3xl font-black text-navy-800 mb-2">
                   NT$ {{ fee.price }}<span class="text-base font-bold text-ink/55"> / 人</span>
                 </div>
                 <div class="text-sm text-ink/65">{{ fee.period }}</div>
