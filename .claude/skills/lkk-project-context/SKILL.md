@@ -49,7 +49,7 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 - **`/team-intro/coaches`**：刪橘標與人數；主標「專業教練團隊」；**專長標籤全部列出、不再收成 +N**，並移除 `truncate max-w-[90px]`（最長的「肌力訓練與動作優化」會被裁掉），改 `whitespace-nowrap`；`components/CoachCard.vue` 同步（它的註解本來就寫明比照該頁）
 - **`/cooperation`**：Hero 四項全換；刪除「三大核心合作範疇」整個 section 與 科學化／跨國／大數據 三格，連同已無用的 `methodPoints`、`pressStats`
 
-## 2026-08-31～09-01 這批改版（**已上 prod：研習課程／Header／eyebrow；LKK4 與確認信仍只在 dev**）
+## 2026-08-31～09-01 這批改版（**全部已上 prod**）
 
 - **`/lkk-academy`**：由「練健康學院」改版為 **研習課程**，三門課（徵才說明會暨訓練營／中高齡訓練研習／鷹眼大師）。
   ⚠️「10,000+ 服務人次」必須與 `pages/about.vue` 的 `keyStats` 一致，檔頭有註解標記。
@@ -60,14 +60,15 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
   `bg-orange`→`bg-orange-700`、`navy-700/40`→`navy-800/70`。
   ⚠️ `navy-700` 不管拉到多高透明度都過不了（`/70` 也只有 3.59），**必須換底色到 navy-800**。
   深底的 7 處 `orange-300` 與 12 條 `bg-orange` 短線刻意不動（本就 4.96–7.60 通過）。
-- **`/lkk4` 全頁重構**（依業主 HTML 草稿，**尚未上 prod**）：
+- **`/lkk4` 全頁重構**（依業主 HTML 草稿）：
   Hero → 四詞卡 → 四大功能挑戰 → 自我測驗 → 團體賽 → 賽事緣起 → 賽制與報名 → 成績查詢 → FAQ → CTA。
   票券視覺做成 `components/lkk4/Ticket.vue`（用 9 次）＋ `components/lkk4/Icon.vue`。
   **全頁 navy-700 底**，實測白 8.37／cream 7.31／white-75 5.54／orange-300 4.96 過，
   **orange DEFAULT 只有 2.99** → 票券外橘字一律 `orange-300`。
   移除了 `highlights` 四個數字卡與「練健康是誰」（後者與 `/about` 重複）。
   ⚠️ **團體賽規則是草稿帶進來的新資訊**（70 歲以上 2–3 人組隊／可換手／輪椅協助條款／
-  80 歲以上不排名），站上原本沒有、無法核對 Accupass，**上 prod 前要業主確認**。
+  80 歲以上不排名），站上原本沒有、**從未與 Accupass 核對過**，已隨改版上 prod。
+  日後賽事規則若有爭議，先回頭確認這段的出處。
   舊的 `public/images/lkk4/hero.webp`（空白框版）已無人引用但保留。
 - **booking 確認信**加上可點選的 LINE 連結（比照團課），見記憶 [[lkk-web-content-data]]。
 
@@ -75,7 +76,7 @@ description: 練健康官網 (Vue 3 + Nuxt 3) 的實際架構、部署方式、F
 > 品牌手冊六色與站上 token 的落差見記憶 **[[lkk-web-brand-colors]]**——
 > **只有米色與白色對得上**，深藍差 ΔE 10.0，且**換品牌橘也救不了橘字對比**（2.91 vs 2.80，都不到 4.5）。
 
-## 行動裝置可讀性（2026-09-01 全站盤點後修正，**已上 dev，尚未上 prod**）
+## 行動裝置可讀性（2026-09-01 全站盤點後修正，**已上 prod**）
 
 客群是中高齡，字級與觸控目標的權重比一般網站高。**11 個頁面實測 `scrollWidth === 375`，
 零水平溢出**——結構沒問題，問題全在字級與觸控。稽核方法與完整基準見 **`lkk-mobile-audit`** skill。
@@ -252,47 +253,81 @@ public API 只撈 `where('isActive', '==', true)`。後台新增教練若沒設�
 容器裡有兩個 GA4、Google Ads、Facebook Pixel、Microsoft Clarity 與漸強實驗室，
 其中兩個是實測才發現、業主文件沒提到的。見 [[lkk-tracking]]。
 
-## 2026-09-16～20 這批（**部分已上 prod，見下表**）
+## 2026-09-30～10-02 這批（**全部已上 prod**）
 
-這批改動量很大，而且 dev 與 prod 仍有分歧。動任何東西前先跑
-`git diff --name-status origin/prod origin/dev` 確認現況，**不要看 commit log**
-（prod 走檔案級帶入，兩邊各有各的 commit，比不出東西）。
+切轉完成後的第一輪功能與調整。
 
-| 區塊 | prod | 備註 |
-|---|---|---|
-| 非正式主機 noindex | ✅ 2026-09-20 | `site-hosts.ts` ＋ middleware ＋ `routes/robots.txt.ts`，已刪 `public/robots.txt` |
-| CDN 快取標頭 | ✅ 2026-09-20 | 實測 prod CDN 命中 0.08 秒 |
-| UTM 改 cookie 30 天 | ✅ 2026-09-20 | 含 `/team-intro` 轉址保留查詢字串 |
-| 四支 skill 與文件 | ✅ 2026-09-20 | |
-| **文章渲染（含三個彙整頁）** | ❌ 仍在 dev | 見下方阻擋原因 |
-| **得知管道改版** | ❌ 仍在 dev | 被 `booking.vue` 綁住，見下 |
-| Header 分組／首頁與各頁的站內連結 | ❌ 仍在 dev | 都連到文章系統的頁面 |
+### 文章彙整層
 
-### 🔴 文章系統為什麼還不能上 prod
+四個彙整頁（知識科普／學員故事／活動資訊／**新聞報導**）加上**分頁內搜尋**與**載入更多**，
+`/cases-center` 另有主題分頁。新增 `/news-center`（WP「新聞報導」分類），
+建它之前那個分類裡有 12 篇在站上沒有任何入口。
 
-prod 的 `NUXT_PUBLIC_SITE_URL` 是 `https://lkkwellness.com`，而文章頁的
-canonical 是 `${siteUrl}/${slug}/`。舊站 `l-kk.tw` **仍在線上、`index, follow`、
-自我 canonical、且已提交 sitemap**（2026-09-20 實測）。兩邊一上就變成
-兩個都能被收錄的正式網域、667 篇相同內容、各自宣稱自己是正本，
-而排名目前全在舊站那邊。
+動機不只是「加搜尋框」：在這之前**四個彙整頁合計只走得到約 64 篇**
+（每分類固定 12 篇、沒有分頁），而全站有 680 篇。搜尋與分頁是同一件事的兩面。
 
-dev 可以直接 noindex 解決，prod 不行。解法是切轉前讓文章 canonical
-指回舊站（用環境變數控制，切轉當天改一個值翻過來），或等切轉一起上。
+新檔：`composables/useArticleBrowser.ts`、`components/common/ArticleSearch.vue`、
+`components/common/ArticleResults.vue`。
+WP REST 搜尋的實際行為、API 契約、競態地雷全部在 [[lkk-wp-articles]]。
 
-### ⚠️ 得知管道改版被一支檔案綁住
+### 表單
 
-`pages/booking.vue` 同時包含「得知管道必填單選改版」與「看更多學員故事 →
-`/cases-center`」。檔案級帶入是整支帶，沒辦法只帶一半；硬拆會讓同一支檔案
-在兩個分支長期分歧，比多等幾天更糟。所以它跟著文章系統一起等。
+- 「醫師/醫療轉介」由第二層下拉改為**自行填寫**（見上方「得知管道」那節）
+- `pages/booking.vue`：Email 改**選填**；「親友代填」→「**他人代填**」；
+  得知管道選「參觀」或「電話詢問」時同意事項**非必填**
+- ⚠️ 改「他人代填」那種中文字串時，**顯示條件（`v-if`）與驗證兩處要一起改**。
+  只改下拉選項的話：欄位不出現、驗證卻要求必填 → 表單送不出去又看不到錯在哪。
+
+### 後台儀表板
+
+統計卡改為：本月新名單／待處理名單／本月預約體驗／**本月團課預約**，
+次要是分店數／教練數／**本月合作洽詢**／總名單數。加盟洽詢不再顯示。
+細節與時區地雷見 `docs/表單與名單系統知識庫.md`。
+
+### LKK4
+
+新增團體接力賽（組別卡／依隊伍人數分三級的報名費用／計分說明第 6 條／重量表一列），
+比賽組別與報名費用各排成一列。
+⚠️ 接力賽是**整隊報名、依人數分級**，不是「每人一價」，別套個人賽那行「/ 人」。
+⚠️ 斷點放 `lg` 不是 `md`：容器是 `max-w-5xl`（1024px），768px 四欄只剩約 170px 會把文字擠爆。
+
+## 2026-09-16～20 這批（**全部已上 prod**，隨 09-29～30 切轉一起）
+
+> **判斷 dev/prod 分歧的唯一方式**：`git diff --stat origin/prod origin/dev`。
+> **不要看 commit log** —— prod 走檔案級帶入，不建立合併祖先，
+> `git log origin/prod..origin/dev` 會印出整部 dev 歷史，完全沒有參考價值。
+> 2026-10-02 當下只差 `apphosting.yaml`（環境設定，本來就該不同）。
+
+這批當時曾被兩件事卡住，兩件都已解除，留著是因為**那兩條原則還會再遇到**：
+
+**① 兩個正式網域同內容會互搶 canonical。**
+當時 prod 一上，`lkkwellness.com` 與仍在線上且 `index, follow` 的 `l-kk.tw`
+就會變成兩個都能被收錄的網域、同一批文章、各自宣稱自己是正本，而排名全在舊站。
+dev 可以直接 noindex 解決，prod 不行。
+解法是讓文章 canonical 由環境變數控制、切轉當天翻過來 —— 已於 2026-09-30 執行。
+
+**② 一支檔案同時含兩批改動時，檔案級帶入沒辦法只帶一半。**
+當時 `pages/booking.vue` 同時包含「得知管道改版」與「連往 `/cases-center`」，
+所以它只能跟著文章系統一起等。硬拆會讓同一支檔案在兩個分支長期分歧，比多等幾天更糟。
 
 ### 文章渲染（headless WordPress）
-新站以**根目錄網址**渲染舊站的 666 篇文章，內容仍存在 WordPress。
-細節、八個地雷與全量驗證腳本見 [[lkk-wp-articles]]，這裡不重複。
+新站以**根目錄網址**渲染舊站的文章（2026-10-02 實測 680 篇，**數字一直在長**），
+內容仍存在 WordPress。細節、九個地雷與全量驗證腳本見 [[lkk-wp-articles]]，這裡不重複。
 
-### 三個彙整頁
-`/knowledge-center`、`/cases-center`、`/activity-center`，
-文案與分區都對照舊站的同名頁面（分區是反推 WordPress 的 Query Loop 區塊得到的）。
-`activity-center` 的 hero 文案是新寫的——舊站 `/activity/` 沒有文案，就是純列表。
+### 四個彙整頁
+`/knowledge-center`、`/cases-center`、`/activity-center`、`/news-center`。
+前三個的文案與分區對照舊站的同名頁面（分區是反推 WordPress 的 Query Loop 區塊得到的）。
+
+- `activity-center` 的 hero 文案是新寫的（舊站 `/activity/` 沒有文案，就是純列表），
+  2026-10-02 改為業主指定的「News & Events／最新消息與活動資訊」。
+- `news-center` 是 2026-10-01 新建的，對應 WordPress 的「新聞報導」分類。
+  建它之前**那個分類裡有 12 篇在站上沒有任何入口** —— 網址打得開但沒有頁面連到。
+- ⚠️ `/news`（媒體報導）**不是彙整頁**：上半部是寫死在頁面裡的精選版面，
+  其中 AFP 與 CNA 兩則只有站外連結、WordPress 沒有對應文章，彙整頁取代不了它。
+  底部的「查看全部報導」2026-10-01 由 `/activity-center` 改指 `/news-center`。
+
+四個頁面都帶**分頁內搜尋與載入更多**，`/cases-center` 另有主題分頁。
+WP REST 搜尋的實際行為、API 契約、競態地雷全部在 [[lkk-wp-articles]]。
 
 ### CDN 快取標頭（`nuxt.config.ts` 的 `routeRules`）
 補之前 `cdn-cache-status` **永遠是 miss**：App Hosting 前面有 Google CDN，
@@ -307,15 +342,27 @@ dev 可以直接 noindex 解決，prod 不行。解法是切轉前讓文章 cano
 ⚠️ 讓既有頁面開始依賴後台資料時，快取也要跟著縮短。踩過一次（見下方）。
 
 ### 得知管道改為必填單選
-兩張表單共用 `config/referralSources.ts`。十個選項，其中三個展開下拉
-（社群／實體活動／醫師院所），兩個展開文字欄。
+兩張表單共用 `config/referralSources.ts`。十個選項，其中**兩個**展開下拉
+（社群／實體活動），**三個**展開文字欄（練健康夥伴推薦／醫師醫療轉介／其他）。
+
+⚠️ 「醫師/醫療轉介」2026-10-01 由第二層下拉改為**自行填寫** ——
+   後台沒有維護那份清單的頁面（只有 API 端點），預設值還是範例資料，
+   而合作醫師與院所一直在變，下拉永遠追不上。
 
 🔴 **存進 Firestore 的形狀刻意維持陣列**（只是長度為 1），值是 `社群: IG` 這種格式。
    後台名單、CSV 匯出、兩封通知信全部是照陣列寫的，維持形狀就不必動它們。
 
-三份下拉清單可在 `/admin/settings` 維護，**只能新增與停用，不能改字也不能刪除**——
+**兩份**下拉清單可在 `/admin/settings` 維護，**只能新增與停用，不能改字也不能刪除**——
 字串會存進名單，而 leads 的 PATCH 白名單只放行 status 與 internalNote，改了回填不了。
 這個理由也寫在後台介面上給業主看，不是只藏在註解裡。
+
+🔴 **後台那一頁還留著第三份「醫師／院所」清單，而它已經是死的。**
+   `components/admin/ReferralOptionsPanel.vue` 仍列出它，說明文字還寫
+   「沒有任何啟用中的醫師，表單就不會出現『醫師/醫療轉介』這個選項」——
+   改成自行填寫之後這句是錯的，業主填了不會有任何效果。
+   這是下方「後台能編但不會顯示的欄位」那一節的新一筆，待清。
+   要清得同時處理 panel、`DEFAULT_DYNAMIC_OPTIONS.doctor`、
+   `/api/admin/referral-options` 兩支端點，以及 Firestore 的 `settings/referralOptions`。
 
 ### UTM 改用 cookie 保存 30 天
 `composables/useUtm.ts` 從 sessionStorage 換成 `useCookie`，與舊站 HandL 一致。
@@ -355,9 +402,9 @@ PATCH 卻拿到空陣列 → 在空陣列裡找不到那個選項 → 回 404。
 
 ## 常踩的地雷
 1. **store 資料結構三套不一致**：後台送 `transport{}`/`images{env1..5}`，但 `stores/[id].patch.ts` allowedFields 漏了 `transport`（交通資訊儲存被丟棄）；公開 API 把 images 當陣列；型別 `StoreDoc` 是 `string[]`。
-2. `pages/cooperation.vue` 表單是**假送出**（setTimeout），後端 API 已就緒沒接。
+2. ~~`pages/cooperation.vue` 是假送出~~ **已於 2026-08-22 接上 `/api/leads/cooperation`**（commit 7a97ca2），並帶 utm。這一條留著是提醒：它曾經讓洽詢一律遺失。
 3. ✅ `pages/booking.vue` 成功畫面 LINE 按鈕＝**oaMessage 預填**（`line.me/R/oaMessage/@201fzruh/?<encodeURIComponent(訊息)>`，帶「我是{姓名}，我已報名練健康{分店}…」；成功畫面不清空 formData 故讀得到姓名/分店。使用者仍須自按送出、最好已加好友、手機最準）。後台 `pages/admin/leads.vue` 詳情/CSV 已顯示完整 booking payload（含代填者/健康狀況/LINE ID/UTM）。圖片位實況（多數版面無真 `<img>` 位，放圖要改程式）見 [[lkk-web-gotchas]] 第 11 條。
-4. `pages/locations/index.vue` 用寫死資料，非 API。
+4. ~~`pages/locations/index.vue` 用寫死資料~~ **分店基本資料走 `/api/public/stores`（`useLazyFetch`）＋程式內 fallback**；寫死的只有 `STORE_PHOTOS` 門市照對照表。
 5. WordPress 代理、reCAPTCHA 皆未實作（CLAUDE.md 有寫）。
 6. **教練卡片 `<button>` 垂直置中 → 圖片下移（2026-08-11 修，已上 prod）**：`pages/team-intro/coaches.vue` 教練卡是 `<button>`（圖 `aspect-[3/4]`＋資訊區 `.p-4`）。grid 同排等高，但各教練專長標籤行數不同→`.p-4` 高度不一→**`<button>` 天生會垂直置中內容**（即使非 flex）、把矮卡多出的空間分到圖片**上方**、圖被下推（實測許雅淇比同排低 13px）。**修法：button class 加 `flex flex-col`**（內容靠上）→ 全教練圖頂端 offset 都 1px、名字橫幅同排對齊。⚠️ 凡「`<button>` 當卡片＋grid 等高拉伸」都可能中招；排查先量 `imgDiv.top - btn.top` 比對同排各卡，別先懷疑圖片本身。**教練圖現況**：全 43 張皆 **500×550**、底部「教練｜姓名」橫幅**燒進圖檔**（與卡片下方 HTML 名字重複）、部分人物構圖偏鬆大小不一。`object-cover` 對此近方形圖**只裁左右不裁上下**→**CSS `object-position` 無法上下移、也無法只靠 CSS 拉齊人物大小差異（除非放大，會連橫幅一起放大變醜）**。根治靠換照片：已請廠商提供「純人像、無橫幅、構圖統一、500×550→建議1000×1100 JPG」，規格文件 `docs/教練照片規格.md`，到時直接覆蓋 `public/images/coaches/<分店>/<檔名>` 不用改程式。
 
@@ -376,6 +423,36 @@ PATCH 卻拿到空陣列 → 在空陣列裡找不到那個選項 → 回 404。
 
 **全域字串替換前先想「這幾個字是不是別的詞的一部分」**：
 「門店」→「分店」會把**西門店**改成西分店。逐處指定，不做 `replace_all`。
+
+### 🔴 兩個「在本機永遠驗不出來」的缺陷
+
+共通點：本機跑起來一切正常，部署之後才發作，而且不會報錯、只會悄悄給錯的結果。
+遇到「線上怪怪的但本機好好的」先想這兩類。
+
+**① `bg-cream-dark` / `bg-navy-dark` 這兩個色階不存在。**
+`tailwind.config.ts` 只定義數字色階（50–950），**沒有 `dark` 這個 key**。
+寫了不會報錯，算出來是 `rgba(0,0,0,0)` 透明。
+正解：Cream Dark `#e8dfd0` → `cream-200`、Navy Dark `#1a3545` → `navy-800`。
+
+會寫錯是因為 CLAUDE.md 的色彩表把它們稱作「Navy Dark」「Cream Dark」——
+那是設計稿的叫法，不是 Tailwind 的 key。
+三個彙整頁的骨架 loader 因此長期是透明的（灰條看不見），2026-09-30 才量出來。
+
+⚠️ **驗證方式**：不要看原始碼、也不要 grep 建置產物的 CSS（chunk 分散，很容易全 0 誤判）。
+用瀏覽器對一個臨時元素量 `getComputedStyle` 的實際顏色，透明就是這個 class 不存在。
+
+**② Cloud Run 是 UTC，開發機是 Asia/Taipei。**
+`apphosting.yaml` 沒有設 `TZ`，所以任何用「伺服器本地時區」推算日期界線的程式碼，
+在本機跑永遠正確。
+
+2026-10-02 實例：儀表板的 `new Date(y, m, 1)` 算出 UTC 的月初＝台北時間當月 1 號早上八點，
+於是**每月 1 號 00:00–07:59 送出的名單全部被當成上個月**。
+業主回報「本月預約體驗 10，但表單有 12」，漏掉的正是 04:44 與 05:07 那兩筆。
+
+⚠️ 寫到「本月／本週／今日」這種區間時，一律以台北時間計算
+（`Date.now() + 8h` 取年月，再 `Date.UTC(...) - 8h` 還原成絕對時間）。
+台灣 1979 年起沒有日光節約時間，固定 UTC+8，用固定位移是精確的，不必引進時區函式庫。
+**驗證一定要 `TZ=UTC node ...` 模擬。**
 
 ## 團體課報名系統（`/group-booking` + `/admin/group-classes`，2026-08-19 完成）
 
@@ -411,7 +488,7 @@ PATCH 卻拿到空陣列 → 在空陣列裡找不到那個選項 → 回 404。
 ⚠️ 承襲 booking 的決定：**確認信不標活動來源**（company/leadSource 只進管理者信與後台）。
 
 ### 廠商變體 / UTM（`config/groupClassVariants.ts`）
-用法與 booking 一致：`/group-booking?v=<key>&src=<來源>`，**變體 key 與 bookingVariants 刻意同名**（`abbott`/`nanshan`），同檔活動可同時發兩條連結、後台用同一組公司/來源篩選對得起來。可覆蓋欄位：`hero{badge,title,titleHighlight,subtitle,checklist,ctaText}`、**`lockStore`**（填『南京店』即可，比對門店字串開頭→自動帶入並把下拉換成唯讀橘卡）、**`lockCourse`**（填完整課名→唯讀橘卡）、`hideSources`、`company`、`leadSource`。未知 `v` 自動 fallback `default`。送出時一併帶 `formVariant`(=`?v=`)、`company`、`leadSource`(`?src=` 優先於變體預設)、`utm`(`useUtm().getUtm()`，沿用全站 `plugins/utm.client.ts` sessionStorage 機制)。網址規範／`?src=` 七個固定用語見 `docs/廠商表單網址規範.md`（已含 group-booking 章節）。
+用法與 booking 一致：`/group-booking?v=<key>&src=<來源>`，**變體 key 與 bookingVariants 刻意同名**（`abbott`/`nanshan`），同檔活動可同時發兩條連結、後台用同一組公司/來源篩選對得起來。可覆蓋欄位：`hero{badge,title,titleHighlight,subtitle,checklist,ctaText}`、**`lockStore`**（填『南京店』即可，比對門店字串開頭→自動帶入並把下拉換成唯讀橘卡）、**`lockCourse`**（填完整課名→唯讀橘卡）、`hideSources`、`company`、`leadSource`。未知 `v` 自動 fallback `default`。送出時一併帶 `formVariant`(=`?v=`)、`company`、`leadSource`(`?src=` 優先於變體預設)、`utm`(`useUtm().getUtm()`，沿用全站 `plugins/utm.client.ts` 的 **cookie** 機制)。網址規範／`?src=` 七個固定用語見 `docs/廠商表單網址規範.md`（已含 group-booking 章節）。
 ⚠️ 團課變體**沒有** `allAgesFree`（團課本來就不分年齡計價），別照抄 booking 的欄位。
 
 ### 後台（`pages/admin/group-classes.vue`）
@@ -525,8 +602,13 @@ dev/prod 各自照順序走。三個渲染點已補 `@error` 退路（404 退回
 ## 慣例
 - Nitro API：admin 端各檔 inline `const session = await getSession(event)`；寫入類要補角色檢查。
 - 表單 → `server/api/leads/*.post.ts` → 寫 Firestore `leads` + `server/utils/email.ts` 寄信（nodemailer + Gmail SMTP，收件人讀 Firestore `settings`）。
-- UTM 追蹤（已實作）：`composables/useUtm.ts` + `plugins/utm.client.ts` 進站擷取 `utm_*` 存 sessionStorage；booking/franchise 送出帶 `utm`，存進 lead `payload.utm`（`{source,medium,campaign,content,term,referrer}`）；後台 `leads.vue`（booking）與 `cooperation.vue`（franchise/cooperation）詳情+CSV 顯示；**⚠️ 2026-08-12 現況：`leads.vue` 篩選欄含 UTM 來源＋UTM 活動（可搜尋下拉），但刻意不含 UTM 媒介**（媒介對本站區隔性低：來源＋活動已足夠、媒介的跨來源彙總少用到；已從篩選移除、**勿加回**，仍存 `payload`、詳情/CSV 看得到。見下方名單欄位對照與 [[lkk-web-gotchas]] 第 16 條）。分店建議放 `utm_campaign`。cooperation 前台仍是假送出（未接 API），故其 UTM 尚未實際寫入。
-- **GA4 已安裝（2026-08-11，正式站）**：`plugins/gtag.client.ts`（評估 ID `G-DSQC1NTPJ3`，公開碼 hardcode），**只在正式網域 `lkkwellness.com`/`www.` 啟用**（`window.location.hostname` gate）→ dev/預覽/hosted.app 完全不追蹤、不污染數據。**站上原本沒裝任何分析工具，這是第一次裝** → 廠商連結的 `utm_*` 現在才真的有 GA 在收（先前只存進 lead `payload.utm`）。無新增套件、不動 apphosting.yaml。⚠️ GA4 明細資料保留預設 2 個月（資料設定→資料保留可改 14 個月）；尚未加自訂轉換事件（form_submit/click_cta）。細節見 [[lkk-web-deploy]]。
+- UTM 追蹤（已實作）：`composables/useUtm.ts` + `plugins/utm.client.ts` 進站擷取 `utm_*` 存 **cookie（30 天，含 capturedAt，伺服器端讀得到）**；booking/franchise 送出帶 `utm`，存進 lead `payload.utm`（`{source,medium,campaign,content,term,referrer}`）；後台 `leads.vue`（booking）與 `cooperation.vue`（franchise/cooperation）詳情+CSV 顯示；**⚠️ 2026-08-12 現況：`leads.vue` 篩選欄含 UTM 來源＋UTM 活動（可搜尋下拉），但刻意不含 UTM 媒介**（媒介對本站區隔性低：來源＋活動已足夠、媒介的跨來源彙總少用到；已從篩選移除、**勿加回**，仍存 `payload`、詳情/CSV 看得到。見下方名單欄位對照與 [[lkk-web-gotchas]] 第 16 條）。分店建議放 `utm_campaign`。（cooperation 已於 2026-08-22 接上 API 並帶 utm。）
+- **追蹤層現況（2026-09-30 起）**：改用業主提供的 **GTM 容器**（`plugins/gtm.client.ts`），
+  **只在正式網域 `lkkwellness.com` 啟用**。
+  ⚠️ `plugins/gtag.client.ts` 與獨立的 GA4 碼 `G-DSQC1NTPJ3` **已經刪除**（commit 62671f8），
+  不要再去找那支檔案、也不要把那個評估 ID 當成現行的。
+  GTM 容器實際載入了什麼（Clarity、漸強實驗室…）、三個 GA4 編號的來歷、
+  轉換為什麼是 0，全部見 [[lkk-tracking]]。
 - 根目錄 `npm install`（**需 `.npmrc` 的 `legacy-peer-deps=true`**，否則 npm 10.9 arborist 會崩）；build 用 `npm run build`（=`nuxt build`）。`firebase-tools` 已非依賴，CLI 用 `npx firebase-tools`。
 - **⚠️ 發 prod 的三個必查（2026-08-23 全踩過）**：
 1. `git checkout origin/dev -- .` **只新增不刪除** → 要補
