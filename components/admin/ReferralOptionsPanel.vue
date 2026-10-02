@@ -11,19 +11,18 @@
 const LISTS = [
   { field: 'social' as const, title: '社群平台', hint: '選「社群」之後展開的下拉選單' },
   { field: 'event' as const, title: '實體活動', hint: '選「實體活動」之後展開的下拉選單' },
-  {
-    field: 'doctor' as const,
-    title: '醫師／院所',
-    hint: '選「醫師/醫療轉介」之後展開的下拉選單。預設的「張文穎」是範例資料，請換成實際的合作對象',
-  },
+  // ⚠️ 這裡只放「表單真的會展開下拉」的選項。
+  //    2026-10-02 移除「醫師／院所」——「醫師/醫療轉介」已改為自行填寫，
+  //    留著會變成業主填了完全沒有效果的欄位（而且說明文字還是錯的）。
+  //    改回下拉的話，要同時還原 config/referralSources.ts 的 BASE_SOURCES、
+  //    DEFAULT_DYNAMIC_OPTIONS，以及兩支 referral-options 端點。
 ]
 
 const data = ref<Record<string, { label: string; active: boolean }[]>>({
   social: [],
   event: [],
-  doctor: [],
 })
-const newLabel = reactive<Record<string, string>>({ social: '', event: '', doctor: '' })
+const newLabel = reactive<Record<string, string>>({ social: '', event: '' })
 const busy = ref('')
 const message = ref<{ type: 'ok' | 'err'; text: string } | null>(null)
 

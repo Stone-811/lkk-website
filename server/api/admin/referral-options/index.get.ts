@@ -24,7 +24,6 @@ export default defineEventHandler(async (event) => {
       data: {
         social: Array.isArray(raw.social) ? raw.social : seed(DEFAULT_DYNAMIC_OPTIONS.social),
         event: Array.isArray(raw.event) ? raw.event : seed(DEFAULT_DYNAMIC_OPTIONS.event),
-        doctor: Array.isArray(raw.doctor) ? raw.doctor : seed(DEFAULT_DYNAMIC_OPTIONS.doctor),
       },
       initialized: doc.exists,
     }
