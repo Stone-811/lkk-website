@@ -15,7 +15,10 @@ import { DEFAULT_DYNAMIC_OPTIONS } from '~/config/referralSources'
  * 🔴 也不提供「刪除」。刪掉之後那個字串仍存在於既有名單裡，
  *    但後台再也查不到它曾經是個正式選項。停用能達到同樣效果又留下紀錄。
  */
-const FIELDS = ['social', 'event', 'doctor'] as const
+// 🔴 這裡少一個欄位，後台那一份清單就會變成「按了沒反應」。
+//    2026-10-02 移除 doctor：「醫師/醫療轉介」已改為自行填寫，不再有第二層下拉。
+//    Firestore 既有的 doctor 欄位刻意留著不刪（沒有程式讀寫它了）。
+const FIELDS = ['social', 'event'] as const
 type Field = (typeof FIELDS)[number]
 
 export default defineEventHandler(async (event) => {

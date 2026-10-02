@@ -356,13 +356,13 @@ WP REST 搜尋的實際行為、API 契約、競態地雷全部在 [[lkk-wp-arti
 字串會存進名單，而 leads 的 PATCH 白名單只放行 status 與 internalNote，改了回填不了。
 這個理由也寫在後台介面上給業主看，不是只藏在註解裡。
 
-🔴 **後台那一頁還留著第三份「醫師／院所」清單，而它已經是死的。**
-   `components/admin/ReferralOptionsPanel.vue` 仍列出它，說明文字還寫
-   「沒有任何啟用中的醫師，表單就不會出現『醫師/醫療轉介』這個選項」——
-   改成自行填寫之後這句是錯的，業主填了不會有任何效果。
-   這是下方「後台能編但不會顯示的欄位」那一節的新一筆，待清。
-   要清得同時處理 panel、`DEFAULT_DYNAMIC_OPTIONS.doctor`、
-   `/api/admin/referral-options` 兩支端點，以及 Firestore 的 `settings/referralOptions`。
+✅ 後台那一份「醫師／院所」清單已於 2026-10-02 清掉（panel、`DEFAULT_DYNAMIC_OPTIONS`、
+   公開端點、兩支 admin 端點共五處）。在那之前它是「業主填了完全沒有效果」的欄位，
+   說明文字也還停在舊行為。
+
+   ⚠️ **Firestore 的 `settings/referralOptions.doctor` 刻意留著不刪**：
+   已經沒有任何程式讀寫它，刪它要動業主的正式資料、而且沒有好處；
+   留著等於保有一份舊清單，日後真要改回下拉也還在。
 
 ### UTM 改用 cookie 保存 30 天
 `composables/useUtm.ts` 從 sessionStorage 換成 `useCookie`，與舊站 HandL 一致。

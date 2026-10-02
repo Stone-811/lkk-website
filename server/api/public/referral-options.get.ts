@@ -29,7 +29,7 @@ export default defineCachedEventHandler(
       //    欄位不存在 → 回 null，呼叫端退回預設清單
       //    欄位存在但沒有啟用中的 → 回空陣列，代表業主刻意清空，
       //      前台會把對應的主選項整個隱藏，而不是顯示空下拉
-      const pick = (key: 'social' | 'event' | 'doctor'): string[] | null => {
+      const pick = (key: 'social' | 'event'): string[] | null => {
         const list = raw[key]
         if (!Array.isArray(list)) return null
         return list
@@ -42,7 +42,6 @@ export default defineCachedEventHandler(
         data: {
           social: pick('social') ?? DEFAULT_DYNAMIC_OPTIONS.social,
           event: pick('event') ?? DEFAULT_DYNAMIC_OPTIONS.event,
-          doctor: pick('doctor') ?? DEFAULT_DYNAMIC_OPTIONS.doctor,
         },
         source: 'firestore' as const,
       }
