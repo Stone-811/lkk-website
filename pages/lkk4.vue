@@ -159,7 +159,7 @@ const teamNotes = [
   '80 歲以上長輩參與組別，全程不排名、全體都能拿到完賽證書。',
   '重點從來不是量測誰最強，是讓每個人都真的有下場，走過這四關。',
 ]
-const teamBadges = ['2–3 人一隊', '長輩帶頭', '全員可完賽']
+const teamBadges = ['2–4 人一隊', '長輩帶頭', '全員可完賽']
 
 const milestones = [
   { year: '2021', title: '第一屆 聖誕老人硬舉邀請賽', desc: '由練健康團隊內部發起，數十位阿公阿嬤首度披上聖誕戰袍參賽，顛覆社會大眾對高齡重訓危險的偏見。' },
@@ -487,7 +487,7 @@ const faqs = [
           </div>
           <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">一個人怕做不到？找個同伴一起來</h2>
           <p class="text-white/75 leading-relaxed">
-            70 歲以上的長輩，可以組成 2–3 人的團體賽，不用一個人撐完全程。
+            70 歲以上的長輩，可以組成 2–4 人的團體賽，不用一個人撐完全程。
           </p>
         </div>
 
