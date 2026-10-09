@@ -49,7 +49,7 @@ const disciplines = [
     icon: 'lift',
     life: '拿得動',
     name: '六角槓硬舉',
-    meta: '肌力',
+    meta: ['肌力'],
     desc: '把重量從地上拉起來——就像提起購物袋、搬起箱子、拿起行李。要問的不是「硬舉幾公斤」，是生活需要時，你還拿得動嗎。',
   },
   {
@@ -58,7 +58,7 @@ const disciplines = [
     icon: 'push',
     life: '推得實',
     name: '推雪橇',
-    meta: '全身肌力應用',
+    meta: ['全身肌力應用'],
     desc: '全身一起出力，把東西往前推——就像推購物車、推門、移動家具。比起需要肩膀高舉的動作，推的方式對很多長輩的身體更友善。',
   },
   {
@@ -67,7 +67,7 @@ const disciplines = [
     icon: 'walk',
     life: '走得穩',
     name: '單側農夫走路',
-    meta: '平衡 握力 負重行走',
+    meta: ['平衡', '握力', '負重行走'],
     desc: '重量壓在身體單側，還要穩穩走——就像單手提菜、提水、一手拿東西一手做別的事。重點不是提多重，是提著東西還能不能穩穩走回家。',
   },
   {
@@ -76,7 +76,7 @@ const disciplines = [
     icon: 'endure',
     life: '走得久',
     name: '風扇車',
-    meta: '有氧能力',
+    meta: ['有氧能力'],
     desc: '考驗的是體力能不能撐得久——就像出門一整天、爬樓梯、陪家人到處走。要問的不是騎多快，是體力還能不能帶你去想去的地方。',
   },
 ]
@@ -165,6 +165,9 @@ const teamNotes = [
  * 業主最常被問的混淆點：「團體接力賽」與「團體積分獎」是兩個不同項目。
  * 接力賽是一隊共同完成同一場；積分獎是各自比完個人賽再加總。
  */
+/** 區塊標題下的兩個標籤。上一版的「長輩帶頭」已隨新賽制移除，不要再加回來。 */
+const teamBadges = ['2–4 人一隊', '不限年齡與身體狀況']
+
 const teamVsGroup = [
   { t: '團體接力賽', d: '由 2–4 人共同完成同一場比賽，以接力方式完成三個關卡。' },
   { t: '團體積分獎', d: '參賽者各自完成個人賽，再依個人成績計算並加總團體積分。' },
@@ -176,22 +179,21 @@ const milestones = [
   { year: '2023', title: '第三屆 聖誕老人硬舉大賽', desc: '225 人參賽，中高齡訓練的風氣逐漸打開，賽事規模持續擴大。' },
   { year: '2024', title: '第四屆 聖誕老人硬舉大賽', desc: '場地擴及華山文創、松山文創等指標場域，報名開放後屢次秒殺額滿。' },
   { year: '2025', title: '第五屆 聖誕老人硬舉大賽', desc: '70 歲以上選手超過 60 人參賽，並獲華視、中央社、BBC、路透社、法新社、新加坡電視台 CNA 等海內外媒體報導。' },
-  { year: '2026', title: '第六屆 LKK4 聖誕老人功能錦標賽', desc: '全面進化為涵蓋肌力、爆發力、核心能力與心肺有氧能力四大面向的功能錦標賽。安全、直覺、全齡友善，所有年齡皆可參加。', current: true },
+  { year: '2026', title: '第六屆 LKK4 聖誕老人功能錦標賽', desc: '從單一肌力競賽，升級為拿得動、推得實、走得穩、走得久四種生活功能的成果驗收，並新增團體接力賽。安全、直覺、全齡友善，所有年齡皆可參加。', current: true },
 ]
 
 // ── 以下賽制資訊來源：Accupass 官方活動頁 ──
 const competitionGroups = [
   { key: 'female', label: '女子組', count: '共五組', items: ['39 歲以下', '40–49 歲', '50–59 歲', '60–69 歲', '70–79 歲'] },
   { key: 'male', label: '男子組', count: '共五組', items: ['39 歲以下', '40–49 歲', '50–59 歲', '60–69 歲', '70–79 歲'] },
-  { key: 'senior', label: '長者推廣組', count: '不分性別', items: ['80 歲以上，一同挑戰！'] },
   {
     key: 'relay',
     label: '團體接力賽',
     count: '9/23 新增',
     items: [
       '每隊 2–4 人',
-      '同伴不限年齡性別',
-      '鼓勵長輩及特殊族群一同參與',
+      '不限年齡性別',
+      '歡迎長輩及行動不便者一起參加',
       '鼓勵性質，不參與排名',
     ],
   },
@@ -411,7 +413,11 @@ const faqs = [
             <div class="font-serif text-2xl font-black text-orange-700 leading-none mb-1.5">{{ d.life }}</div>
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3">
               <span class="text-sm font-bold text-ink/70">{{ d.name }}</span>
-              <span class="text-[11px] font-bold text-navy-800 bg-navy-700/10 rounded-full px-2 py-0.5">{{ d.meta }}</span>
+              <span
+                v-for="m in d.meta"
+                :key="m"
+                class="text-[11px] font-bold text-navy-800 bg-navy-700/10 rounded-full px-2 py-0.5"
+              >{{ m }}</span>
             </div>
             <p class="text-[15px] text-ink/70 leading-relaxed">{{ d.desc }}</p>
           </div>
@@ -519,6 +525,15 @@ const faqs = [
           <p class="text-white/75 leading-relaxed">
             今年 LKK4 新增「團體接力賽」，讓長輩可以和家人、朋友一起完成挑戰，不限年齡、不限身體狀況。別擔心做不到，隊友會幫你撐腰！
           </p>
+          <div class="flex flex-wrap justify-center gap-2 mt-5">
+            <span
+              v-for="b in teamBadges"
+              :key="b"
+              class="text-xs font-bold text-navy-800 bg-cream border border-navy-700/15 rounded-full px-3 py-1"
+            >
+              {{ b }}
+            </span>
+          </div>
         </div>
 
         <div class="max-w-5xl mx-auto">
@@ -659,13 +674,10 @@ const faqs = [
             </div>
 
             <!-- 比賽組別 -->
-            <h3 class="font-serif text-2xl font-black text-navy-800 mb-2">比賽組別與預計選手人數</h3>
-            <p class="text-[15px] text-ink/70 leading-relaxed mb-6">
-              39 歲以下、40–49 歲、50–59 歲、60–69 歲、70–79 歲，各分男女組共十組，另特別加開 80 歲以上不分性別的長者推廣組。
-            </p>
-            <!-- 四張卡一列。768px 只有約 170px/張，「鼓勵長輩及特殊族群一同參與」
-                 會擠成好幾行，所以平板維持兩欄，桌機才攤成一列 -->
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+            <h3 class="font-serif text-2xl font-black text-navy-800 mb-6">比賽組別</h3>
+            <!-- 三張卡一列。768px 每張約 216px，「歡迎長輩及行動不便者一起參加」
+                 折成兩行還讀得下去；四張卡的時代只有 170px 才需要平板降成兩欄 -->
+            <div class="grid md:grid-cols-3 gap-4 mb-12">
               <div
                 v-for="g in competitionGroups"
                 :key="g.key"
