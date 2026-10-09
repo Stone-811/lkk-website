@@ -265,7 +265,8 @@ const weightTable = [
 ]
 
 /**
- * 團體接力賽的實務資訊（業主 2026-10-09 提供，10-09 下午移到 #team 區塊）。
+ * 團體接力賽的實務資訊（業主 2026-10-09 提供）。渲染在賽制區「報名費用」裡，
+ * 緊接在「個人賽＋團體接力賽」那塊下方 —— 報名當下才需要知道的事排在一起。
  * 原本還有「比賽內容」「接力規則」兩張卡，業主要求刪除 —— 那些條文在
  * teamSteps／teamNotes／raceRules 都講過了。
  */
@@ -589,22 +590,6 @@ const faqs = [
               </li>
             </ol>
 
-            <div class="grid md:grid-cols-2 gap-4 mt-4">
-              <div
-                v-for="g in relayExtras"
-                :key="g.t"
-                class="bg-white rounded-[20px] p-5 lg:p-6 border-2 border-cream-200"
-              >
-                <h3 class="font-serif text-xl font-black text-navy-800 mb-3">{{ g.t }}</h3>
-                <ul v-if="g.items" class="space-y-1.5">
-                  <li v-for="item in g.items" :key="item" class="flex items-start gap-2 text-[15px] text-ink/70 leading-relaxed">
-                    <span class="text-orange-700 mt-0.5">・</span>{{ item }}
-                  </li>
-                </ul>
-                <p v-else class="text-[15px] text-ink/70 leading-relaxed">{{ g.text }}</p>
-              </div>
-            </div>
-
             <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-7 lg:gap-9 mt-8 lg:mt-10">
               <div>
                 <h3 class="font-serif text-xl font-black text-navy-800 mb-4">不用擔心的幾件事</h3>
@@ -783,6 +768,21 @@ const faqs = [
               <p class="text-[15px] text-ink/70 leading-relaxed">
                 同一人可同時參加個人賽及團體接力賽：需支付兩份完整報名費、T-shirt 會重複領取、晶片不會共用。
               </p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4 mb-4">
+              <div
+                v-for="g in relayExtras"
+                :key="g.t"
+                class="bg-white rounded-2xl p-6 border-2 border-cream-200"
+              >
+                <h4 class="font-serif text-xl font-black text-navy-800 mb-3">{{ g.t }}</h4>
+                <ul v-if="g.items" class="space-y-1.5">
+                  <li v-for="item in g.items" :key="item" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
+                    <span class="text-orange-700 mt-0.5">・</span>{{ item }}
+                  </li>
+                </ul>
+                <p v-else class="text-sm text-ink/70 leading-relaxed">{{ g.text }}</p>
+              </div>
             </div>
             <div class="bg-white rounded-xl px-5 py-3.5 text-sm text-ink/70 border-2 border-cream-200 mb-12">
               賽程預計於 <strong class="text-navy-800">2026/11/6（星期五）前</strong>公佈。
