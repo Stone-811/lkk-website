@@ -347,8 +347,15 @@ const faqs = [
     <!-- ================= 實拿久穩 ================= -->
     <!--
       業主提供的橫幅（2000×859，四角留白是透明的，直接疊在 navy 底上就好，不用票券框）。
-      圖上的說明文字在原檔只有 22px 高——縮到手機寬度剩不到 4px，整排會變成純裝飾，
-      所以 lg 以下改用 fourWords 重建成可讀的文字版（內容與圖上完全相同）。
+
+      ⚠️ lg 以下不放這張圖。圖上的說明文字實測字級 24.6px（量全形字的 advance，
+         不是墨跡高度；標題 37.5px），依 container 寬度換算成畫面上的實際字級：
+           375px → 4.2px   768px → 9.1px   ← 整排變成純裝飾
+           1024px → 12.2px  1280px → 15.3px  1536px → 18.5px
+         所以 lg 以下改用 fourWords 重建成可讀的文字版（內容與圖上逐字相同）。
+
+      loading="lazy" 不能省：display:none 不會擋下載，少了它，每個手機訪客都會
+      下載這張 93 KB 卻永遠看不到（同檔 stages.webp 也是這個做法）。
     -->
     <section class="py-10 lg:py-14">
       <div class="container mx-auto px-4">
@@ -358,6 +365,7 @@ const faqs = [
           class="hidden lg:block w-full h-auto"
           width="2000"
           height="859"
+          loading="lazy"
         />
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 lg:hidden">
