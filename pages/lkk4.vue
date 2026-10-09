@@ -158,7 +158,7 @@ const teamNotes = [
   '同伴不限年齡、不限性別，家人、朋友、教練都可以一起上場。',
   '行動不便、無法獨立行走的長輩，可由協助者隨行：推輪椅、攙扶、穩定平衡、上下器材、必要移動都可以。協助者可由隊友兼任，也可以是家屬或看護，原則上不佔正式隊伍人數。',
   '全隊使用同一套重量（依 70 歲以上女子組之對應重量）。',
-  '80 歲以上長輩參與組別，全程不排名、全體都能拿到完賽證書。',
+  '全程不排名、全體都能拿到完賽證書。',
   '重點是讓每個人都真的有下場，在自己還能參與的地方，繼續參與。',
 ]
 /**
@@ -169,8 +169,8 @@ const teamNotes = [
 const teamBadges = ['2–4 人一隊', '不限年齡與身體狀況']
 
 const teamVsGroup = [
-  { t: '團體接力賽', d: '由 2–4 人共同完成同一場比賽，以接力方式完成三個關卡。' },
   { t: '團體積分獎', d: '參賽者各自完成個人賽，再依個人成績計算並加總團體積分。' },
+  { t: '團體接力賽', d: '由 2–4 人共同完成同一場比賽，以接力方式完成三個關卡。' },
 ]
 
 const milestones = [
@@ -265,31 +265,11 @@ const weightTable = [
 ]
 
 /**
- * 團體接力賽的正式條文（業主 2026-10-09 提供），放在賽制區。
- * ⚠️ 與 #team 區塊的 teamSteps／teamNotes 有大半重疊 —— 那邊是給猶豫中的人看的
- *    白話版，這裡是要照著比賽的條文版，業主要求兩邊都留，不要「順手去重」。
+ * 團體接力賽的實務資訊（業主 2026-10-09 提供，10-09 下午移到 #team 區塊）。
+ * 原本還有「比賽內容」「接力規則」兩張卡，業主要求刪除 —— 那些條文在
+ * teamSteps／teamNotes／raceRules 都講過了。
  */
-const relayRules = [
-  {
-    t: '比賽內容',
-    items: [
-      '第一關：六角槓硬舉輕／中／重各 1 下',
-      '第二關：推雪橇 25 公尺來回＋換手單側農夫走路 25 公尺來回',
-      '第三關：風扇車 3 公里',
-      '時限：14 分鐘內完賽',
-      '重量：依 70 歲以上女子組之對應重量，全隊使用同一套重量',
-    ],
-  },
-  {
-    t: '接力規則',
-    items: [
-      '不重新開始，從當下進度接續',
-      '不停錶',
-      '不限制接力次數',
-      '可於己方比賽場地內以任何形式輔助完賽，惟不得超出賽道',
-      '特殊協助：協助者可推輪椅、攙扶、穩定平衡、上下器材、必要移動；可由隊友、家屬或看護擔任，原則上不佔正式隊伍人數',
-    ],
-  },
+const relayExtras = [
   {
     t: '服裝、輪椅與輔具',
     items: [
@@ -609,6 +589,22 @@ const faqs = [
               </li>
             </ol>
 
+            <div class="grid md:grid-cols-2 gap-4 mt-4">
+              <div
+                v-for="g in relayExtras"
+                :key="g.t"
+                class="bg-white rounded-[20px] p-5 lg:p-6 border-2 border-cream-200"
+              >
+                <h3 class="font-serif text-xl font-black text-navy-800 mb-3">{{ g.t }}</h3>
+                <ul v-if="g.items" class="space-y-1.5">
+                  <li v-for="item in g.items" :key="item" class="flex items-start gap-2 text-[15px] text-ink/70 leading-relaxed">
+                    <span class="text-orange-700 mt-0.5">・</span>{{ item }}
+                  </li>
+                </ul>
+                <p v-else class="text-[15px] text-ink/70 leading-relaxed">{{ g.text }}</p>
+              </div>
+            </div>
+
             <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-7 lg:gap-9 mt-8 lg:mt-10">
               <div>
                 <h3 class="font-serif text-xl font-black text-navy-800 mb-4">不用擔心的幾件事</h3>
@@ -698,7 +694,7 @@ const faqs = [
             Rules &amp; Entry
           </div>
           <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">賽制與報名資訊</h2>
-          <p class="text-white/75 leading-relaxed">組別、費用、關卡計分、重量與距離、團體接力賽規則、選手 T 尺寸，都在這裡。</p>
+          <p class="text-white/75 leading-relaxed">組別、費用、關卡計分、重量與距離、選手 T 尺寸，都在這裡。</p>
         </div>
 
         <div class="max-w-5xl mx-auto">
@@ -856,25 +852,6 @@ const faqs = [
                   </tr>
                 </tbody>
               </table>
-            </div>
-
-            <!-- 團體接力賽規則。四張卡排 2×2：前兩張條目多、後兩張短，
-                 同一列的卡片等高，不會出現一高一矮的斷層 -->
-            <h3 class="font-serif text-2xl font-black text-navy-800 mb-6">團體接力賽規則</h3>
-            <div class="grid md:grid-cols-2 gap-4 mb-12">
-              <div
-                v-for="g in relayRules"
-                :key="g.t"
-                class="bg-white rounded-2xl p-6 border-2 border-cream-200"
-              >
-                <h4 class="font-serif text-xl font-black text-navy-800 mb-3">{{ g.t }}</h4>
-                <ul v-if="g.items" class="space-y-1.5">
-                  <li v-for="item in g.items" :key="item" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
-                    <span class="text-orange-700 mt-0.5">・</span>{{ item }}
-                  </li>
-                </ul>
-                <p v-else class="text-sm text-ink/70 leading-relaxed">{{ g.text }}</p>
-              </div>
             </div>
 
             <!-- 選手 T 尺寸 -->
