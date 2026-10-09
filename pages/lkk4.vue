@@ -264,6 +264,45 @@ const weightTable = [
   { group: '團體接力賽（新增）', light: '30', mid: '40', heavy: '50', sled: '40', farmer: '12', bike: '3' },
 ]
 
+/**
+ * 團體接力賽的正式條文（業主 2026-10-09 提供），放在賽制區。
+ * ⚠️ 與 #team 區塊的 teamSteps／teamNotes 有大半重疊 —— 那邊是給猶豫中的人看的
+ *    白話版，這裡是要照著比賽的條文版，業主要求兩邊都留，不要「順手去重」。
+ */
+const relayRules = [
+  {
+    t: '比賽內容',
+    items: [
+      '第一關：六角槓硬舉輕／中／重各 1 下',
+      '第二關：推雪橇 25 公尺來回＋換手單側農夫走路 25 公尺來回',
+      '第三關：風扇車 3 公里',
+      '時限：14 分鐘內完賽',
+      '重量：依 70 歲以上女子組之對應重量，全隊使用同一套重量',
+    ],
+  },
+  {
+    t: '接力規則',
+    items: [
+      '不重新開始，從當下進度接續',
+      '不停錶',
+      '不限制接力次數',
+      '可於己方比賽場地內以任何形式輔助完賽，惟不得超出賽道',
+      '特殊協助：協助者可推輪椅、攙扶、穩定平衡、上下器材、必要移動；可由隊友、家屬或看護擔任，原則上不佔正式隊伍人數',
+    ],
+  },
+  {
+    t: '服裝、輪椅與輔具',
+    items: [
+      '請穿著完整包覆腳趾的鞋款。',
+      '有輔具皆可攜帶。',
+    ],
+  },
+  {
+    t: '報名變更與退費',
+    text: '以實際產生之改票服務費為準，練健康保有更改比賽之權利。',
+  },
+]
+
 const tshirtFits = [
   { body: '生理男', height: '183 cm', weight: '90 kg', size: 'L', fit: '合身' },
   { body: '生理男', height: '171 cm', weight: '70 kg', size: 'M', fit: '合身' },
@@ -643,7 +682,7 @@ const faqs = [
             Rules &amp; Entry
           </div>
           <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">賽制與報名資訊</h2>
-          <p class="text-white/75 leading-relaxed">組別、費用、關卡計分、重量與距離、選手 T 尺寸，都在這裡。</p>
+          <p class="text-white/75 leading-relaxed">組別、費用、關卡計分、重量與距離、團體接力賽規則、選手 T 尺寸，都在這裡。</p>
         </div>
 
         <div class="max-w-5xl mx-auto">
@@ -726,6 +765,13 @@ const faqs = [
                 <div class="text-sm text-ink/65">{{ fee.period }}</div>
               </div>
             </div>
+            <!-- 兩邊都報名的人最容易誤會的三件事，和費用卡分開、加色塊強調 -->
+            <div class="bg-cream-200 border-l-4 border-orange-700 rounded-r-2xl p-5 lg:p-6 mb-4">
+              <h4 class="font-bold text-navy-800 mb-2">個人賽＋團體接力賽</h4>
+              <p class="text-[15px] text-ink/70 leading-relaxed">
+                同一人可同時參加個人賽及團體接力賽：需支付兩份完整報名費、T-shirt 會重複領取、晶片不會共用。
+              </p>
+            </div>
             <div class="bg-white rounded-xl px-5 py-3.5 text-sm text-ink/70 border-2 border-cream-200 mb-12">
               賽程預計於 <strong class="text-navy-800">2026/11/6（星期五）前</strong>公佈。
             </div>
@@ -794,6 +840,25 @@ const faqs = [
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- 團體接力賽規則。四張卡排 2×2：前兩張條目多、後兩張短，
+                 同一列的卡片等高，不會出現一高一矮的斷層 -->
+            <h3 class="font-serif text-2xl font-black text-navy-800 mb-6">團體接力賽規則</h3>
+            <div class="grid md:grid-cols-2 gap-4 mb-12">
+              <div
+                v-for="g in relayRules"
+                :key="g.t"
+                class="bg-white rounded-2xl p-6 border-2 border-cream-200"
+              >
+                <h4 class="font-serif text-xl font-black text-navy-800 mb-3">{{ g.t }}</h4>
+                <ul v-if="g.items" class="space-y-1.5">
+                  <li v-for="item in g.items" :key="item" class="flex items-start gap-2 text-sm text-ink/70 leading-relaxed">
+                    <span class="text-orange-700 mt-0.5">・</span>{{ item }}
+                  </li>
+                </ul>
+                <p v-else class="text-sm text-ink/70 leading-relaxed">{{ g.text }}</p>
+              </div>
             </div>
 
             <!-- 選手 T 尺寸 -->
