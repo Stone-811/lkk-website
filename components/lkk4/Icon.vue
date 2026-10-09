@@ -14,7 +14,7 @@ defineProps<{ name: string }>()
       <path d="M20 20 V16 Q20 12 24 12 Q28 12 28 16 V20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
     </template>
 
-    <!-- 推得動：箱子與推力方向 -->
+    <!-- 推得實：箱子與推力方向 -->
     <template v-else-if="name === 'push'">
       <rect x="9" y="18" width="17" height="14" rx="2" stroke="currentColor" stroke-width="2.4" />
       <path d="M26 25 H39 M33 19 L39 25 L33 31" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />

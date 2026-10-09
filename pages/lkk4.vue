@@ -3,7 +3,7 @@
  * LKK4 聖誕老人功能錦標賽
  *
  * 2026-09-01 依業主提供的版型（lkk4 (1).html）重構架構：
- *   Hero → 四詞卡 → 四大功能挑戰 → 自我測驗 → 團體賽 → 賽事緣起
+ *   Hero → 實拿久穩 → 四大功能挑戰 → 自我測驗 → 團體接力賽 → 賽事緣起
  *   → 賽制與報名（保留原有硬資訊）→ 成績查詢 → FAQ → 報名 CTA
  *
  * ⚠️ 配色用站上 token，不用參考檔的 #004B69/#EC6F00/#F5F0E4。
@@ -33,12 +33,13 @@ useHead({
 // 官方報名頁（Accupass）
 const ACCUPASS_URL = 'https://www.accupass.com/event/2606231002373711869520?utm_source=google&utm_medium=Direct&utm_campaign=accu_260702a6zestso'
 
-// 把賽事翻譯成生活語言的四個詞
+// 把賽事翻譯成生活語言的四個詞。key 是業主橫幅圖上四個圈裡的大字（實拿久穩），
+// 順序與 public/images/lkk4/four-words.webp 一致，lg 以下用這組資料重建文字版。
 const fourWords = [
-  { icon: 'lift', t: '拿得動', d: '提菜籃、拿行李、搬東西' },
-  { icon: 'push', t: '推得動', d: '推購物車、推門、搬家具' },
-  { icon: 'walk', t: '走得穩', d: '單手提重物也不晃' },
-  { icon: 'endure', t: '走得久', d: '出門一整天不喊累' },
+  { key: '實', t: '推得實', d: '推購物車、推門、搬家具' },
+  { key: '拿', t: '拿得動', d: '提菜籃、拿行李、搬東西' },
+  { key: '久', t: '走得久', d: '出門一整天不喊累' },
+  { key: '穩', t: '走得穩', d: '單手提重物也不晃' },
 ]
 
 const disciplines = [
@@ -55,9 +56,9 @@ const disciplines = [
     id: 'sled',
     n: '02',
     icon: 'push',
-    life: '推得動',
+    life: '推得實',
     name: '推雪橇',
-    meta: '爆發力',
+    meta: '全身肌力應用',
     desc: '全身一起出力，把東西往前推——就像推購物車、推門、移動家具。比起需要肩膀高舉的動作，推的方式對很多長輩的身體更友善。',
   },
   {
@@ -66,7 +67,7 @@ const disciplines = [
     icon: 'walk',
     life: '走得穩',
     name: '單側農夫走路',
-    meta: '核心能力',
+    meta: '平衡 握力 負重行走',
     desc: '重量壓在身體單側，還要穩穩走——就像單手提菜、提水、一手拿東西一手做別的事。重點不是提多重，是提著東西還能不能穩穩走回家。',
   },
   {
@@ -101,8 +102,8 @@ const quizQuestions = [
   {
     q: '推超市推車或家裡的家具，感覺如何？',
     opts: [
-      { t: '推得動，不會覺得吃力', v: 3 },
-      { t: '推得動，但推久了手會痠', v: 2 },
+      { t: '推得實，不會覺得吃力', v: 3 },
+      { t: '推得實，但推久了手會痠', v: 2 },
       { t: '比較希望有人一起出力', v: 1 },
     ],
   },
@@ -146,20 +147,28 @@ function restartQuiz() {
   qScore.value = 0
 }
 
-// ── 團體賽 ──
+// ── 團體接力賽（2026 新增項目）──
 const teamSteps = [
-  { t: '長輩先起頭', d: '每一關都由長輩親自開始動作，這是團體賽唯一堅持的事。' },
-  { t: '做不下去就換手', d: '同伴隨時可以接手，不用等長輩喊累才換人，從當下的進度直接接續，不用重來。' },
-  { t: '陪伴，不代做', d: '行動不便的長輩可以有一位協助者隨行——推輪椅、攙扶、穩定平衡都可以，這段時間仍算長輩本人在場上。' },
-  { t: '時間加總，就是成績', d: '沒有裁判來判斷「他是不是真的做不到」，換人不用申報，也不停表。三個人分攤，本來就比一個人輕鬆。' },
+  { t: '2–4 人一隊', d: '家人、朋友、長輩、行動不便者都歡迎。歡迎全家大小、三代同堂一起參與！' },
+  { t: '自由分配，做到自己的程度', d: '每位隊員可以自由分配順序，以及自己能做到的程度，共同完成三個關卡。' },
+  { t: '隨時換手，不重新開始', d: '從當下進度接續，不停錶、不限制接力次數。全隊需於 14 分鐘內完賽。' },
+  { t: '陪伴，讓更多人有機會站上場', d: '過程可以任何形式於己方比賽場地內輔助完賽，惟不得超出賽道。' },
 ]
 const teamNotes = [
   '同伴不限年齡、不限性別，家人、朋友、教練都可以一起上場。',
-  '行動不便、需要輪椅的長輩，也有專屬的協助條款可以參加。',
+  '行動不便、無法獨立行走的長輩，可由協助者隨行：推輪椅、攙扶、穩定平衡、上下器材、必要移動都可以。協助者可由隊友兼任，也可以是家屬或看護，原則上不佔正式隊伍人數。',
+  '全隊使用同一套重量（依 70 歲以上女子組之對應重量）。',
   '80 歲以上長輩參與組別，全程不排名、全體都能拿到完賽證書。',
-  '重點從來不是量測誰最強，是讓每個人都真的有下場，走過這四關。',
+  '重點是讓每個人都真的有下場，在自己還能參與的地方，繼續參與。',
 ]
-const teamBadges = ['2–4 人一隊', '長輩帶頭', '全員可完賽']
+/**
+ * 業主最常被問的混淆點：「團體接力賽」與「團體積分獎」是兩個不同項目。
+ * 接力賽是一隊共同完成同一場；積分獎是各自比完個人賽再加總。
+ */
+const teamVsGroup = [
+  { t: '團體接力賽', d: '由 2–4 人共同完成同一場比賽，以接力方式完成三個關卡。' },
+  { t: '團體積分獎', d: '參賽者各自完成個人賽，再依個人成績計算並加總團體積分。' },
+]
 
 const milestones = [
   { year: '2021', title: '第一屆 聖誕老人硬舉邀請賽', desc: '由練健康團隊內部發起，數十位阿公阿嬤首度披上聖誕戰袍參賽，顛覆社會大眾對高齡重訓危險的偏見。' },
@@ -309,7 +318,7 @@ const faqs = [
 
           <div class="max-w-2xl mx-auto text-center mt-9">
             <p class="text-white/75 text-base lg:text-lg leading-relaxed mb-8">
-              不是比誰舉得最重。LKK4 用四個生活裡本來就在做的動作——拿得動、推得動、走得穩、走得久，陪你看看這一年，身體多做到了哪些事。第一次參加也沒關係，完成，本身就是成果。
+              不是比誰舉得最重。LKK4 用四個生活裡本來就在做的動作——拿得動、推得實、走得穩、走得久，陪你看看這一年，身體多做到了哪些事。第一次參加也沒關係，完成，本身就是成果。
             </p>
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
               <a
@@ -335,19 +344,32 @@ const faqs = [
       </div>
     </section>
 
-    <!-- ================= 四詞卡 ================= -->
+    <!-- ================= 實拿久穩 ================= -->
+    <!--
+      業主提供的橫幅（2000×859，四角留白是透明的，直接疊在 navy 底上就好，不用票券框）。
+      圖上的說明文字在原檔只有 22px 高——縮到手機寬度剩不到 4px，整排會變成純裝飾，
+      所以 lg 以下改用 fourWords 重建成可讀的文字版（內容與圖上完全相同）。
+    -->
     <section class="py-10 lg:py-14">
       <div class="container mx-auto px-4">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <img
+          src="/images/lkk4/four-words.webp"
+          alt="實、拿、久、穩四個圈：推得實——推購物車、推門、搬家具；拿得動——提菜籃、拿行李、搬東西；走得久——出門一整天不喊累；走得穩——單手提重物也不晃。"
+          class="hidden lg:block w-full h-auto"
+          width="2000"
+          height="859"
+        />
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 lg:hidden">
           <div
             v-for="w in fourWords"
             :key="w.t"
             class="bg-cream border-[2.5px] border-navy-900 rounded-[20px] px-4 py-6 text-center"
           >
             <div class="w-16 h-16 rounded-full border-[2.5px] border-navy-700 bg-white flex items-center justify-center mx-auto mb-3.5">
-              <Lkk4Icon :name="w.icon" class="w-8 h-8" />
+              <span class="font-serif text-3xl font-black text-navy-700 leading-none" aria-hidden="true">{{ w.key }}</span>
             </div>
-            <div class="font-serif text-lg lg:text-xl font-black text-navy-800 mb-1">{{ w.t }}</div>
+            <div class="font-serif text-lg font-black text-navy-800 mb-1">{{ w.t }}</div>
             <div class="text-[13px] text-ink/65 leading-relaxed">{{ w.d }}</div>
           </div>
         </div>
@@ -379,7 +401,7 @@ const faqs = [
               <Lkk4Icon :name="d.icon" class="w-7 h-7" />
             </div>
             <div class="font-serif text-2xl font-black text-orange-700 leading-none mb-1.5">{{ d.life }}</div>
-            <div class="flex items-center gap-2 mb-3">
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3">
               <span class="text-sm font-bold text-ink/70">{{ d.name }}</span>
               <span class="text-[11px] font-bold text-navy-800 bg-navy-700/10 rounded-full px-2 py-0.5">{{ d.meta }}</span>
             </div>
@@ -477,7 +499,7 @@ const faqs = [
       </div>
     </section>
 
-    <!-- ================= 團體賽 ================= -->
+    <!-- ================= 團體接力賽 ================= -->
     <section id="team" class="py-14 lg:py-20">
       <div class="container mx-auto px-4">
         <div class="max-w-2xl mx-auto text-center mb-11">
@@ -485,30 +507,34 @@ const faqs = [
             <span class="w-5 h-0.5 bg-orange-300" />
             Team Entry
           </div>
-          <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">一個人怕做不到？找個同伴一起來</h2>
+          <h2 class="font-serif text-3xl lg:text-4xl font-black text-white mb-3">這一次，不一定要一個人完成</h2>
           <p class="text-white/75 leading-relaxed">
-            70 歲以上的長輩，可以組成 2–4 人的團體賽，不用一個人撐完全程。
+            今年 LKK4 新增「團體接力賽」，讓長輩可以和家人、朋友一起完成挑戰，不限年齡、不限身體狀況。別擔心做不到，隊友會幫你撐腰！
           </p>
         </div>
 
         <div class="max-w-5xl mx-auto">
           <Lkk4Ticket pad="p-7 lg:p-11">
-            <div class="grid lg:grid-cols-2 gap-8 lg:gap-12">
-              <ol class="space-y-6">
-                <li v-for="(s, i) in teamSteps" :key="s.t" class="flex gap-4">
+            <ol class="grid md:grid-cols-2 gap-4">
+              <li
+                v-for="(s, i) in teamSteps"
+                :key="s.t"
+                class="bg-white rounded-[20px] p-5 lg:p-6 border-2 border-cream-200"
+              >
+                <div class="flex items-center gap-3 mb-2">
                   <span class="w-8 h-8 rounded-full bg-navy-700 text-white text-sm font-black flex items-center justify-center shrink-0">
                     {{ i + 1 }}
                   </span>
-                  <div>
-                    <div class="font-black text-navy-800 mb-1">{{ s.t }}</div>
-                    <p class="text-[15px] text-ink/70 leading-relaxed">{{ s.d }}</p>
-                  </div>
-                </li>
-              </ol>
+                  <span class="font-black text-navy-800">{{ s.t }}</span>
+                </div>
+                <p class="text-[15px] text-ink/70 leading-relaxed">{{ s.d }}</p>
+              </li>
+            </ol>
 
-              <div class="bg-white rounded-[20px] p-6 lg:p-7 border-2 border-cream-200">
+            <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-7 lg:gap-9 mt-8 lg:mt-10">
+              <div>
                 <h3 class="font-serif text-xl font-black text-navy-800 mb-4">不用擔心的幾件事</h3>
-                <ul class="space-y-3 mb-6">
+                <ul class="space-y-3">
                   <li v-for="note in teamNotes" :key="note" class="flex items-start gap-2.5">
                     <svg class="w-5 h-5 text-orange-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -516,15 +542,16 @@ const faqs = [
                     <span class="text-[15px] text-ink/70 leading-relaxed">{{ note }}</span>
                   </li>
                 </ul>
-                <div class="flex flex-wrap gap-2">
-                  <span
-                    v-for="b in teamBadges"
-                    :key="b"
-                    class="text-xs font-bold text-navy-800 bg-cream border border-navy-700/15 rounded-full px-3 py-1"
-                  >
-                    {{ b }}
-                  </span>
-                </div>
+              </div>
+
+              <div class="bg-cream-200 border-l-4 border-orange-700 rounded-r-[20px] p-5 lg:p-6 self-start">
+                <h3 class="font-bold text-navy-800 mb-4">團體接力賽與團體積分獎為不同項目</h3>
+                <dl class="grid sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                  <div v-for="v in teamVsGroup" :key="v.t">
+                    <dt class="font-bold text-[15px] text-navy-800 mb-1">{{ v.t }}</dt>
+                    <dd class="text-[15px] text-ink/70 leading-relaxed">{{ v.d }}</dd>
+                  </div>
+                </dl>
               </div>
             </div>
           </Lkk4Ticket>
@@ -543,7 +570,7 @@ const faqs = [
             </h2>
             <div class="space-y-4 text-[15px] text-ink/70 leading-relaxed">
               <p>過去，練健康的年度賽事只有六角槓硬舉一項。它能告訴你肌力進步了多少，卻回答不了另一個問題：一個人硬舉很強，身體就一定夠用嗎？</p>
-              <p>不一定。身體能不能撐起生活，從來不是只看一種能力。能把東西從地上拿起來，也要能推得動、能提著重物穩穩走、能走一整天不累。</p>
+              <p>不一定。身體能不能撐起生活，從來不是只看一種能力。能把東西從地上拿起來，也要能推得實、能提著重物穩穩走、能走一整天不累。</p>
               <p class="font-serif text-lg lg:text-xl font-black text-navy-800 border-l-4 border-orange-700 pl-4 py-1 leading-relaxed">
                 健康不是一個數字，是四個面向合在一起，還能不能繼續過自己想過的生活。
               </p>
