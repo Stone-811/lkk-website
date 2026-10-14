@@ -12,6 +12,12 @@
  *
  * ⚠️ 快取一小時。抓 668 篇要 7 個請求，一小時一次對舊站是可忽略的量；
  *    設太長的話，上游暫時失敗會讓不完整的 sitemap 卡很久。
+ *
+ * 🔴 上游失敗時要吐上一份成功的文章清單，不可以靜默退回「只有靜態頁」。
+ *    2026-10-13 實測：正式站連不上舊站期間，這份 sitemap 從約 720 筆掉到 26 筆，
+ *    等於對 Google 宣告 694 篇文章全部消失——而且 catch 把錯誤吃掉，
+ *    沒有任何告警，是靠業主問「刪掉的文章怎麼還看得到」才翻出來的。
+ *    中途失敗同樣不可以把已抓到的幾頁當成完整清單送出（理由見下方註解）。
  */
 const STATIC_PATHS = [
   '/',
@@ -38,6 +44,19 @@ const STATIC_PATHS = [
   '/privacy',
 ]
 // 刻意不列：/admin/**（要登入）、/api/**、/team-intro（只是轉址到 /about）
+
+/**
+ * 文章清單的長效備份。與 article/[slug] 的 LAST_GOOD_TTL 同為 7 天：
+ * 上游中斷七天還沒修，那就不是「抖動」而是要人處理的事了。
+ *
+ * ⚠️ `useStorage('cache')` 沒設驅動（nuxt.config 裡沒有 storage 設定），
+ *    預設是記憶體，**備份只活在單一 Cloud Run 執行個體裡**，重新部署就歸零。
+ *    所以這份備份擋得住「跑了一陣子之後上游才掛」，擋不住「部署完上游就是掛的」——
+ *    那種情況仍然只會出靜態頁。要真的擋住得換成 Firestore 之類的持久層。
+ *    article/[slug] 的 7 天副本有同一個限制（2026-10-13 查證）。
+ */
+const ARTICLES_BACKUP_KEY = 'sitemap-backup:articles'
+const ARTICLES_BACKUP_TTL = 60 * 60 * 24 * 7
 
 function xmlEscape(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -68,21 +87,49 @@ export default defineCachedEventHandler(
     // 文章：只有本站是正本時才列
     const ownArticles = !articleCanonicalOrigin || String(articleCanonicalOrigin) === base
     if (ownArticles) {
+      const store = useStorage('cache')
+      // 整份抓完才算一次成功。中途失敗不要把「已經抓到的那幾頁」送出去——
+      // 那會變成一份「宣稱只有 200 篇」的 sitemap，剩下的 494 篇對 Google
+      // 等同於被移除，比少一次更新嚴重。
+      let posts: Array<{ slug: string; modified?: string }> | null = null
       try {
+        const collected: Array<{ slug: string; modified?: string }> = []
         for (let page = 1; page <= 20; page++) {
           const rows: any = await $fetch(`${WP_BASE}/wp/v2/posts`, {
             query: { per_page: 100, page, _fields: 'slug,modified' },
             timeout: 20000,
           })
-          if (!Array.isArray(rows) || rows.length === 0) break
+          if (!Array.isArray(rows)) throw new Error('上游回應不是陣列（可能是錯誤頁或限流頁）')
+          if (rows.length === 0) break
           for (const p of rows) {
-            if (!p?.slug || RESERVED_ROUTES.has(p.slug)) continue
-            entries.push(urlEntry(`${base}/${p.slug}/`, String(p.modified || '').slice(0, 10)))
+            if (p?.slug) collected.push({ slug: p.slug, modified: p.modified })
           }
           if (rows.length < 100) break
         }
+        // 空清單不覆蓋備份：舊站把全部文章下架是極罕見事件，
+        // 遠比「上游回了一頁空的」更不可能，寧可沿用上一份。
+        if (collected.length > 0) {
+          posts = collected
+          store.setItem(ARTICLES_BACKUP_KEY, { posts }, { ttl: ARTICLES_BACKUP_TTL }).catch(() => {})
+        }
       } catch {
-        // 上游失敗就只出本站頁面，不要整份 sitemap 壞掉
+        // 上游失敗不可以靜默變成「只有靜態頁」的 sitemap。
+        // 那是對 Google 宣告 694 篇文章全部消失，而且會被快取一小時。
+      }
+
+      if (!posts) {
+        const backup = await store.getItem<any>(ARTICLES_BACKUP_KEY).catch(() => null)
+        if (Array.isArray(backup?.posts) && backup.posts.length > 0) {
+          console.warn('[Sitemap] 上游失敗，改用上一份文章清單:', backup.posts.length, '篇')
+          posts = backup.posts
+        } else {
+          console.error('[Sitemap] 上游失敗且無備份，這次只出本站靜態頁')
+        }
+      }
+
+      for (const p of posts ?? []) {
+        if (!p?.slug || RESERVED_ROUTES.has(p.slug)) continue
+        entries.push(urlEntry(`${base}/${p.slug}/`, String(p.modified || '').slice(0, 10)))
       }
     }
 
