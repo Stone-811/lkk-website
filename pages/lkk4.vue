@@ -186,6 +186,7 @@ const milestones = [
 const competitionGroups = [
   { key: 'female', label: '女子組', count: '共五組', items: ['39 歲以下', '40–49 歲', '50–59 歲', '60–69 歲', '70–79 歲'] },
   { key: 'male', label: '男子組', count: '共五組', items: ['39 歲以下', '40–49 歲', '50–59 歲', '60–69 歲', '70–79 歲'] },
+  { key: 'senior', label: '長者推廣組', count: '不分性別', items: ['80 歲以上，一同挑戰！'] },
   {
     key: 'relay',
     label: '團體接力賽',
@@ -711,9 +712,13 @@ const faqs = [
 
             <!-- 比賽組別 -->
             <h3 class="font-serif text-2xl font-black text-navy-800 mb-6">比賽組別</h3>
-            <!-- 三張卡一列。768px 每張約 216px，「歡迎長輩及行動不便者一起參加」
-                 折成兩行還讀得下去；四張卡的時代只有 170px 才需要平板降成兩欄 -->
-            <div class="grid md:grid-cols-3 gap-4 mb-12">
+            <!-- 四張卡：平板兩欄、桌機四欄。
+                 ⚠️ 張數一變就要重算斷點，而且別漏掉票券自己的內距：
+                 768px → container 736（container 的 padding 被 px-4 蓋掉）
+                 → 再扣 Lkk4Ticket 的 border-[3px]×2 ＝ 6 與 p-7 ＝ 56 → grid 可用寬 674。
+                 674 攤四欄只剩 156.5px，塞不下「歡迎長輩及行動不便者一起參加」，
+                 所以 md 只給兩欄（329px）；四欄留到 lg 之後才開。 -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
               <div
                 v-for="g in competitionGroups"
                 :key="g.key"
