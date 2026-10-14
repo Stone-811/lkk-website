@@ -1,3 +1,5 @@
+import { getFreeTrialPartner } from './freeTrialPartners'
+
 // 預約表單「變體設定」——給廠商 UTM 活動用。
 // 原理：booking.vue 讀網址的 ?v=<key> → 找這裡對應的設定 → 表單依設定微調。
 // 加新廠商＝在 bookingVariants 加一段（複製 abbott 改值），push 後幾分鐘自動部署，
@@ -80,6 +82,35 @@ export const bookingVariants: Record<string, BookingVariant> = {
     // 2026-09-11 業主：這是個案，只在南山這張表單出現，不進全站清單。
     extraSources: ['南山健康守護圈'],
   },
+
+  // ── 通用「不限年齡免費」：公司由 ?co=<代號> 從 config/freeTrialPartners.ts 帶入 ──
+  // 連結格式：/booking?v=freetrial&co=taiwanlife
+  //
+  // 刻意「不」設 hero：用內建的全齡免費文案（不限年齡／體驗課完全免費），
+  // 頁面上不會出現合作方名字。要具名就不該用這個通用變體，另開一個像 nanshan 那樣的。
+  //
+  // 刻意「不」設 company：公司是每一家不同的那一項，所以住在名冊裡，不在這。
+  // 只帶 ?v=freetrial 不帶 ?co= 也不會壞 —— 就是一張沒有歸因的全齡免費表單。
+  freetrial: {
+    allAgesFree: true,
+    leadSource: '網站',
+  },
+}
+
+/**
+ * 把 ?co= 指到的合作方併進變體。
+ *
+ * 🔴 沒帶 co、代號查不到、或已過期 → **原封不動回傳傳進來的那個物件**。
+ *    所有現有網址（/booking、?v=abbott、?v=gigabyte、?v=nanshan）都沒有 co，
+ *    因此拿到的值與加這個函式之前完全相同。這是這次改動的安全性保證。
+ */
+export function withFreeTrialPartner(
+  variant: BookingVariant,
+  code?: string | string[] | null,
+): BookingVariant {
+  const partner = getFreeTrialPartner(code)
+  if (!partner) return variant
+  return { ...variant, company: partner.company }
 }
 
 // 依 ?v= 取變體（陣列/未知/空值都安全 fallback 成 default）

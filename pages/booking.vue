@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, watch } from 'vue'
-import { getBookingVariant } from '~/config/bookingVariants'
+import { getBookingVariant, withFreeTrialPartner } from '~/config/bookingVariants'
 import { relationshipOptions } from '~/config/formOptions'
 import { buildReferralSources, composeReferral } from '~/config/referralSources'
 
@@ -19,8 +19,12 @@ const stores = ref([
 ])
 
 // ── 變體（廠商 UTM 活動）：/booking?v=<key> 對應 config/bookingVariants.ts ──
+// ?co=<代號> 再把合作方（公司名）併進來，對應 config/freeTrialPartners.ts。
+// 沒帶 co 時 withFreeTrialPartner 原封不動回傳，所以既有網址的行為完全沒變。
 const route = useRoute()
-const variant = computed(() => getBookingVariant(route.query.v))
+const variant = computed(() =>
+  withFreeTrialPartner(getBookingVariant(route.query.v), route.query.co),
+)
 
 // 價格文案集中一處：所有提到費用的地方（Hero badge/標題、底部、FAQ、服務卡）都讀這裡，
 // 依 allAgesFree 決定一次，避免價格訊息散落多處各自分支（技術債最小化）。
