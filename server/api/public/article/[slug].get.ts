@@ -6,6 +6,7 @@ import {
   stripWpEmbedIframes,
   toPlainText,
 } from '~/server/utils/wordpress'
+import { resolveBackTo } from '~/server/utils/article-sections'
 
 /**
  * 單篇文章 —— 依代稱（slug）向舊站 WordPress 查詢。
@@ -51,7 +52,10 @@ export default defineCachedEventHandler(
     let rows: any
     try {
       rows = await $fetch<any>(`${WP_BASE}/wp/v2/posts`, {
-        query: { slug, _fields: 'slug,title,content,excerpt,date,modified' },
+        // categories 是給返回連結用的（見 server/utils/article-sections.ts）。
+        // ⚠️ 2026-10-15 才加 —— 在此之前存下的 7 天長效備份副本裡沒有這個欄位，
+        //    走退路時 resolveBackTo 會回預設值，連結不會壞但會退回「知識科普」。
+        query: { slug, _fields: 'slug,title,content,excerpt,date,modified,categories' },
         timeout: 12000,
       })
       // 🔴 上游可能用 HTTP 200 回非 JSON（實測：密集請求時 Cloudways 會回
@@ -101,6 +105,9 @@ export default defineCachedEventHandler(
         toPlainText(post.excerpt?.rendered, 140) || toPlainText(post.content?.rendered, 140),
       date: post.date,
       modified: post.modified,
+      // 返回哪一個彙整頁、哪一個分類。在伺服器端算好，前端只負責渲染 ——
+      // 分類 id 的對照表留在伺服器端，不必送到瀏覽器。
+      backTo: resolveBackTo(post.categories),
     }
     // 存一份長效副本供上游失敗時使用（失敗不影響本次回應）
     store.setItem(backupKey, { data }, { ttl: LAST_GOOD_TTL }).catch(() => {})

@@ -72,12 +72,43 @@ export function useArticleBrowser(initial: Ref<any>) {
    */
   const initialFailed = computed(() => !initial.value || initial.value.ok === false)
 
-  const active = ref('')
+  /**
+   * 目前分類。初值取自網址的 ?tab=，所以瀏覽器上一頁回到彙整頁時會還原分類 ——
+   * 2026-10-15 之前它只活在記憶體裡，從文章返回一律落在預設分類（業主回報）。
+   *
+   * ⚠️ ?tab= 不會改變這個頁面對 API 的請求（首屏一律是 group=xxx 整組），
+   *    所以多出來的網址變體**不會增加對舊站的任何請求**，只是多幾個 CDN 快取鍵。
+   *
+   * ⚠️ 網址帶了不存在的分類代號時，下面的 watchEffect 會把畫面退回預設分類，
+   *    但網址列仍然留著那個無效值（不另外清掉，避免與 router 形成反覆觸發）。
+   */
+  const route = useRoute()
+  const router = useRouter()
+  const active = ref(typeof route.query.tab === 'string' ? route.query.tab : '')
   watchEffect(() => {
     if (tabs.value.length && !tabs.value.some((t) => t.key === active.value)) {
       active.value = tabs.value[0].key
     }
   })
+
+  /**
+   * 把分類同步到網址。
+   *
+   * - 用 replace 不用 push：否則每切一次分類就多一筆歷史，讀者要按好幾次上一頁
+   *   才離得開彙整頁。
+   * - 預設分類不寫進網址：裸網址是站內所有入口與 Googlebot 看到的那一個，
+   *   讓它維持乾淨，CDN 的命中率也集中在這一個鍵上。
+   * - 只在瀏覽器端做：SSR 階段改網址沒有意義，而且會動到回應的網址。
+   */
+  function syncTabToUrl(tabKey: string) {
+    if (import.meta.server) return
+    const query: Record<string, any> = { ...router.currentRoute.value.query }
+    if (tabs.value[0]?.key === tabKey) delete query.tab
+    else query.tab = tabKey
+    router.replace({ query }).catch(() => {
+      /* 重複導航等情況不需要處理，畫面狀態已經切過去了 */
+    })
+  }
 
   /** 輸入框的即時內容；按下送出才會寫進 submitted。 */
   const input = ref('')
@@ -223,6 +254,7 @@ export function useArticleBrowser(initial: Ref<any>) {
   function setActive(tabKey: string) {
     if (tabKey === active.value) return
     active.value = tabKey
+    syncTabToUrl(tabKey)
     // 搜尋狀態下切分頁，要在新分頁裡重搜一次；上次失敗的也重試。
     // 瀏覽模式沿用首屏資料，不必請求。
     if (submitted.value && (!view[tabKey] || view[tabKey].failed)) {

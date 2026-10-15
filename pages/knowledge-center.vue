@@ -4,9 +4,10 @@
 // ⚠️ 2026-09-30 移除了連往 l-kk.tw/knowledge-center/ 的「瀏覽更多」與讀取失敗退路 ——
 //    那個頁面在舊站已被丟進垃圾桶，實測最終回 404。
 //
-// 首屏維持原本的行為：一次拿回四個分區的第一頁，前端切換不再發請求。
+// 首屏一次拿回五個分區的第一頁（「全部」＋四個分類），前端切換不再發請求。
 // 搜尋與「載入更多」才會發新請求，而且只打「目前這個分區」——
-// 四個分區同時搜會變成 4 個並發，舊站的併發表現不穩定，不值得為此冒險。
+// 五個分區同時搜會變成 5 個並發，舊站的併發表現不穩定，不值得為此冒險。
+// 「全部」是四個分類的 OR 聯集，搜尋它＝一個請求搜完整頁，不是扇出成四個。
 const { data, pending } = await useFetch('/api/public/wp-articles', {
   query: { group: 'knowledge' },
 })
@@ -18,9 +19,12 @@ const {
   submit, clear, loadMore,
 } = useArticleBrowser(data)
 
-const activeLabel = computed(
-  () => tabs.value.find((t) => t.key === active.value)?.label ?? ''
-)
+// 「全部」不當成搜尋範圍標示 ——「在『全部』找到 N 篇」讀起來很怪
+// （與 pages/cases-center.vue 同一套處理）
+const activeLabel = computed(() => {
+  const label = tabs.value.find((t) => t.key === active.value)?.label ?? ''
+  return label === '全部' ? '' : label
+})
 
 // 空結果時提供的範例關鍵字。挑的是實際搜得到的詞（2026-09-30 實測）
 const SUGGESTIONS = ['肌少症', '深蹲', '膝蓋', '骨質疏鬆', '蛋白質']
