@@ -1,6 +1,6 @@
 ---
 name: lkk-image-swap
-description: 幫練健康官網換照片／底圖（首頁 Hero、服務卡、分店底圖、人物照）。收到業主的圖片壓縮檔或「某頁換圖」需求時使用。內含中文檔名 zip 的解法、各位置的尺寸規格、壓暗參數，以及「換完一定要量對比」的正確算法。
+description: 幫練健康官網換照片／底圖／橫幅（首頁 Hero、服務卡、分店底圖、人物照、圖上有字的橫幅）。收到業主的圖片壓縮檔或「某頁換圖」需求時使用。內含中文檔名 zip 的解法、各位置的尺寸規格、壓暗參數、「換完一定要量對比」的正確算法，以及兩個只有實測才發現的點：圖上燒的字在手機會剩幾 px（要量全形 advance 不是墨跡高度）、display:none 不會阻止下載所以分斷點顯示的圖一定要 loading="lazy"。
 ---
 
 # 換圖流程
@@ -35,6 +35,64 @@ for enc in ('utf-8', 'big5', 'cp950'):
 
 **一律轉 WebP**：`Image.open(p).convert('RGB')`，寬度上限依上表，`quality=86, method=6`。
 實測 JPG 147–414 KB → WebP 89–317 KB。舊的 `special.png` 一張 5.4MB，換掉省很多。
+
+## 圖上有字的圖：先算它在手機上會剩幾 px
+
+業主給的橫幅、海報常把說明文字燒在圖裡。**縮到手機寬度後那些字往往變成純裝飾。**
+動手前先算，不要等上線才用眼睛看。
+
+**要量的是「全形字的 advance」，不是墨跡高度。** 中文字的墨跡約是字級的 0.91，
+拿墨跡當字級會低估約 10%：
+
+```python
+from PIL import Image
+import numpy as np
+a = np.array(Image.open('x.webp').convert('L'))
+# 1) 先找說明文字那一條的 y 範圍（掃每列的暗點數，找連續區間）
+# 2) 在該範圍內找相鄰字元的起點 x，相減就是 advance
+#    例：起點 1474,1498,1523,1547 → advance ≈ 24.6px（墨跡量到只有 23px）
+```
+
+換算：`畫面字級 = advance × 容器寬 ÷ 圖片原寬`。
+⚠️ 容器寬要用實際值——`container mx-auto px-4` 的 `container` padding 會被 `px-4` 蓋掉
+（utilities 在 components 之後），而 `container` 的 max-width 卡在斷點值，
+所以 1024–1279 與 1280–1535 各自是**固定寬度**，不是連續變化。
+
+LKK4「實拿久穩」橫幅（2000px 寬，說明 24.6px）的實測：
+
+| 視埠 | 圖寬 | 說明文字 | 判斷 |
+|---|---|---|---|
+| 375 | 343 | **4.2px** | 不能用 |
+| 768 | 736 | 9.1px | 不能用 |
+| 1024 | 992 | 12.2px | 勉強 |
+| 1280 | 1248 | 15.3px | 可以 |
+| 1536 | 1504 | 18.5px | 可以 |
+
+→ 做法：圖掛 `hidden lg:block`，`lg` 以下用同一組資料重建**可讀的文字版**
+（內容要與圖上逐字相同）。**不要只放圖然後期待它縮小後還能看。**
+
+四角透明的 webp（`mode == 'RGBA'` 且角落 alpha 為 0）直接疊在底色上就好，
+不要再包一層卡片框、也不要加 CSS 圓角——圖自己有。先確認再決定：
+
+```python
+im = Image.open(p); print(im.mode, im.convert('RGBA').getpixel((2,2)))
+```
+
+## 🔴 `display:none` 不會阻止下載
+
+只在某個斷點顯示的圖，**一定要加 `loading="lazy"`**，否則被 `hidden` 掉的裝置
+照樣把整張圖抓下來。LKK4 那張是 93 KB，等於每個手機訪客白白付一次流量。
+
+實測（不要憑印象）：同一支圖複製成兩份，兩張都 `display:none`，一張加 `loading="lazy"`，
+用 `python3 -m http.server` 開起來，看 access log：
+
+```
+GET /eager.webp HTTP/1.1" 200     ← 沒有 loading 屬性的被抓了
+（lazy.webp 完全沒有請求）
+```
+
+這個專案沒有 `@nuxt/image`，`<img>` 是原樣輸出，**不會有人幫你補 lazy**。
+Hero 的 LCP 圖維持 eager，其餘一律 lazy（`stages.webp` 本來就是這樣寫）。
 
 ## 深色底圖的壓暗參數（**不是常數，每張都要重量**）
 

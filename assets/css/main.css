@@ -46,6 +46,30 @@
   img {
     content-visibility: auto;
   }
+
+  /* 🔴 iOS Safari 的 input[type=date] 會撐破容器（2026-10-15 業主回報：
+     /booking 手機版「出生年月日」整個欄位凸出卡片外）。
+     成因是兩件事疊在一起，少修一個都沒用：
+       1. iOS 的日期輸入框有「原生最小寬度」—— 由裡面那串日期文字決定，
+          w-full（width:100%）壓不下去，px-4 的 32px 內距還要再加上去。
+       2. 它外層是 grid item，而 grid item 預設 min-width:auto —— 不會縮到
+          比內容的 min-content 還窄，於是整欄被頂出去。
+     桌機 Chrome／Firefox 不會重現（它們的日期框沒有那個原生最小寬度），
+     所以這段只能在真的 iPhone 上驗。
+     appearance:none 只是拿掉原生外觀，不影響點擊開啟日期選擇器。 */
+  input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* iOS 會把日期文字置中，跟同一排其他欄位（左對齊）不一致；
+     這個虛擬元素就是 WebKit 放那串日期文字的地方。 */
+  input[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
+    min-width: 0;
+  }
 }
 
 @layer components {

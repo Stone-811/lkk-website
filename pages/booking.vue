@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, watch } from 'vue'
-import { getBookingVariant } from '~/config/bookingVariants'
+import { getBookingVariant, withFreeTrialPartner } from '~/config/bookingVariants'
 import { relationshipOptions } from '~/config/formOptions'
 import { buildReferralSources, composeReferral } from '~/config/referralSources'
 
@@ -19,8 +19,12 @@ const stores = ref([
 ])
 
 // ── 變體（廠商 UTM 活動）：/booking?v=<key> 對應 config/bookingVariants.ts ──
+// ?co=<代號> 再把合作方（公司名）併進來，對應 config/freeTrialPartners.ts。
+// 沒帶 co 時 withFreeTrialPartner 原封不動回傳，所以既有網址的行為完全沒變。
 const route = useRoute()
-const variant = computed(() => getBookingVariant(route.query.v))
+const variant = computed(() =>
+  withFreeTrialPartner(getBookingVariant(route.query.v), route.query.co),
+)
 
 // 價格文案集中一處：所有提到費用的地方（Hero badge/標題、底部、FAQ、服務卡）都讀這裡，
 // 依 allAgesFree 決定一次，避免價格訊息散落多處各自分支（技術債最小化）。
@@ -619,11 +623,18 @@ const handleSubmit = async () => {
                       <label class="block text-sm font-medium mb-2 text-navy-700">
                         出生年月日（要上課的學員） <span class="text-red-500">*</span>
                       </label>
+                      <!-- min-h-[50px]：assets/css/main.css 用 appearance:none 解掉 iOS 撐破容器的
+                           問題後，iOS 在「尚未選日期」時不渲染任何文字 → 內容高度 0，整欄只剩
+                           py-3 的 24px，比隔壁「性別」矮一截（2026-10-15 業主回報）。
+                           50 = 文字 24（text-base 的 line-height）＋ py-3 上下 24 ＋ border 2，
+                           與同一排其他欄位算出來的高度相同。改 py-3 或字級時這個數字要跟著改。
+                           ⚠️ 不能放進 main.css 的全域規則：後台名單篩選列的日期欄是
+                              py-1.5 text-sm，釘 50px 會把它撐高。 -->
                       <input
                         v-model="formData.birthDate"
                         type="date"
                         name="birthDate"
-                        :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange', errors.birthDate ? 'border-red-500' : 'border-cream-200']"
+                        :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange min-h-[50px]', errors.birthDate ? 'border-red-500' : 'border-cream-200']"
                         max="2010-01-01"
                         min="1920-01-01"
                       />
@@ -985,15 +996,13 @@ const handleSubmit = async () => {
                 <div class="mt-6 p-4 bg-cream-50 rounded-lg border border-cream-200">
                   <div class="text-sm text-navy-700 font-medium mb-3">參加練健康相關課程，了解並願遵守下列事項：</div>
                   <div class="text-sm text-ink/75 space-y-2 max-h-56 overflow-y-auto pr-2">
-                    <p>一、本人若有心臟病、高血壓、癲癇症、具傳染性皮膚病及足以影響運動訓練等病症，或於五年內有重大傷病開刀或住院超過3周以上之病史，將主動告知。</p>
-                    <p>二、本人在課程期間除教練指導的使用範圍，不會自行使用以外之場地及各項設備器材，並遵守教練指示及場地使用規範。</p>
-                    <p>三、本人了解訓練本身具有發生自己或他人事故或傷害危險，願充分負擔此一危險，並盡力防杜該危險或事故傷害之發生。</p>
-                    <p>四、本人同意練健康於所有課程中進行拍照及錄影，並同意肖像權及所有權均屬於練健康。</p>
-                    <p>五、置物櫃僅提供置物服務，若有貴重物品及財物將自行保管。</p>
-                    <p>六、自備換洗衣物、毛巾及飲用水。</p>
-                    <p>七、課程期間，需穿著輕便運動合身之服裝。</p>
-                    <p>八、身上不可有金屬扣環或拉鍊或其他硬物，上課前會檢查並修剪指甲。</p>
-                    <p>九、本人願遵練健康教練之所有指示，並願就課程期間所生之自身或他人健康、安全意外事件負責；倘於訓練過程本人有不符訓練常規之舉措，經教練制止後未即刻改善者，練健康得要求本人離場並取消上課權利，本人絕無異議。</p>
+                    <p>一、每人限享一次免費體驗資格。若您先前已透過練健康其他活動或合作專案使用過免費體驗課，恕無法重複使用，實際資格以系統紀錄為準。</p>
+                    <p>二、若有心臟病、高血壓、癲癇、傳染性皮膚病或其他可能影響運動訓練之疾病，或於五年內曾因重大傷病接受手術，或有住院超過三週之病史，請務必主動告知。</p>
+                    <p>三、了解訓練本身具有造成自身或他人事故或傷害之風險，願意承擔相關風險，並於課程期間盡力防止事故或傷害發生。</p>
+                    <p>四、課程期間願遵守練健康教練的所有指示及場地規範，不擅自使用教練指導範圍以外的場地或設備器材。若有違反訓練常規之行為，經教練制止後仍未立即改善，練健康得要求您離場並取消上課資格。</p>
+                    <p>五、同意練健康於所有課程中進行拍照及錄影，並無償使用所拍攝之照片及影片於宣傳、教學及紀錄等用途。若您不希望入鏡或被拍攝，請隨時告知教練或工作人員。</p>
+                    <p>六、上課前，請確認身上未配戴金屬扣環、拉鍊或其他硬物，並將指甲修剪整齊。課程期間，請穿著輕便、合身的運動服裝，並自備換洗衣物、毛巾及飲用水。</p>
+                    <p>七、置物櫃僅供暫時存放物品，請自行妥善保管貴重財物。</p>
                   </div>
                   <label class="flex items-center gap-2 mt-4 cursor-pointer">
                     <input

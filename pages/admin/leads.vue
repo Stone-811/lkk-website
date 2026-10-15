@@ -4,6 +4,7 @@
 //（含分店名對照）、篩選定義、表格欄位、詳情內容、CSV 欄位。
 import { ref, computed } from 'vue'
 import { bookingVariants } from '~/config/bookingVariants'
+import { freeTrialPartners } from '~/config/freeTrialPartners'
 import type { AdminLead } from '~/composables/useAdminLeads'
 
 const { statusLabels } = useLeadStatus()
@@ -69,10 +70,14 @@ const {
     {
       key: 'company', label: '公司', widthClass: 'w-24', placeholder: '搜尋公司…',
       value: ref('all'),
-      // 選項＝變體設定 company ∪ 名單實際 company（設定當底 → 亞培/南山即使還沒有名單也一定在）
+      // 選項＝變體設定 company ∪ 合作方名冊 company ∪ 名單實際 company
+      //（設定當底 → 亞培/南山/台灣人壽即使還沒有名單也一定在）
+      // ⚠️ 名冊這一份不能省：走 ?v=freetrial&co= 的合作方，company 不在 bookingVariants 裡，
+      //    少了它就要等第一筆名單進來篩選器才長得出該公司。
       options: computed(() => {
         const set = new Set<string>()
         Object.values(bookingVariants).forEach((v) => { if (v.company) set.add(v.company) })
+        Object.values(freeTrialPartners).forEach((p) => { if (p.company) set.add(p.company) })
         leads.value.forEach((l) => { const c = l.payload?.company; if (c) set.add(c) })
         return Array.from(set).sort()
       }),
