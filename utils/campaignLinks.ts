@@ -167,9 +167,17 @@ export function summarizeVariants(
 
       const company = v.company || null
       const short = effects.filter((e) => e !== '專屬 Hero 文案')[0]
+      // 顯示名稱優先序：company（絕大多數變體都有）→ adminLabel（公司由 ?co= 決定、
+      // 變體本身不具名時填這個，例如 freetrial）→ 只剩代號。
+      // 不要在這裡特判代號字串，否則每多一個不具名變體就要再改一次這支工具函式。
+      const display = company || v.adminLabel || null
+      // 特性括號只在「顯示的是公司名」時才加 —— 公司名不會說明變體在做什麼，需要補。
+      // adminLabel 是專為這個下拉寫的描述（例如「不限年齡體驗表單」），本身就說明了特性，
+      // 再補一次會變成「不限年齡體驗表單（不限年齡免費）」。
+      const suffix = company && short ? `（${short}）` : ''
       return {
         key,
-        label: company ? `${key} ─ ${company}${short ? `（${short}）` : ''}` : key,
+        label: display ? `${key} ─ ${display}${suffix}` : key,
         company,
         heroTitle: v.hero?.title || null,
         effects,

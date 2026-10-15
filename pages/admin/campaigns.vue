@@ -73,7 +73,7 @@ const formError = ref('')
 // 欄位說明（游標停在 ⓘ 上會出現）
 const HELP: Record<string, string> = {
   name: '只在這個後台頁面顯示，方便你辨識活動。不進連結也不進名單，改名不影響任何已發出的連結。',
-  utmCampaign: '會寫進連結的 utm_campaign，是名單對照活動的唯一依據。發出去之後修改，舊名單就對不回來了。',
+  utmCampaign: '會寫進連結的 utm_campaign，是名單對照活動的唯一依據。發出去之後修改，舊名單就對不回來了。新增時可以一行一個、一次建多筆，底下的設定會套用到每一筆。',
   targetPath: '連結要把人帶到哪一張表單。只列出會收名單的兩張，其他頁面收不到可歸因的名單。',
   variantKey: '決定表單長相（專屬文案、全齡免費、鎖分店）。需工程師事先製作，這裡只能挑既有的。',
   channels: '要把連結放到哪些地方。勾幾個產生幾條連結，各自帶不同的 utm_source／utm_medium 以便區分來源。',
@@ -98,16 +98,38 @@ const variantOptions = computed(() => {
 })
 const selectedVariant = computed(() => variantOptions.value.find((v) => v.key === form.variantKey) || null)
 
-const previewLinks = computed(() => {
-  if (!form.utmCampaign || !form.channels.length) return []
-  return buildCampaignLinks(origin.value, {
-    targetPath: form.targetPath,
-    variantKey: form.variantKey || null,
-    utmCampaign: normalizeCampaignCode(form.utmCampaign),
-    channels: form.channels,
-    utmContent: form.utmContent || null,
-  })
+/**
+ * 活動代號可以一次填多個（一行一個，也接受逗號與空白分隔）。
+ * 一個代號＝一筆活動文件 —— 代號是名單對照活動的 join key，
+ * 不能多筆共用一個，也不能一筆掛多個。
+ */
+const campaignCodes = computed(() =>
+  [...new Set(
+    String(form.utmCampaign || '')
+      .split(/[\s,，、]+/)
+      .map((c) => normalizeCampaignCode(c))
+      .filter(Boolean),
+  )]
+)
+
+/** 每個代號各自一組連結（代號 × 管道）。 */
+const previewGroups = computed(() => {
+  if (!campaignCodes.value.length || !form.channels.length) return []
+  return campaignCodes.value.map((code) => ({
+    code,
+    links: buildCampaignLinks(origin.value, {
+      targetPath: form.targetPath,
+      variantKey: form.variantKey || null,
+      utmCampaign: code,
+      channels: form.channels,
+      utmContent: form.utmContent || null,
+    }),
+  }))
 })
+
+const previewTotal = computed(() =>
+  previewGroups.value.reduce((n, g) => n + g.links.length, 0)
+)
 
 const linksFor = (c: any) =>
   buildCampaignLinks(origin.value, {
@@ -186,17 +208,32 @@ function toggleChannel(ch: string) {
 
 async function save() {
   formError.value = ''
-  const codeErr = validateCampaignCode(form.utmCampaign)
-  if (codeErr) return (formError.value = codeErr)
+  const codes = campaignCodes.value
+  if (!codes.length) return (formError.value = '請填寫活動代號')
+  if (codes.length > 20) return (formError.value = '一次最多新增 20 個活動代號')
+  for (const code of codes) {
+    const codeErr = validateCampaignCode(code)
+    if (codeErr) return (formError.value = `「${code}」${codeErr}`)
+  }
   if (!form.channels.length) return (formError.value = '請至少勾選一個投放管道')
+  // 編輯的是單一一筆文件，不能把它變成多筆
+  if (editingId.value && codes.length > 1) {
+    return (formError.value = '編輯既有活動時只能有一個代號。要新增請關掉後按「新增活動」。')
+  }
 
   saving.value = true
   try {
-    const payload = { ...form, utmCampaign: normalizeCampaignCode(form.utmCampaign) }
     if (editingId.value) {
-      await $fetch(`/api/admin/campaigns/${editingId.value}`, { method: 'PATCH', body: payload })
+      await $fetch(`/api/admin/campaigns/${editingId.value}`, {
+        method: 'PATCH',
+        body: { ...form, utmCampaign: codes[0] },
+      })
     } else {
-      await $fetch('/api/admin/campaigns', { method: 'POST', body: payload })
+      // 多筆由伺服器端一次寫完或一筆都不寫，不會留下寫到一半的狀態
+      await $fetch('/api/admin/campaigns', {
+        method: 'POST',
+        body: { ...form, utmCampaign: codes[0], utmCampaigns: codes },
+      })
     }
     showModal.value = false
     await load()
@@ -452,7 +489,29 @@ onMounted(() => {
                   活動代號（utm_campaign） <span class="text-red-500">*</span>
                   <AdminFieldHelp :text="HELP.utmCampaign" />
                 </label>
-                <input v-model="form.utmCampaign" type="text" placeholder="nanshan-2026q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
+                <!-- 編輯既有活動時只能有一個代號（一筆文件就是一個代號）；
+                     新增時才開放一次多筆。 -->
+                <input
+                  v-if="editingId"
+                  v-model="form.utmCampaign"
+                  type="text"
+                  placeholder="nanshan-2026q4"
+                  class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm"
+                />
+                <textarea
+                  v-else
+                  v-model="form.utmCampaign"
+                  rows="3"
+                  placeholder="nanshan-2026q4&#10;nanshan-2027q1&#10;nanshan-event"
+                  class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm"
+                />
+                <p v-if="!editingId" class="text-xs text-ink/55 mt-1">
+                  一行一個代號，可一次新增多筆（最多 20 個）。底下的目標頁、變體、管道、素材會套用到每一筆。
+                  <span v-if="campaignCodes.length > 1" class="text-navy-700 font-bold">
+                    目前 {{ campaignCodes.length }} 個代號 × {{ form.channels.length || 0 }} 個管道
+                    ＝ {{ campaignCodes.length * (form.channels.length || 0) }} 條連結
+                  </span>
+                </p>
                 <p class="text-xs text-red-600 mt-1">⚠️ 只能用小寫英文、數字、- 與 _。<strong>連結發出去之後就不要再改</strong>。</p>
               </div>
 
@@ -494,14 +553,18 @@ onMounted(() => {
               <textarea v-model="form.note" rows="2" class="w-full border border-navy-700/20 rounded-lg px-3 py-2"></textarea>
             </div>
 
-          <div v-if="previewLinks.length" class="border border-navy-700/12 rounded-lg bg-cream-50 p-3">
+          <div v-if="previewGroups.length" class="border border-navy-700/12 rounded-lg bg-cream-50 p-3">
             <p class="text-xs font-bold text-navy-700 mb-2">
-              連結預覽（{{ previewLinks.length }} 條）
+              連結預覽（{{ previewTotal }} 條）
               <span class="font-normal" :class="env.isProd ? 'text-green-700' : 'text-amber-700'">— {{ env.name }}</span>
             </p>
-            <div v-for="l in previewLinks" :key="l.channel" class="flex items-start gap-2 mb-1.5 last:mb-0">
-              <span class="text-xs font-bold text-navy-700 w-16 shrink-0 pt-0.5">{{ l.channel }}</span>
-              <code class="text-xs break-all text-ink/70">{{ l.url }}</code>
+            <!-- 多個代號時分組顯示，否則一長串連結分不出哪條屬於哪個代號 -->
+            <div v-for="g in previewGroups" :key="g.code" class="mb-3 last:mb-0">
+              <p v-if="previewGroups.length > 1" class="text-xs font-mono font-bold text-orange mb-1">{{ g.code }}</p>
+              <div v-for="l in g.links" :key="l.channel" class="flex items-start gap-2 mb-1.5 last:mb-0">
+                <span class="text-xs font-bold text-navy-700 w-16 shrink-0 pt-0.5">{{ l.channel }}</span>
+                <code class="text-xs break-all text-ink/70">{{ l.url }}</code>
+              </div>
             </div>
           </div>
         </div>
