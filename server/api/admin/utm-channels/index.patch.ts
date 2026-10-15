@@ -60,14 +60,12 @@ export default defineEventHandler(async (event) => {
     if (list.some((c) => c.label === label)) {
       throw createError({ statusCode: 400, message: `管道「${label}」已存在` })
     }
-    // source 重複不會壞，但兩個管道的 GA4 數據會合在一起，多半不是本意
-    if (list.some((c) => c.source === source)) {
-      const dup = list.find((c) => c.source === source)!
-      throw createError({
-        statusCode: 400,
-        message: `utm_source「${source}」已被管道「${dup.label}」使用，兩者在 GA4 會合併計算`,
-      })
-    }
+    // ⚠️ 刻意**不**擋 source 重複。
+    //    2026-10-15 一度加過這條檢查，理由寫「兩者在 GA4 會合併計算」—— 那是錯的。
+    //    GA4 的 source/medium 是成對的維度，google/cpc 與 google/organic 在報表裡
+    //    是分開的兩列，只有「只看 source」那種檢視才會加總。
+    //    同一個 source 配不同預設 medium 是正當需求（Google 廣告 vs Google 自然搜尋），
+    //    擋掉反而讓業主做不出來。
 
     list.push({ label, source, medium, active: true })
   } else {

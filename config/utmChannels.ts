@@ -1,8 +1,18 @@
 /**
- * 投放管道：顯示名稱 ＋ utm_source ＋ utm_medium。
+ * utm_source 的選項清單。
  *
- * 一個管道＝一組三元組。後台「UTM 活動」勾幾個管道就產生幾條連結，
- * 每條帶各自的 utm_source／utm_medium，名單與 GA4 才分得出來源。
+ * 🔴 2026-10-15 的設計修正：utm_source 與 utm_medium **是獨立的兩個維度**，
+ *    任何組合都合法。同一個 source 配不同 medium 是正常且必要的：
+ *      google / cpc      → Google Ads
+ *      google / organic  → Google 自然搜尋
+ *      google / referral → 從某個 Google 產品的連結點過來
+ *    medium 該填什麼取決於「你實際做了什麼」，不取決於 source 是誰。
+ *
+ *    舊版把兩者綁成一組固定的「投放管道」，等於把 Google 永久鎖在 cpc，
+ *    表達不出 google/organic。所以後台改成兩題各選一個。
+ *
+ *    這份清單裡的 `medium` 退化成「挑這個 source 時自動帶出的預設值」，
+ *    使用者可以改。它不是約束。
  *
  * 這份是**預設值，同時也是退路** —— 後台設定讀不到時（Firestore 故障、
  * 文件不存在）仍然要能建活動、產連結，不能因為選項讀不到就癱瘓。
@@ -17,11 +27,14 @@
  */
 
 export interface UtmChannel {
-  /** 中文顯示名稱。同時是 `?src=` 的值與後台「來源」篩選的選項。 */
+  /** 顯示名稱，例如「LINE」。純粹是給人在下拉裡認的。 */
   label: string
   /** utm_source。小寫英數與 - _。 */
   source: string
-  /** utm_medium。只能從 GA4_MEDIUMS 挑，理由見下。 */
+  /**
+   * 挑這個 source 時自動帶出的 utm_medium —— **預設值，不是約束**。
+   * 使用者在表單上可以改成任何 GA4_MEDIUMS 裡的值。
+   */
   medium: string
 }
 

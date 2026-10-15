@@ -69,9 +69,11 @@ export interface CampaignLinkInput {
   variantKey?: string | null
   /** utm_campaign，已正規化的小寫代號 */
   utmCampaign: string
-  /** 投放管道（中文，對應 CHANNEL_TO_*） */
-  channel: string
-  /** utm_content，用來區分同一管道的不同素材 */
+  /** utm_source */
+  utmSource: string
+  /** utm_medium */
+  utmMedium: string
+  /** utm_content，用來區分同一檔活動的不同素材 */
   utmContent?: string | null
 }
 
@@ -80,24 +82,14 @@ export interface CampaignLinkInput {
  * 參數順序固定（v → utm_source → utm_medium → utm_campaign → utm_content），
  * 讓同一檔活動的多條連結看起來一致、方便業主目視比對。
  */
-export function buildCampaignLink(
-  origin: string,
-  input: CampaignLinkInput,
-  channels: readonly UtmChannel[] = DEFAULT_UTM_CHANNELS,
-): string {
+export function buildCampaignLink(origin: string, input: CampaignLinkInput): string {
   const base = String(origin || '').replace(/\/+$/, '')
   const path = input.targetPath.startsWith('/') ? input.targetPath : `/${input.targetPath}`
 
   const params: [string, string][] = []
   if (input.variantKey) params.push(['v', input.variantKey])
-
-  // utm_source 一律由投放管道決定，不開放在活動層級覆寫。
-  // 業主 2026-09-11：覆寫會讓所有管道的 source 變成同一個值，
-  // 與「勾 N 個管道產生 N 條可區分的連結」直接衝突，留一個就好。
-  const { source, medium } = resolveChannel(channels, input.channel)
-
-  params.push(['utm_source', source])
-  params.push(['utm_medium', medium])
+  params.push(['utm_source', input.utmSource])
+  params.push(['utm_medium', input.utmMedium])
   params.push(['utm_campaign', input.utmCampaign])
   if (input.utmContent && input.utmContent.trim()) {
     params.push(['utm_content', input.utmContent.trim()])
@@ -107,28 +99,80 @@ export function buildCampaignLink(
   return `${base}${path}?${qs}`
 }
 
-/** 一檔活動勾了 N 個管道就產出 N 條連結。 */
+/**
+ * 一檔活動的所有連結。
+ *
+ * 2026-10-15 起的模型：一檔活動有**一組** utm_source／utm_medium，
+ * 但可以掛**多張表單**（/booking 與 /group-booking），每張表單一條連結、
+ * 各自可以有自己的變體（兩張表單的變體設定檔是不同的兩份）。
+ *
+ * ⚠️ 要相容舊資料。2026-10-15 之前的活動長這樣：
+ *      { targetPath: '/booking', variantKey: 'nanshan', channels: ['LINE','Email'] }
+ *    那是「一張表單 × N 個管道 ＝ N 條連結」。那些活動的連結已經發出去了，
+ *    必須原樣組得回來，否則後台列表上的舊連結會跟實際流通的不一致。
+ *    所以舊欄位的路徑保留，見 buildLegacyCampaignLinks。
+ */
+export interface CampaignRecord {
+  /** 新模型：可掛多張表單 */
+  targetPaths?: string[]
+  /** 新模型：每張表單各自的變體 { '/booking': 'nanshan' } */
+  variantKeys?: Record<string, string | null>
+  utmSource?: string
+  utmMedium?: string
+  utmCampaign: string
+  utmContent?: string | null
+  /** 舊模型欄位，只為了相容既有資料 */
+  targetPath?: string
+  variantKey?: string | null
+  channels?: string[]
+}
+
 export function buildCampaignLinks(
   origin: string,
-  campaign: {
-    targetPath: string
-    variantKey?: string | null
-    utmCampaign: string
-    channels: string[]
-    utmContent?: string | null
-  },
+  campaign: CampaignRecord,
   channelDefs: readonly UtmChannel[] = DEFAULT_UTM_CHANNELS,
-): { channel: string; url: string }[] {
-  return (campaign.channels || []).map((channel) => ({
-    channel,
+): { label: string; url: string }[] {
+  // 舊資料：沒有 utmSource 就代表是 2026-10-15 之前建的，走舊的「管道」路徑
+  if (!campaign.utmSource) return buildLegacyCampaignLinks(origin, campaign, channelDefs)
+
+  const paths = campaign.targetPaths?.length
+    ? campaign.targetPaths
+    : [campaign.targetPath || '/booking']
+
+  return paths.map((targetPath) => ({
+    label: targetPath,
     url: buildCampaignLink(origin, {
-      targetPath: campaign.targetPath,
-      variantKey: campaign.variantKey,
+      targetPath,
+      variantKey: campaign.variantKeys?.[targetPath] ?? null,
       utmCampaign: campaign.utmCampaign,
-      channel,
+      utmSource: campaign.utmSource!,
+      utmMedium: campaign.utmMedium || 'referral',
       utmContent: campaign.utmContent,
-    }, channelDefs),
+    }),
   }))
+}
+
+/** 2026-10-15 之前的活動：一張表單 × N 個管道。只為了讓舊紀錄的連結原樣組得回來。 */
+function buildLegacyCampaignLinks(
+  origin: string,
+  campaign: CampaignRecord,
+  channelDefs: readonly UtmChannel[],
+): { label: string; url: string }[] {
+  const targetPath = campaign.targetPath || '/booking'
+  return (campaign.channels || []).map((channel) => {
+    const { source, medium } = resolveChannel(channelDefs, channel)
+    return {
+      label: channel,
+      url: buildCampaignLink(origin, {
+        targetPath,
+        variantKey: campaign.variantKey,
+        utmCampaign: campaign.utmCampaign,
+        utmSource: source,
+        utmMedium: medium,
+        utmContent: campaign.utmContent,
+      }),
+    }
+  })
 }
 
 // ── 變體摘要 ───────────────────────────────────────────────────────────
