@@ -45,9 +45,14 @@ export interface UtmChannel {
  *（例如 `line`、`社群`），那批流量在 GA4 會被歸到 **Unassigned**，
  * 而且**歷史資料改不回來** —— 不是改設定就能補的，是那段期間的報表永久歸錯類。
  *
- * ⚠️ `offline` 其實不是 GA4 認得的值，用它的流量同樣會進 Unassigned。
- *    之所以留著，是因為「傳單」這個既有管道一直用它，現在改掉會讓
- *    同一個管道的歷史資料裂成兩段。要調整請另外評估，不要順手改。
+ * 🔴 這份清單**不開放業主自行新增**（2026-10-15 業主決定）。
+ *    utm_source 可以自由新增，因為它本來就是自由維度；medium 不行，
+ *    因為清單外的值會讓那批流量在 GA4 永久歸到 Unassigned。
+ *
+ * ⚠️ `offline` 已於 2026-10-15 移除（業主要求）。它不是 GA4 認得的值，
+ *    用它的流量一直都歸在 Unassigned。唯一在用它的是「傳單」來源，
+ *    而傳單同日一併從來源清單移除。
+ *    **既有活動的連結不受影響** —— 它們走 LEGACY_CHANNEL_MAP，見下。
  */
 export const GA4_MEDIUMS: { value: string; label: string }[] = [
   { value: 'referral', label: 'referral — 其他網站連過來' },
@@ -57,19 +62,45 @@ export const GA4_MEDIUMS: { value: string; label: string }[] = [
   { value: 'display', label: 'display — 多媒體廣告' },
   { value: 'affiliate', label: 'affiliate — 聯盟行銷' },
   { value: 'organic', label: 'organic — 自然搜尋' },
-  { value: 'offline', label: 'offline — 線下（⚠️ 非 GA4 標準，會歸到 Unassigned）' },
 ]
 
 export const GA4_MEDIUM_VALUES = GA4_MEDIUMS.map((m) => m.value)
 
-/** 預設的七個管道。與 2026-10 之前寫死的 SOURCE_CHANNELS ＋ 兩張對照表完全相同。 */
+/**
+ * 🔴 凍結的歷史對照：2026-10-15 之前「投放管道」的七組固定值。
+ *
+ * **只給舊活動組連結用，永遠不要改也不要刪。**
+ *
+ * 2026-10-15 之前的活動存的是 { channels: ['LINE','傳單'] } 這種管道名稱，
+ * 連結是讀取當下即時組出來的、不是存死的。如果讓它去查「現在的來源清單」，
+ * 那麼來源清單一被編輯（例如這次拿掉傳單），後台顯示的舊連結就會跟
+ * **實際已經發出去、現在還在流通**的那些不一致 —— 而且是無聲的。
+ * 所以舊活動一律查這份凍結的表。
+ */
+export const LEGACY_CHANNEL_MAP: Readonly<Record<string, UtmChannel>> = Object.freeze({
+  '網站': { label: '網站', source: 'website', medium: 'referral' },
+  'LINE': { label: 'LINE', source: 'line', medium: 'social' },
+  'Facebook': { label: 'Facebook', source: 'facebook', medium: 'social' },
+  'Instagram': { label: 'Instagram', source: 'instagram', medium: 'social' },
+  'Email': { label: 'Email', source: 'email', medium: 'email' },
+  '傳單': { label: '傳單', source: 'flyer', medium: 'offline' },
+  'Google': { label: 'Google', source: 'google', medium: 'cpc' },
+})
+
+/**
+ * 現在的 utm_source 預設選項。業主可在後台新增／停用，疊在這份上面。
+ *
+ * ⚠️ 「傳單」（flyer）已於 2026-10-15 依業主要求移除。
+ *    它是唯一使用 offline 的來源，而 offline 不是 GA4 認得的值。
+ *    移除只影響「之後新建的活動選不到它」；既有活動與已發出的連結都不受影響。
+ *    若 Firestore 裡已經有存過的清單，傳單仍會出現在後台 —— 用面板的「停用」收掉。
+ */
 export const DEFAULT_UTM_CHANNELS: UtmChannel[] = [
   { label: '網站', source: 'website', medium: 'referral' },
   { label: 'LINE', source: 'line', medium: 'social' },
   { label: 'Facebook', source: 'facebook', medium: 'social' },
   { label: 'Instagram', source: 'instagram', medium: 'social' },
   { label: 'Email', source: 'email', medium: 'email' },
-  { label: '傳單', source: 'flyer', medium: 'offline' },
   { label: 'Google', source: 'google', medium: 'cpc' },
 ]
 

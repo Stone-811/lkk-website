@@ -1,4 +1,4 @@
-import { DEFAULT_UTM_CHANNELS, type UtmChannel } from '~/config/utmChannels'
+import { DEFAULT_UTM_CHANNELS, LEGACY_CHANNEL_MAP, type UtmChannel } from '~/config/utmChannels'
 
 // UTM 活動連結：純函式，前後端共用。
 //
@@ -19,13 +19,20 @@ import { DEFAULT_UTM_CHANNELS, type UtmChannel } from '~/config/utmChannels'
  * 所以 buildCampaignLink 需要知道「現在有哪些管道」，由呼叫端傳進來；
  * 沒傳就退回 DEFAULT_UTM_CHANNELS，行為與 2026-10-15 之前完全相同。
  */
+/**
+ * 舊活動的管道名稱 → source／medium。
+ *
+ * 🔴 **先查凍結的歷史表**，不要先查「現在的來源清單」。
+ *    舊活動的連結是讀取當下即時組出來的。若讓它跟著現在的清單走，
+ *    清單一被編輯（例如 2026-10-15 拿掉了傳單），後台顯示的舊連結就會跟
+ *    實際還在流通的那些不一致 —— 而且無聲無息。
+ *    凍結表查不到才退回現在的清單（純粹是為了極端情況不要壞頁）。
+ */
 function resolveChannel(channels: readonly UtmChannel[], label: string): UtmChannel {
   return (
+    LEGACY_CHANNEL_MAP[label] ||
     channels.find((c) => c.label === label) ||
     DEFAULT_UTM_CHANNELS.find((c) => c.label === label) ||
-    // 連預設清單都沒有（管道被停用後才編輯舊活動，或資料不一致）：
-    // 退回 website/referral，與舊版相同。寧可產出一條可用但歸因偏泛的連結，
-    // 也不要讓後台整頁因為一個找不到的管道而壞掉。
     { label, source: 'website', medium: 'referral' }
   )
 }
