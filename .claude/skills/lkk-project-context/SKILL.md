@@ -293,8 +293,75 @@ WP REST 搜尋的實際行為、API 契約、競態地雷全部在 [[lkk-wp-arti
 （container 736 再扣 `Lkk4Ticket` 的 border 6 ＋ p-7 的 56），四欄每張只剩 **156px** 會把文字擠爆。
 （組別卡 2026-10-09 已減為三張、grid 改 `md:grid-cols-3`——張數一變斷點要重算。）
 
+> **動 `pages/booking.vue` 之前先讀 [[lkk-booking-form]]**；
+> **動 `/admin/campaigns` 之前先讀 [[lkk-admin-campaigns]]**。
+>
 > **動 `pages/lkk4.vue` 之前先讀 [[lkk-lkk4-page]]**：那頁把同一個賽制事實
 > 重複寫在 2–5 個地方，改一處不改其他處就會自相矛盾，裡面有完整對照表。
+
+## 2026-10-13～15 這批（**全部已上 prod**，prod commit `dde0d75`）
+
+> 10-13 調查舊站停擺，10-14～15 寫程式並上線，10-16 只有文件與知識庫。
+
+### 🔴 10-13：正式站整個文章層停擺，根因是對外 IP 被丟包
+
+業主問「WordPress 刪掉的文章怎麼還看得到」，查下去發現那只是症狀 ——
+**正式站連不上舊站 l-kk.tw 已經好幾天**。dev 站與開發機都正常，只有 prod 不行，
+而且是 `<no response>` 逾時（封包被丟掉，不是慢）。當天 300 筆失敗全部來自
+**同一個 Cloud Run 執行個體**（活了四天、對外 IP 固定）。
+
+**強制一次 rollout 換掉執行個體就恢復**，約 3 分鐘。但那只是換一個還沒被封的 IP。
+
+完整查法、三方對照、症狀清單、Wordfence 的線索、以及
+「被封 → 不進快取 → 每次點擊都重打 → 量暴增 → 封鎖被續期」這個自撐迴圈，
+全部在 **[[lkk-wp-articles]]**。
+
+⚠️ **根因仍停在推論。** 三個可以定案的來源，都需要業主開權限：
+   舊站的 access log（最快，能直接分辨伺服器層或應用層）、
+   Cloudways 後台的封鎖紀錄、
+   WordPress 後台的 Wordfence Blocking／Live Traffic（這個**不需要 Cloudways 權限**）。
+   這件事**還沒結案**。
+
+### 文章層的三項改動
+
+- **sitemap 上游失敗時吐上一份成功的清單**。停擺期間它從約 720 筆靜默塌成 26 筆，
+  等於對 Google 宣告 694 篇全部消失，而 `catch {}` 把錯誤吃掉、沒有告警。
+- **知識科普新增「全部」分頁並當預設**（`categories` 的 OR 聯集，一個請求打完；
+  筆數不可相加，實測聯集 621 vs 四分頁加總 987）。
+- **返回列表會回到正確的彙整頁與分類**。業主回報的兩個現象，根因是文章頁
+  一行寫死的 `to="/knowledge-center"`；另外四個彙整頁完全沒把分類寫進網址。
+
+### 預約表單
+
+- **「不限年齡免費」合作方名冊**（`config/freeTrialPartners.ts`）：
+  `?v=freetrial&co=<代號>`，台灣人壽是第一筆（至 2027-10-31）。
+  **連結已生效，業主要到 2026-11-01 才發。**
+- **同意事項九條整併為七條**（業主定稿，含兩處實質的法律變更）。
+- **iOS 日期欄位撐破容器**＋修完之後空值高度塌陷，兩段都修了，業主已用 iPhone 確認。
+
+細節見 **[[lkk-booking-form]]**（新增）與 **[[lkk-mobile-audit]]**。
+
+### 後台 UTM 活動：連改六輪
+
+從「一張表單 × N 個固定管道」改成「一個代號 + N 條各自獨立的連結」，
+中間推翻過三個版本。`utm_source` 開放業主自行新增，`utm_medium` 固定 GA4 標準值。
+演進與每一輪被推翻的理由見 **[[lkk-admin-campaigns]]**（新增）。
+
+### 這批的三個教訓
+
+1. **業主說「幫某公司開一張專屬表單」時，先確認機制是不是已經存在。**
+   這次 `bookingVariants` 早就有三個線上案例，差點從複製整頁開始做。
+2. **「舊版也會通過」的 marker 等於沒驗。** 推完 prod 我輪詢狀態碼，第一次就通過，
+   但當時 rollout 還是 QUEUED。做法見 [[lkk-deploy-verify]]。
+3. **驗證邊界要講出來，但也不要把邊界畫得比實際大。** 這批大量改動落在 `/admin/*`，
+   我一路說「我沒有後台帳號」—— 那對線上 dev／prod 成立，但 **`server/utils/auth.ts`
+   有本機專用的後門帳號**（`DEV_TEST_USER`，`NODE_ENV !== 'production'` ＋
+   `ALLOW_DEV_ADMIN=true` 時啟用），本機其實進得去後台畫面。
+   也就是說這批的後台 UI 我**可以**自己驗卻沒驗，只做了純函式（累計 50 項斷言）。
+   下次動 `/admin` 先想到這個後門。
+   （本機 `.env` 指向另一個舊專案，所以它仍然證明不了 dev／prod 的 Firestore 寫入。）
+
+---
 
 ## 2026-10-08～09 這批（**全部已上 prod**，prod commit `3c3ee7d`）
 
@@ -555,7 +622,7 @@ PATCH 卻拿到空陣列 → 在空陣列裡找不到那個選項 → 回 404。
 - **後台名單頁**＝`composables/useAdminLeads.ts`（載入/搜尋/日期/宣告式篩選 `LeadFilterDef`/chips/排序/彈窗/狀態/備註；含 `SOURCE_CHANNELS`、`LEAD_STATUS_FILTER_OPTIONS` 常數）＋`components/admin/` 三元件（LeadFilterBar／LeadDetailModal（body 用 slot）／SortableTh）。leads.vue（717→441）與 group-classes.vue（688→409）已遷移，各頁只留 fetch 映射、篩選定義、表格欄位、詳情 slot、CSV 欄位。⚠️ **公司篩選的選項底要傳各自的變體設定**（leads=bookingVariants、團課=groupClassVariants，兩份 key 同名、寫錯今天看不出來）。**cooperation.vue 未遷**（結構不同：雙 type 合併＋utm 提頂層＋無日期/排序，遷移＝功能升級，需業主確認後才做）。
 - **前台分店基本資料**＝`composables/usePublicStores.ts`（店名/電話/地址/slug 讀 `/api/public/stores`，`server:false`＋fallback 與 Firestore 現值一致、顯示順序南京→松江→西門→七張）。Footer 與首頁 LocationsSection 已用；`pages/locations/index.vue` 本來就有自己的 API 驅動＋fallback。**booking/group-booking 表單選項刻意不用**（避開變體 lockStore 時序）；營業時間/交通仍程式碼維護。⚠️ **業主在後台改分店電話/地址現在會真的全站生效**；七張店自此顯示 Firestore 正式名「新店七張店」（原首頁/Footer 寫死「七張店」與列表頁不一致）。
 - **後台 API 驗證**：可達的 401/403 只有 `admin-api-guard`（statusMessage 與 message 同值）與 auth/* 四支（回應格式勿動，登入頁/路由 middleware 依賴）。**30 支 handler 的 inline 401 在 guard 之後實際不可達**（防禦縱深，勿花力氣統一）。`requireAuth` 已刪（死碼）；角色檢查用 `requireRole`。
-- **本機驗證管線**（無測試框架下的替代）：`npm run build`（⚠️ 不做型別檢查）→ `(set -a; source .env; set +a; unset SMTP_*; NODE_ENV=development ALLOW_DEV_ADMIN=true node .output/server/index.mjs)` → 後台用 dev 後門帳號（見 auth.ts DEV_TEST_USER，須 NODE_ENV≠production 且 ALLOW_DEV_ADMIN=true）→ 瀏覽器 pane 走查＋`javascript_tool` 斷言；表單類改動 curl POST 後用 service account 腳本直讀 Firestore 核對 shape、驗完刪測試文件。unset SMTP_* 可讓寄信乾淨跳過不發真信。
+- **本機驗證管線**（無測試框架下的替代）：`npm run build`（⚠️ 不做型別檢查）→ `(set -a; source .env; set +a; unset SMTP_*; NODE_ENV=development ALLOW_DEV_ADMIN=true node .output/server/index.mjs)` → 後台用 dev 後門帳號（見 auth.ts DEV_TEST_USER，須 NODE_ENV≠production 且 ALLOW_DEV_ADMIN=true）→ 瀏覽器 pane 走查＋`javascript_tool` 斷言；表單類改動 curl POST 後用 service account 腳本直讀 Firestore 核對 shape、驗完刪測試文件。unset SMTP_* 可讓寄信乾淨跳過不發真信。⚠️ **後門只在本機成立、也只能驗畫面**：`isDevLoginAllowed()` 要 `NODE_ENV!=='production'`，而 `ALLOW_DEV_ADMIN` 在 dev／prod 兩分支的 `apphosting.yaml` 都沒設，線上永遠進不去；本機又沒有 ADC，Firestore 讀寫不通（資料清單會掛）。所以「驗不到的那一層」是 **dev／prod 的實際寫入**，不是登入——別寫成「沒有後台帳號所以沒驗」（見 `lkk-deploy-verify`）。
 - ⚠️ **備註存檔競態（已修）**：存檔期間關閉彈窗，舊碼 `selectedLead.value.internalNote` NPE→誤報「儲存失敗」（實際已寫入）。useAdminLeads 已加 null 防護，勿退回。
 
 ## 教練資料現況（⚠️ 動 /team-intro/coaches 或教練資料前必看，2026-08-25 更新）

@@ -109,7 +109,7 @@ export function buildCampaignLink(origin: string, input: CampaignLinkInput): str
 /**
  * 一檔活動底下的一條連結。
  *
- * 2026-10-16 起的模型：一檔活動（一個 utm_campaign）底下掛 N 條**各自獨立**的連結，
+ * 2026-10-15 起的模型：一檔活動（一個 utm_campaign）底下掛 N 條**各自獨立**的連結，
  * 每一條有自己的目標表單、變體、來源、性質與素材。
  *
  * 這解掉了前幾版的兩個問題：
@@ -126,7 +126,7 @@ export interface CampaignLink {
 
 export interface CampaignRecord {
   utmCampaign: string
-  /** 2026-10-16 起的形狀 */
+  /** 2026-10-15 起的形狀 */
   links?: CampaignLink[]
   /** dev 專用的中間形狀（2026-10-15，沒有上過正式站） */
   targetPaths?: string[]

@@ -1,12 +1,77 @@
 ---
 name: lkk-mobile-audit
-description: 稽核練健康官網的行動裝置可讀性（字級、觸控目標、水平溢出、iOS 聚焦自動放大），或修正業主回饋「手機版不好讀／不好點」時使用。內含可直接貼的量測腳本、判定門檻、四種會誤報的情況，以及 2026-09-01 全站盤點的基準值。
+description: 稽核練健康官網的行動裝置可讀性（字級、觸控目標、水平溢出、iOS 聚焦自動放大），或修正業主回饋「手機版不好讀／不好點／跑版」時使用。內含可直接貼的量測腳本、判定門檻、四種會誤報的情況、2026-09-01 全站盤點的基準值，以及 iOS 的 input[type=date] 撐破容器與修完之後空值高度塌陷這組兩段式問題（含「Chromium 重現不了，只能請業主用 iPhone 驗」這個驗證限制）。
 ---
 
 # 行動裝置可讀性稽核
 
 > 客群是**中高齡**，字級與觸控目標的權重比一般網站高很多。
 > 對比量測另見 `lkk-image-swap`；品牌色與各 token 的對比表見記憶 `lkk-web-brand-colors`。
+
+---
+
+## 🔴 iOS 的 `input[type=date]` 會撐破容器，而且修完會換一個症狀
+
+2026-10-15 業主用 iPhone 回報：`/booking` 的「出生年月日」整欄凸出卡片外。
+
+### 成因是兩件事疊加，少修一個都沒用
+
+```
+1. iOS 的日期輸入框有「原生最小寬度」—— 由裡面那串日期文字決定。
+   width:100%（Tailwind 的 w-full）壓不下去，px-4 的 32px 內距還要再加上去。
+
+2. 它外層是 grid item，而 grid item 預設 min-width:auto ——
+   不會縮到比內容的 min-content 還窄，於是整欄被頂出去。
+```
+
+`body` 有 `overflow-x:hidden`，所以頁面不會橫向捲動，**看起來就是框破出去但滑不動**。
+
+### 修正（放 `assets/css/main.css` 的 `@layer base`，全域）
+
+```css
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;        /* 解開 grid item 的 min-width:auto */
+  max-width: 100%;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;    /* iOS 會把日期置中，跟隔壁欄位不一致 */
+  min-width: 0;        /* 跟外層一起解開，避免偽元素自己把框撐開 */
+}
+```
+
+放全域而不是只改那一個欄位，是因為後台名單的篩選列也有兩個 `type="date"`。
+`appearance:none` **不影響點擊開啟日期選擇器**（Chrome 實測日曆圖示仍在）。
+
+### ⚠️ 第二段：修完之後空值時高度會塌
+
+`appearance:none` 拿掉原生外觀後，**iOS 在「尚未選日期」時不渲染任何文字** →
+內容高度 0 → 整欄只剩 `py-3` 的 24px ＋ border 2 ＝ 26px，比隔壁欄位矮一截。
+有填日期時不會矮（有文字撐著），所以只在空值狀態看得到。
+
+補在那一個欄位上（**不要放全域**）：
+
+```
+min-h-[50px]      50 = 文字 24（text-base 的 line-height）＋ py-3 上下 24 ＋ border 2
+```
+
+那是同一排其他欄位算出來的同一個數字（本機實測「姓名」「性別下拉」皆為 50px）。
+不放全域是因為後台篩選列的日期欄是 `py-1.5 text-sm`，釘 50px 會把它撐高。
+
+### 🔴 這類 iOS 專屬問題在 Chromium 重現不了
+
+Chromium 的日期框沒有那個原生最小寬度，**根本不會重現這個 bug**。
+所以本機瀏覽器只能證明「沒弄壞」，**不能證明「修好了」**。
+
+這次來回兩次就是卡在這。做法：
+
+1. 動手前就跟業主說清楚「這題只能你用 iPhone 驗」，不要讓他以為我驗過了
+2. commit 訊息裡明寫驗證邊界
+3. 本機能驗的照驗（樣式有沒有套用、與隔壁欄位是否等寬等高、有無水平溢出）
+
+iOS 模擬器需要**完整 Xcode**（只有 command-line tools 開不起來），
+要啟用得請業主自己裝 Xcode 並執行 `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`。
 
 ---
 
