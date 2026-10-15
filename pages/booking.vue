@@ -623,11 +623,18 @@ const handleSubmit = async () => {
                       <label class="block text-sm font-medium mb-2 text-navy-700">
                         出生年月日（要上課的學員） <span class="text-red-500">*</span>
                       </label>
+                      <!-- min-h-[50px]：assets/css/main.css 用 appearance:none 解掉 iOS 撐破容器的
+                           問題後，iOS 在「尚未選日期」時不渲染任何文字 → 內容高度 0，整欄只剩
+                           py-3 的 24px，比隔壁「性別」矮一截（2026-10-15 業主回報）。
+                           50 = 文字 24（text-base 的 line-height）＋ py-3 上下 24 ＋ border 2，
+                           與同一排其他欄位算出來的高度相同。改 py-3 或字級時這個數字要跟著改。
+                           ⚠️ 不能放進 main.css 的全域規則：後台名單篩選列的日期欄是
+                              py-1.5 text-sm，釘 50px 會把它撐高。 -->
                       <input
                         v-model="formData.birthDate"
                         type="date"
                         name="birthDate"
-                        :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange', errors.birthDate ? 'border-red-500' : 'border-cream-200']"
+                        :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange min-h-[50px]', errors.birthDate ? 'border-red-500' : 'border-cream-200']"
                         max="2010-01-01"
                         min="1920-01-01"
                       />
