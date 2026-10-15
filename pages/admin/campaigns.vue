@@ -14,14 +14,17 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { bookingVariants } from '~/config/bookingVariants'
 import { groupClassVariants } from '~/config/groupClassVariants'
-import { SOURCE_CHANNELS } from '~/composables/useAdminLeads'
 import {
   CAMPAIGN_TARGETS,
   buildCampaignLinks,
   validateCampaignCode,
   normalizeCampaignCode,
   summarizeVariants,
+  campaignLinkKey,
+  normalizeCampaignLinks,
+  type CampaignLink,
 } from '~/utils/campaignLinks'
+import { DEFAULT_UTM_CHANNELS, GA4_MEDIUMS, type UtmChannel } from '~/config/utmChannels'
 
 definePageMeta({ layout: 'admin' })
 useHead({ title: 'UTM 活動｜練健康後台' })
@@ -52,6 +55,62 @@ const env = computed(() => {
   return { name: isProd ? '正式環境' : '測試環境（dev）', isProd }
 })
 
+/**
+ * 投放管道清單。業主可自行新增，存在 Firestore `settings/utmChannels`。
+ * 初值用程式裡的預設，API 還沒回來、或 Firestore 掛了，畫面都還是能建活動。
+ */
+const channelDefs = ref<(UtmChannel & { active: boolean })[]>(
+  DEFAULT_UTM_CHANNELS.map((c) => ({ ...c, active: true })),
+)
+/** 產連結與勾選只用啟用中的；停用的仍留在清單裡，供既有活動的連結照常組出來。 */
+const activeChannels = computed(() => channelDefs.value.filter((c) => c.active))
+
+const showChannelPanel = ref(false)
+const newChannel = reactive({ label: '', source: '', medium: 'social' })
+const channelError = ref('')
+const channelSaving = ref(false)
+
+async function loadChannels() {
+  try {
+    const res: any = await $fetch('/api/admin/utm-channels')
+    if (Array.isArray(res?.data) && res.data.length) channelDefs.value = res.data
+  } catch {
+    /* 讀不到就用程式裡的預設，不擋住建活動 */
+  }
+}
+
+async function addChannel() {
+  channelError.value = ''
+  channelSaving.value = true
+  try {
+    const res: any = await $fetch('/api/admin/utm-channels', {
+      method: 'PATCH',
+      body: { action: 'add', ...newChannel },
+    })
+    channelDefs.value = res.data
+    newChannel.label = ''
+    newChannel.source = ''
+    newChannel.medium = 'social'
+  } catch (e: any) {
+    channelError.value = e?.data?.message || e?.message || '新增失敗'
+  } finally {
+    channelSaving.value = false
+  }
+}
+
+async function toggleChannelActive(label: string) {
+  channelError.value = ''
+  try {
+    const res: any = await $fetch('/api/admin/utm-channels', {
+      method: 'PATCH',
+      body: { action: 'toggle', label },
+    })
+    channelDefs.value = res.data
+  } catch (e: any) {
+    channelError.value = e?.data?.message || e?.message || '更新失敗'
+  }
+}
+
 const showModal = ref(false)
 const editingId = ref<string | null>(null)
 const expanded = ref<Record<string, boolean>>({})
@@ -60,24 +119,35 @@ const copied = ref<string>('')
 const blank = () => ({
   name: '',
   utmCampaign: '',
-  targetPath: '/booking',
-  variantKey: '',
-  channels: [] as string[],
-  utmContent: '',
+  /** 這檔活動底下的所有連結，每一條各自獨立 */
+  links: [] as CampaignLink[],
   note: '',
   isActive: true,
 })
+
+/** 正在編輯中的那一列（還沒按「新增」加進 links）。 */
+const draftBlank = () => ({
+  targetPath: '/booking',
+  variantKey: '',
+  utmSource: 'website',
+  utmMedium: 'referral',
+  utmContent: '',
+})
 const form = reactive(blank())
+const draft = reactive(draftBlank())
+const draftError = ref('')
 const formError = ref('')
+
 
 // 欄位說明（游標停在 ⓘ 上會出現）
 const HELP: Record<string, string> = {
   name: '只在這個後台頁面顯示，方便你辨識活動。不進連結也不進名單，改名不影響任何已發出的連結。',
   utmCampaign: '會寫進連結的 utm_campaign，是名單對照活動的唯一依據。發出去之後修改，舊名單就對不回來了。',
-  targetPath: '連結要把人帶到哪一張表單。只列出會收名單的兩張，其他頁面收不到可歸因的名單。',
-  variantKey: '決定表單長相（專屬文案、全齡免費、鎖分店）。需工程師事先製作，這裡只能挑既有的。',
-  channels: '要把連結放到哪些地方。勾幾個產生幾條連結，各自帶不同的 utm_source／utm_medium 以便區分來源。',
-  utmContent: '同一管道有多種素材時用來區分，例如 card-a。非必填。',
+  targetPath: '連結要把人帶到哪些表單。可以同時選兩張，各產一條連結、共用同一個活動代號。只列出會收名單的表單，其他頁面收不到可歸因的名單。',
+  variantKey: '決定表單長相（專屬文案、全齡免費、鎖分店）。兩張表單的變體是分開的兩套，各自選。需工程師事先製作，這裡只能挑既有的。',
+  utmSource: '流量的「來處」，例如 line、facebook。可以自行新增。',
+  utmMedium: '流量的「性質」，例如 social、cpc。與 source 獨立 —— 同一個 source 配不同 medium 都合法（google/cpc 是廣告、google/organic 是自然搜尋）。只能從 GA4 標準值挑，填非標準值會讓 GA4 把那批流量歸到 Unassigned 且無法回填。',
+  utmContent: '同一檔活動有多種素材時用來區分，例如 card-a。非必填。',
   note: '給自己看的補充說明，顯示在活動列表展開處。不會出現在連結裡。',
 }
 
@@ -91,34 +161,76 @@ const allSummaries = computed(() => [
 ])
 const showVariantRef = ref(false)
 
-const variantOptions = computed(() => {
-  const t = CAMPAIGN_TARGETS.find((x) => x.value === form.targetPath)
+/** 某一張表單可以挑的變體（兩張表單讀的是不同的設定檔）。 */
+const variantOptionsFor = (path: string) => {
+  const t = CAMPAIGN_TARGETS.find((x) => x.value === path)
   if (!t?.variantSource) return []
   return t.variantSource === 'booking' ? bookingSummaries.value : groupSummaries.value
-})
-const selectedVariant = computed(() => variantOptions.value.find((v) => v.key === form.variantKey) || null)
+}
+
+/** 切換目標表單時清掉變體 —— 兩張表單的變體設定檔是不同的兩份，沿用會指到不存在的 key。 */
+function onPickTarget(path: string) {
+  draft.targetPath = path
+  draft.variantKey = ''
+}
+
+/** 挑 source 時自動帶出它的預設 medium —— 只是預設，使用者可以再改。 */
+function onPickSource(source: string) {
+  draft.utmSource = source
+  const def = channelDefs.value.find((c) => c.source === source)
+  if (def) draft.utmMedium = def.medium
+}
+
+/** 把目前這一列加進清單。重複的組合在這裡就擋掉，不要等到送出。 */
+function addLink() {
+  draftError.value = ''
+  if (!draft.targetPath) return (draftError.value = '請選擇目標表單')
+  if (!draft.utmSource) return (draftError.value = '請選擇來源')
+  if (!draft.utmMedium) return (draftError.value = '請選擇性質')
+
+  const link: CampaignLink = {
+    targetPath: draft.targetPath,
+    variantKey: draft.variantKey || null,
+    utmSource: draft.utmSource,
+    utmMedium: draft.utmMedium,
+    utmContent: draft.utmContent.trim() || null,
+  }
+  if (form.links.some((l) => campaignLinkKey(l) === campaignLinkKey(link))) {
+    return (draftError.value = '這個組合已經加過了，會產出一模一樣的網址')
+  }
+  form.links.push(link)
+  // 只清素材代號，其餘留著 —— 連續加同一張表單的不同管道時少點幾下
+  draft.utmContent = ''
+}
+
+function removeLink(i: number) {
+  form.links.splice(i, 1)
+}
 
 const previewLinks = computed(() => {
-  if (!form.utmCampaign || !form.channels.length) return []
+  if (!form.utmCampaign || !form.links.length) return []
   return buildCampaignLinks(origin.value, {
-    targetPath: form.targetPath,
-    variantKey: form.variantKey || null,
     utmCampaign: normalizeCampaignCode(form.utmCampaign),
-    channels: form.channels,
-    utmContent: form.utmContent || null,
+    links: form.links,
   })
 })
 
-const linksFor = (c: any) =>
-  buildCampaignLinks(origin.value, {
-    targetPath: c.targetPath,
-    variantKey: c.variantKey,
-    utmCampaign: c.utmCampaign,
-    channels: c.channels || [],
-    utmContent: c.utmContent,
-  })
+// 直接把紀錄傳進去：buildCampaignLinks 會自己分辨新舊模型。
+// 舊活動（沒有 utmSource）仍照原本的「一張表單 × N 個管道」組回來，
+// 連結與實際流通中的一字不差。
+const linksFor = (c: any) => buildCampaignLinks(origin.value, c, channelDefs.value)
 
 const targetLabel = (p: string) => CAMPAIGN_TARGETS.find((t) => t.value === p)?.label || p
+
+/** 列表上的一行摘要。三種歷史形狀都先正規化成 links 再描述，不必各自分支。 */
+function summarizeRecord(c: any): string {
+  const links = normalizeCampaignLinks(c, channelDefs.value)
+  if (!links.length) return '（沒有連結）'
+  const forms = [...new Set(links.map((l) => targetLabel(l.targetPath)))].join('＋')
+  const srcs = [...new Set(links.map((l) => `${l.utmSource}/${l.utmMedium}`))]
+  const shown = srcs.slice(0, 3).join('、') + (srcs.length > 3 ? ` …共 ${srcs.length} 組` : '')
+  return `${forms}・${shown}`
+}
 
 async function load() {
   loading.value = true
@@ -137,18 +249,22 @@ async function load() {
 function openCreate() {
   editingId.value = null
   Object.assign(form, blank())
+  Object.assign(draft, draftBlank())
+  draftError.value = ''
   formError.value = ''
   showModal.value = true
 }
 
 /**
  * 把「流通中但未登記」的代號帶進新增表單。
- * 只預填代號與能從名單推得的名稱，目標頁面與管道仍要業主自己確認——
- * 名單只記得 utm_source，推不回當初是勾了哪些管道，猜錯會產生錯的連結。
+ * 只預填代號與能從名單推得的名稱，表單與 source／medium 仍要業主自己確認——
+ * 名單雖然記得 utm_source，但推不回當初掛了哪幾張表單，猜錯會產生錯的連結。
  */
 function registerUnregistered(u: any) {
   editingId.value = null
   Object.assign(form, blank())
+  Object.assign(draft, draftBlank())
+  draftError.value = ''
   form.utmCampaign = u.utmCampaign
   form.name = u.companies?.[0] ? `${u.companies[0]}（既有連結）` : ''
   form.note = `從既有名單登記。目前已收到 ${u.leadCount} 筆，來源：${(u.sources || []).join('、') || '未記錄'}。`
@@ -162,33 +278,38 @@ function fmtDate(iso: string | null) {
   return Number.isNaN(d.getTime()) ? '—' : `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`
 }
 
+/**
+ * 把一筆紀錄塞進表單。
+ *
+ * ⚠️ 要相容舊資料：2026-10-15 之前的活動是 { targetPath, variantKey, channels }，
+ *    沒有 targetPaths／variantKeys／utmSource／utmMedium。
+ *    不轉換的話，編輯舊活動時表單會是空的，一存檔就把原本的設定清掉。
+ *    舊活動有多個管道時只能取第一個當 source（新模型一檔活動一組 source/medium），
+ *    所以存檔前會提示它會從幾條連結變成幾條。
+ */
 function openEdit(c: any) {
   editingId.value = c.id
   Object.assign(form, {
     name: c.name || '',
     utmCampaign: c.utmCampaign || '',
-    targetPath: c.targetPath || '/booking',
-    variantKey: c.variantKey || '',
-    channels: [...(c.channels || [])],
-    utmContent: c.utmContent || '',
+    // 任何歷史形狀都先轉成 links[]。
+    // 🔴 轉換是無損的（斷言在 utils 的測試裡）：轉出來的每一條連結網址
+    //    與轉換前逐字相同，所以編輯舊活動不會動到已經發出去的連結。
+    links: normalizeCampaignLinks(c, channelDefs.value),
     note: c.note || '',
     isActive: c.isActive ?? true,
   })
+  Object.assign(draft, draftBlank())
+  draftError.value = ''
   formError.value = ''
   showModal.value = true
-}
-
-function toggleChannel(ch: string) {
-  const i = form.channels.indexOf(ch)
-  if (i === -1) form.channels.push(ch)
-  else form.channels.splice(i, 1)
 }
 
 async function save() {
   formError.value = ''
   const codeErr = validateCampaignCode(form.utmCampaign)
   if (codeErr) return (formError.value = codeErr)
-  if (!form.channels.length) return (formError.value = '請至少勾選一個投放管道')
+  if (!form.links.length) return (formError.value = '請至少新增一條連結')
 
   saving.value = true
   try {
@@ -239,6 +360,7 @@ async function copy(url: string) {
 onMounted(() => {
   currentOrigin.value = window.location.origin
   load()
+  loadChannels()
 })
 </script>
 
@@ -351,14 +473,14 @@ onMounted(() => {
               <code class="text-xs bg-cream-100 text-ink/70 px-2 py-0.5 rounded">{{ c.utmCampaign }}</code>
               <span v-if="!c.isActive" class="text-xs bg-ink/10 text-ink/60 px-2 py-0.5 rounded">已停用</span>
             </div>
+            <!-- 新舊模型都要顯示得出來：舊紀錄沒有 targetPaths／utmSource -->
             <div class="text-xs text-ink/55 mt-1">
-              {{ targetLabel(c.targetPath) }}
-              <template v-if="c.variantKey"> ・合作案 {{ c.variantKey }}</template>
-              ・{{ (c.channels || []).join('、') }}
+              <!-- 一律從正規化後的 links 摘要，三種歷史形狀都適用 -->
+              {{ summarizeRecord(c) }}
             </div>
           </div>
           <button class="text-sm text-navy-700 hover:text-orange underline" @click="expanded[c.id] = !expanded[c.id]">
-            {{ expanded[c.id] ? '收合' : `連結（${(c.channels || []).length}）` }}
+            {{ expanded[c.id] ? '收合' : `連結（${linksFor(c).length}）` }}
           </button>
           <button class="text-sm text-navy-700 hover:text-orange" @click="openEdit(c)">編輯</button>
           <button class="text-sm text-ink/60 hover:text-ink" @click="toggleActive(c)">{{ c.isActive ? '停用' : '啟用' }}</button>
@@ -366,8 +488,8 @@ onMounted(() => {
         </div>
 
         <div v-if="expanded[c.id]" class="border-t border-navy-700/10 bg-cream-50 p-4 space-y-2">
-          <div v-for="l in linksFor(c)" :key="l.channel" class="flex items-start gap-3">
-            <span class="text-xs font-bold text-navy-700 w-20 shrink-0 pt-1.5">{{ l.channel }}</span>
+          <div v-for="l in linksFor(c)" :key="l.label" class="flex items-start gap-3">
+            <span class="text-xs font-bold text-navy-700 w-24 shrink-0 pt-1.5">{{ targetLabel(l.label) }}</span>
             <code class="flex-1 min-w-0 text-xs break-all bg-white border border-navy-700/10 rounded px-2 py-1.5">{{ l.url }}</code>
             <button
               class="text-xs shrink-0 px-3 py-1.5 rounded border transition-colors"
@@ -406,84 +528,145 @@ onMounted(() => {
               <input v-model="form.name" type="text" placeholder="南山健康守護圈 2026 Q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" />
             </div>
 
-          <!-- ① 連結要帶去哪 -->
+          <!-- ① 活動層級：整檔共用 -->
           <section>
             <h3 class="text-sm font-bold text-navy-700 pb-2 mb-3 border-b border-navy-700/15">
-              連結目標
-              <span class="font-normal text-ink/50">— 決定人點了之後看到哪張表單</span>
+              活動代號
+              <span class="font-normal text-ink/50">— 整檔活動共用，是名單對照活動的唯一依據</span>
             </h3>
-            <div class="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                  目標頁面 <span class="text-red-500">*</span>
-                  <AdminFieldHelp :text="HELP.targetPath" />
-                </label>
-                <select v-model="form.targetPath" class="w-full border border-navy-700/20 rounded-lg px-3 py-2" @change="form.variantKey = ''">
-                  <option v-for="t in CAMPAIGN_TARGETS" :key="t.value" :value="t.value">{{ t.label }}</option>
-                </select>
-              </div>
-              <div>
-                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                  合作案表單（?v=）
-                  <AdminFieldHelp :text="HELP.variantKey" />
-                </label>
-                <select v-model="form.variantKey" :disabled="!variantOptions.length" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 disabled:bg-cream-100 disabled:text-ink/40">
-                  <option value="">不使用</option>
-                  <option v-for="v in variantOptions" :key="v.key" :value="v.key">{{ v.label }}</option>
-                </select>
-                <p v-if="selectedVariant" class="text-xs text-ink/60 mt-1 leading-relaxed">
-                  <span class="font-bold text-navy-700">{{ selectedVariant.heroTitle || selectedVariant.key }}</span>：
-                  {{ selectedVariant.effects.join('、') }}<template v-if="selectedVariant.leadSource">；名單來源記為「{{ selectedVariant.leadSource }}」</template>
-                </p>
-                <p v-else class="text-xs text-ink/50 mt-1">{{ variantOptions.length ? '由工程師維護，這裡只能挑既有的。' : '這個頁面沒有合作案表單。' }}</p>
-              </div>
-            </div>
+            <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
+              utm_campaign <span class="text-red-500">*</span>
+              <AdminFieldHelp :text="HELP.utmCampaign" />
+            </label>
+            <input v-model="form.utmCampaign" type="text" placeholder="nanshan-2026q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
+            <p class="text-xs text-red-600 mt-1">⚠️ 只能用小寫英文、數字、- 與 _。<strong>連結發出去之後就不要再改</strong>。</p>
           </section>
 
-          <!-- ② UTM 追蹤參數：三個欄位全部集中在這一區（業主指定） -->
+          <!-- ② 一列一列把連結加進來。每一條各自獨立：自己的表單、變體、來源、性質、素材。 -->
           <section>
             <h3 class="text-sm font-bold text-navy-700 pb-2 mb-3 border-b border-navy-700/15">
-              UTM 追蹤參數
-              <span class="font-normal text-ink/50">— 會出現在連結裡，也是名單歸因的依據</span>
+              連結
+              <span class="font-normal text-ink/50">— 選好一組按「加入」，可以一直加</span>
             </h3>
-            <div class="space-y-4">
-              <div>
-                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                  活動代號（utm_campaign） <span class="text-red-500">*</span>
-                  <AdminFieldHelp :text="HELP.utmCampaign" />
-                </label>
-                <input v-model="form.utmCampaign" type="text" placeholder="nanshan-2026q4" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
-                <p class="text-xs text-red-600 mt-1">⚠️ 只能用小寫英文、數字、- 與 _。<strong>連結發出去之後就不要再改</strong>。</p>
-              </div>
 
-              <div>
-                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-2">
-                  投放管道（utm_source／utm_medium） <span class="text-red-500">*</span>
-                  <AdminFieldHelp :text="HELP.channels" />
-                </label>
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-for="ch in SOURCE_CHANNELS"
-                    :key="ch"
-                    type="button"
-                    class="px-3 py-1.5 rounded-lg border text-sm transition-colors"
-                    :class="form.channels.includes(ch) ? 'border-orange bg-orange/10 text-orange font-bold' : 'border-navy-700/20 hover:border-orange/50'"
-                    @click="toggleChannel(ch)"
-                  >{{ ch }}</button>
+            <div class="border border-navy-700/15 rounded-lg p-3 bg-cream-50 space-y-3">
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="flex items-center gap-1.5 text-xs font-medium text-navy-700 mb-1">
+                    目標表單 <span class="text-red-500">*</span>
+                    <AdminFieldHelp :text="HELP.targetPath" />
+                  </label>
+                  <select
+                    :value="draft.targetPath"
+                    class="w-full border border-navy-700/20 rounded px-2 py-1.5 text-sm"
+                    @change="onPickTarget(($event.target as HTMLSelectElement).value)"
+                  >
+                    <option v-for="t in CAMPAIGN_TARGETS" :key="t.value" :value="t.value">{{ t.label }}</option>
+                  </select>
                 </div>
-                <p class="text-xs text-ink/50 mt-1.5">
-                  勾幾個就產生幾條連結，各自帶不同參數，名單就分得出是從哪個管道來的。
-                </p>
+                <div>
+                  <label class="flex items-center gap-1.5 text-xs font-medium text-navy-700 mb-1">
+                    合作案表單（?v=）
+                    <AdminFieldHelp :text="HELP.variantKey" />
+                  </label>
+                  <select
+                    v-model="draft.variantKey"
+                    :disabled="!variantOptionsFor(draft.targetPath).length"
+                    class="w-full border border-navy-700/20 rounded px-2 py-1.5 text-sm disabled:bg-cream-100 disabled:text-ink/40"
+                  >
+                    <option value="">不使用</option>
+                    <option v-for="v in variantOptionsFor(draft.targetPath)" :key="v.key" :value="v.key">{{ v.label }}</option>
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label class="flex items-center gap-1.5 text-sm font-medium text-navy-700 mb-1">
-                  素材代號（utm_content）
-                  <AdminFieldHelp :text="HELP.utmContent" />
-                </label>
-                <input v-model="form.utmContent" type="text" placeholder="區分同管道的不同素材，例如 card-a" class="w-full border border-navy-700/20 rounded-lg px-3 py-2 font-mono text-sm" />
+              <div class="grid sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="flex items-center gap-1.5 text-xs font-medium text-navy-700 mb-1">
+                    來源（utm_source） <span class="text-red-500">*</span>
+                    <AdminFieldHelp :text="HELP.utmSource" />
+                  </label>
+                  <select
+                    :value="draft.utmSource"
+                    class="w-full border border-navy-700/20 rounded px-2 py-1.5 text-sm font-mono"
+                    @change="onPickSource(($event.target as HTMLSelectElement).value)"
+                  >
+                    <option v-for="c in activeChannels" :key="c.source" :value="c.source">{{ c.source }}（{{ c.label }}）</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="flex items-center gap-1.5 text-xs font-medium text-navy-700 mb-1">
+                    性質（utm_medium） <span class="text-red-500">*</span>
+                    <AdminFieldHelp :text="HELP.utmMedium" />
+                  </label>
+                  <select v-model="draft.utmMedium" class="w-full border border-navy-700/20 rounded px-2 py-1.5 text-sm">
+                    <option v-for="m in GA4_MEDIUMS" :key="m.value" :value="m.value">{{ m.value }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="flex items-center gap-1.5 text-xs font-medium text-navy-700 mb-1">
+                    素材（utm_content）
+                    <AdminFieldHelp :text="HELP.utmContent" />
+                  </label>
+                  <input v-model="draft.utmContent" type="text" placeholder="card-a" class="w-full border border-navy-700/20 rounded px-2 py-1.5 text-sm font-mono" />
+                </div>
+              </div>
+
+              <p v-if="draftError" class="text-xs text-red-600">{{ draftError }}</p>
+
+              <div class="flex items-center justify-between">
+                <p class="text-xs text-ink/50">
+                  來源清單可以自己維護。
+                  <button type="button" class="text-orange underline" @click="showChannelPanel = !showChannelPanel">
+                    {{ showChannelPanel ? '收合' : '新增／停用來源' }}
+                  </button>
+                </p>
+                <button type="button" class="bg-navy-700 text-white text-sm font-bold px-4 py-1.5 rounded shrink-0" @click="addLink">
+                  ＋ 加入這一條
+                </button>
+              </div>
+
+              <!-- 來源維護。只開放新增與停用：source 會進 GA4 與名單，改字面救不回來。 -->
+              <div v-if="showChannelPanel" class="border-t border-navy-700/10 pt-3">
+                <p class="text-xs font-bold text-navy-700 mb-2">目前的來源</p>
+                <div class="space-y-1 mb-3">
+                  <div v-for="c in channelDefs" :key="c.label" class="flex items-center gap-2 text-xs">
+                    <span class="w-20 shrink-0" :class="c.active ? 'text-navy-700 font-bold' : 'text-ink/35 line-through'">{{ c.label }}</span>
+                    <code class="flex-1 text-ink/55">{{ c.source }}<span class="text-ink/35">（預設 {{ c.medium }}）</span></code>
+                    <button type="button" class="text-orange underline shrink-0" @click="toggleChannelActive(c.label)">
+                      {{ c.active ? '停用' : '啟用' }}
+                    </button>
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                  <input v-model="newChannel.label" type="text" placeholder="顯示名稱（Threads）" class="border border-navy-700/20 rounded px-2 py-1.5 text-xs" />
+                  <input v-model="newChannel.source" type="text" placeholder="utm_source（threads）" class="border border-navy-700/20 rounded px-2 py-1.5 text-xs font-mono" />
+                  <select v-model="newChannel.medium" class="border border-navy-700/20 rounded px-2 py-1.5 text-xs">
+                    <option v-for="m in GA4_MEDIUMS" :key="m.value" :value="m.value">預設 {{ m.value }}</option>
+                  </select>
+                </div>
+                <p v-if="channelError" class="text-xs text-red-600 mt-1.5">{{ channelError }}</p>
+                <div class="flex items-center justify-between mt-2">
+                  <p class="text-xs text-red-600">⚠️ 新增後<strong>不能改字</strong>，只能停用。</p>
+                  <button type="button" class="bg-navy-700 text-white text-xs font-bold px-3 py-1.5 rounded shrink-0 ml-3 disabled:opacity-50" :disabled="channelSaving" @click="addChannel">
+                    {{ channelSaving ? '新增中…' : '新增來源' }}
+                  </button>
+                </div>
               </div>
             </div>
+
+            <!-- 已加入的連結 -->
+            <div v-if="form.links.length" class="mt-3 space-y-1.5">
+              <p class="text-xs font-bold text-navy-700">已加入 {{ form.links.length }} 條</p>
+              <div v-for="(l, i) in form.links" :key="i" class="flex items-center gap-2 text-xs border border-navy-700/12 rounded px-2 py-1.5">
+                <span class="font-bold text-navy-700 shrink-0">{{ targetLabel(l.targetPath) }}</span>
+                <code class="flex-1 min-w-0 text-ink/60 break-all">
+                  {{ l.utmSource }} / {{ l.utmMedium }}<template v-if="l.variantKey"> · v={{ l.variantKey }}</template><template v-if="l.utmContent"> · {{ l.utmContent }}</template>
+                </code>
+                <button type="button" class="text-red-600 underline shrink-0" @click="removeLink(i)">刪除</button>
+              </div>
+            </div>
+            <p v-else class="text-xs text-ink/45 mt-2">還沒有連結。選好上面的組合後按「加入這一條」。</p>
           </section>
 
             <div>
@@ -499,8 +682,8 @@ onMounted(() => {
               連結預覽（{{ previewLinks.length }} 條）
               <span class="font-normal" :class="env.isProd ? 'text-green-700' : 'text-amber-700'">— {{ env.name }}</span>
             </p>
-            <div v-for="l in previewLinks" :key="l.channel" class="flex items-start gap-2 mb-1.5 last:mb-0">
-              <span class="text-xs font-bold text-navy-700 w-16 shrink-0 pt-0.5">{{ l.channel }}</span>
+            <div v-for="l in previewLinks" :key="l.label" class="flex items-start gap-2 mb-1.5 last:mb-0">
+              <span class="text-xs font-bold text-navy-700 w-24 shrink-0 pt-0.5">{{ targetLabel(l.label) }}</span>
               <code class="text-xs break-all text-ink/70">{{ l.url }}</code>
             </div>
           </div>

@@ -1,3 +1,5 @@
+import { DEFAULT_UTM_CHANNELS, LEGACY_CHANNEL_MAP, type UtmChannel } from '~/config/utmChannels'
+
 // UTM 活動連結：純函式，前後端共用。
 //
 // 🔴 為什麼連結「不存進 Firestore」，每次現算：
@@ -7,26 +9,32 @@
 //    名單會全部進 lkkdev，正式站一筆都收不到，而且沒有任何錯誤訊息。
 //    所以 DB 只存「參數」，網域與組裝都在讀取當下決定。
 
-/** 投放管道 → utm_medium 的對應。medium 是 GA4 的標準維度，不讓業主自由打字。 */
-export const CHANNEL_TO_MEDIUM: Record<string, string> = {
-  網站: 'referral',
-  LINE: 'social',
-  Facebook: 'social',
-  Instagram: 'social',
-  Email: 'email',
-  傳單: 'offline',
-  Google: 'cpc',
-}
-
-/** 投放管道 → utm_source 的預設值（業主可在活動層級覆寫）。 */
-export const CHANNEL_TO_SOURCE: Record<string, string> = {
-  網站: 'website',
-  LINE: 'line',
-  Facebook: 'facebook',
-  Instagram: 'instagram',
-  Email: 'email',
-  傳單: 'flyer',
-  Google: 'google',
+/**
+ * 投放管道 → utm_source／utm_medium。
+ *
+ * 🔴 2026-10-15 起這份對應**不再寫死在程式碼裡** —— 業主可在後台
+ *    「UTM 活動」頁自行新增管道，清單存在 Firestore `settings/utmChannels`。
+ *    程式裡的預設值與型別在 config/utmChannels.ts，那份同時也是讀不到時的退路。
+ *
+ * 所以 buildCampaignLink 需要知道「現在有哪些管道」，由呼叫端傳進來；
+ * 沒傳就退回 DEFAULT_UTM_CHANNELS，行為與 2026-10-15 之前完全相同。
+ */
+/**
+ * 舊活動的管道名稱 → source／medium。
+ *
+ * 🔴 **先查凍結的歷史表**，不要先查「現在的來源清單」。
+ *    舊活動的連結是讀取當下即時組出來的。若讓它跟著現在的清單走，
+ *    清單一被編輯（例如 2026-10-15 拿掉了傳單），後台顯示的舊連結就會跟
+ *    實際還在流通的那些不一致 —— 而且無聲無息。
+ *    凍結表查不到才退回現在的清單（純粹是為了極端情況不要壞頁）。
+ */
+function resolveChannel(channels: readonly UtmChannel[], label: string): UtmChannel {
+  return (
+    LEGACY_CHANNEL_MAP[label] ||
+    channels.find((c) => c.label === label) ||
+    DEFAULT_UTM_CHANNELS.find((c) => c.label === label) ||
+    { label, source: 'website', medium: 'referral' }
+  )
 }
 
 /**
@@ -68,9 +76,11 @@ export interface CampaignLinkInput {
   variantKey?: string | null
   /** utm_campaign，已正規化的小寫代號 */
   utmCampaign: string
-  /** 投放管道（中文，對應 CHANNEL_TO_*） */
-  channel: string
-  /** utm_content，用來區分同一管道的不同素材 */
+  /** utm_source */
+  utmSource: string
+  /** utm_medium */
+  utmMedium: string
+  /** utm_content，用來區分同一檔活動的不同素材 */
   utmContent?: string | null
 }
 
@@ -85,15 +95,8 @@ export function buildCampaignLink(origin: string, input: CampaignLinkInput): str
 
   const params: [string, string][] = []
   if (input.variantKey) params.push(['v', input.variantKey])
-
-  // utm_source 一律由投放管道決定，不開放覆寫。
-  // 業主 2026-09-11：覆寫會讓所有管道的 source 變成同一個值，
-  // 與「勾 N 個管道產生 N 條可區分的連結」直接衝突，留一個就好。
-  const source = CHANNEL_TO_SOURCE[input.channel] || 'website'
-  const medium = CHANNEL_TO_MEDIUM[input.channel] || 'referral'
-
-  params.push(['utm_source', source])
-  params.push(['utm_medium', medium])
+  params.push(['utm_source', input.utmSource])
+  params.push(['utm_medium', input.utmMedium])
   params.push(['utm_campaign', input.utmCampaign])
   if (input.utmContent && input.utmContent.trim()) {
     params.push(['utm_content', input.utmContent.trim()])
@@ -103,25 +106,103 @@ export function buildCampaignLink(origin: string, input: CampaignLinkInput): str
   return `${base}${path}?${qs}`
 }
 
-/** 一檔活動勾了 N 個管道就產出 N 條連結。 */
+/**
+ * 一檔活動底下的一條連結。
+ *
+ * 2026-10-16 起的模型：一檔活動（一個 utm_campaign）底下掛 N 條**各自獨立**的連結，
+ * 每一條有自己的目標表單、變體、來源、性質與素材。
+ *
+ * 這解掉了前幾版的兩個問題：
+ *   - 「一組 source/medium 套到多張表單」—— 不同管道該用不同 medium，套死會標錯
+ *   - 「一個管道綁死一組 source/medium」—— 表達不出 google/organic
+ */
+export interface CampaignLink {
+  targetPath: string
+  variantKey?: string | null
+  utmSource: string
+  utmMedium: string
+  utmContent?: string | null
+}
+
+export interface CampaignRecord {
+  utmCampaign: string
+  /** 2026-10-16 起的形狀 */
+  links?: CampaignLink[]
+  /** dev 專用的中間形狀（2026-10-15，沒有上過正式站） */
+  targetPaths?: string[]
+  variantKeys?: Record<string, string | null>
+  utmSource?: string
+  utmMedium?: string
+  /** 最舊的形狀（正式站的既有資料就是這個） */
+  targetPath?: string
+  variantKey?: string | null
+  channels?: string[]
+  /** 活動層級的素材代號。新模型改成每一條連結各自一個，這裡只為了讀舊資料。 */
+  utmContent?: string | null
+}
+
+/** 一條連結在畫面上的識別字串，也用來擋重複。 */
+export function campaignLinkKey(l: CampaignLink): string {
+  return [l.targetPath, l.variantKey || '', l.utmSource, l.utmMedium, l.utmContent || ''].join('|')
+}
+
+/**
+ * 把任何一種歷史形狀正規化成 CampaignLink[]。
+ *
+ * 🔴 轉換必須是無損的：每一條轉出來的連結，網址要和轉換前逐字相同。
+ *    這些連結已經發出去在流通，後台顯示的若和實際的不一致，是最難察覺的那種錯。
+ *    斷言寫在測試裡，改這段務必重跑。
+ */
+export function normalizeCampaignLinks(
+  c: CampaignRecord,
+  channelDefs: readonly UtmChannel[] = DEFAULT_UTM_CHANNELS,
+): CampaignLink[] {
+  // 1. 新形狀：原樣
+  if (c.links?.length) return c.links
+
+  // 2. 中間形狀（只有 dev 有）：每張表單展開成一條
+  if (c.utmSource) {
+    const paths = c.targetPaths?.length ? c.targetPaths : [c.targetPath || '/booking']
+    return paths.map((targetPath) => ({
+      targetPath,
+      variantKey: c.variantKeys?.[targetPath] ?? null,
+      utmSource: c.utmSource!,
+      utmMedium: c.utmMedium || 'referral',
+      utmContent: c.utmContent ?? null,
+    }))
+  }
+
+  // 3. 最舊的形狀（正式站的既有資料）：每個管道展開成一條，
+  //    source／medium 查凍結的歷史表（見 resolveChannel）
+  const targetPath = c.targetPath || '/booking'
+  return (c.channels || []).map((channel) => {
+    const { source, medium } = resolveChannel(channelDefs, channel)
+    return {
+      targetPath,
+      variantKey: c.variantKey ?? null,
+      utmSource: source,
+      utmMedium: medium,
+      utmContent: c.utmContent ?? null,
+    }
+  })
+}
+
 export function buildCampaignLinks(
   origin: string,
-  campaign: {
-    targetPath: string
-    variantKey?: string | null
-    utmCampaign: string
-    channels: string[]
-    utmContent?: string | null
-  },
-): { channel: string; url: string }[] {
-  return (campaign.channels || []).map((channel) => ({
-    channel,
+  campaign: CampaignRecord,
+  channelDefs: readonly UtmChannel[] = DEFAULT_UTM_CHANNELS,
+): { label: string; key: string; url: string }[] {
+  return normalizeCampaignLinks(campaign, channelDefs).map((l) => ({
+    // 畫面上用「表單 ＋ 來源」當標籤，一眼看得出這條是誰
+    label: `${l.targetPath} · ${l.utmSource}`,
+    key: campaignLinkKey(l),
     url: buildCampaignLink(origin, {
-      targetPath: campaign.targetPath,
-      variantKey: campaign.variantKey,
+      targetPath: l.targetPath,
+      variantKey: l.variantKey,
       utmCampaign: campaign.utmCampaign,
-      channel,
-      utmContent: campaign.utmContent,
+      utmSource: l.utmSource,
+      utmMedium: l.utmMedium,
+      utmContent: l.utmContent,
     }),
   }))
 }
@@ -167,9 +248,17 @@ export function summarizeVariants(
 
       const company = v.company || null
       const short = effects.filter((e) => e !== '專屬 Hero 文案')[0]
+      // 顯示名稱優先序：company（絕大多數變體都有）→ adminLabel（公司由 ?co= 決定、
+      // 變體本身不具名時填這個，例如 freetrial）→ 只剩代號。
+      // 不要在這裡特判代號字串，否則每多一個不具名變體就要再改一次這支工具函式。
+      const display = company || v.adminLabel || null
+      // 特性括號只在「顯示的是公司名」時才加 —— 公司名不會說明變體在做什麼，需要補。
+      // adminLabel 是專為這個下拉寫的描述（例如「不限年齡體驗表單」），本身就說明了特性，
+      // 再補一次會變成「不限年齡體驗表單（不限年齡免費）」。
+      const suffix = company && short ? `（${short}）` : ''
       return {
         key,
-        label: company ? `${key} ─ ${company}${short ? `（${short}）` : ''}` : key,
+        label: display ? `${key} ─ ${display}${suffix}` : key,
         company,
         heroTitle: v.hero?.title || null,
         effects,

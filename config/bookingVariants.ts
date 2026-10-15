@@ -6,6 +6,13 @@ import { getFreeTrialPartner } from './freeTrialPartners'
 // 不需要再改 booking.vue。未知的 v 值會自動 fallback 成 default（不會壞）。
 
 export interface BookingVariant {
+  /**
+   * 後台「UTM 活動」頁的下拉顯示名稱。
+   * 只在「這個變體沒有 company」時才需要填 —— 有 company 的會自動顯示成
+   * 「代號 ─ 公司（特性）」，不必重複。
+   * 純顯示用，不進連結、不進名單，改了不影響任何已發出的連結。
+   */
+  adminLabel?: string
   // Hero 區文案（未填則用表單預設）
   hero?: {
     badge?: string          // 頂端小標籤
@@ -92,6 +99,7 @@ export const bookingVariants: Record<string, BookingVariant> = {
   // 刻意「不」設 company：公司是每一家不同的那一項，所以住在名冊裡，不在這。
   // 只帶 ?v=freetrial 不帶 ?co= 也不會壞 —— 就是一張沒有歸因的全齡免費表單。
   freetrial: {
+    adminLabel: '不限年齡體驗表單',
     allAgesFree: true,
     leadSource: '網站',
   },
