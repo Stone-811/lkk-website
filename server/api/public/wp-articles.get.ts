@@ -52,21 +52,37 @@ const RESERVED_ROUTES = new Set([
 /** 分類代號白名單。這是公開端點，不接受任意分類，避免被當成任意查詢的跳板。 */
 const TABS = {
   knowledge: [
-    { key: 'sports', label: '訓練知識', id: 17 },
-    { key: 'wellness', label: '醫療衛教', id: 18 },
-    { key: 'elderly', label: '特殊族群', id: 11 },
-    { key: 'fitness', label: '運動人文', id: 9 },
+    /**
+     * 「全部」＝四個分類的聯集，一個請求打完（WP REST 的 categories 是 OR）。
+     *
+     * 🔴 筆數不可以用四個分頁相加。同一篇文章普遍掛多個分類 ——
+     *    2026-09-12 實測：四類加總 274+290+129+213 ＝ 906，而全站只有 644 篇。
+     *    上游的 x-wp-total 回的是去重後的聯集，直接用就對了。
+     *
+     * ⚠️ 放在陣列第一位是刻意的：useArticleBrowser 取 tabs[0] 當預設分頁
+     *    （composables/useArticleBrowser.ts:75-80），所以順序即預設。
+     *
+     * ⚠️ 代稱只能用英數與底線（會進 Nitro 快取鍵），而且 TAB_BY_KEY 是跨四個
+     *    群組的單一扁平 Map —— 不要取 'all' 這種泛用名稱，會和別的群組撞名。
+     *    （已經有一個 'cases' 同時存在於 TABS.cases 與 CASE_THEMES，
+     *      靠 handler 裡的判斷順序才不出事，不要再製造第二個。）
+     */
+    { key: 'knowledge_all', label: '全部', ids: [17, 18, 11, 9] },
+    { key: 'sports', label: '訓練知識', ids: [17] },
+    { key: 'wellness', label: '醫療衛教', ids: [18] },
+    { key: 'elderly', label: '特殊族群', ids: [11] },
+    { key: 'fitness', label: '運動人文', ids: [9] },
   ],
   // 學員故事只有一個 WordPress 分類（1092）。主題篩選另外處理，見 CASE_THEMES。
-  cases: [{ key: 'cases', label: '學員故事', id: 1092 }],
-  activity: [{ key: 'activity', label: '活動資訊', id: 448 }],
+  cases: [{ key: 'cases', label: '學員故事', ids: [1092] }],
+  activity: [{ key: 'activity', label: '活動資訊', ids: [448] }],
   // 媒體報導。/news 上半部是編輯挑選的精選版面（寫死在頁面裡，而且有 3 筆是
   // 站外連結、WordPress 沒有），下半部的「所有報導」才走這一組。
   // 實測 2026-09-30：精選區 10 個站內連結全部都在這個分類裡，所以這一組是超集。
-  news: [{ key: 'news', label: '媒體報導', id: 14 }],
+  news: [{ key: 'news', label: '媒體報導', ids: [14] }],
 } as const
 
-type Tab = { key: string; label: string; id: number }
+type Tab = { key: string; label: string; ids: readonly number[] }
 
 /** 分頁代稱 → 分頁定義。搜尋與載入更多都只認這份白名單裡的 key。 */
 const TAB_BY_KEY = new Map<string, Tab>()
@@ -184,7 +200,9 @@ async function fetchTab(tab: Tab, opts: { q?: string; page?: number }) {
   const q = opts.q ?? ''
 
   const query: Record<string, string | number> = {
-    categories: tab.id,
+    // 多個分類用逗號相接＝OR（聯集）。「全部」就是靠這個一發打完，
+    // 而不是打四次再合併——合併的筆數會因分類重疊而虛報，翻頁也沒有單一游標可用。
+    categories: tab.ids.join(','),
     per_page: PER_PAGE,
     page,
     // 不帶 _fields 的話同一個查詢會回 321KB，帶了是 11.8KB（實測 2026-09-30）
