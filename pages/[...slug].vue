@@ -37,6 +37,15 @@ if (error.value || !data.value?.data) {
 }
 
 const post = computed(() => data.value!.data)
+/**
+ * 返回連結。由 API 依文章分類算好（server/utils/article-sections.ts）。
+ * ⚠️ 要留退路：2026-10-15 之前存下的 7 天長效備份副本裡沒有 backTo，
+ *    上游中斷期間走退路的文章會是 undefined —— 沒有這個 fallback 的話
+ *    整個連結會變成 to=undefined，點了跳到奇怪的網址。
+ */
+const backTo = computed(
+  () => post.value?.backTo ?? { href: '/knowledge-center', label: '知識科普' }
+)
 const { formatDate } = useFormatDate()
 /**
  * 🔴 文章的 canonical 指向「文章正本所在的網域」，切轉前是舊站 l-kk.tw。
@@ -103,11 +112,15 @@ useHead({
 <template>
   <div class="bg-cream min-h-screen">
     <article class="max-w-3xl mx-auto px-6 lg:px-8 py-10 lg:py-16">
+      <!-- 返回目標依文章自己的分類推算（server/utils/article-sections.ts）。
+           ⚠️ 這裡只保證「回到正確的彙整頁與一個合理的分類」。讀者原本是從哪一個
+              分類點進來的，文章本身並不知道 —— 精確還原走的是瀏覽器上一頁，
+              那條路徑靠彙整頁把分類寫進網址 query 來保證。 -->
       <NuxtLink
-        to="/knowledge-center"
+        :to="backTo.href"
         class="inline-block text-sm text-ink/55 hover:text-orange transition-colors mb-6"
       >
-        ← 回到知識科普
+        ← 回到{{ backTo.label }}
       </NuxtLink>
 
       <h1 class="font-serif text-3xl lg:text-4xl font-black text-navy-700 leading-tight mb-4">
