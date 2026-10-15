@@ -14,7 +14,6 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { bookingVariants } from '~/config/bookingVariants'
 import { groupClassVariants } from '~/config/groupClassVariants'
-import { SOURCE_CHANNELS } from '~/composables/useAdminLeads'
 import {
   CAMPAIGN_TARGETS,
   buildCampaignLinks,
@@ -22,6 +21,7 @@ import {
   normalizeCampaignCode,
   summarizeVariants,
 } from '~/utils/campaignLinks'
+import { DEFAULT_UTM_CHANNELS, GA4_MEDIUMS, type UtmChannel } from '~/config/utmChannels'
 
 definePageMeta({ layout: 'admin' })
 useHead({ title: 'UTM 活動｜練健康後台' })
@@ -51,6 +51,62 @@ const env = computed(() => {
   const isProd = host === 'lkkwellness.com' || host.endsWith('.lkkwellness.com')
   return { name: isProd ? '正式環境' : '測試環境（dev）', isProd }
 })
+
+/**
+ * 投放管道清單。業主可自行新增，存在 Firestore `settings/utmChannels`。
+ * 初值用程式裡的預設，API 還沒回來、或 Firestore 掛了，畫面都還是能建活動。
+ */
+const channelDefs = ref<(UtmChannel & { active: boolean })[]>(
+  DEFAULT_UTM_CHANNELS.map((c) => ({ ...c, active: true })),
+)
+/** 產連結與勾選只用啟用中的；停用的仍留在清單裡，供既有活動的連結照常組出來。 */
+const activeChannels = computed(() => channelDefs.value.filter((c) => c.active))
+
+const showChannelPanel = ref(false)
+const newChannel = reactive({ label: '', source: '', medium: 'social' })
+const channelError = ref('')
+const channelSaving = ref(false)
+
+async function loadChannels() {
+  try {
+    const res: any = await $fetch('/api/admin/utm-channels')
+    if (Array.isArray(res?.data) && res.data.length) channelDefs.value = res.data
+  } catch {
+    /* 讀不到就用程式裡的預設，不擋住建活動 */
+  }
+}
+
+async function addChannel() {
+  channelError.value = ''
+  channelSaving.value = true
+  try {
+    const res: any = await $fetch('/api/admin/utm-channels', {
+      method: 'PATCH',
+      body: { action: 'add', ...newChannel },
+    })
+    channelDefs.value = res.data
+    newChannel.label = ''
+    newChannel.source = ''
+    newChannel.medium = 'social'
+  } catch (e: any) {
+    channelError.value = e?.data?.message || e?.message || '新增失敗'
+  } finally {
+    channelSaving.value = false
+  }
+}
+
+async function toggleChannelActive(label: string) {
+  channelError.value = ''
+  try {
+    const res: any = await $fetch('/api/admin/utm-channels', {
+      method: 'PATCH',
+      body: { action: 'toggle', label },
+    })
+    channelDefs.value = res.data
+  } catch (e: any) {
+    channelError.value = e?.data?.message || e?.message || '更新失敗'
+  }
+}
 
 const showModal = ref(false)
 const editingId = ref<string | null>(null)
@@ -106,7 +162,7 @@ const previewLinks = computed(() => {
     utmCampaign: normalizeCampaignCode(form.utmCampaign),
     channels: form.channels,
     utmContent: form.utmContent || null,
-  })
+  }, channelDefs.value)
 })
 
 const linksFor = (c: any) =>
@@ -116,7 +172,9 @@ const linksFor = (c: any) =>
     utmCampaign: c.utmCampaign,
     channels: c.channels || [],
     utmContent: c.utmContent,
-  })
+    // 用完整清單（含已停用的）：既有活動勾過的管道就算之後被停用，
+    // 它的連結仍要組得出來，否則列表上那幾條會變成 website/referral。
+  }, channelDefs.value)
 
 const targetLabel = (p: string) => CAMPAIGN_TARGETS.find((t) => t.value === p)?.label || p
 
@@ -239,6 +297,7 @@ async function copy(url: string) {
 onMounted(() => {
   currentOrigin.value = window.location.origin
   load()
+  loadChannels()
 })
 </script>
 
@@ -463,17 +522,61 @@ onMounted(() => {
                 </label>
                 <div class="flex flex-wrap gap-2">
                   <button
-                    v-for="ch in SOURCE_CHANNELS"
-                    :key="ch"
+                    v-for="c in activeChannels"
+                    :key="c.label"
                     type="button"
-                    class="px-3 py-1.5 rounded-lg border text-sm transition-colors"
-                    :class="form.channels.includes(ch) ? 'border-orange bg-orange/10 text-orange font-bold' : 'border-navy-700/20 hover:border-orange/50'"
-                    @click="toggleChannel(ch)"
-                  >{{ ch }}</button>
+                    class="px-3 py-1.5 rounded-lg border text-sm transition-colors text-left"
+                    :class="form.channels.includes(c.label) ? 'border-orange bg-orange/10 text-orange font-bold' : 'border-navy-700/20 hover:border-orange/50'"
+                    @click="toggleChannel(c.label)"
+                  >
+                    {{ c.label }}
+                    <span class="block text-[11px] font-mono font-normal opacity-60">{{ c.source }} / {{ c.medium }}</span>
+                  </button>
                 </div>
                 <p class="text-xs text-ink/50 mt-1.5">
                   勾幾個就產生幾條連結，各自帶不同參數，名單就分得出是從哪個管道來的。
+                  <button type="button" class="text-orange underline" @click="showChannelPanel = !showChannelPanel">
+                    {{ showChannelPanel ? '收合管道設定' : '新增／停用管道' }}
+                  </button>
                 </p>
+
+                <!-- 管道維護。刻意只開放新增與停用，不開放修改既有管道的文字：
+                     label 會存進名單的來源欄、source／medium 會進 GA4，
+                     發出去之後改字面都救不回來。 -->
+                <div v-if="showChannelPanel" class="mt-3 border border-navy-700/15 rounded-lg p-3 bg-cream-50">
+                  <p class="text-xs font-bold text-navy-700 mb-2">目前的管道</p>
+                  <div class="space-y-1 mb-3">
+                    <div v-for="c in channelDefs" :key="c.label" class="flex items-center gap-2 text-xs">
+                      <span class="w-20 shrink-0" :class="c.active ? 'text-navy-700 font-bold' : 'text-ink/35 line-through'">{{ c.label }}</span>
+                      <code class="flex-1 text-ink/55">{{ c.source }} / {{ c.medium }}</code>
+                      <button type="button" class="text-orange underline shrink-0" @click="toggleChannelActive(c.label)">
+                        {{ c.active ? '停用' : '啟用' }}
+                      </button>
+                    </div>
+                  </div>
+
+                  <p class="text-xs font-bold text-navy-700 mb-2">新增管道</p>
+                  <div class="grid grid-cols-3 gap-2">
+                    <input v-model="newChannel.label" type="text" placeholder="顯示名稱（Threads）" class="border border-navy-700/20 rounded px-2 py-1.5 text-xs" />
+                    <input v-model="newChannel.source" type="text" placeholder="utm_source（threads）" class="border border-navy-700/20 rounded px-2 py-1.5 text-xs font-mono" />
+                    <select v-model="newChannel.medium" class="border border-navy-700/20 rounded px-2 py-1.5 text-xs">
+                      <option v-for="m in GA4_MEDIUMS" :key="m.value" :value="m.value">{{ m.label }}</option>
+                    </select>
+                  </div>
+                  <p v-if="channelError" class="text-xs text-red-600 mt-1.5">{{ channelError }}</p>
+                  <div class="flex items-center justify-between mt-2">
+                    <p class="text-xs text-red-600">
+                      ⚠️ 新增後<strong>不能改字</strong>，只能停用。utm_medium 一定要從下拉挑 ——
+                      填非標準值會讓 GA4 把那批流量歸到 Unassigned 且無法回填。
+                    </p>
+                    <button
+                      type="button"
+                      class="bg-navy-700 text-white text-xs font-bold px-3 py-1.5 rounded shrink-0 ml-3 disabled:opacity-50"
+                      :disabled="channelSaving"
+                      @click="addChannel"
+                    >{{ channelSaving ? '新增中…' : '新增' }}</button>
+                  </div>
+                </div>
               </div>
 
               <div>

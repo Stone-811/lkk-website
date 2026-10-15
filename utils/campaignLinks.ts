@@ -1,3 +1,5 @@
+import { DEFAULT_UTM_CHANNELS, type UtmChannel } from '~/config/utmChannels'
+
 // UTM 活動連結：純函式，前後端共用。
 //
 // 🔴 為什麼連結「不存進 Firestore」，每次現算：
@@ -7,26 +9,25 @@
 //    名單會全部進 lkkdev，正式站一筆都收不到，而且沒有任何錯誤訊息。
 //    所以 DB 只存「參數」，網域與組裝都在讀取當下決定。
 
-/** 投放管道 → utm_medium 的對應。medium 是 GA4 的標準維度，不讓業主自由打字。 */
-export const CHANNEL_TO_MEDIUM: Record<string, string> = {
-  網站: 'referral',
-  LINE: 'social',
-  Facebook: 'social',
-  Instagram: 'social',
-  Email: 'email',
-  傳單: 'offline',
-  Google: 'cpc',
-}
-
-/** 投放管道 → utm_source 的預設值（業主可在活動層級覆寫）。 */
-export const CHANNEL_TO_SOURCE: Record<string, string> = {
-  網站: 'website',
-  LINE: 'line',
-  Facebook: 'facebook',
-  Instagram: 'instagram',
-  Email: 'email',
-  傳單: 'flyer',
-  Google: 'google',
+/**
+ * 投放管道 → utm_source／utm_medium。
+ *
+ * 🔴 2026-10-15 起這份對應**不再寫死在程式碼裡** —— 業主可在後台
+ *    「UTM 活動」頁自行新增管道，清單存在 Firestore `settings/utmChannels`。
+ *    程式裡的預設值與型別在 config/utmChannels.ts，那份同時也是讀不到時的退路。
+ *
+ * 所以 buildCampaignLink 需要知道「現在有哪些管道」，由呼叫端傳進來；
+ * 沒傳就退回 DEFAULT_UTM_CHANNELS，行為與 2026-10-15 之前完全相同。
+ */
+function resolveChannel(channels: readonly UtmChannel[], label: string): UtmChannel {
+  return (
+    channels.find((c) => c.label === label) ||
+    DEFAULT_UTM_CHANNELS.find((c) => c.label === label) ||
+    // 連預設清單都沒有（管道被停用後才編輯舊活動，或資料不一致）：
+    // 退回 website/referral，與舊版相同。寧可產出一條可用但歸因偏泛的連結，
+    // 也不要讓後台整頁因為一個找不到的管道而壞掉。
+    { label, source: 'website', medium: 'referral' }
+  )
 }
 
 /**
@@ -79,18 +80,21 @@ export interface CampaignLinkInput {
  * 參數順序固定（v → utm_source → utm_medium → utm_campaign → utm_content），
  * 讓同一檔活動的多條連結看起來一致、方便業主目視比對。
  */
-export function buildCampaignLink(origin: string, input: CampaignLinkInput): string {
+export function buildCampaignLink(
+  origin: string,
+  input: CampaignLinkInput,
+  channels: readonly UtmChannel[] = DEFAULT_UTM_CHANNELS,
+): string {
   const base = String(origin || '').replace(/\/+$/, '')
   const path = input.targetPath.startsWith('/') ? input.targetPath : `/${input.targetPath}`
 
   const params: [string, string][] = []
   if (input.variantKey) params.push(['v', input.variantKey])
 
-  // utm_source 一律由投放管道決定，不開放覆寫。
+  // utm_source 一律由投放管道決定，不開放在活動層級覆寫。
   // 業主 2026-09-11：覆寫會讓所有管道的 source 變成同一個值，
   // 與「勾 N 個管道產生 N 條可區分的連結」直接衝突，留一個就好。
-  const source = CHANNEL_TO_SOURCE[input.channel] || 'website'
-  const medium = CHANNEL_TO_MEDIUM[input.channel] || 'referral'
+  const { source, medium } = resolveChannel(channels, input.channel)
 
   params.push(['utm_source', source])
   params.push(['utm_medium', medium])
@@ -113,6 +117,7 @@ export function buildCampaignLinks(
     channels: string[]
     utmContent?: string | null
   },
+  channelDefs: readonly UtmChannel[] = DEFAULT_UTM_CHANNELS,
 ): { channel: string; url: string }[] {
   return (campaign.channels || []).map((channel) => ({
     channel,
@@ -122,7 +127,7 @@ export function buildCampaignLinks(
       utmCampaign: campaign.utmCampaign,
       channel,
       utmContent: campaign.utmContent,
-    }),
+    }, channelDefs),
   }))
 }
 
