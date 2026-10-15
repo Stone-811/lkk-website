@@ -107,79 +107,104 @@ export function buildCampaignLink(origin: string, input: CampaignLinkInput): str
 }
 
 /**
- * 一檔活動的所有連結。
+ * 一檔活動底下的一條連結。
  *
- * 2026-10-15 起的模型：一檔活動有**一組** utm_source／utm_medium，
- * 但可以掛**多張表單**（/booking 與 /group-booking），每張表單一條連結、
- * 各自可以有自己的變體（兩張表單的變體設定檔是不同的兩份）。
+ * 2026-10-16 起的模型：一檔活動（一個 utm_campaign）底下掛 N 條**各自獨立**的連結，
+ * 每一條有自己的目標表單、變體、來源、性質與素材。
  *
- * ⚠️ 要相容舊資料。2026-10-15 之前的活動長這樣：
- *      { targetPath: '/booking', variantKey: 'nanshan', channels: ['LINE','Email'] }
- *    那是「一張表單 × N 個管道 ＝ N 條連結」。那些活動的連結已經發出去了，
- *    必須原樣組得回來，否則後台列表上的舊連結會跟實際流通的不一致。
- *    所以舊欄位的路徑保留，見 buildLegacyCampaignLinks。
+ * 這解掉了前幾版的兩個問題：
+ *   - 「一組 source/medium 套到多張表單」—— 不同管道該用不同 medium，套死會標錯
+ *   - 「一個管道綁死一組 source/medium」—— 表達不出 google/organic
  */
+export interface CampaignLink {
+  targetPath: string
+  variantKey?: string | null
+  utmSource: string
+  utmMedium: string
+  utmContent?: string | null
+}
+
 export interface CampaignRecord {
-  /** 新模型：可掛多張表單 */
+  utmCampaign: string
+  /** 2026-10-16 起的形狀 */
+  links?: CampaignLink[]
+  /** dev 專用的中間形狀（2026-10-15，沒有上過正式站） */
   targetPaths?: string[]
-  /** 新模型：每張表單各自的變體 { '/booking': 'nanshan' } */
   variantKeys?: Record<string, string | null>
   utmSource?: string
   utmMedium?: string
-  utmCampaign: string
-  utmContent?: string | null
-  /** 舊模型欄位，只為了相容既有資料 */
+  /** 最舊的形狀（正式站的既有資料就是這個） */
   targetPath?: string
   variantKey?: string | null
   channels?: string[]
+  /** 活動層級的素材代號。新模型改成每一條連結各自一個，這裡只為了讀舊資料。 */
+  utmContent?: string | null
+}
+
+/** 一條連結在畫面上的識別字串，也用來擋重複。 */
+export function campaignLinkKey(l: CampaignLink): string {
+  return [l.targetPath, l.variantKey || '', l.utmSource, l.utmMedium, l.utmContent || ''].join('|')
+}
+
+/**
+ * 把任何一種歷史形狀正規化成 CampaignLink[]。
+ *
+ * 🔴 轉換必須是無損的：每一條轉出來的連結，網址要和轉換前逐字相同。
+ *    這些連結已經發出去在流通，後台顯示的若和實際的不一致，是最難察覺的那種錯。
+ *    斷言寫在測試裡，改這段務必重跑。
+ */
+export function normalizeCampaignLinks(
+  c: CampaignRecord,
+  channelDefs: readonly UtmChannel[] = DEFAULT_UTM_CHANNELS,
+): CampaignLink[] {
+  // 1. 新形狀：原樣
+  if (c.links?.length) return c.links
+
+  // 2. 中間形狀（只有 dev 有）：每張表單展開成一條
+  if (c.utmSource) {
+    const paths = c.targetPaths?.length ? c.targetPaths : [c.targetPath || '/booking']
+    return paths.map((targetPath) => ({
+      targetPath,
+      variantKey: c.variantKeys?.[targetPath] ?? null,
+      utmSource: c.utmSource!,
+      utmMedium: c.utmMedium || 'referral',
+      utmContent: c.utmContent ?? null,
+    }))
+  }
+
+  // 3. 最舊的形狀（正式站的既有資料）：每個管道展開成一條，
+  //    source／medium 查凍結的歷史表（見 resolveChannel）
+  const targetPath = c.targetPath || '/booking'
+  return (c.channels || []).map((channel) => {
+    const { source, medium } = resolveChannel(channelDefs, channel)
+    return {
+      targetPath,
+      variantKey: c.variantKey ?? null,
+      utmSource: source,
+      utmMedium: medium,
+      utmContent: c.utmContent ?? null,
+    }
+  })
 }
 
 export function buildCampaignLinks(
   origin: string,
   campaign: CampaignRecord,
   channelDefs: readonly UtmChannel[] = DEFAULT_UTM_CHANNELS,
-): { label: string; url: string }[] {
-  // 舊資料：沒有 utmSource 就代表是 2026-10-15 之前建的，走舊的「管道」路徑
-  if (!campaign.utmSource) return buildLegacyCampaignLinks(origin, campaign, channelDefs)
-
-  const paths = campaign.targetPaths?.length
-    ? campaign.targetPaths
-    : [campaign.targetPath || '/booking']
-
-  return paths.map((targetPath) => ({
-    label: targetPath,
+): { label: string; key: string; url: string }[] {
+  return normalizeCampaignLinks(campaign, channelDefs).map((l) => ({
+    // 畫面上用「表單 ＋ 來源」當標籤，一眼看得出這條是誰
+    label: `${l.targetPath} · ${l.utmSource}`,
+    key: campaignLinkKey(l),
     url: buildCampaignLink(origin, {
-      targetPath,
-      variantKey: campaign.variantKeys?.[targetPath] ?? null,
+      targetPath: l.targetPath,
+      variantKey: l.variantKey,
       utmCampaign: campaign.utmCampaign,
-      utmSource: campaign.utmSource!,
-      utmMedium: campaign.utmMedium || 'referral',
-      utmContent: campaign.utmContent,
+      utmSource: l.utmSource,
+      utmMedium: l.utmMedium,
+      utmContent: l.utmContent,
     }),
   }))
-}
-
-/** 2026-10-15 之前的活動：一張表單 × N 個管道。只為了讓舊紀錄的連結原樣組得回來。 */
-function buildLegacyCampaignLinks(
-  origin: string,
-  campaign: CampaignRecord,
-  channelDefs: readonly UtmChannel[],
-): { label: string; url: string }[] {
-  const targetPath = campaign.targetPath || '/booking'
-  return (campaign.channels || []).map((channel) => {
-    const { source, medium } = resolveChannel(channelDefs, channel)
-    return {
-      label: channel,
-      url: buildCampaignLink(origin, {
-        targetPath,
-        variantKey: campaign.variantKey,
-        utmCampaign: campaign.utmCampaign,
-        utmSource: source,
-        utmMedium: medium,
-        utmContent: campaign.utmContent,
-      }),
-    }
-  })
 }
 
 // ── 變體摘要 ───────────────────────────────────────────────────────────

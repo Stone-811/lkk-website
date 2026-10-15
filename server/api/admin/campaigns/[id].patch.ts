@@ -9,6 +9,9 @@ import { normalizeCampaignCode, validateCampaignCode } from '~/utils/campaignLin
 const UPDATABLE = [
   'name',
   'utmCampaign',
+  'links',
+  // 以下為歷史欄位，保留在白名單裡：既有活動的文件仍帶著它們，
+  // 編輯時若不放行，舊值會留在文件裡與新的 links 打架
   'targetPaths',
   'variantKeys',
   'utmSource',
