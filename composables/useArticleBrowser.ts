@@ -110,10 +110,33 @@ export function useArticleBrowser(initial: Ref<any>) {
     })
   }
 
+  /**
+   * 搜尋關鍵字也寫進網址（?q=，2026-10-16 起）。
+   * 業主回報：知識分享搜尋「癌症」→ 點文章 → 回上一頁，搜尋結果整個不見、回到預設列表。
+   * 原因跟 2026-10-15 修好的分類一樣：狀態只活在記憶體裡，離開頁面就沒了。
+   *
+   * - 網址上的關鍵字一樣要正規化、一樣要滿 MIN_SEARCH_LENGTH，否則當成沒帶
+   * - 首屏：SSR 與瀏覽器端都先把目前分類標成「載入中」，畫面一開始就是搜尋狀態，
+   *   不會先閃一下預設列表；真正的搜尋請求只在瀏覽器端發（見檔尾）
+   * - 一樣用 replace：搜尋不多一筆歷史
+   */
+  const initialQ = normalizeQuery(route.query.q)
   /** 輸入框的即時內容；按下送出才會寫進 submitted。 */
-  const input = ref('')
+  const input = ref(initialQ)
   /** 已經送出、正在生效的關鍵字。空字串代表瀏覽模式。 */
-  const submitted = ref('')
+  const submitted = ref(initialQ)
+  /** 這個彙整頁自己的路徑。離開頁面時 route 會先變，watch 要靠它分辨是不是還在這一頁。 */
+  const pagePath = route.path
+
+  function syncQueryToUrl(q: string) {
+    if (import.meta.server) return
+    const query: Record<string, any> = { ...router.currentRoute.value.query }
+    if (q) query.q = q
+    else delete query.q
+    router.replace({ query }).catch(() => {
+      /* 重複導航等情況不需要處理 */
+    })
+  }
 
   /**
    * 覆寫層。只有「搜尋過」或「載入過更多」的分頁才會有值，
@@ -235,6 +258,7 @@ export function useArticleBrowser(initial: Ref<any>) {
 
     if (!sameQuery) {
       submitted.value = q
+      syncQueryToUrl(q)
       // 換了關鍵字，之前累積的結果全部失效
       for (const key of Object.keys(view)) delete view[key]
     }
@@ -245,6 +269,7 @@ export function useArticleBrowser(initial: Ref<any>) {
     input.value = ''
     if (!submitted.value) return
     submitted.value = ''
+    syncQueryToUrl('')
     // 回到瀏覽模式：清掉覆寫層就會自動落回首屏 SSR 的結果，不必重打上游。
     // 刪掉 key 也讓所有 in-flight 回應的 rid 對不上而被丟棄。
     counter++
@@ -261,6 +286,35 @@ export function useArticleBrowser(initial: Ref<any>) {
       load(tabKey, submitted.value)
     }
   }
+
+  // 網址帶著 ?q= 進來（例如從文章按上一頁）：還原搜尋結果。
+  // 先同步標成載入中（SSR 與瀏覽器端一致，不會 hydration 不一致），掛載後才真的發請求。
+  if (submitted.value && active.value) {
+    view[active.value] = { ...EMPTY, loading: true, rid: ++counter }
+    onMounted(() => {
+      if (submitted.value && active.value) load(active.value, submitted.value)
+    })
+  }
+
+  // 同一頁、只有 ?q= 變了（例如在搜尋結果頁點頁首的「知識分享」，元件不會重新掛載）：
+  // 讓畫面跟著網址走。我們自己的 replace 也會觸發，但那時值已經相同，直接略過。
+  watch(
+    () => route.query.q,
+    (raw) => {
+      if (route.path !== pagePath) return // 正在離開這一頁，不要動到下一頁的網址
+      const q = normalizeQuery(raw)
+      if (q === submitted.value) return
+      if (!q) {
+        clear()
+        return
+      }
+      input.value = q
+      submitted.value = q
+      counter++
+      for (const key of Object.keys(view)) delete view[key]
+      if (active.value) load(active.value, q)
+    }
+  )
 
   /**
    * SSR 時若上游整組都沒讀到，別讓這張「讀取不到」的頁面被 CDN 快取。
@@ -289,6 +343,12 @@ export function useArticleBrowser(initial: Ref<any>) {
     clear,
     loadMore,
   }
+}
+
+/** 網址上的關鍵字：與 submit() 相同的正規化；不滿最短長度就當成沒帶。 */
+function normalizeQuery(raw: unknown): string {
+  const q = typeof raw === 'string' ? raw.trim().replace(/\s+/g, ' ') : ''
+  return q.length >= MIN_SEARCH_LENGTH ? q : ''
 }
 
 function dedupe(posts: ArticlePost[]): ArticlePost[] {
