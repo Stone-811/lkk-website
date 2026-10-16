@@ -38,12 +38,11 @@ const STATIC_PATHS = [
   '/activity-center',
   '/news-center',
   '/news',
-  '/franchise',
   '/cooperation',
-  '/shop',
   '/privacy',
 ]
-// 刻意不列：/admin/**（要登入）、/api/**、/team-intro（只是轉址到 /about）
+// 刻意不列：/admin/**（要登入）、/api/**、/team-intro（只是轉址到 /about）、
+// /franchise 與 /shop（2026-10-16 下架，網址回 404，見 article/[slug].get.ts 的 RETIRED_PAGES）
 
 /**
  * 文章清單的長效備份。與 article/[slug] 的 LAST_GOOD_TTL 同為 7 天：

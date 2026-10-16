@@ -42,6 +42,20 @@ function readSlug(event: any): string {
 const LAST_GOOD_TTL = 60 * 60 * 24 * 7
 
 /**
+ * 已下架的本站頁面（2026-10-16 業主決定：停止招募加盟、不賣商品，兩頁刪除、網址回 404）。
+ *
+ * 頁面檔刪掉之後，這些網址會掉進 pages/[...slug].vue 來這裡查 WordPress。
+ * WordPress 剛好有同代稱的文章時會被當成文章顯示 ——
+ * franchise 就是「中高齡健康訓練創業說明會」，內容是加盟說明，跟停招矛盾。
+ * 業主要的是「找不到頁面」，所以在打上游之前直接 404。
+ *
+ * ⚠️ 只擋這幾個網址。不要改成「RESERVED_ROUTES 全部 404」——
+ *    那份清單是給 sitemap、彙整頁與內文連結改寫用的，用途不同。
+ * ⚠️ 比對前轉小寫：WordPress 查代稱不分大小寫，/Franchise 也查得到那篇。
+ */
+const RETIRED_PAGES = new Set(['franchise', 'shop'])
+
+/**
  * 快取鍵只在這裡組一次。getKey 與「文章已刪除時清快取」共用 ——
  * 兩邊各拼一次的話，一旦對不上，清除會靜默失效（removeItem 打到不存在的鍵不會報錯）。
  *
@@ -99,6 +113,9 @@ export default defineCachedEventHandler(
   async (event) => {
     const slug = readSlug(event)
     if (!slug) throw createError({ statusCode: 400, message: '缺少文章代稱' })
+    if (RETIRED_PAGES.has(slug.toLowerCase())) {
+      throw createError({ statusCode: 404, message: '找不到這篇文章' })
+    }
 
     const store = useStorage('cache')
     const backupKey = backupKeyFor(slug)
