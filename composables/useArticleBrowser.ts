@@ -120,13 +120,11 @@ export function useArticleBrowser(initial: Ref<any>) {
    *   不會先閃一下預設列表；真正的搜尋請求只在瀏覽器端發（見檔尾）
    * - 一樣用 replace：搜尋不多一筆歷史
    */
-  const initialQ = normalizeQuery(route.query.q)
+  const initialQ = normalizeSearchQuery(route.query.q)
   /** 輸入框的即時內容；按下送出才會寫進 submitted。 */
   const input = ref(initialQ)
   /** 已經送出、正在生效的關鍵字。空字串代表瀏覽模式。 */
   const submitted = ref(initialQ)
-  /** 這個彙整頁自己的路徑。離開頁面時 route 會先變，watch 要靠它分辨是不是還在這一頁。 */
-  const pagePath = route.path
 
   function syncQueryToUrl(q: string) {
     if (import.meta.server) return
@@ -287,34 +285,21 @@ export function useArticleBrowser(initial: Ref<any>) {
     }
   }
 
-  // 網址帶著 ?q= 進來（例如從文章按上一頁）：還原搜尋結果。
+  // 網址帶著 ?q= 進來（例如從文章按上一頁，頁面會重新掛載）：還原搜尋結果。
   // 先同步標成載入中（SSR 與瀏覽器端一致，不會 hydration 不一致），掛載後才真的發請求。
-  if (submitted.value && active.value) {
+  // ready：首屏連分類清單都沒拿到時不還原，維持原本「清單暫時讀取不到」的畫面 ——
+  //        否則會顯示「再按一次搜尋」，但那時搜尋鈕是停用的。
+  //
+  // ⚠️ 刻意不監聽同一頁的 ?q= 變化（2026-10-16 回歸審查後拿掉）。
+  //    例如在搜尋結果頁點頁首的「知識科普」：元件不會重新掛載，若跟著網址清掉搜尋，
+  //    分類卻還停在原處（?tab= 從來沒有監聽），畫面會落到網址表達不出來的狀態，
+  //    而且「點頁首會重設」是業主沒同意過的畫面行為。改動前點頁首畫面不變，維持如此。
+  if (submitted.value && active.value && ready.value) {
     view[active.value] = { ...EMPTY, loading: true, rid: ++counter }
     onMounted(() => {
-      if (submitted.value && active.value) load(active.value, submitted.value)
+      if (submitted.value && active.value && ready.value) load(active.value, submitted.value)
     })
   }
-
-  // 同一頁、只有 ?q= 變了（例如在搜尋結果頁點頁首的「知識分享」，元件不會重新掛載）：
-  // 讓畫面跟著網址走。我們自己的 replace 也會觸發，但那時值已經相同，直接略過。
-  watch(
-    () => route.query.q,
-    (raw) => {
-      if (route.path !== pagePath) return // 正在離開這一頁，不要動到下一頁的網址
-      const q = normalizeQuery(raw)
-      if (q === submitted.value) return
-      if (!q) {
-        clear()
-        return
-      }
-      input.value = q
-      submitted.value = q
-      counter++
-      for (const key of Object.keys(view)) delete view[key]
-      if (active.value) load(active.value, q)
-    }
-  )
 
   /**
    * SSR 時若上游整組都沒讀到，別讓這張「讀取不到」的頁面被 CDN 快取。
@@ -345,8 +330,11 @@ export function useArticleBrowser(initial: Ref<any>) {
   }
 }
 
-/** 網址上的關鍵字：與 submit() 相同的正規化；不滿最短長度就當成沒帶。 */
-function normalizeQuery(raw: unknown): string {
+/**
+ * 網址上的關鍵字：與 submit() 相同的正規化；不滿最短長度就當成沒帶。
+ * 陣列（?q=a&q=b）、null 也當成沒帶。pages/news.vue 也用這一支（明確 import）。
+ */
+export function normalizeSearchQuery(raw: unknown): string {
   const q = typeof raw === 'string' ? raw.trim().replace(/\s+/g, ' ') : ''
   return q.length >= MIN_SEARCH_LENGTH ? q : ''
 }
