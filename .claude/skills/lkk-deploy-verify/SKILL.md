@@ -1,6 +1,6 @@
 ---
 name: lkk-deploy-verify
-description: 確認一次改動真的到了 dev 或 prod。推完分支、要輪詢線上狀態、或想判斷「部署好了沒」時使用。內含依改動類型選驗證法的對照表、marker 四種會自爆的寫法、只是搬位置的改動怎麼用 byte offset 驗順序、實際的部署節奏（推完約 3～5 分鐘），以及查「線上正在跑哪個 commit」的方法。發 prod 的流程本身見 CLAUDE.md 與 lkk-project-context。
+description: 確認一次改動真的到了 dev 或 prod。推完分支、要輪詢線上狀態、或想判斷「部署好了沒」時使用。內含依改動類型選驗證法的對照表、marker 的四種自爆寫法、另有一節講「舊版也會通過」這種假通過、推完一定要先等 rollout 到 SUCCEEDED 再驗、rollout→build→commit 的對照腳本、業主回報「改了沒變」時先確認是不是瀏覽器沒重新整理、後台這類「本機驗不到」的改動怎麼用臨時公開端點測純函式並誠實標註驗證邊界、三方對照（開發機／dev／prod）分辨上游壞掉還是我們連不上、只是搬位置的改動怎麼用 byte offset 驗順序，以及查「線上正在跑哪個 commit」的方法。發 prod 的流程本身見 CLAUDE.md 與 lkk-project-context。
 ---
 
 # 部署驗證
@@ -121,6 +121,126 @@ P3=$(printf '%s' "$H" | grep -bo '賽程預計於'         | head -1 | cut -d: -
 
 同樣適用「兩項的先後對調」（例如對照框把 B 排到 A 前面）：
 取兩個 `<dt>` 的 offset 比大小即可，不需要解析 HTML。
+
+## 🔴 2026-10-15 自己踩的：舊版也會通過的 marker ＝ 假通過
+
+推完 prod 後我輪詢「前台五頁狀態碼是不是 200」，**第一次就通過**。
+但當時 rollout 還是 `QUEUED` —— 正式站跑的還是舊版，舊版當然也回 200。
+
+```
+[1] 23:45:02 前台 200=5/5  ✅ 前台未受影響     ← 假的，新版根本還沒上
+```
+
+**狀態碼、頁面存在、連結點得動——這些舊版也成立的東西不能單獨當 marker。**
+
+⚠️ 本檔另有一節「marker 的四種自爆寫法」，但那四種全是 **grep 寫法本身**出錯
+（`grep -c` 算行數、`.*` 貪婪、誤中 UTF-8、命中 CSS bundle）。
+**這裡是不同的失敗模式：grep 完全正確，但它要找的東西舊版也有。**
+
+### 做法：先等 rollout 到 SUCCEEDED，再驗
+
+```bash
+G=~/.claude/skills/firebase-app-hosting-ops/scripts/gapi.cjs
+AH=https://firebaseapphosting.googleapis.com/v1beta/projects/<P>/locations/asia-east1/backends/<B>
+until node $G GET "$AH/rollouts" 2>/dev/null | python3 -c "
+import sys,json
+rs=(json.load(sys.stdin).get('body') or {}).get('rollouts') or []
+r=sorted(rs,key=lambda x:x.get('createTime',''))[-1]
+print(r.get('createTime','')[:19], r.get('state'))
+sys.exit(0 if r.get('state') in ('SUCCEEDED','FAILED') else 1)
+"; do sleep 30; done
+# 到這裡才開始驗
+```
+
+而且驗的時候**一定要混進至少一個「只有新版才有」的字串**，不要全部都是狀態碼。
+
+### 另一條：rollout → build → commit 要自己對一次
+
+`rollouts` 列表只給 build id，`builds` 才有 commit hash。業主回報「畫面沒變」時，
+先確認他看的那一版到底是哪個 commit，再去懷疑程式：
+
+```bash
+node $G GET "$AH/rollouts" > /tmp/r.json; node $G GET "$AH/builds" > /tmp/b.json
+python3 - <<'PY2'
+import json, subprocess
+bs={b['name'].split('/')[-1]: b for b in json.load(open('/tmp/b.json'))['body'].get('builds') or []}
+for r in sorted(json.load(open('/tmp/r.json'))['body'].get('rollouts') or [], key=lambda x: x.get('createTime',''))[-4:]:
+    bid=(r.get('build') or '').split('/')[-1]
+    h=((bs.get(bid,{}).get('source') or {}).get('codebase') or {}).get('hash')
+    msg=subprocess.run(['git','log','-1','--format=%s',h],capture_output=True,text=True).stdout.strip()[:44] if h else ''
+    print(r.get('createTime','')[:19], r.get('state'), bid, (h or '')[:8], msg)
+PY2
+```
+
+2026-10-15 用這招直接證明了「業主看到舊畫面」是**瀏覽器沒重新整理**，
+不是部署沒上：rollout 成功時間比他的截圖早四分鐘。後台是 SPA，
+停在同一頁不會自己抓新的 JS。**業主回報「改了沒變」時，先問有沒有關掉分頁重開。**
+
+---
+
+## 🔴 驗不到的那一層要講出來，不要讓它看起來像驗過了
+
+這一輪有大量改動落在 `/admin/*`，而 `/api/admin/*` 未登入一律 401、頁面一律 302
+導向登入。**邊界要畫在對的地方——「進不去後台」和「驗不到寫入」是兩件事：**
+
+- **線上 dev／prod 確實沒有後台帳號。** `auth.ts` 的 `isDevLoginAllowed()` 要
+  `NODE_ENV !== 'production' && ALLOW_DEV_ADMIN === 'true'` 才回 true；App Hosting
+  的執行環境是 `NODE_ENV=production`，而 `ALLOW_DEV_ADMIN` 在 **dev 與 prod 兩分支的
+  `apphosting.yaml` 都沒有設**（實查 grep 皆 0 命中）。所以線上後台我進不去，也不該進。
+- **本機進得去。** `auth.ts` 的 `DEV_TEST_USER`（`admin@l-kk.tw`、role `'admin'`）在
+  `ALLOW_DEV_ADMIN=true` 下由 `loginWithCredentials()` 直接放行，而且**在查 Firestore 之前就
+  return**；role `admin` 在 `admin-api-guard` 是「全部放行」。這本來就是
+  `lkk-project-context` 寫明的本機驗證管線，不是什麼例外手段。
+- **但後門不能用來證明寫入。** 本機 `.env` 的 `FIREBASE_PROJECT_ID=lkkdev` 沒有附憑證，
+  `server/utils/firebase.ts` 會落到 `applicationDefault()`，而本機沒有 ADC ——
+  **本機的 Firestore 讀寫一律不通**。所以後門能驗的是「後台畫面與前端邏輯」，
+  資料清單那層反而會直接掛掉。
+
+**結論：真正驗不到的那一層是「dev／prod 的 Firestore 實際寫入」，不是「登入」。**
+寫報告時別把它說成「我沒有帳號所以什麼都沒驗」——那會把邊界畫錯位置，
+也會跟 `lkk-project-context` 的本機管線自相矛盾。
+
+做法是兩件事一起：
+
+**① 把能測的那一層測到滿。** 後台頁面背後的純函式可以靠一支臨時的公開端點跑：
+
+```bash
+cat > server/api/public/__tmp-x.get.ts <<'EOF'
+import { 要測的函式 } from '~/utils/xxx'
+export default defineEventHandler(() => { /* 斷言，回 {pass, fail, results} */ })
+EOF
+curl -s -o /dev/null --max-time 90 http://localhost:3000/api/public/__tmp-x   # 先暖機讓 Vite 編譯
+curl -s http://localhost:3000/api/public/__tmp-x | python3 -c "..."
+rm -f server/api/public/__tmp-x.get.ts                                        # 驗完一定要刪
+```
+
+⚠️ **這招與「改動一律先驗 dev 站，不要開 localhost」不衝突，但要知道界線。**
+那條規則（CLAUDE.md）針對的是「本機 `.env` 指向另一個舊專案」造成的資料誤導。
+臨時端點只測**不碰 Firestore 的純函式**，所以不受影響。
+要驗資料仍然一律上 dev 站。
+
+```
+```
+
+⚠️ 放 `/api/admin/` 會被 `admin-api-guard` 擋掉，要放 `/api/public/`。
+⚠️ 第一次請求常常是空的（Vite 還在編譯），**先打一次丟掉再打第二次**。
+⚠️ 用完立刻刪，不要 commit 進去。
+
+**② 在回報與 commit 訊息裡明寫「哪一層沒驗到」。** 不要只說「建置通過」就帶過，
+那會讓人以為驗過了。**定成規則：每一筆動到 `/admin` 的 commit 都要寫一行驗證邊界。**
+（2026-10-15 那一輪動到 `/admin` 的 7 筆 commit 裡只有 4 筆寫了，所以才定成規則。）
+
+---
+
+## 三方對照：分辨「上游壞了」還是「我們連不上」
+
+同一個上游，從三個地方打：**開發機 ／ dev 站 ／ 正式站**。
+dev 與 prod 跑同一份程式碼、同一個區域，差別只剩 egress，所以三者的落差
+直接指出問題在哪一層。2026-10-13 靠這招五分鐘內就定位到「只有 prod 連不上」。
+
+細節與那次事件的完整查法見 [[lkk-wp-articles]]。
+
+---
 
 ## 部署節奏（抓等待時間用）
 

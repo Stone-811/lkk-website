@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>UTM 活動操作說明</title>
+<style>
+  :root{
+    --navy:#2A5269; --orange:#FB720A; --cream:#F5EFE4; --cream-lt:#FBF8F2;
+    --ink:#1a1a1a; --muted:#6f7478; --line:#ddd4c4;
+  }
+  @page{ size:A4; margin:13mm 15mm 10mm; }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; color:var(--ink); background:#fff;
+    font-family:"PingFang TC","PingFang SC","Heiti TC","Hiragino Sans GB","Microsoft JhengHei",sans-serif;
+    font-size:10.3pt; line-height:1.55;
+  }
+  code{ font-family:"SF Mono",Menlo,Consolas,monospace; font-size:.88em;
+        background:var(--cream-lt); border:1px solid var(--line);
+        border-radius:3px; padding:0 4px; color:var(--navy); }
+
+  header{ border-bottom:3px solid var(--navy); padding-bottom:7px; margin-bottom:11px; }
+  header .k{ font-size:8.4pt; letter-spacing:.2em; color:var(--orange); font-weight:700; }
+  header h1{ font-size:19pt; margin:3px 0 2px; color:var(--navy); }
+  header .s{ font-size:9.4pt; color:var(--muted); }
+
+  ol.steps{ list-style:none; margin:0; padding:0; counter-reset:s; }
+  ol.steps > li{
+    counter-increment:s; position:relative;
+    padding:0 0 8px 34px; page-break-inside:avoid;
+  }
+  ol.steps > li::before{
+    content:counter(s); position:absolute; left:0; top:1px;
+    width:23px; height:23px; border-radius:50%;
+    background:var(--navy); color:#fff;
+    font-size:10pt; font-weight:700; text-align:center; line-height:23px;
+  }
+  ol.steps > li::after{
+    content:""; position:absolute; left:11px; top:27px; bottom:2px;
+    width:1px; background:var(--line);
+  }
+  ol.steps > li:last-child::after{ display:none; }
+  ol.steps b{ color:var(--navy); font-size:11pt; display:block; margin-bottom:1px; }
+  ol.steps p{ margin:0; font-size:9.9pt; color:#3d4245; }
+  ol.steps p + p{ margin-top:2px; }
+
+  .btn{ display:inline-block; border-radius:10px; padding:0 8px;
+        font-size:9pt; font-weight:700; white-space:nowrap;
+        background:var(--orange); color:#fff; }
+  .btn.n{ background:var(--navy); }
+  .btn.g{ background:#fff; color:var(--navy); border:1px solid var(--navy); padding:0 7px; }
+  .nav{ display:inline-block; background:var(--navy); color:#fff;
+        border-radius:4px; padding:0 9px; font-size:9.6pt; font-weight:700; }
+
+  table{ width:100%; border-collapse:collapse; margin:5px 0 2px;
+         font-size:9.3pt; page-break-inside:avoid; }
+  th{ background:var(--cream); color:var(--navy); font-weight:700; text-align:left;
+      padding:3px 8px; border:1px solid var(--line); }
+  td{ padding:3px 8px; border:1px solid var(--line); }
+  td.m{ font-family:"SF Mono",Menlo,Consolas,monospace; color:var(--navy); white-space:nowrap; }
+  tbody tr:nth-child(even){ background:var(--cream-lt); }
+
+  .rules{ margin-top:11px; border:1px solid #e0aeae; background:#fdf2f2;
+          border-radius:6px; padding:9px 13px; page-break-inside:avoid; }
+  .rules .h{ font-weight:700; color:#a32020; font-size:10pt; margin-bottom:3px; }
+  .rules ul{ margin:0; padding-left:1.1em; font-size:9.5pt; color:#6e2626; }
+  .rules li{ margin-bottom:2px; }
+  .rules li:last-child{ margin-bottom:0; }
+
+  footer{ margin-top:13px; padding-top:7px; border-top:1px solid var(--line);
+          font-size:8.2pt; color:var(--muted); text-align:center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="k">練健康官網後台</div>
+  <h1>UTM 活動 ─ 操作步驟</h1>
+  <div class="s">產生活動專屬連結，投放出去後就看得出名單是從哪裡來的</div>
+</header>
+
+<ol class="steps">
+
+  <li>
+    <b>進入頁面</b>
+    <p>左側選單 → <span class="nav">UTM 活動</span></p>
+  </li>
+
+  <li>
+    <b>確認最上方的橫幅是綠色「正式環境」</b>
+    <p>黃色是測試站，<strong>那裡產的連結不能發出去</strong>（名單會收不到）。</p>
+  </li>
+
+  <li>
+    <b>捲到最下方，按 <span class="btn">＋ 新增活動</span></b>
+  </li>
+
+  <li>
+    <b>填「活動代號」</b>
+    <p>只能用小寫英文、數字、<code>-</code>、<code>_</code>，例如 <code>nanshan-2026q4</code>。</p>
+    <p>上面的「活動名稱」是選填，給自己辨認用。</p>
+  </li>
+
+  <li>
+    <b>選一組連結設定，按 <span class="btn n">＋ 加入這一條</span></b>
+    <p><strong>目標表單</strong>（預約體驗／團體課程）、<strong>來源</strong>、<strong>性質</strong> 三格一定要選，照下表填：</p>
+    <table>
+      <tr><th style="width:42%">你要投放到哪裡</th><th style="width:29%">來源</th><th>性質</th></tr>
+      <tr><td>LINE 推播</td><td class="m">line</td><td class="m">social</td></tr>
+      <tr><td>Facebook 貼文</td><td class="m">facebook</td><td class="m">social</td></tr>
+      <tr><td>Facebook 付費廣告</td><td class="m">facebook</td><td class="m">cpc</td></tr>
+      <tr><td>Instagram 貼文、限動</td><td class="m">instagram</td><td class="m">social</td></tr>
+      <tr><td>Google 關鍵字廣告</td><td class="m">google</td><td class="m">cpc</td></tr>
+      <tr><td>電子報 EDM</td><td class="m">email</td><td class="m">email</td></tr>
+      <tr><td>合作方網站放連結</td><td class="m">website</td><td class="m">referral</td></tr>
+    </table>
+    <p style="margin-top:3px">另兩格可不填 ──「合作案表單」要用某公司的專屬表單時才選，「素材」用來區分同一檔的不同圖片。</p>
+  </li>
+
+  <li>
+    <b>要投放幾個管道，就重複步驟 5 幾次</b>
+    <p>例如 LINE、Facebook、Google 各加一條，<strong>共用同一個活動代號</strong>。後台一樣分得出是哪一條帶進來的。</p>
+  </li>
+
+  <li>
+    <b>核對下方「連結預覽」，按 <span class="btn">儲存</span></b>
+  </li>
+
+  <li>
+    <b>複製連結去投放</b>
+    <p>回到列表，點該活動的 <span class="btn g">連結（3）</span> 展開 → 按 <span class="btn g">複製</span> → 貼到貼文或訊息。</p>
+    <p><strong>不要自己手打或修改網址。</strong></p>
+  </li>
+
+  <li>
+    <b>看成效</b>
+    <p>左側選單 → <span class="nav">客戶預約</span>，可用「UTM 活動」「UTM 來源」篩選，匯出的 CSV 也有這些欄位。</p>
+  </li>
+
+  <li>
+    <b>活動結束，按「停用」不要按「刪除」</b>
+    <p>刪掉不會讓舊連結失效，只會讓後台少一個對照名稱，之後反而認不出名單是哪一檔。</p>
+  </li>
+
+</ol>
+
+<div class="rules">
+  <div class="h">這三件事做了救不回來</div>
+  <ul>
+    <li><strong>連結發出去之後，不要改活動代號</strong> ── 之前收到的名單會永久對不回這檔活動。</li>
+    <li><strong>自行新增的「來源」不能改字，只能停用</strong> ── 按新增前先確認拼字。</li>
+    <li><strong>表單的樣子（文案、免費、指定分店）要請工程師做</strong> ── 這一頁只能挑現成的。</li>
+  </ul>
+</div>
+
+<footer>練健康官網後台　｜　2026 年 10 月　｜　有疑問請聯繫網站維護人員</footer>
+
+</body>
+</html>
