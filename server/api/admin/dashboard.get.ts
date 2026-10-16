@@ -1,5 +1,12 @@
 import { getDb } from '~/server/utils/firebase';
 import { getSession } from '~/server/utils/auth';
+import { canAccessAdminPath } from '~/utils/adminAccess';
+
+// 「最新名單」只給有名單頁權限的帳號（2026-10-16 業主決定）。
+// 儀表板本身開放給所有登入者（admin-api-guard 是 ANY_AUTH），原本會把最近 10 筆
+// 客戶的姓名、分店、遮罩電話回給沒有任何名單權限的帳號（例如只管教練與分店的帳號）。
+// 判斷與側欄選單用同一個函式，兩邊不會走鐘；admin 與舊角色的結果不變。
+const LEAD_PAGES = ['/admin/leads', '/admin/group-classes', '/admin/cooperation'];
 
 export default defineEventHandler(async (event) => {
   // Check authentication
@@ -66,12 +73,12 @@ export default defineEventHandler(async (event) => {
     const coachesSnapshot = await db.collection('coaches').where('isActive', '==', true).get();
     const coachCount = coachesSnapshot.size;
 
-    // Get recent leads (last 10)
-    const recentLeadsSnapshot = await db
-      .collection('leads')
-      .orderBy('createdAt', 'desc')
-      .limit(10)
-      .get();
+    const canViewLeads = LEAD_PAGES.some((p) => canAccessAdminPath(session, p));
+
+    // Get recent leads (last 10) —— 沒有名單權限就不查、不回
+    const recentLeadsSnapshot = canViewLeads
+      ? await db.collection('leads').orderBy('createdAt', 'desc').limit(10).get()
+      : null;
 
     // Build store ID -> name map
     const storeMap: Record<string, string> = {};
@@ -79,7 +86,7 @@ export default defineEventHandler(async (event) => {
       storeMap[doc.id] = doc.data().name;
     });
 
-    const recentLeads = recentLeadsSnapshot.docs.map(doc => {
+    const recentLeads = (recentLeadsSnapshot?.docs ?? []).map(doc => {
       const data = doc.data();
       const createdAt = data.createdAt?.toDate?.() || new Date(data.createdAt);
       return {
@@ -109,6 +116,8 @@ export default defineEventHandler(async (event) => {
           totalLeads: allLeads.length,
         },
         recentLeads,
+        // 前端依這個決定要不要顯示「最新名單」整個區塊（false 時連標題都不出現）
+        canViewLeads,
       },
     };
   } catch (error: any) {
