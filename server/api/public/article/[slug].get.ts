@@ -41,13 +41,67 @@ function readSlug(event: any): string {
 /** 上游掛掉時的退路：成功時另存一份長效副本，失敗時拿出來用。 */
 const LAST_GOOD_TTL = 60 * 60 * 24 * 7
 
+/**
+ * 快取鍵只在這裡組一次。getKey 與「文章已刪除時清快取」共用 ——
+ * 兩邊各拼一次的話，一旦對不上，清除會靜默失效（removeItem 打到不存在的鍵不會報錯）。
+ *
+ * - 雜湊：中文 slug 會被 Nitro 的 escapeKey（replace(/\W/g, '')）清空，見檔頭
+ * - 鍵裡不放連字號：escapeKey 也會刪掉它
+ * - 存放位置對應 nitropack runtime/internal/cache.mjs 的組法：
+ *   [base '/cache', group 'nitro/handlers', name, key + '.json'].join(':')
+ *   name 明確指定，不要用預設的 '_'
+ */
+const CACHE_NAME = 'article'
+function slugHash(slug: string): string {
+  return createHash('sha1').update(slug).digest('hex').slice(0, 20)
+}
+function articleCacheKey(slug: string): string {
+  return 'article' + slugHash(slug)
+}
+function backupKeyFor(slug: string): string {
+  return 'article-backup:' + slugHash(slug)
+}
+
+/**
+ * 🔴 文章在 WordPress 確定被刪除（或改成草稿）時，清掉這一篇的快取與長效備份。
+ *
+ * 為什麼需要：這支 handler 是 swr 模式。快取過期後，Nitro 先回舊的 200、在背景重抓；
+ * 背景重抓丟出的 404 只會被記成一行「[cache] SWR handler error」，舊項目不會被清，
+ * 所以曾經快取過這篇的執行個體會一直回 200，直到執行個體被回收（實測可以活好幾天）。
+ * 備份也要一起清：記憶體 driver 不吃 ttl，舊備份永遠不會過期，
+ * 不清的話下次上游停擺時，已刪的文章會以 stale:true 復活。
+ *
+ * ⚠️ 只能在「上游成功、回空陣列」時呼叫。逾時、錯誤頁、缺欄位都是上游失敗，
+ *    不能碰快取與備份 —— 那正是 10-13 停擺時撐住全站文章的東西。
+ * ⚠️ 不要為了這件事改 swr: false。過期就前景等上游，停擺時每篇文章都要讓讀者等滿逾時，
+ *    請求疊起來會擴出沒有備份的新執行個體，回到 10-13 那種自我延續的迴圈。
+ */
+async function forgetDeletedArticle(slug: string, store: ReturnType<typeof useStorage>) {
+  try {
+    const root = useStorage()
+    const cacheKey = `/cache:nitro/handlers:${CACHE_NAME}:${articleCacheKey(slug)}.json`
+    const backupKey = backupKeyFor(slug)
+    const hadCache = await root.hasItem(cacheKey)
+    const hadBackup = await store.hasItem(backupKey)
+    if (hadCache) await root.removeItem(cacheKey)
+    if (hadBackup) await store.removeItem(backupKey)
+    // 這一行同時用來確認鍵有沒有組對：快取過的文章被刪，第一次 404 時應該看到 hadCache: true
+    if (hadCache || hadBackup) {
+      console.warn('[Article] 上游確認已刪除，清除快取與備份', slug, { hadCache, hadBackup })
+    }
+  } catch (error: any) {
+    // 清不掉也不能影響 404 回應
+    console.error('[Article] 清除已刪文章的快取失敗', slug, error?.message)
+  }
+}
+
 export default defineCachedEventHandler(
   async (event) => {
     const slug = readSlug(event)
     if (!slug) throw createError({ statusCode: 400, message: '缺少文章代稱' })
 
     const store = useStorage('cache')
-    const backupKey = 'article-backup:' + createHash('sha1').update(slug).digest('hex').slice(0, 20)
+    const backupKey = backupKeyFor(slug)
 
     let rows: any
     try {
@@ -79,6 +133,8 @@ export default defineCachedEventHandler(
     }
 
     if (!rows?.length) {
+      // 走到這裡＝上游成功、回空陣列＝這篇確定不存在（失敗都在上面的 catch 處理掉了）
+      await forgetDeletedArticle(slug, store)
       throw createError({ statusCode: 404, message: '找不到這篇文章' })
     }
 
@@ -114,10 +170,10 @@ export default defineCachedEventHandler(
     return { success: true, stale: false, data }
   },
   {
+    name: CACHE_NAME,
     maxAge: 600,
     swr: true,
     // 十六進位雜湊：只含 0-9a-f，不會被 Nitro 的鍵值清理動到
-    getKey: (event) =>
-      'article-' + createHash('sha1').update(readSlug(event)).digest('hex').slice(0, 20),
+    getKey: (event) => articleCacheKey(readSlug(event)),
   }
 )
