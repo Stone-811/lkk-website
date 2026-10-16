@@ -8,7 +8,8 @@ useHead({
 })
 
 const router = useRouter()
-const nuxtApp = useNuxtApp()
+// 在 setup 取一次：useRuntimeConfig 要在元件的同步階段呼叫，事件處理裡呼叫可能拿不到 Nuxt 實例
+const cfg = useRuntimeConfig().public
 
 const email = ref('')
 const password = ref('')
@@ -17,21 +18,72 @@ const isLoading = ref(false)
 const googleLoading = ref(false)
 const showPasswordLogin = ref(false)
 
+/**
+ * 🔴 Firebase（App＋Auth）只在這一頁載入（2026-10-16 起）。
+ *    原本放在 plugins/firebase.client.ts，被打包進全站入口檔：每位前台訪客打開任何一頁
+ *    都要下載它，但整站只有後台登入頁用得到。
+ *
+ * ⚠️ 一進頁面就在背景開始載入，不要改成「按下按鈕才載入」。
+ *    signInWithPopup 開窗前還要先初始化（載 apis.google.com 與 authDomain 的 iframe），
+ *    按下去才開始載的話，等到要開窗時已超出瀏覽器認定的「使用者點擊」時效，
+ *    Safari 會把 Google 登入視窗擋掉。
+ * ⚠️ 不要在檔頭 static import firebase，也不要搬進 composables/：
+ *    composables 會被自動匯入，哪天被全站元件用到，Firebase 就默默回到入口檔。
+ */
+type GoogleAuthKit = { auth: any; GoogleAuthProvider: any; signInWithPopup: any }
+let authKitPromise: Promise<GoogleAuthKit | null> | null = null
+
+function loadGoogleAuthKit(): Promise<GoogleAuthKit | null> {
+  if (!authKitPromise) {
+    authKitPromise = (async () => {
+      // 沒設定 Firebase 公開設定（例如少了環境變數）：維持原本的降級訊息
+      if (!cfg.firebaseApiKey) return null
+      const [{ initializeApp, getApps }, authMod] = await Promise.all([
+        import('firebase/app'),
+        import('firebase/auth'),
+      ])
+      const app = getApps().length
+        ? getApps()[0]
+        : initializeApp({
+            apiKey: cfg.firebaseApiKey,
+            authDomain: cfg.firebaseAuthDomain,
+            projectId: cfg.firebaseProjectId,
+            appId: cfg.firebaseAppId,
+          })
+      return {
+        auth: authMod.getAuth(app),
+        GoogleAuthProvider: authMod.GoogleAuthProvider,
+        signInWithPopup: authMod.signInWithPopup,
+      }
+    })().catch((e) => {
+      // 載入失敗（網路不穩、部署後還開著的舊分頁）不要把失敗結果留著，下次按按鈕重新載入
+      authKitPromise = null
+      throw e
+    })
+  }
+  return authKitPromise
+}
+
+onMounted(() => {
+  loadGoogleAuthKit().catch(() => {
+    /* 背景預載失敗沒關係，按下按鈕時會再試一次 */
+  })
+})
+
 // Primary: Google sign-in (only allow-listed emails get an admin session)
 async function handleGoogleLogin() {
   error.value = ''
-  const auth = (nuxtApp as any).$firebaseAuth
-  if (!auth) {
-    error.value = 'Google 登入尚未設定，請改用密碼登入'
-    showPasswordLogin.value = true
-    return
-  }
   googleLoading.value = true
   try {
-    const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth')
-    const provider = new GoogleAuthProvider()
+    const kit = await loadGoogleAuthKit()
+    if (!kit) {
+      error.value = 'Google 登入尚未設定，請改用密碼登入'
+      showPasswordLogin.value = true
+      return
+    }
+    const provider = new kit.GoogleAuthProvider()
     provider.setCustomParameters({ prompt: 'select_account' })
-    const result = await signInWithPopup(auth, provider)
+    const result = await kit.signInWithPopup(kit.auth, provider)
     const idToken = await result.user.getIdToken()
 
     const res = await fetch('/api/admin/auth/google', {
