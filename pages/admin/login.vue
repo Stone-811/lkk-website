@@ -27,6 +27,9 @@ const showPasswordLogin = ref(false)
  *    signInWithPopup 開窗前還要先初始化（載 apis.google.com 與 authDomain 的 iframe），
  *    按下去才開始載的話，等到要開窗時已超出瀏覽器認定的「使用者點擊」時效，
  *    Safari 會把 Google 登入視窗擋掉。
+ *    邊界：背景載入還沒完成就按（慢速行動網路、一進頁面立刻按），那一下在 Safari
+ *    仍可能被擋，畫面顯示「Google 登入失敗，請重試」，再按一次就會成功。
+ *    背景載入失敗時會自動在背景重試（見 onMounted），盡量不讓這種情況落到使用者的點擊上。
  * ⚠️ 不要在檔頭 static import firebase，也不要搬進 composables/：
  *    composables 會被自動匯入，哪天被全站元件用到，Firebase 就默默回到入口檔。
  */
@@ -64,10 +67,20 @@ function loadGoogleAuthKit(): Promise<GoogleAuthKit | null> {
   return authKitPromise
 }
 
-onMounted(() => {
+// 背景預載；失敗時在背景退避重試（1 秒、3 秒），不要等使用者按按鈕才重載 ——
+// 那一下要等網路，Safari 會擋登入視窗。三次都失敗才留給按鈕點擊時再試。
+let preloadTimer: ReturnType<typeof setTimeout> | null = null
+function preloadGoogleAuthKit(attempt = 0) {
   loadGoogleAuthKit().catch(() => {
-    /* 背景預載失敗沒關係，按下按鈕時會再試一次 */
+    const delays = [1000, 3000]
+    if (attempt < delays.length) {
+      preloadTimer = setTimeout(() => preloadGoogleAuthKit(attempt + 1), delays[attempt])
+    }
   })
+}
+onMounted(() => preloadGoogleAuthKit())
+onBeforeUnmount(() => {
+  if (preloadTimer) clearTimeout(preloadTimer)
 })
 
 // Primary: Google sign-in (only allow-listed emails get an admin session)
