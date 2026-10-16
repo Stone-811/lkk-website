@@ -35,7 +35,14 @@ interface LKK4Record {
  *      實測 656 筆中只有 'Jack Matthew Brookes' 與 'Joe' 兩筆含英文字母，
  *      其餘全是中文，toLowerCase 對中文是 no-op，所以純中文姓名查不到就是真的沒有，
  *      不必再掃一次整年度（否則每次「查無此人」都要多付約 220 筆讀取）。
- *   ③ 只有年度沒有姓名 → 只查該年度。
+ *   ③ 只有年度沒有姓名 → 回空陣列（2026-10-16 起）。
+ *
+ * 🔴 2026-10-16：姓名改為必填，回傳欄位只留前台畫面用得到的 6 個。
+ *    原本只帶年度就回傳整年完整文件（約 220 位中高齡參賽者的姓名、性別、體重、
+ *    三次試舉重量），換三個年份就能整批撈走；前台卻從來不送「只有年度」的請求，
+ *    畫面也只顯示年度／組別／隊名／名次／成績。
+ *    投影在記憶體做、不用 Firestore 的 .select()：② 的大小寫退路要用 name 比對，
+ *    select 漏了 name 會讓英文姓名查不到；select 也不省讀取次數。
  *
  * ⚠️ year 改為必填。沒帶 year 就回空陣列，不再退化成全表讀取——
  *    公開端點不應該讓人用一個沒有參數的請求就掃完整張表。
@@ -46,6 +53,20 @@ interface LKK4Record {
  *    不在查詢加 orderBy 是因為 where('year','==') + orderBy('finalScore') 會需要
  *    另一組複合索引，而現有資料量在記憶體排序毫無成本。
  */
+/**
+ * 公開回傳的欄位白名單。
+ * ⚠️ 前台 /personal-record 新增顯示欄位時要同步加在這裡，否則畫面會是空的。
+ *    id 給畫面的 :key 用。
+ */
+const PUBLIC_FIELDS = ['id', 'year', 'competitionGroup', 'teamName', 'rank', 'finalScore'] as const
+
+function toPublic(r: LKK4Record) {
+  // ?? null：缺欄位時也要回這個 key，不要讓 JSON 整個省略掉
+  const out: Record<string, unknown> = {}
+  for (const k of PUBLIC_FIELDS) out[k] = r[k] ?? null
+  return out
+}
+
 export default defineEventHandler(async (event) => {
   try {
     const query = getQuery(event)
@@ -56,42 +77,42 @@ export default defineEventHandler(async (event) => {
     if (year === null) {
       return { success: true, data: [], total: 0, message: '請指定查詢年度' }
     }
+    // 只輸入空白也算沒填（rawName 已 trim）
+    if (!rawName) {
+      return { success: true, data: [], total: 0, message: '請輸入姓名' }
+    }
 
     const db = await getDb()
     const col = db.collection('lkk4_records')
 
     let records: LKK4Record[] = []
 
-    if (rawName) {
-      // ① 精確命中：年度 + 姓名
-      const exact = await col.where('year', '==', year).where('name', '==', rawName).get()
-      records = docsToArray<LKK4Record>(exact)
+    // ① 精確命中：年度 + 姓名
+    const exact = await col.where('year', '==', year).where('name', '==', rawName).get()
+    records = docsToArray<LKK4Record>(exact)
 
-      // ② 沒命中才退回該年度掃描，補回舊版的大小寫不敏感比對。
-      //    但只有在姓名「含有大小寫可折疊的字元」時才需要——
-      //    純中文／數字的姓名（654/656 筆）toLowerCase 是 no-op，
-      //    ① 查不到就代表真的沒有，再掃一次整年度不可能掃出別的結果。
-      //    少了這個判斷，「查無此人」這種最常見的失敗查詢每次都要多付約 220 筆讀取。
-      const isCaseless = rawName.toLowerCase() === rawName.toUpperCase()
-      if (!records.length && !isCaseless) {
-        const byYear = await col.where('year', '==', year).get()
-        const target = rawName.toLowerCase()
-        records = docsToArray<LKK4Record>(byYear).filter(
-          (r) => (r.name || '').trim().toLowerCase() === target
-        )
-      }
-    } else {
-      // ③ 只有年度
+    // ② 沒命中才退回該年度掃描，補回舊版的大小寫不敏感比對。
+    //    但只有在姓名「含有大小寫可折疊的字元」時才需要——
+    //    純中文／數字的姓名（654/656 筆）toLowerCase 是 no-op，
+    //    ① 查不到就代表真的沒有，再掃一次整年度不可能掃出別的結果。
+    //    少了這個判斷，「查無此人」這種最常見的失敗查詢每次都要多付約 220 筆讀取。
+    const isCaseless = rawName.toLowerCase() === rawName.toUpperCase()
+    if (!records.length && !isCaseless) {
       const byYear = await col.where('year', '==', year).get()
-      records = docsToArray<LKK4Record>(byYear)
+      const target = rawName.toLowerCase()
+      records = docsToArray<LKK4Record>(byYear).filter(
+        (r) => (r.name || '').trim().toLowerCase() === target
+      )
     }
 
     records.sort((a, b) => (b.finalScore ?? 0) - (a.finalScore ?? 0))
 
+    // 排序完才投影：排序要用 finalScore，退路比對要用 name
+    const data = records.map(toPublic)
     return {
       success: true,
-      data: records,
-      total: records.length,
+      data,
+      total: data.length,
     }
   } catch (error: any) {
     console.error('Error fetching LKK4 records:', error)

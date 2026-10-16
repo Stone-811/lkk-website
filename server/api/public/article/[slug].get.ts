@@ -41,13 +41,106 @@ function readSlug(event: any): string {
 /** 上游掛掉時的退路：成功時另存一份長效副本，失敗時拿出來用。 */
 const LAST_GOOD_TTL = 60 * 60 * 24 * 7
 
+/**
+ * 已下架的本站頁面（2026-10-16 業主決定：停止招募加盟、不賣商品，兩頁刪除、網址回 404）。
+ *
+ * 頁面檔刪掉之後，這些網址會掉進 pages/[...slug].vue 來這裡查 WordPress。
+ * WordPress 剛好有同代稱的文章時會被當成文章顯示 ——
+ * franchise 就是「中高齡健康訓練創業說明會」，內容是加盟說明，跟停招矛盾。
+ * 業主要的是「找不到頁面」，所以在打上游之前直接 404。
+ *
+ * ⚠️ 只擋這幾個網址。不要改成「RESERVED_ROUTES 全部 404」——
+ *    那份清單是給 sitemap、彙整頁與內文連結改寫用的，用途不同。
+ * ⚠️ 比對前轉小寫：WordPress 查代稱不分大小寫，/Franchise 也查得到那篇。
+ */
+const RETIRED_PAGES = new Set(['franchise', 'shop'])
+
+/**
+ * 快取鍵只在這裡組一次。getKey 與「文章已刪除時清快取」共用 ——
+ * 兩邊各拼一次的話，一旦對不上，清除會靜默失效（removeItem 打到不存在的鍵不會報錯）。
+ *
+ * - 雜湊：中文 slug 會被 Nitro 的 escapeKey（replace(/\W/g, '')）清空，見檔頭
+ * - 鍵裡不放連字號：escapeKey 也會刪掉它
+ * - 存放位置對應 nitropack runtime/internal/cache.mjs 的組法：
+ *   [base '/cache', group 'nitro/handlers', name, key + '.json'].join(':')
+ *   name 明確指定，不要用預設的 '_'
+ */
+const CACHE_NAME = 'article'
+function slugHash(slug: string): string {
+  return createHash('sha1').update(slug).digest('hex').slice(0, 20)
+}
+function articleCacheKey(slug: string): string {
+  return 'article' + slugHash(slug)
+}
+function backupKeyFor(slug: string): string {
+  return 'article-backup:' + slugHash(slug)
+}
+
+/**
+ * 🔴 文章在 WordPress 確定被刪除（或改成草稿）時，清掉這一篇的快取與長效備份。
+ *
+ * 為什麼需要：這支 handler 是 swr 模式。快取過期後，Nitro 先回舊的 200、在背景重抓；
+ * 背景重抓丟出的 404 只會被記成一行「[cache] SWR handler error」，舊項目不會被清，
+ * 所以曾經快取過這篇的執行個體會一直回 200，直到執行個體被回收（實測可以活好幾天）。
+ * 備份也要一起清：記憶體 driver 不吃 ttl，舊備份永遠不會過期，
+ * 不清的話下次上游停擺時，已刪的文章會以 stale:true 復活。
+ *
+ * ⚠️ 只能在「上游成功、回空陣列」時呼叫。逾時、錯誤頁、缺欄位都是上游失敗，
+ *    不能碰快取與備份 —— 那正是 10-13 停擺時撐住全站文章的東西。
+ * ⚠️ 不要為了這件事改 swr: false。過期就前景等上游，停擺時每篇文章都要讓讀者等滿逾時，
+ *    請求疊起來會擴出沒有備份的新執行個體，回到 10-13 那種自我延續的迴圈。
+ */
+/** 上游健康檢查：抓最新一篇文章的 id，有回來才算健康。 */
+async function upstreamLooksHealthy(): Promise<boolean> {
+  try {
+    const r = await $fetch<any>(`${WP_BASE}/wp/v2/posts`, {
+      query: { per_page: 1, _fields: 'id' },
+      timeout: 5000,
+    })
+    return Array.isArray(r) && r.length > 0
+  } catch {
+    return false
+  }
+}
+
+async function forgetDeletedArticle(slug: string, store: ReturnType<typeof useStorage>) {
+  try {
+    const root = useStorage()
+    const cacheKey = `/cache:nitro/handlers:${CACHE_NAME}:${articleCacheKey(slug)}.json`
+    const backupKey = backupKeyFor(slug)
+    const hadCache = await root.hasItem(cacheKey)
+    const hadBackup = await store.hasItem(backupKey)
+    if (!hadCache && !hadBackup) return
+    // 🔴 「上游回空陣列」不一定是真的被刪：資料庫查詢被中途砍掉、外掛擋了匿名 REST，
+    //    WordPress 都可能用 HTTP 200 回 []。這時清掉備份，等於把暫時異常變成永久 404。
+    //    所以真的要清之前，先確認上游還看得到其他文章；看不到就當成上游異常，什麼都不動。
+    //    只有「快取過、現在查不到」才會走到這裡，健康檢查不會變成常態流量。
+    if (!(await upstreamLooksHealthy())) {
+      console.warn('[Article] 上游回空陣列但健康檢查沒過，先不清快取與備份', slug)
+      return
+    }
+    if (hadCache) await root.removeItem(cacheKey)
+    if (hadBackup) await store.removeItem(backupKey)
+    // 這一行同時用來確認鍵有沒有組對：快取過的文章被刪，第一次 404 時應該看到 hadCache: true
+    if (hadCache || hadBackup) {
+      console.warn('[Article] 上游確認已刪除，清除快取與備份', slug, { hadCache, hadBackup })
+    }
+  } catch (error: any) {
+    // 清不掉也不能影響 404 回應
+    console.error('[Article] 清除已刪文章的快取失敗', slug, error?.message)
+  }
+}
+
 export default defineCachedEventHandler(
   async (event) => {
     const slug = readSlug(event)
     if (!slug) throw createError({ statusCode: 400, message: '缺少文章代稱' })
+    if (RETIRED_PAGES.has(slug.toLowerCase())) {
+      throw createError({ statusCode: 404, message: '找不到這篇文章' })
+    }
 
     const store = useStorage('cache')
-    const backupKey = 'article-backup:' + createHash('sha1').update(slug).digest('hex').slice(0, 20)
+    const backupKey = backupKeyFor(slug)
 
     let rows: any
     try {
@@ -79,10 +172,19 @@ export default defineCachedEventHandler(
     }
 
     if (!rows?.length) {
+      // 走到這裡＝上游成功、回空陣列＝這篇確定不存在（失敗都在上面的 catch 處理掉了）
+      await forgetDeletedArticle(slug, store)
       throw createError({ statusCode: 404, message: '找不到這篇文章' })
     }
 
     const post = rows[0]
+    // 已下架頁面的第二道檢查，以 WordPress 回傳的正式代稱為準。
+    // WordPress 會把查詢的代稱再正規化（結尾的 - 或 .、逗號分隔多個代稱…），
+    // /franchise-/ 這類寫法躲得過上面的第一道，仍會查到那篇加盟說明。
+    // 放在寫入快取與備份之前。
+    if (RETIRED_PAGES.has(String(post?.slug || '').toLowerCase())) {
+      throw createError({ statusCode: 404, message: '找不到這篇文章' })
+    }
     // 形狀再確認一次：缺標題或內文就不是一篇可用的文章，寧可走退路也不要
     // 產生空白頁並把它快取起來
     if (!post || typeof post !== 'object' || !post.title?.rendered) {
@@ -114,10 +216,10 @@ export default defineCachedEventHandler(
     return { success: true, stale: false, data }
   },
   {
+    name: CACHE_NAME,
     maxAge: 600,
     swr: true,
     // 十六進位雜湊：只含 0-9a-f，不會被 Nitro 的鍵值清理動到
-    getKey: (event) =>
-      'article-' + createHash('sha1').update(readSlug(event)).digest('hex').slice(0, 20),
+    getKey: (event) => articleCacheKey(readSlug(event)),
   }
 )

@@ -49,15 +49,19 @@ const stats = ref<DashboardStats>({
   totalLeads: 0,
 })
 const recentLeads = ref<RecentLead[]>([])
+// 沒有任何名單頁權限的帳號不顯示「最新名單」（2026-10-16 業主決定）
+const canViewLeads = ref(true)
 
 async function fetchDashboard() {
   isLoading.value = true
   error.value = ''
   try {
-    const response = await $fetch<{ success: boolean; data: { stats: DashboardStats; recentLeads: RecentLead[] } }>('/api/admin/dashboard')
+    const response = await $fetch<{ success: boolean; data: { stats: DashboardStats; recentLeads: RecentLead[]; canViewLeads?: boolean } }>('/api/admin/dashboard')
     if (response.success) {
       stats.value = response.data.stats
       recentLeads.value = response.data.recentLeads
+      // 舊版 API 沒有這個欄位時當作 true，維持原本的顯示
+      canViewLeads.value = response.data.canViewLeads !== false
     }
   } catch (e: any) {
     error.value = e.data?.message || '載入失敗'
@@ -162,8 +166,8 @@ const quickActions = [
         </NuxtLink>
       </div>
 
-      <!-- Recent Leads -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+      <!-- Recent Leads：沒有名單權限的帳號整塊不顯示 -->
+      <div v-if="canViewLeads" class="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div class="p-4 border-b border-gray-200 flex items-center justify-between">
           <h2 class="font-semibold text-gray-900">最新名單</h2>
           <NuxtLink

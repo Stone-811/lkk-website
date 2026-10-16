@@ -1,5 +1,7 @@
 import { getSession } from '~/server/utils/auth'
 import { getAdminStorage } from '~/server/utils/firebase'
+// 明確 import，不靠自動匯入：發 prod 時漏帶這個檔案，build 會直接失敗，而不是上傳時才炸
+import { buildUploadPath } from '~/server/utils/upload-name'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -38,23 +40,19 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: '檔案大小不可超過 5MB' })
     }
 
-    // Generate filename
-    const originalFilename = fileField.filename || 'file'
-    const ext = originalFilename.split('.').pop() || 'jpg'
-    const finalFilename = customFilename
-      ? `${customFilename}.${ext}`
-      : `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`
-    const filePath = `${folder}/${finalFilename}`
+    // 每次上傳都是新檔名 —— 固定檔名加一年快取會讓「換了照片前台還是舊的」，見 upload-name.ts
+    const { filename: finalFilename, objectPath, urlPath } = buildUploadPath(folder, customFilename, contentType)
 
     // Upload to Firebase Storage
     const storage = await getAdminStorage()
     const bucket = storage.bucket()
-    const fileRef = bucket.file(filePath)
+    const fileRef = bucket.file(objectPath)
 
     await fileRef.save(fileField.data, {
       metadata: {
         contentType,
-        cacheControl: 'public, max-age=31536000',
+        // 檔名不會重複，內容永遠不變，長效快取才是安全的
+        cacheControl: 'public, max-age=31536000, immutable',
       },
     })
 
@@ -62,13 +60,13 @@ export default defineEventHandler(async (event) => {
     await fileRef.makePublic()
 
     // Get public URL
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${urlPath}`
 
     return {
       success: true,
       data: {
         url: publicUrl,
-        path: filePath,
+        path: objectPath,
         filename: finalFilename,
       },
     }

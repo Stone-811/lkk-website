@@ -82,8 +82,13 @@ thirdAttempt, thirdAttemptResult, finalScore, ipfGlPoint, createdAt
 1. 逐段解析 CSV → **印出每組人數與抽樣資料人工檢視**（組別人數要跟 CSV 段落對得上）
 2. 直接寫 Firestore（**不要走後台匯入**），先 dev 後 prod，安全閥如上
 3. 改 `availableYears`
-4. 驗證：API 各年度筆數、線上 `<option>`、抽查三種邊界情況
+4. 驗證：各年度筆數、線上 `<option>`、抽查三種邊界情況
    （某位跨性別 IPF 欄的長者友善組選手／某組第一名 rank=1／`x` 未試舉／整列 `-` 的棄賽者）
+   ⚠️ **筆數與邊界欄位不要用公開 API 驗。** 2026-10-16 起 `/api/public/lkk4-records`
+   姓名必填（只帶年度一律回 0 筆），而且只回 `id/year/competitionGroup/teamName/rank/finalScore`
+   六個欄位，看不到 gender、bodyWeight、試舉與 ipfGlPoint。
+   筆數與邊界欄位改用匯入腳本直接查 Firestore（或 firebase-app-hosting-ops 的 gapi.cjs 跑 runQuery）；
+   公開 API 只用來確認「年度＋姓名」查得到、畫面欄位有值。
 
 腳本要點與教練／講師匯入相同：放專案目錄、副檔名 `.cjs`、firebase-admin v14 模組化 API、
 憑證組法見 `lkk-project-context`。Firestore 單一 batch 上限 500 筆，一年份約 220 筆放得下。
