@@ -5,383 +5,155 @@
 <title>UTM 活動操作說明</title>
 <style>
   :root{
-    --navy:#2A5269; --navy-deep:#1a3545; --orange:#FB720A;
-    --cream:#F5EFE4; --cream-lt:#FBF8F2; --ink:#1a1a1a; --muted:#6b6f73;
-    --line:#dfd6c6;
+    --navy:#2A5269; --orange:#FB720A; --cream:#F5EFE4; --cream-lt:#FBF8F2;
+    --ink:#1a1a1a; --muted:#6f7478; --line:#ddd4c4;
   }
-  @page{ size:A4; margin:15mm 14mm 14mm; }
+  @page{ size:A4; margin:13mm 15mm 10mm; }
   *{ box-sizing:border-box; }
-  html,body{ margin:0; padding:0; }
   body{
+    margin:0; color:var(--ink); background:#fff;
     font-family:"PingFang TC","PingFang SC","Heiti TC","Hiragino Sans GB","Microsoft JhengHei",sans-serif;
-    color:var(--ink); background:#fff;
-    font-size:10.2pt; line-height:1.72; -webkit-font-smoothing:antialiased;
+    font-size:10.3pt; line-height:1.55;
   }
-  code,.mono{ font-family:"SF Mono","Menlo",Consolas,monospace; font-size:.9em; }
+  code{ font-family:"SF Mono",Menlo,Consolas,monospace; font-size:.88em;
+        background:var(--cream-lt); border:1px solid var(--line);
+        border-radius:3px; padding:0 4px; color:var(--navy); }
 
-  /* ── 封面抬頭 ───────────────────────────── */
-  .masthead{ border-bottom:3px solid var(--navy); padding-bottom:10px; margin-bottom:18px; }
-  .masthead .kicker{ font-size:8.4pt; letter-spacing:.22em; color:var(--orange); font-weight:700; }
-  .masthead h1{ font-size:21pt; margin:4px 0 2px; color:var(--navy); letter-spacing:-.01em; }
-  .masthead .sub{ font-size:9.6pt; color:var(--muted); }
-  .masthead .meta{ font-size:8.4pt; color:var(--muted); margin-top:6px; }
+  header{ border-bottom:3px solid var(--navy); padding-bottom:7px; margin-bottom:11px; }
+  header .k{ font-size:8.4pt; letter-spacing:.2em; color:var(--orange); font-weight:700; }
+  header h1{ font-size:19pt; margin:3px 0 2px; color:var(--navy); }
+  header .s{ font-size:9.4pt; color:var(--muted); }
 
-  h2{
-    font-size:12.4pt; color:var(--navy); margin:22px 0 10px;
-    padding-left:9px; border-left:4px solid var(--orange); line-height:1.3;
-    page-break-after:avoid;
+  ol.steps{ list-style:none; margin:0; padding:0; counter-reset:s; }
+  ol.steps > li{
+    counter-increment:s; position:relative;
+    padding:0 0 8px 34px; page-break-inside:avoid;
   }
-  h2 .en{ font-weight:400; font-size:8.6pt; color:var(--muted); letter-spacing:.06em; margin-left:6px; }
-  h3{ font-size:10.4pt; color:var(--navy-deep); margin:14px 0 6px; page-break-after:avoid; }
-  p{ margin:0 0 8px; }
-  ul,ol{ margin:0 0 8px; padding-left:1.35em; }
-  li{ margin-bottom:3px; }
-  strong{ color:var(--navy-deep); }
-
-  /* ── 流程條 ─────────────────────────────── */
-  .flow{ display:flex; gap:6px; margin:0 0 4px; page-break-inside:avoid; }
-  .flow div{
-    flex:1; background:var(--cream); border:1px solid var(--line);
-    border-radius:6px; padding:8px 6px; text-align:center;
+  ol.steps > li::before{
+    content:counter(s); position:absolute; left:0; top:1px;
+    width:23px; height:23px; border-radius:50%;
+    background:var(--navy); color:#fff;
+    font-size:10pt; font-weight:700; text-align:center; line-height:23px;
   }
-  .flow b{ display:block; color:var(--navy); font-size:9.6pt; }
-  .flow span{ font-size:8.2pt; color:var(--muted); }
-
-  /* ── 步驟 ───────────────────────────────── */
-  .step{ display:flex; gap:11px; margin-bottom:13px; page-break-inside:avoid; }
-  .num{
-    flex:0 0 22px; height:22px; border-radius:50%; background:var(--navy);
-    color:#fff; font-size:9.6pt; font-weight:700; text-align:center; line-height:22px;
+  ol.steps > li::after{
+    content:""; position:absolute; left:11px; top:27px; bottom:2px;
+    width:1px; background:var(--line);
   }
-  .step .body{ flex:1; min-width:0; }
-  .step h4{ font-size:10.4pt; margin:1px 0 4px; color:var(--navy-deep); }
-  .step h4 .tag{
-    font-size:7.6pt; font-weight:700; padding:1px 6px; border-radius:9px;
-    margin-left:6px; vertical-align:1.5px;
-  }
-  .tag.req{ background:#fde8e8; color:#b02020; }
-  .tag.opt{ background:#eceff1; color:var(--muted); }
-  .step p{ margin:0 0 4px; }
+  ol.steps > li:last-child::after{ display:none; }
+  ol.steps b{ color:var(--navy); font-size:11pt; display:block; margin-bottom:1px; }
+  ol.steps p{ margin:0; font-size:9.9pt; color:#3d4245; }
+  ol.steps p + p{ margin-top:2px; }
 
-  /* ── 表格 ───────────────────────────────── */
-  table{ width:100%; border-collapse:collapse; margin:4px 0 10px; font-size:9.3pt; page-break-inside:avoid; }
-  th{ background:var(--cream); color:var(--navy); text-align:left; font-weight:700;
-      padding:5px 8px; border:1px solid var(--line); white-space:nowrap; }
-  td{ padding:5px 8px; border:1px solid var(--line); vertical-align:top; }
-  td.mono{ white-space:nowrap; color:var(--navy-deep); }
+  .btn{ display:inline-block; border-radius:10px; padding:0 8px;
+        font-size:9pt; font-weight:700; white-space:nowrap;
+        background:var(--orange); color:#fff; }
+  .btn.n{ background:var(--navy); }
+  .btn.g{ background:#fff; color:var(--navy); border:1px solid var(--navy); padding:0 7px; }
+  .nav{ display:inline-block; background:var(--navy); color:#fff;
+        border-radius:4px; padding:0 9px; font-size:9.6pt; font-weight:700; }
+
+  table{ width:100%; border-collapse:collapse; margin:5px 0 2px;
+         font-size:9.3pt; page-break-inside:avoid; }
+  th{ background:var(--cream); color:var(--navy); font-weight:700; text-align:left;
+      padding:3px 8px; border:1px solid var(--line); }
+  td{ padding:3px 8px; border:1px solid var(--line); }
+  td.m{ font-family:"SF Mono",Menlo,Consolas,monospace; color:var(--navy); white-space:nowrap; }
   tbody tr:nth-child(even){ background:var(--cream-lt); }
 
-  /* ── 提示框 ─────────────────────────────── */
-  .box{ border-radius:6px; padding:9px 12px; margin:10px 0; font-size:9.5pt; page-break-inside:avoid; }
-  .box p:last-child{ margin-bottom:0; }
-  .box .hd{ font-weight:700; display:block; margin-bottom:3px; }
-  .warn{ background:#fff8e6; border:1px solid #e8c56a; color:#6b4a06; }
-  .warn .hd{ color:#8a5c00; }
-  .danger{ background:#fdf0f0; border:1px solid #e3a9a9; color:#7a2020; }
-  .danger .hd{ color:#a32020; }
-  .ok{ background:#f0f7f1; border:1px solid #a9ccb0; color:#1f5128; }
-  .ok .hd{ color:#1f5128; }
-  .note{ background:var(--cream-lt); border:1px solid var(--line); color:#4a4f52; }
-  .note .hd{ color:var(--navy); }
+  .rules{ margin-top:11px; border:1px solid #e0aeae; background:#fdf2f2;
+          border-radius:6px; padding:9px 13px; page-break-inside:avoid; }
+  .rules .h{ font-weight:700; color:#a32020; font-size:10pt; margin-bottom:3px; }
+  .rules ul{ margin:0; padding-left:1.1em; font-size:9.5pt; color:#6e2626; }
+  .rules li{ margin-bottom:2px; }
+  .rules li:last-child{ margin-bottom:0; }
 
-  /* ── 紅線清單 ───────────────────────────── */
-  .rules{ counter-reset:r; margin:0; padding:0; list-style:none; }
-  .rules li{
-    counter-increment:r; position:relative; padding:7px 10px 7px 34px;
-    border-bottom:1px dashed var(--line); font-size:9.6pt;
-  }
-  .rules li:last-child{ border-bottom:none; }
-  .rules li::before{
-    content:counter(r); position:absolute; left:8px; top:8px;
-    width:17px; height:17px; border-radius:50%; background:#b02020; color:#fff;
-    font-size:8.4pt; font-weight:700; text-align:center; line-height:17px;
-  }
-
-  /* ── FAQ ────────────────────────────────── */
-  .faq{ page-break-inside:avoid; margin-bottom:9px; }
-  .faq .q{ font-weight:700; color:var(--navy); font-size:9.8pt; margin-bottom:2px; }
-  .faq .a{ font-size:9.5pt; color:#3c4144; margin:0; }
-
-  .url{
-    background:var(--cream-lt); border:1px solid var(--line); border-radius:4px;
-    padding:6px 8px; font-family:"SF Mono","Menlo",Consolas,monospace;
-    font-size:8.4pt; word-break:break-all; color:var(--navy-deep); margin:4px 0 8px;
-  }
-  .btn{
-    display:inline-block; background:var(--orange); color:#fff; font-weight:700;
-    border-radius:11px; padding:1px 9px; font-size:8.8pt; white-space:nowrap;
-  }
-  .btn.dark{ background:var(--navy); }
-  .btn.ghost{ background:#fff; color:var(--navy); border:1px solid var(--navy); }
-  .pathbar{
-    background:var(--navy); color:#fff; border-radius:5px; padding:6px 11px;
-    font-size:9.6pt; display:inline-block; margin-bottom:4px;
-  }
-  .pathbar b{ color:#fff; }
-  footer{
-    margin-top:22px; padding-top:8px; border-top:1px solid var(--line);
-    font-size:8.2pt; color:var(--muted); text-align:center;
-  }
-  .pb{ page-break-before:always; }
+  footer{ margin-top:13px; padding-top:7px; border-top:1px solid var(--line);
+          font-size:8.2pt; color:var(--muted); text-align:center; }
 </style>
 </head>
 <body>
 
-<div class="masthead">
-  <div class="kicker">練健康官網後台</div>
-  <h1>UTM 活動 ─ 操作說明</h1>
-  <div class="sub">自己建立活動追蹤連結，投放出去後就看得出名單是從哪裡來的</div>
-  <div class="meta">2026 年 10 月版　｜　適用網址：lkkwellness.com/admin/campaigns</div>
-</div>
+<header>
+  <div class="k">練健康官網後台</div>
+  <h1>UTM 活動 ─ 操作步驟</h1>
+  <div class="s">產生活動專屬連結，投放出去後就看得出名單是從哪裡來的</div>
+</header>
 
-<h2>一、這個功能在做什麼<span class="en">Overview</span></h2>
+<ol class="steps">
 
-<p>平常把預約表單的網址直接貼到 LINE、Facebook 發出去，名單進來後<strong>看不出是從哪一則貼文來的</strong>。這個頁面幫你在網址後面加上一段看不見的標記，名單進後台時就會自動帶著它。</p>
+  <li>
+    <b>進入頁面</b>
+    <p>左側選單 → <span class="nav">UTM 活動</span></p>
+  </li>
 
-<div class="flow">
-  <div><b>① 建活動</b><span>取一個活動代號</span></div>
-  <div><b>② 加連結</b><span>一個管道一條</span></div>
-  <div><b>③ 複製投放</b><span>貼到貼文、簡訊</span></div>
-  <div><b>④ 看名單</b><span>後台直接篩選</span></div>
-</div>
+  <li>
+    <b>確認最上方的橫幅是綠色「正式環境」</b>
+    <p>黃色是測試站，<strong>那裡產的連結不能發出去</strong>（名單會收不到）。</p>
+  </li>
 
-<div class="box ok">
-  <span class="hd">✅ 你自己就能做</span>
-  <p>建立活動、產生連結、新增來源、停用舊活動。</p>
-</div>
-<div class="box warn">
-  <span class="hd">⚠️ 要請工程師做的</span>
-  <p><strong>表單本身的樣子</strong>──專屬文案、不限年齡免費、指定分店。這個頁面只能挑已經做好的，沒辦法新做。</p>
-</div>
+  <li>
+    <b>捲到最下方，按 <span class="btn">＋ 新增活動</span></b>
+  </li>
 
-<h2>二、進去之前先看一眼環境<span class="en">Environment</span></h2>
+  <li>
+    <b>填「活動代號」</b>
+    <p>只能用小寫英文、數字、<code>-</code>、<code>_</code>，例如 <code>nanshan-2026q4</code>。</p>
+    <p>上面的「活動名稱」是選填，給自己辨認用。</p>
+  </li>
 
-<p class="pathbar">左側選單 → <b>UTM 活動</b></p>
+  <li>
+    <b>選一組連結設定，按 <span class="btn n">＋ 加入這一條</span></b>
+    <p><strong>目標表單</strong>（預約體驗／團體課程）、<strong>來源</strong>、<strong>性質</strong> 三格一定要選，照下表填：</p>
+    <table>
+      <tr><th style="width:42%">你要投放到哪裡</th><th style="width:29%">來源</th><th>性質</th></tr>
+      <tr><td>LINE 推播</td><td class="m">line</td><td class="m">social</td></tr>
+      <tr><td>Facebook 貼文</td><td class="m">facebook</td><td class="m">social</td></tr>
+      <tr><td>Facebook 付費廣告</td><td class="m">facebook</td><td class="m">cpc</td></tr>
+      <tr><td>Instagram 貼文、限動</td><td class="m">instagram</td><td class="m">social</td></tr>
+      <tr><td>Google 關鍵字廣告</td><td class="m">google</td><td class="m">cpc</td></tr>
+      <tr><td>電子報 EDM</td><td class="m">email</td><td class="m">email</td></tr>
+      <tr><td>合作方網站放連結</td><td class="m">website</td><td class="m">referral</td></tr>
+    </table>
+    <p style="margin-top:3px">另兩格可不填 ──「合作案表單」要用某公司的專屬表單時才選，「素材」用來區分同一檔的不同圖片。</p>
+  </li>
 
-<p>頁面最上面有一條橫幅，<strong>進來第一件事是確認它的顏色</strong>：</p>
+  <li>
+    <b>要投放幾個管道，就重複步驟 5 幾次</b>
+    <p>例如 LINE、Facebook、Google 各加一條，<strong>共用同一個活動代號</strong>。後台一樣分得出是哪一條帶進來的。</p>
+  </li>
 
-<table>
-  <tr>
-    <th style="width:120px">橫幅</th><th>意思</th>
-  </tr>
-  <tr>
-    <td><strong style="color:#1f5128">綠色<br>✅ 正式環境</strong></td>
-    <td>這裡產生的連結<strong>可以直接對外投放</strong>。</td>
-  </tr>
-  <tr>
-    <td><strong style="color:#8a5c00">黃色<br>⚠️ 測試環境</strong></td>
-    <td>測試站專用。這裡的連結<strong>絕對不能發出去</strong>──填了表單名單會進測試資料庫，正式後台一筆都看不到，而且不會有任何錯誤提示。</td>
-  </tr>
-</table>
+  <li>
+    <b>核對下方「連結預覽」，按 <span class="btn">儲存</span></b>
+  </li>
 
-<div class="box note">
-  <span class="hd">為什麼要分</span>
-  <p>兩邊的活動清單是各自獨立的。在測試站建的活動，正式站看不到；反過來也一樣。要對外用的，一律在<strong>正式後台</strong>建。</p>
-</div>
+  <li>
+    <b>複製連結去投放</b>
+    <p>回到列表，點該活動的 <span class="btn g">連結（3）</span> 展開 → 按 <span class="btn g">複製</span> → 貼到貼文或訊息。</p>
+    <p><strong>不要自己手打或修改網址。</strong></p>
+  </li>
 
-<h2>三、新增一檔活動<span class="en">Create</span></h2>
+  <li>
+    <b>看成效</b>
+    <p>左側選單 → <span class="nav">客戶預約</span>，可用「UTM 活動」「UTM 來源」篩選，匯出的 CSV 也有這些欄位。</p>
+  </li>
 
-<p>捲到頁面最下方，按置中的橘色按鈕 <span class="btn">＋ 新增活動</span>，跳出視窗後依序填：</p>
+  <li>
+    <b>活動結束，按「停用」不要按「刪除」</b>
+    <p>刪掉不會讓舊連結失效，只會讓後台少一個對照名稱，之後反而認不出名單是哪一檔。</p>
+  </li>
 
-<div class="step">
-  <div class="num">1</div>
-  <div class="body">
-    <h4>活動名稱<span class="tag opt">選填</span></h4>
-    <p>只給你自己在列表上辨認用，例如「南山健康守護圈 2026 Q4」。<strong>不會進連結</strong>，之後隨時可以改名，不影響任何已經發出去的連結。</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="num">2</div>
-  <div class="body">
-    <h4>活動代號（utm_campaign）<span class="tag req">必填</span></h4>
-    <p>這是<strong>名單對照活動的唯一依據</strong>，會寫進連結裡。例如 <code>nanshan-2026q4</code>、<code>taiwanlife-1151101</code>。</p>
-    <p>規則：只能用<strong>小寫英文、數字、- 和 _</strong>，2～60 個字，開頭要是英文或數字。不能用中文、空格或大寫。</p>
-    <div class="box danger" style="margin:6px 0 0">
-      <p><strong>連結發出去之後就不要再改這個代號。</strong>改了，之前收到的名單就對不回這檔活動了，而且沒辦法補回來。</p>
-    </div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="num">3</div>
-  <div class="body">
-    <h4>連結 ─ 一條一條加進來<span class="tag req">至少一條</span></h4>
-    <p>一檔活動底下可以掛很多條連結（最多 40 條），<strong>每一條各自獨立</strong>：自己的表單、自己的來源。
-       習慣的做法是<strong>一個投放管道一條</strong>──LINE 一條、Facebook 一條、Google 廣告一條，共用同一個活動代號。</p>
-    <p>五個欄位選好之後，按 <span class="btn dark">＋ 加入這一條</span>，它就會出現在下方的「已加入」清單。接著改一下來源，再按一次加入，就是第二條。</p>
-  </div>
-</div>
-
-<table>
-  <tr>
-    <th style="width:118px">欄位</th><th style="width:60px">必填</th><th>怎麼填</th>
-  </tr>
-  <tr>
-    <td><strong>目標表單</strong></td><td>必填</td>
-    <td>連結要把人帶到哪一張表單，兩個選項：<strong>預約體驗表單</strong>、<strong>團體課程報名</strong>。<br>
-        <span style="color:var(--muted)">只列會收名單的表單；其他頁面帶標記進去也產不出可歸因的名單。</span></td>
-  </tr>
-  <tr>
-    <td><strong>合作案表單</strong><br><span class="mono" style="color:var(--muted)">?v=</span></td><td>選填</td>
-    <td>要用某家合作夥伴的專屬表單時才選，例如南山、台灣人壽的不限年齡免費版。<strong>不確定就選「不使用」</strong>（＝一般表單）。<br>
-        <span style="color:var(--muted)">選項是工程師事先做好的，兩張表單各有自己的一套。</span></td>
-  </tr>
-  <tr>
-    <td><strong>來源</strong><br><span class="mono" style="color:var(--muted)">utm_source</span></td><td>必填</td>
-    <td>流量的<strong>來處</strong>──從哪裡來。例如 <code>line</code>、<code>facebook</code>、<code>google</code>。可以自己新增（見第六節）。</td>
-  </tr>
-  <tr>
-    <td><strong>性質</strong><br><span class="mono" style="color:var(--muted)">utm_medium</span></td><td>必填</td>
-    <td>流量的<strong>性質</strong>──怎麼來的。選了來源會自動帶一個常用值，<strong>可以再改</strong>。只能從下拉的七個挑。</td>
-  </tr>
-  <tr>
-    <td><strong>素材</strong><br><span class="mono" style="color:var(--muted)">utm_content</span></td><td>選填</td>
-    <td>同一檔活動有好幾種素材時用來區分，例如 <code>card-a</code>、<code>story</code>、<code>edm-0501</code>。不需要就留空。</td>
-  </tr>
-</table>
-
-<div class="step">
-  <div class="num">4</div>
-  <div class="body">
-    <h4>備註<span class="tag opt">選填</span></h4>
-    <p>給自己看的補充，例如檔期、對接窗口。不會出現在連結裡。</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="num">5</div>
-  <div class="body">
-    <h4>核對「連結預覽」再按儲存</h4>
-    <p>視窗下方會即時長出完整網址。確認網域是 <code>lkkwellness.com</code>、條數跟你加的一樣，再按右下角 <span class="btn">儲存</span>。</p>
-  </div>
-</div>
-
-<div class="box note">
-  <span class="hd">看不懂某個欄位？</span>
-  <p>欄位名稱旁邊有一顆灰色的「<strong>?</strong>」，滑鼠停在上面就會跳出說明。</p>
-</div>
-
-<h2 class="pb">四、常用組合對照表<span class="en">Cheat sheet</span></h2>
-
-<p>不確定「性質」要選什麼，照這張表填就對了：</p>
-
-<table>
-  <tr>
-    <th style="width:150px">你實際在做的事</th><th style="width:96px">來源</th><th style="width:88px">性質</th><th>說明</th>
-  </tr>
-  <tr><td>LINE 官方帳號推播</td><td class="mono">line</td><td class="mono">social</td><td>群發訊息、圖文選單</td></tr>
-  <tr><td>Facebook 貼文</td><td class="mono">facebook</td><td class="mono">social</td><td>不花錢的自然貼文</td></tr>
-  <tr><td>Facebook 付費廣告</td><td class="mono">facebook</td><td class="mono">cpc</td><td>有下預算的廣告</td></tr>
-  <tr><td>Instagram 貼文／限動</td><td class="mono">instagram</td><td class="mono">social</td><td></td></tr>
-  <tr><td>Google 關鍵字廣告</td><td class="mono">google</td><td class="mono">cpc</td><td>選 google 時的預設值</td></tr>
-  <tr><td>電子報／EDM</td><td class="mono">email</td><td class="mono">email</td><td></td></tr>
-  <tr><td>合作方自己的網站放連結</td><td class="mono">website</td><td class="mono">referral</td><td>或新增該公司專屬來源</td></tr>
-</table>
-
-<div class="box note">
-  <span class="hd">同一個來源可以配不同性質，這是正常的</span>
-  <p><code>google / cpc</code> 是付費廣告、<code>google / organic</code> 是從搜尋結果自然點進來的。
-     <strong>性質取決於你實際做了什麼，不取決於來源是誰</strong>，所以兩個欄位是分開選的。</p>
-</div>
-
-<h2>五、複製連結去投放<span class="en">Copy &amp; share</span></h2>
-
-<p>回到列表，點該活動右側的 <span class="btn ghost">連結（3）</span> 展開，每一條後面都有 <span class="btn ghost">複製</span>。按下去變成綠色的「已複製」就表示進剪貼簿了，直接貼到貼文或訊息即可。</p>
-
-<p>連結長這樣（看得見參數是正常的，使用者點了會正常進到表單）：</p>
-<div class="url">https://lkkwellness.com/booking?utm_source=line&amp;utm_medium=social&amp;utm_campaign=nanshan-2026q4</div>
-
-<div class="box warn">
-  <span class="hd">⚠️ 不要自己手打或手改網址</span>
-  <p>參數打錯一個字母<strong>不會報錯</strong>，表單照樣能填、名單照樣會進來，但會歸到錯的活動，或者整個標記失效。一律用後台複製。</p>
-</div>
-
-<h2>六、新增一個來源<span class="en">Add a source</span></h2>
-
-<p>下拉選單裡沒有你要的平台（例如 Threads、YouTube、某家合作企業）時：</p>
-
-<ol>
-  <li>在新增／編輯活動的視窗裡，找到連結區塊左下角的 <strong>「新增／停用來源」</strong>，點開。</li>
-  <li>填三格：<strong>顯示名稱</strong>（Threads）、<strong>utm_source</strong>（threads，小寫英數）、<strong>預設性質</strong>（social）。</li>
-  <li>按 <span class="btn dark">新增來源</span>。之後所有活動的下拉都會有它。</li>
 </ol>
 
-<p>同一個面板裡也可以把用不到的來源<strong>停用</strong>。停用只是不再出現在選單，<strong>已經發出去的連結和收到的名單完全不受影響</strong>。</p>
-
-<div class="box danger">
-  <span class="hd">新增之後不能改字</span>
-  <p>來源的文字會寫進名單和 Google Analytics，發出去就改不回來了，所以系統只開放「新增」和「停用」，沒有「修改」。<strong>按下新增之前先確認拼字。</strong></p>
+<div class="rules">
+  <div class="h">這三件事做了救不回來</div>
+  <ul>
+    <li><strong>連結發出去之後，不要改活動代號</strong> ── 之前收到的名單會永久對不回這檔活動。</li>
+    <li><strong>自行新增的「來源」不能改字，只能停用</strong> ── 按新增前先確認拼字。</li>
+    <li><strong>表單的樣子（文案、免費、指定分店）要請工程師做</strong> ── 這一頁只能挑現成的。</li>
+  </ul>
 </div>
 
-<h2>七、怎麼看成效<span class="en">Results</span></h2>
-
-<p class="pathbar">左側選單 → <b>客戶預約</b></p>
-
-<ul>
-  <li>篩選列有 <strong>「UTM 活動」</strong> 和 <strong>「UTM 來源」</strong>兩個獨立的篩選器，想看哪一檔、哪個管道都可以單獨篩。</li>
-  <li>名單卡片上會直接出現藍色標籤，點開名單詳情有「來源追蹤 (UTM)」整個區塊。</li>
-  <li>按匯出 CSV，裡面有 <strong>UTM來源／UTM形式／UTM活動／UTM素材</strong> 四個獨立欄位，可以自己在 Excel 做樞紐分析。</li>
-</ul>
-
-<div class="box note">
-  <span class="hd">所以不必為了分管道一直開新活動代號</span>
-  <p>一檔活動掛 LINE、FB、Google 三條連結，在後台和 GA 都分得出是哪一條帶進來的。
-     <strong>代號是用來區分「這是哪一檔行銷活動」，不是用來區分管道的。</strong></p>
-</div>
-
-<h2>八、活動結束了怎麼辦<span class="en">Ending</span></h2>
-
-<p>按列表上的 <strong>停用</strong>，不要按刪除。</p>
-
-<div class="box warn">
-  <p><strong>刪除不會讓舊連結失效。</strong>連結已經在外面流通，名單還是會照樣帶著那個代號進來──刪掉只是讓後台少了一個中文對照名稱，之後看到名單反而認不出是哪一檔。</p>
-</div>
-
-<p>另外，列表上方有時會出現黃色的「<strong>流通中，但不在下方清單裡</strong>」區塊。那是這個工具做好之前就發出去的連結，名單已經在收了但沒有登記。按 <strong>登記</strong> 把它補進管理即可（代號會自動帶入，表單和來源要自己確認）。</p>
-
-<h2>九、四條不能破的線<span class="en">Hard rules</span></h2>
-
-<ul class="rules">
-  <li><strong>連結發出去之後，不要改活動代號。</strong>舊名單會永久對不回來。</li>
-  <li><strong>來源新增之後不能改字，只能停用。</strong>按新增前先確認拼字。</li>
-  <li><strong>性質只能從下拉的七個挑。</strong>填別的值，那段期間的流量在 Google Analytics 會永久被歸到「未指定」，<strong>事後補不回來</strong>。所以系統沒有開放自由輸入。</li>
-  <li><strong>黃色「測試環境」橫幅下產生的連結，不可以對外投放。</strong>名單會進測試資料庫，正式後台收不到。</li>
-</ul>
-
-<h2>十、常見問題<span class="en">FAQ</span></h2>
-
-<div class="faq">
-  <p class="q">Q：同一個來源可以在一檔活動裡加兩次嗎？</p>
-  <p class="a">可以，只要<strong>表單、合作案表單、來源、性質、素材</strong>這五項不是完全一樣。例如同一個 LINE 來源，用 <code>card-a</code>、<code>card-b</code> 兩種素材各加一條。五項全部相同會產生一模一樣的網址，系統會擋下來。</p>
-</div>
-
-<div class="faq">
-  <p class="q">Q：活動代號打錯了，已經儲存但還沒發出去？</p>
-  <p class="a">直接新建一檔正確的，舊的那檔按「停用」。沒發出去就沒有名單會受影響。</p>
-</div>
-
-<div class="faq">
-  <p class="q">Q：選了「合作案表單」會怎樣？</p>
-  <p class="a">表單的樣子會跟著變──專屬文案、不限年齡免費、鎖定某家分店等等。<strong>投放前先確認檔期已經開始</strong>，免費活動的設定推上去就立刻生效。展開頁面上方的「現有合作案表單」可以看到每一個的實際效果。</p>
-</div>
-
-<div class="faq">
-  <p class="q">Q：改了活動名稱或備註，已經發出的連結會變嗎？</p>
-  <p class="a">不會。名稱和備註只在後台顯示，不進連結。只有活動代號、來源、性質、素材會影響連結。</p>
-</div>
-
-<div class="faq">
-  <p class="q">Q：連結可以縮短嗎？</p>
-  <p class="a">可以用外部縮網址服務包起來，標記一樣會跟著走。但<strong>原始連結請留在後台</strong>，否則之後查不出那條短網址對應哪一檔活動。</p>
-</div>
-
-<div class="faq">
-  <p class="q">Q：為什麼表單的文案、價格不能在這裡改？</p>
-  <p class="a">這一頁只負責「追蹤連結」。表單的內容寫在程式裡，要請工程師調整；做好之後，新的合作案表單會自動出現在這一頁的下拉選單中。</p>
-</div>
-
-<footer>練健康官網後台 ─ UTM 活動操作說明　｜　2026 年 10 月　｜　有疑問請聯繫網站維護人員</footer>
+<footer>練健康官網後台　｜　2026 年 10 月　｜　有疑問請聯繫網站維護人員</footer>
 
 </body>
 </html>
