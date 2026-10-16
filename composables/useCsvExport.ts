@@ -38,7 +38,7 @@ export function toCsvCell(cell: unknown): string {
 export function buildCsv(headers: string[], rows: unknown[][]): string {
   const quote = (cell: unknown) => `"${toCsvCell(cell).replace(/"/g, '""')}"`
   // BOM 寫成跳脫字元：看不見的字面字元很容易在編輯時被吃掉，少了它 Excel 開檔中文全亂碼
-  return '﻿' + [headers, ...rows].map((row) => row.map(quote).join(',')).join('\n')
+  return '\uFEFF' + [headers, ...rows].map((row) => row.map(quote).join(',')).join('\n')
 }
 
 export function useCsvExport() {
