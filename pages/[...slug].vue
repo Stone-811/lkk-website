@@ -69,16 +69,27 @@ const LIST_PAGES: Record<string, string> = {
 }
 const router = useRouter()
 const cameFromList = ref<{ href: string; label: string } | null>(null)
+/** 掛載當下這一筆歷史的位置。點過頁內錨點後會不同，見 backToList。 */
+let mountedEntry: string | null = null
 onMounted(() => {
   const back = window.history.state?.back
   if (typeof back !== 'string') return
   const path = back.split(/[?#]/)[0].replace(/\/+$/, '')
   const label = LIST_PAGES[path]
-  if (label) cameFromList.value = { href: back, label }
+  if (label) {
+    cameFromList.value = { href: back, label }
+    mountedEntry = window.history.state?.current ?? null
+  }
 })
 function backToList(e: MouseEvent) {
   if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
   e.preventDefault()
+  // 點過文章裡的頁內錨點（目錄、註腳）後，瀏覽器會多一筆同一篇文章的歷史，
+  // 這時 back() 只會回到同一篇。改成直接前往列表網址（一樣會還原分類與搜尋）。
+  if (route.hash || window.history.state?.current !== mountedEntry) {
+    router.push(cameFromList.value!.href)
+    return
+  }
   router.back()
 }
 const { formatDate } = useFormatDate()
@@ -398,8 +409,8 @@ useHead({
  *    我們的選擇器多一層 .article-body，兩邊都 !important 時由我們勝出。
  * 🔴 子元素也要白字：作者常把按鈕文字設成粗體，而文章的 strong 一律是深色（見上方），
  *    不處理就是「深藍底＋黑字」看不見（業主 2026-10-16 回報 /stroke-3/）。
- * ⚠️ 透明外框款的框線畫在 ::before、滑過效果畫在 ::after；統一成實心橘底後兩者都不需要。
- * ⚠️ 尺寸（padding、圓角）不加 !important：作者在 WordPress 調過的大小照舊保留。
+ * ⚠️ Stackable 按鈕的尺寸（padding、圓角）不加 !important：作者在 WordPress 調過的大小照舊保留。
+ *    WordPress 內建按鈕例外，見下方 .wp-block-button__link 那條。
  */
 .article-body :deep(.wp-block-stackable-button .stk-button),
 .article-body :deep(.wp-block-button__link) {
@@ -420,13 +431,21 @@ useHead({
 .article-body :deep(.wp-block-button__link:hover) {
   background: #fc8c35 !important;
 }
-.article-body :deep(.wp-block-stackable-button .stk-button::before),
-.article-body :deep(.wp-block-stackable-button .stk-button::after) {
-  border-color: transparent !important;
-  background: transparent !important;
+/*
+ * WordPress 內建按鈕的內距要 !important：作者在 WP 用的是 var(--wp--preset--spacing--80)
+ * 這類主題變數寫在行內 style，本站沒有定義這些變數，算出來是 0，
+ * 字會直接貼著橘色邊緣（/personal-trainer-2/、/2024-lkkwellness-weightlifting-workshop/）。
+ */
+.article-body :deep(.wp-block-button__link) {
+  padding: 0.55em 1.3em !important;
 }
 
-/* 社群圖示（文章底部 FB／IG／YouTube／LINE）：維持原樣，內容與 2026-10-16 之前相同 */
+/*
+ * 社群圖示（文章底部 FB／IG／YouTube／LINE）：維持原樣，宣告內容與 2026-10-16 之前相同。
+ * ⚠️ 畫面上看到的其實是品牌色（FB 藍、IG 紫紅、YouTube 紅、LINE 綠），不是這裡的深藍：
+ *    每個圖示都有 Stackable 自帶的 .stk-xxxx .stk-button{background:#3b5998 !important}，
+ *    蓋過了這條沒有 !important 的底色。
+ */
 .article-body :deep(.wp-block-stackable-icon-button a) {
   display: inline-block;
   background: #2A5269;
