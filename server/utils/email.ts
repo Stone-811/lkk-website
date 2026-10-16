@@ -140,6 +140,23 @@ interface LeadNotificationData {
   fillerName?: string
 }
 
+// 使用者填的值插進信件 HTML 之前一律跳脫（2026-10-16）。
+// 原本直接拼字串：任何人直接 POST 表單 API，就能讓官方信箱寄出帶偽裝連結的信。
+// 只在「插入 HTML 的那一刻」做，其他地方刻意不做：
+//   - 主旨是純文字標頭，跳脫了「A&B 公司」會變成「A&amp;B 公司」
+//   - formConfirmationConfig 的 greeting／message／closing 刻意寫了 <a>（LINE 連結）與 <br>
+//   - 存進 Firestore 的值維持原文：後台 Vue 會自己跳脫，CSV 也要原文
+// ⚠️ 擋得住偽裝的連結文字與 <img> 這類標籤，擋不住「純文字網址被 Gmail 自動轉成連結」。
+// 不 export：server/utils 的匯出會被 Nitro 全域自動匯入，泛用名稱容易撞名。
+function esc(v: unknown): string {
+  return String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 // 通知信表格列產生器（54 列共用；變化型以 opts 控制，輸出與舊版逐字元相同）
 // wide=首列固定欄寬 / top=label 靠上 / pre=value 保留換行 /
 // tone: 'warn' 黃底（代填提醒）、'danger' 紅底（健康狀況警示） / last=末列（無底線）
@@ -152,7 +169,7 @@ function notifRow(
     return `
       <tr>
         <td style="padding: 10px; font-weight: bold;">${label}</td>
-        <td style="padding: 10px;">${value}</td>
+        <td style="padding: 10px;">${esc(value)}</td>
       </tr>`
   }
   const tone =
@@ -164,7 +181,7 @@ function notifRow(
   return `
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;${opts.top ? ' vertical-align: top;' : ''}${opts.wide ? ' width: 120px;' : ''}${tone}">${label}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #ddd;${opts.pre ? ' white-space: pre-wrap;' : ''}${tone}">${value}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;${opts.pre ? ' white-space: pre-wrap;' : ''}${tone}">${esc(value)}</td>
       </tr>`
 }
 
@@ -261,7 +278,7 @@ export function buildLeadNotificationEmail(data: LeadNotificationData): { subjec
   </div>
   ${(data.company || data.leadSource) ? `
   <div style="background: #FB720A; color: white; padding: 12px 20px; font-size: 15px; font-weight: bold; text-align: center;">
-    活動來源：${[data.company, data.leadSource].filter(Boolean).join(' · ')}
+    活動來源：${esc([data.company, data.leadSource].filter(Boolean).join(' · '))}
   </div>` : ''}
 
   <div style="padding: 20px; background: #f9f9f9;">
@@ -394,7 +411,7 @@ export function buildFormConfirmationEmail(data: FormConfirmationData): { subjec
         ${section.rows
           .map(
             (d) =>
-              `<p style="margin: 0 0 8px 0; color: #444; font-size: 14px; line-height: 1.6;"><strong style="color: #888; font-weight: 600;">${d.label}：</strong>${d.value}</p>`
+              `<p style="margin: 0 0 8px 0; color: #444; font-size: 14px; line-height: 1.6;"><strong style="color: #888; font-weight: 600;">${d.label}：</strong>${esc(d.value)}</p>`
           )
           .join('')}
       </div>
@@ -404,7 +421,7 @@ export function buildFormConfirmationEmail(data: FormConfirmationData): { subjec
   } else if (data.details && data.details.length > 0) {
     detailsHtml = `
     <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #ddd;">
-      ${data.details.map(d => `<p style="margin: 0 0 10px 0; color: #666;"><strong>${d.label}：</strong>${d.value}</p>`).join('')}
+      ${data.details.map(d => `<p style="margin: 0 0 10px 0; color: #666;"><strong>${d.label}：</strong>${esc(d.value)}</p>`).join('')}
     </div>`
   }
 
@@ -416,7 +433,7 @@ export function buildFormConfirmationEmail(data: FormConfirmationData): { subjec
 
   <div style="padding: 30px; background: #f9f9f9;">
     <p style="color: #333; font-size: 16px; margin-bottom: 20px;">
-      ${data.name} 您好，
+      ${esc(data.name)} 您好，
     </p>
     <p style="color: #333; font-size: 16px; line-height: 1.8;">
       ${config.greeting}<br>
