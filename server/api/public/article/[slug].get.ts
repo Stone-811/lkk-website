@@ -90,6 +90,19 @@ function backupKeyFor(slug: string): string {
  * ⚠️ 不要為了這件事改 swr: false。過期就前景等上游，停擺時每篇文章都要讓讀者等滿逾時，
  *    請求疊起來會擴出沒有備份的新執行個體，回到 10-13 那種自我延續的迴圈。
  */
+/** 上游健康檢查：抓最新一篇文章的 id，有回來才算健康。 */
+async function upstreamLooksHealthy(): Promise<boolean> {
+  try {
+    const r = await $fetch<any>(`${WP_BASE}/wp/v2/posts`, {
+      query: { per_page: 1, _fields: 'id' },
+      timeout: 5000,
+    })
+    return Array.isArray(r) && r.length > 0
+  } catch {
+    return false
+  }
+}
+
 async function forgetDeletedArticle(slug: string, store: ReturnType<typeof useStorage>) {
   try {
     const root = useStorage()
@@ -97,6 +110,15 @@ async function forgetDeletedArticle(slug: string, store: ReturnType<typeof useSt
     const backupKey = backupKeyFor(slug)
     const hadCache = await root.hasItem(cacheKey)
     const hadBackup = await store.hasItem(backupKey)
+    if (!hadCache && !hadBackup) return
+    // 🔴 「上游回空陣列」不一定是真的被刪：資料庫查詢被中途砍掉、外掛擋了匿名 REST，
+    //    WordPress 都可能用 HTTP 200 回 []。這時清掉備份，等於把暫時異常變成永久 404。
+    //    所以真的要清之前，先確認上游還看得到其他文章；看不到就當成上游異常，什麼都不動。
+    //    只有「快取過、現在查不到」才會走到這裡，健康檢查不會變成常態流量。
+    if (!(await upstreamLooksHealthy())) {
+      console.warn('[Article] 上游回空陣列但健康檢查沒過，先不清快取與備份', slug)
+      return
+    }
     if (hadCache) await root.removeItem(cacheKey)
     if (hadBackup) await store.removeItem(backupKey)
     // 這一行同時用來確認鍵有沒有組對：快取過的文章被刪，第一次 404 時應該看到 hadCache: true
@@ -156,6 +178,13 @@ export default defineCachedEventHandler(
     }
 
     const post = rows[0]
+    // 已下架頁面的第二道檢查，以 WordPress 回傳的正式代稱為準。
+    // WordPress 會把查詢的代稱再正規化（結尾的 - 或 .、逗號分隔多個代稱…），
+    // /franchise-/ 這類寫法躲得過上面的第一道，仍會查到那篇加盟說明。
+    // 放在寫入快取與備份之前。
+    if (RETIRED_PAGES.has(String(post?.slug || '').toLowerCase())) {
+      throw createError({ statusCode: 404, message: '找不到這篇文章' })
+    }
     // 形狀再確認一次：缺標題或內文就不是一篇可用的文章，寧可走退路也不要
     // 產生空白頁並把它快取起來
     if (!post || typeof post !== 'object' || !post.title?.rendered) {
