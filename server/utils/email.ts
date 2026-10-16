@@ -375,19 +375,11 @@ interface FormConfirmationData {
   sections?: Array<{ title: string; rows: Array<{ label: string; value: string }> }>
 }
 
-// Send form confirmation email to submitter
-export async function sendFormConfirmation(data: FormConfirmationData) {
-  const transporter = await createTransporter()
-  if (!transporter) {
-    console.log('Email transporter not configured, skipping confirmation')
-    return false
-  }
-
+// 純函式：組填單人確認信的主旨與 HTML（不碰 SMTP，供寄信與快照驗證使用）。
+// 未知的 type 回 null。
+export function buildFormConfirmationEmail(data: FormConfirmationData): { subject: string; html: string } | null {
   const config = formConfirmationConfig[data.type]
-  if (!config) {
-    console.error(`Unknown form type: ${data.type}`)
-    return false
-  }
+  if (!config) return null
 
   let detailsHtml = ''
   if (data.sections && data.sections.length > 0) {
@@ -449,13 +441,30 @@ export async function sendFormConfirmation(data: FormConfirmationData) {
 </div>
 `
 
+  return { subject: config.subject, html: content }
+}
+
+// Send form confirmation email to submitter
+export async function sendFormConfirmation(data: FormConfirmationData) {
+  const transporter = await createTransporter()
+  if (!transporter) {
+    console.log('Email transporter not configured, skipping confirmation')
+    return false
+  }
+
+  const built = buildFormConfirmationEmail(data)
+  if (!built) {
+    console.error(`Unknown form type: ${data.type}`)
+    return false
+  }
+
   try {
     await transporter.sendMail({
       from: `"練健康" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
       replyTo: REPLY_TO,
       to: data.email,
-      subject: config.subject,
-      html: content,
+      subject: built.subject,
+      html: built.html,
     })
     console.log(`[${data.type}] Confirmation sent to: ${data.email}`)
     return true
