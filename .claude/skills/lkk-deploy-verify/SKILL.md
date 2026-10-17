@@ -1,6 +1,6 @@
 ---
 name: lkk-deploy-verify
-description: 確認一次改動真的到了 dev 或 prod。推完分支、要輪詢線上狀態、或想判斷「部署好了沒」時使用。內含依改動類型選驗證法的對照表、marker 的四種自爆寫法、另有一節講「舊版也會通過」這種假通過、推完一定要先等 rollout 到 SUCCEEDED 再驗、rollout→build→commit 的對照腳本、業主回報「改了沒變」時先確認是不是瀏覽器沒重新整理、後台這類「本機驗不到」的改動怎麼用臨時公開端點測純函式並誠實標註驗證邊界、三方對照（開發機／dev／prod）分辨上游壞掉還是我們連不上、只是搬位置的改動怎麼用 byte offset 驗順序，以及查「線上正在跑哪個 commit」的方法。發 prod 的流程本身見 CLAUDE.md 與 lkk-project-context。
+description: 確認一次改動真的到了 dev 或 prod。推完分支、要輪詢線上狀態、或想判斷「部署好了沒」時使用。內含依改動類型選驗證法的對照表、marker 的四種自爆寫法、另有一節講「舊版也會通過」這種假通過、推完一定要先等 rollout 到 SUCCEEDED 再驗、rollout→build→commit 的對照腳本、業主回報「改了沒變」時先確認是不是瀏覽器沒重新整理、後台這類「本機驗不到」的改動怎麼用臨時公開端點測純函式並誠實標註驗證邊界、三方對照（開發機／dev／prod）分辨上游壞掉還是我們連不上、只是搬位置的改動怎麼用 byte offset 驗順序，以及查「線上正在跑哪個 commit」的方法（用 gapi.cjs，權杖不經手）。另含 2026-10-16 起的：發 prod 時有刪除檔案要分兩步（diff-filter AMR 帶入、D 用 git rm）、從 commit hash 對 build 再對 rollout 的等待腳本、剛部署完 CDN 回舊 HTML（內嵌樣式也是舊的）要用 ?v= 繞過、看標頭要用 GET 不要用 HEAD、驗正式站用 curl 避免污染 GA4、量頁面 JS 下載量、本機 production server 加假上游、用 jiti 在瀏覽器外測純函式、內建瀏覽器擋彈出視窗，以及寫檔工具會把反斜線 u 跳脫轉成實際字元這類工具本身的坑。發 prod 的流程本身見 CLAUDE.md 與 lkk-project-context。
 ---
 
 # 部署驗證
@@ -252,15 +252,33 @@ dev 與 prod 跑同一份程式碼、同一個區域，差別只剩 egress，所
 
 App Hosting REST API：`traffic` 拿到目前導流的 build，再讀該 build 的 commit 與 secret 版本。
 
-```js
-const base = `https://firebaseapphosting.googleapis.com/v1beta/projects/${proj}/locations/asia-east1/backends/${backend}`
-const tr = await (await fetch(`${base}/traffic`, { headers: H })).json()
-const b  = await (await fetch(`https://firebaseapphosting.googleapis.com/v1beta/${tr.current.splits[0].build}`, { headers: H })).json()
-// b.state / b.source.codebase.commit / b.environment 裡的 SMTP_PASS secret 版本
+🔴 **用個人 skill `firebase-app-hosting-ops` 的 `scripts/gapi.cjs`，不要自己拿權杖。**
+這裡以前寫「讀 `~/.config/configstore/firebase-tools.json` 的 refresh_token 換 access token」——
+那違反「權杖永遠不經手」的原則（另一個專案做類似的事被 auto mode 擋過）。gapi.cjs 借用 firebase-tools 自己的登入，
+權杖不經手、機密欄位自動遮蔽。**gcloud 沒安裝。**
+
+```bash
+G=~/.claude/skills/firebase-app-hosting-ops/scripts/gapi.cjs
+AH=https://firebaseapphosting.googleapis.com/v1beta/projects/lkkprod/locations/asia-east1/backends/lkk-website
+node $G GET "$AH/traffic" --fields=current.splits
+node $G GET "$AH/builds/<build-id>" --fields=state,source.codebase.hash
 ```
 
-token 取法：firebase-tools 的 refresh_token（`~/.config/configstore/firebase-tools.json`）
-換 access token。**gcloud 沒安裝**。
+### 推完之後等它上線：用 commit hash 對 build，再用 build 對 rollout（2026-10-16 起都用這支）
+
+```bash
+H=$(git rev-parse origin/dev)   # prod 就用 prod 分支推上去的那一筆
+# dev：projects/lkkdev … backends/lkk-website-dev；prod：projects/lkkprod … backends/lkk-website
+for i in $(seq 1 60); do S=$(node $G GET "$AH/builds" | jq -r --arg h "$H" '.body.builds[]|select(.source.codebase.hash==$h)|.state' | head -1)
+  [ "$S" = READY ] || [ "$S" = FAILED ] && break; /bin/sleep 15; done
+B=$(node $G GET "$AH/builds" | jq -r --arg h "$H" '.body.builds[]|select(.source.codebase.hash==$h)|.name|split("/")|last')
+for i in $(seq 1 40); do R=$(node $G GET "$AH/rollouts" | jq -r --arg b "$B" '[.body.rollouts[]|select(.build|endswith($b))]|last|.state')
+  [ "$R" = SUCCEEDED ] || [ "$R" = FAILED ] && break; /bin/sleep 15; done
+```
+
+⚠️ 「最新一筆 rollout」不一定是你這次的：同時有別人推、或連推兩次時會對錯。**一定要從 commit hash 出發。**
+⚠️ 前景 `sleep` 會被擋，寫 `/bin/sleep` 放在迴圈裡，或整段丟背景（`run_in_background`）等通知。
+實測推完到 SUCCEEDED 約 5～8 分鐘。
 
 ⚠️ **Cloud Logging 有每分鐘讀取配額**，而且算在 firebase-tools 共用的 OAuth 專案上——
 每 30 秒輪詢兩個專案就會撞 `Quota exceeded`。查部署狀態改用上面的 App Hosting API。
@@ -281,3 +299,129 @@ build 完成時間晚於 commit 推送時間 → 該 commit 已在服務中。
 一律 `git diff --stat origin/prod origin/dev`。
 **不要看 `git log origin/prod..origin/dev`**——prod 是檔案級帶入建的，
 兩邊 commit 圖完全分開，log 會列出兩百多個 commit，嚴重高估未上線的量。
+
+---
+
+## 🔴 發 prod 時有「刪除的檔案」：要分兩步（2026-10-16 起兩次都遇到）
+
+`git checkout origin/dev -- <檔案>` **只能帶入新增與修改，帶不了刪除**。
+而把已刪的路徑寫進 checkout 的清單，git 會因 pathspec 對不到而**整條指令中止**。
+
+```bash
+git checkout -q -B prod origin/prod
+# 1) 新增／修改（排除 apphosting.yaml）
+git diff -z --name-only --diff-filter=AMR origin/prod origin/dev | grep -zv '^apphosting\.yaml$' | xargs -0 git checkout origin/dev --
+# 2) 刪除
+git diff -z --name-only --diff-filter=D origin/prod origin/dev | xargs -0 git rm -q
+# 3) 帶完之後，與 dev 的差異必須只剩 apphosting.yaml
+git diff --name-only origin/dev --cached
+```
+
+只帶一半的後果（兩種都很難察覺）：
+- **只帶修改、沒刪檔**：被刪的頁面在 prod 仍在（靜態路由優先），新的擋法完全不生效；
+  dev 驗證全部通過，正式站卻沒變。2026-10-16 的 `/franchise`、`/shop` 就是這種
+- **只刪檔、沒帶修改**：例如刪了 `plugins/firebase.client.ts` 卻沒帶新的 `login.vue`，
+  正式站 Google 登入會顯示「尚未設定」
+
+上線後一定要實測被刪的東西真的不見了（網址回 404、API 回 404）。
+
+---
+
+## 🔴 剛部署完，CDN 會回舊的 HTML
+
+全站 routeRules 是 `s-maxage=600, stale-while-revalidate=86400`。過期後 CDN **先回舊的、在背景更新**。
+本站元件樣式是**內嵌在 HTML 裡**的，所以舊 HTML ＝ 舊樣式，連 JS 檔名都是舊的。
+
+2026-10-16 在 dev 驗按鈕顏色時，`getComputedStyle` 量到的還是舊的深藍 —— 差點判定成改壞。
+實際是 CDN 回了部署前的頁面。
+
+- **網址加一個沒意義的參數繞過快取**（`?v=<commit>`）：新的快取鍵一定是新版。用它確認新版確實上線
+- 一般網址約 10 分鐘內會被背景更新；業主那邊「剛上線怎麼沒變」先請他重新整理一兩次
+- 站內換頁（SPA）載入的是新 JS，所以「點進去正常、直接打開網址不正常」也是這個原因
+
+⚠️ **看標頭要用 GET，不要用 `curl -I`**。同一支文章 API，HEAD 量到 `cache-control: no-cache`、
+GET 量到 `s-maxage=600, stale-while-revalidate` ＋ ETag，差點被當成改動造成的差異。
+用 `curl -s -o /dev/null -D - <url>`。
+
+---
+
+## 驗正式站用 curl，不要開瀏覽器
+
+GA4／GTM **只在 lkkwellness.com 載入**。用瀏覽器打開正式站就會送 page_view；帶測試用的 `utm_*`
+更會在 GA4 留下假的來源，也會在測試瀏覽器留下 30 天的 UTM cookie。
+
+- 正式站：用 curl 檢查 SSR 輸出（搜尋框的 `value`、骨架數、內嵌 CSS 有沒有新規則、狀態碼）
+- 需要真瀏覽器的（點擊、computed style、cookie 行為）：**在 dev 做**，dev 不載入追蹤
+- 測完刪掉測試 cookie：`document.cookie='lkk_utm=; Max-Age=0; path=/; secure; samesite=lax'`
+
+---
+
+## 量「頁面要下載多少 JS」
+
+```bash
+P=https://lkk-website-dev--lkkdev.asia-east1.hosted.app; T=$(mktemp -d); curl -s "$P/?v=x" > $T/p.html
+tot=0; for f in $(grep -oE '/_nuxt/[A-Za-z0-9_.-]+\.js' $T/p.html | sort -u); do
+  curl -s "$P$f" -o $T/x.js; g=$(gzip -c $T/x.js | wc -c); tot=$((tot+g))
+  grep -q identitytoolkit $T/x.js && echo "含 Firebase Auth：$f $((g/1024))KB"; done; echo "壓縮後共 $((tot/1024))KB"
+```
+
+本機 build 的版本：起 `.output/server/index.mjs` 後一樣抓 HTML，檔案直接讀 `.output/public/_nuxt/`。
+2026-10-16 基準：首頁 151KB → 107KB（拿掉全站的 Firebase）。
+
+---
+
+## 本機 production server ＋ 假上游
+
+要驗「上游回什麼時我們怎麼反應」（文章被刪、上游 500、回 HTML 錯誤頁），線上做不到，就在本機做：
+
+```bash
+npm run build; echo $?
+WORDPRESS_API_URL=http://127.0.0.1:8787/wp-json PORT=3999 HOST=127.0.0.1 node .output/server/index.mjs
+```
+
+- 假上游用 `node:http` 寫幾十行，提供切換模式的端點，詳見 [[lkk-wp-articles]] 的「已刪文章的快取清除」
+- `.output/server` **不會讀 `.env`**，Firestore 連不上（log 會有 `Unable to detect a Project Id`），
+  只適合驗不碰 Firestore 的路徑
+- 要縮短快取時間就暫改常數並加 `// TEMP-LOCAL-TEST`，**commit 前 `grep -c TEMP-LOCAL-TEST` 必須是 0**
+- 測完 `pkill -f ".output/server/index.mjs"`，不然下一次的 port 會撞
+
+---
+
+## 用 jiti 在瀏覽器外測純函式（比臨時端點省事）
+
+repo 有 `node_modules/.bin/jiti`，可以直接跑 TypeScript：
+
+```bash
+node_modules/.bin/jiti /tmp/t.ts "$PWD/composables/useCsvExport.ts"   # t.ts 裡 await import(process.argv[2])
+```
+
+限制：被測的檔案**不能用 Nitro／Nuxt 的全域**（`defineEventHandler`、`useRuntimeConfig`、自動匯入），
+也不能有 `~/` 別名 import（要用就設 `JITI_ALIAS`）。所以 2026-10-16 起的做法是
+**把要測的邏輯抽成獨立模組，handler 明確 import 它**：
+`server/utils/upload-name.ts`、`composables/useCsvExport.ts` 的 `toCsvCell`／`buildCsv`、
+`utils/adminAccess.ts`。明確 import 還有一個好處：發 prod 漏帶那個檔案時 build 會直接失敗，
+而不是執行時才 `ReferenceError`。
+
+信件的快照比對（換掉 transporter 的做法）見 [[lkk-admin-leads]]。
+
+---
+
+## 內建瀏覽器的限制
+
+- **彈出視窗一律被擋**：自動化的點擊開不了 popup。Google 登入只能測到「程式有呼叫
+  signInWithPopup、視窗要開到 `<專案>.firebaseapp.com`」，實際登入要請人手動點
+- 它的瀏覽器設定檔是 Stone 的、跨對話保留：已登入的帳號不要動，測試 cookie 要刪
+- 打不開 Claude 自己在本機起的 localhost server（跑在不同環境）
+
+---
+
+## 工具本身的坑（都在 2026-10-16 踩過）
+
+- 🔴 **寫檔工具會把內容裡的反斜線 u 加四碼十六進位，轉成實際的 Unicode 字元**。
+  寫 `'\` + `uFEFF'` 進去，檔案裡變成看不見的 BOM；commit 訊息也一樣。註解還寫著「已改成跳脫字元」，
+  等於防護沒生效又誤導人。**要寫這種跳脫就用 python 對位元組做替換，寫完數位元組確認**
+  （`b.count(b'\xef\xbb\xbf')`）。
+- zsh 的 `"$1:server/..."` 會被當成 `$1` 加 `:s` 修飾語，git 報「有歧義的參數」。寫成 `"${1}:..."`。
+- 舊版 Python 的 f-string 大括號裡不能有反斜線（`re.findall(r"<article\b", h)` 放在 f-string 裡會 SyntaxError）。
+  先算好變數再印。
+- Chrome headless `--print-to-pdf` 寫完檔常常不結束：輪詢檔案大小穩定後 `pkill`，退出碼 144 是被我們殺的，不是失敗。

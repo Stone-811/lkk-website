@@ -100,6 +100,16 @@ description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁�
 `payload.company`，任何人都能偽造合作方名稱 —— 那串字會進通知信主旨的【】、
 進名單、進後台「公司」篩選的選項清單，而且事後清不掉。
 
+⚠️ **上面這道防護只在前端成立**（2026-10-16 稽核）。`server/api/leads/booking.post.ts` 直接收下
+   `body.company`、`body.paymentMethod`、`body.leadSource`，只檢查姓名、電話、分店、方便時段四個必填。
+   直接 POST 就能寫入任意公司名與「50歲以上免費」，後端不會拿生日核對。`group-class.post.ts` 同理。
+   要在後端重算時（修正計畫 W3），**照字面做會闖禍**，動工前先讀：
+   - 前端目前**沒有送 `co`**，後端只用 `formVariant` 重算的話，台灣人壽連結的名單公司欄會全變空白
+   - `leadSource` 本來就由 `?src=` 決定、可以自由帶，不能改成只從 config 重算
+   - `paymentMethod` 的合法值是送出的 value（`活動免費`、`50歲以上免費`、`臨櫃付款`），不是選單上的顯示文字
+   - 布林欄位（`filledBySelf`、`hasMedicalCondition`）若被 `String()`，`'false'` 為真，**每封通知信都會標「有特殊健康狀況」**
+   - 錯誤回應要維持 `{ success:false, error:'中文' }`；改成 `createError` 的話前端只會顯示「true」
+
 🔴 **到期日用台北時間算。** Cloud Run 跑 UTC、台灣是 +8，直接比會提早八小時失效。
 用 `Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' })` 取 `YYYY-MM-DD` 再字串比大小。
 
@@ -183,4 +193,6 @@ description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁�
 - 送出成功後整段取代表單（不是另一頁），成功區塊的 `id="lead-success"`
   是 GTM 轉換事件的觸發依據，**不要改這個 id**。
 - 錯誤處理只有 `alert()`。
+- 通知信與確認信從 2026-10-16 起會把使用者填的值做 HTML 跳脫（主旨與 LINE 連結不動）。
+  改信件內容前先做快照比對，見 [[lkk-admin-leads]]。
 - iOS 的 `input[type=date]` 會撐破容器，而且修掉之後空值時高度會塌 —— 見 [[lkk-mobile-audit]]。
