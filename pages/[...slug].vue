@@ -46,6 +46,52 @@ const post = computed(() => data.value!.data)
 const backTo = computed(
   () => post.value?.backTo ?? { href: '/knowledge-center', label: '知識科普' }
 )
+
+/**
+ * 從站內彙整頁點進來時，返回連結回到「剛才的那個列表」（含 ?tab= 分類與 ?q= 搜尋關鍵字）。
+ * 業主 2026-10-16 回報：在知識分享搜尋「癌症」→ 點文章 → 返回，會落到依分類推算的
+ * 「醫療衛教」，不是剛才的搜尋結果。
+ *
+ * - 依據是 vue-router 寫在 history.state 的 back（上一筆歷史的完整路徑）。只認下面五個
+ *   彙整頁；從 Google、外部連結、或另一篇文章點進來時，維持上面依分類推算的 backTo。
+ * - 掛載後才判斷：SSR 拿不到 history，先渲染 backTo，避免 hydration 不一致。
+ * - 點擊時直接 router.back()，等同按瀏覽器上一頁：歷史不會多一筆，捲動位置交給瀏覽器還原。
+ *   用 Cmd／Ctrl／中鍵開新分頁時照 href 走。
+ * ⚠️ 這時要用一般的 <a>，不能用 NuxtLink：NuxtLink 自己的點擊導航會先跑，
+ *    我們的 preventDefault 來不及擋，會變成先 push 列表、再 back 回文章。
+ */
+const LIST_PAGES: Record<string, string> = {
+  '/knowledge-center': '知識科普',
+  '/cases-center': '學員案例',
+  '/activity-center': '活動資訊',
+  '/news-center': '媒體報導',
+  '/news': '媒體報導',
+}
+const router = useRouter()
+const cameFromList = ref<{ href: string; label: string } | null>(null)
+/** 掛載當下這一筆歷史的位置。點過頁內錨點後會不同，見 backToList。 */
+let mountedEntry: string | null = null
+onMounted(() => {
+  const back = window.history.state?.back
+  if (typeof back !== 'string') return
+  const path = back.split(/[?#]/)[0].replace(/\/+$/, '')
+  const label = LIST_PAGES[path]
+  if (label) {
+    cameFromList.value = { href: back, label }
+    mountedEntry = window.history.state?.current ?? null
+  }
+})
+function backToList(e: MouseEvent) {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+  e.preventDefault()
+  // 點過文章裡的頁內錨點（目錄、註腳）後，瀏覽器會多一筆同一篇文章的歷史，
+  // 這時 back() 只會回到同一篇。改成直接前往列表網址（一樣會還原分類與搜尋）。
+  if (route.hash || window.history.state?.current !== mountedEntry) {
+    router.push(cameFromList.value!.href)
+    return
+  }
+  router.back()
+}
 const { formatDate } = useFormatDate()
 /**
  * 🔴 文章的 canonical 指向「文章正本所在的網域」，切轉前是舊站 l-kk.tw。
@@ -112,11 +158,19 @@ useHead({
 <template>
   <div class="bg-cream min-h-screen">
     <article class="max-w-3xl mx-auto px-6 lg:px-8 py-10 lg:py-16">
-      <!-- 返回目標依文章自己的分類推算（server/utils/article-sections.ts）。
-           ⚠️ 這裡只保證「回到正確的彙整頁與一個合理的分類」。讀者原本是從哪一個
-              分類點進來的，文章本身並不知道 —— 精確還原走的是瀏覽器上一頁，
-              那條路徑靠彙整頁把分類寫進網址 query 來保證。 -->
+      <!-- 從站內彙整頁點進來：回到剛才的列表（含分類與搜尋），等同瀏覽器上一頁。
+           其他情況：依文章自己的分類推算（server/utils/article-sections.ts）。
+           兩種的文字格式相同，見 script 裡 cameFromList 的說明。 -->
+      <a
+        v-if="cameFromList"
+        :href="cameFromList.href"
+        class="inline-block text-sm text-ink/55 hover:text-orange transition-colors mb-6"
+        @click="backToList"
+      >
+        ← 回到{{ cameFromList.label }}
+      </a>
       <NuxtLink
+        v-else
         :to="backTo.href"
         class="inline-block text-sm text-ink/55 hover:text-orange transition-colors mb-6"
       >
@@ -342,7 +396,56 @@ useHead({
   padding: 0 0.15em;
   font-weight: 700;
 }
-.article-body :deep(.stk-button),
+/*
+ * 文章內的按鈕（2026-10-16 業主決定）：文字按鈕一律橘底白字，社群圖示維持深藍。
+ *
+ * 🔴 要用外層區塊區分，不能只看 .stk-button：
+ *    文章底部的社群圖示（FB／IG／YouTube／LINE）的 <a> 也帶 stk-button。
+ *    抽樣 50 篇全部的 stk-button 連結：文字按鈕都在 .wp-block-stackable-button 裡（58 個），
+ *    社群圖示都在 .wp-block-stackable-icon-button 裡（168 個），沒有第三種寫法。
+ *    另有 11 篇用 WordPress 內建按鈕（.wp-block-button__link），原本完全沒套樣式。
+ * 🔴 底色要 !important：作者在 WordPress 個別設的顏色（透明外框款等）是 Stackable
+ *    每個區塊自帶的 <style>，寫法是 .stk-xxxx .stk-button{background:… !important}。
+ *    我們的選擇器多一層 .article-body，兩邊都 !important 時由我們勝出。
+ * 🔴 子元素也要白字：作者常把按鈕文字設成粗體，而文章的 strong 一律是深色（見上方），
+ *    不處理就是「深藍底＋黑字」看不見（業主 2026-10-16 回報 /stroke-3/）。
+ * ⚠️ Stackable 按鈕的尺寸（padding、圓角）不加 !important：作者在 WordPress 調過的大小照舊保留。
+ *    WordPress 內建按鈕例外，見下方 .wp-block-button__link 那條。
+ */
+.article-body :deep(.wp-block-stackable-button .stk-button),
+.article-body :deep(.wp-block-button__link) {
+  display: inline-block;
+  background: #FB720A !important;
+  color: #fff !important;
+  padding: 0.55em 1.3em;
+  border-radius: 999px;
+  text-decoration: none !important;
+  font-weight: 700;
+  margin: 0.3em 0.3em 0.3em 0;
+}
+.article-body :deep(.wp-block-stackable-button .stk-button *),
+.article-body :deep(.wp-block-button__link *) {
+  color: #fff !important;
+}
+.article-body :deep(.wp-block-stackable-button .stk-button:hover),
+.article-body :deep(.wp-block-button__link:hover) {
+  background: #fc8c35 !important;
+}
+/*
+ * WordPress 內建按鈕的內距要 !important：作者在 WP 用的是 var(--wp--preset--spacing--80)
+ * 這類主題變數寫在行內 style，本站沒有定義這些變數，算出來是 0，
+ * 字會直接貼著橘色邊緣（/personal-trainer-2/、/2024-lkkwellness-weightlifting-workshop/）。
+ */
+.article-body :deep(.wp-block-button__link) {
+  padding: 0.55em 1.3em !important;
+}
+
+/*
+ * 社群圖示（文章底部 FB／IG／YouTube／LINE）：維持原樣，宣告內容與 2026-10-16 之前相同。
+ * ⚠️ 畫面上看到的其實是品牌色（FB 藍、IG 紫紅、YouTube 紅、LINE 綠），不是這裡的深藍：
+ *    每個圖示都有 Stackable 自帶的 .stk-xxxx .stk-button{background:#3b5998 !important}，
+ *    蓋過了這條沒有 !important 的底色。
+ */
 .article-body :deep(.wp-block-stackable-icon-button a) {
   display: inline-block;
   background: #2A5269;
@@ -353,7 +456,6 @@ useHead({
   font-weight: 700;
   margin: 0.3em 0.3em 0.3em 0;
 }
-.article-body :deep(.stk-button:hover),
 .article-body :deep(.wp-block-stackable-icon-button a:hover) {
   background: #1a3545;
 }

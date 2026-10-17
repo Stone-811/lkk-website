@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { MIN_SEARCH_LENGTH } from '~/composables/useArticleBrowser'
+import { MIN_SEARCH_LENGTH, normalizeSearchQuery } from '~/composables/useArticleBrowser'
 
 useHead({
   title: '媒體報導｜練健康 LKK Wellness Center',
@@ -40,19 +40,37 @@ const active = ref<'all' | 'video' | 'print' | 'lkk4'>('all')
 // 不打 WordPress，所以純粹是前端字串比對，不會有任何網路請求。
 // 互動維持成「按送出才查」，跟知識科普／學員故事／活動資訊一致，
 // 讀者不用為了不同頁面學兩套操作。
-const input = ref('')
-const submitted = ref('')
+//
+// 關鍵字寫進網址 ?q=（2026-10-16 起，與其他彙整頁一致）：從報導點進站內文章再回上一頁，
+// 頁面會重新掛載，從網址還原搜尋。這頁是純前端比對，SSR 當下就能算出結果。
+// 一樣用 replace，不多一筆歷史；一樣不監聽同頁的網址變化（理由見 useArticleBrowser）。
+// ⚠️ 篩選（全部／影音／平面／LKK4）沒有寫進網址，返回時回到「全部」—— 業主只要求還原搜尋。
+const route = useRoute()
+const router = useRouter()
+const initialQ = normalizeSearchQuery(route.query.q)
+const input = ref(initialQ)
+const submitted = ref(initialQ)
 const canSubmit = computed(() => input.value.trim().length >= MIN_SEARCH_LENGTH)
+
+function syncQueryToUrl(q: string) {
+  const query: Record<string, any> = { ...router.currentRoute.value.query }
+  if (q) query.q = q
+  else delete query.q
+  router.replace({ query }).catch(() => {})
+}
 
 function submitSearch() {
   const q = input.value.trim().replace(/\s+/g, ' ')
   if (q.length < MIN_SEARCH_LENGTH) return
   submitted.value = q
+  syncQueryToUrl(q)
 }
 
 function clearSearch() {
   input.value = ''
+  if (!submitted.value) return
   submitted.value = ''
+  syncQueryToUrl('')
 }
 
 function matchesQuery(item: Report) {

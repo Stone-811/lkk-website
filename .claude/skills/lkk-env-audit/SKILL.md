@@ -125,8 +125,9 @@ git diff --unified=0 apphosting.yaml | grep -E '^[+-]' | grep -v '^[+-][+-]' \
   `FIRESTORE_EMULATOR_HOST` → service account（`CLIENT_EMAIL`+`PRIVATE_KEY`，**線上沒宣告、走不到**）
   → **`applicationDefault()`（ADC，App Hosting 自動注入）← 線上實際走這條**
 - **Admin SDK 依服務帳號 IAM 權限存取，設計上繞過 Security Rules。**
-- 前端 `plugins/firebase.client.ts` 只 import `'firebase/app'` + `'firebase/auth'`（後台 Google 登入），
-  全站**沒有任何** `import 'firebase/firestore'`。
+- 前端只在 `pages/admin/login.vue` 的 `loadGoogleAuthKit()` 動態載入 `'firebase/app'` + `'firebase/auth'`
+  （後台 Google 登入），全站**沒有任何** `import 'firebase/firestore'`。
+  （2026-10-16 起；之前是 `plugins/firebase.client.ts`，會被打包進全站入口，已刪除。）
 - ⚠️ 連 emulator 也一樣：`firebase.ts:46` 連 emulator 時用的仍是 firebase-admin，同樣繞過規則。
   **不要拿「emulator 沒規則檔會預設全開」當論證**——那條路徑本地也不會走到。
 

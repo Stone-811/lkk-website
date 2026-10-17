@@ -303,7 +303,7 @@ lkk-website/                    # repo 根目錄，同時就是 Nuxt 應用根�
 ├── composables/                # useFormatDate、useLeadStatus…
 ├── layouts/                    # default／admin／auth
 ├── middleware/                 # 前端路由守衛
-├── plugins/                    # firebase.client.ts（僅 Auth，不含 Firestore）
+├── plugins/                    # gtm.client.ts、utm.client.ts（Firebase Auth 只在 pages/admin/login.vue 動態載入）
 ├── utils/                      # adminAccess.ts 等前後端共用
 ├── config/                     # 靜態設定
 ├── public/                     # 靜態檔（圖片一律放這裡）

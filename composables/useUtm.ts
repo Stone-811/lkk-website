@@ -65,7 +65,17 @@ export function useUtm() {
       }
       if (Object.keys(incoming).length === 0) return
 
-      utmCookie().value = {
+      // 🔴 utm 跟已存的一模一樣就不重寫（2026-10-16 回歸審查）。
+      //    外掛在每次換頁都會呼叫這裡，包含同一頁用 router.replace 改網址 ——
+      //    彙整頁把分類（?tab=）與搜尋關鍵字（?q=）寫進網址時，網址仍帶著原本的 utm_*，
+      //    於是 landingPage 被改寫成含搜尋詞的網址，最後跟著表單存進名單。
+      //    搜尋詞常是「中風」「帕金森」這類健康資訊，不該進名單。
+      //    同時也保住真正的進站頁與 capturedAt（第一次點廣告的時間）。
+      const cookie = utmCookie()
+      const existing = cookie.value
+      if (existing && UTM_PARAMS.every((k) => (existing[k] || undefined) === incoming[k])) return
+
+      cookie.value = {
         ...incoming,
         referrer: (import.meta.client && document.referrer) || undefined,
         landingPage: fullPath,
