@@ -210,31 +210,33 @@ onMounted(async () => {
 })
 
 /**
- * 出生年月日：手機點開時讓日期選擇器從 1961 年開始（2026-10 業主指定，方便長輩調整）。
+ * 出生年月日：點開時讓日期選擇器從 1961 年開始（2026-10 業主指定，方便長輩調整；手機與電腦都要）。
  *
  * 原生日期欄沒有「起始顯示日」可設，選擇器一律從欄位現有的值開始；值是空的時候：
  *   - iPhone（Safari、LINE）停在今天，而且一點開就把今天寫進欄位，也不理 min/max
  *     （WebKit WKDateTimeInputControl.mm 的 setDateTimePickerToInitialValue）
  *   - Android 的 LINE 停在 max（2010），Android Chrome 152+ 停在 min（1920）
+ *   - 電腦 Chrome／Firefox 停在 2010 年 1 月
  * 所以唯一的做法是在選擇器讀值之前先把值帶成 1961-01-01。
+ * 電腦的日期欄是可打字的年／月／日三格：點任一格帶值後 Chrome 會重排三格、焦點落在「年」，
+ * 接著打 19550503 會得到 1955-05-03（2026-10-19 實測）；點日曆圖示時，打開的當下值已是 1961-01-01。
  *
  * 🔴 帶入的值必須標成「未確認」：點開就關掉的人會留下 1961-01-01，
  *    看起來像真的生日、又剛好符合 50 歲以上免費。未確認時不算年齡、送出時擋下，
  *    要等使用者真的在選擇器裡選過（觸發 input）才算數。
  * ⚠️ 生日剛好是 1961-01-01 的人重選同一天不會觸發 input（值沒變），
  *    所以被擋下時另給一顆「生日就是 1961/1/1」。
- * ⚠️ 只在 mousedown 帶值：iOS 的 focus 太晚（舊版 WebKit 先把空值交給選擇器才派 focus），
+ * ⚠️ 只在 mousedown（主鍵）帶值：iOS 的 focus 太晚（舊版 WebKit 先把空值交給選擇器才派 focus），
  *    pointerdown／touchstart 則是手指放上去捲動頁面也會觸發。
- * ⚠️ 只在「沒有滑鼠或觸控板」的裝置帶值（any-pointer: fine 不成立）：
- *    有精細指標時 Chrome 的日期欄是可以直接打字的年／月／日三格，帶值反而要覆寫三格，
- *    觸控筆電只打年份還會默默存成 xx-01-01。Chromium 自己決定要不要給可打字的三格，
- *    看的也是有沒有精細指標。不用 pointerType 判斷：iOS 會把點在欄位邊緣的 tap
- *    校正到欄位上，mousedown 落在欄位、pointerdown 卻落在外層，判斷會時有時無。
+ *    鍵盤 Tab 進來不帶值（沒有 mousedown），可以照常直接打字。
+ * ⚠️ 不分裝置都帶值（業主 2026-10-19：電腦也要從 1961 開始）。代價：電腦上只打了年份就送出，
+ *    月日會是帶入的 01/01（打完四位年份焦點會自動跳到「月」，算是有提示）；
+ *    手機只轉年份滾輪就按確定也一樣。
  * ⚠️ 頁面沒有 <form>（送出鈕是 type=button），min/max 不會被瀏覽器檢查，
  *    iPhone 的選擇器也不受 min/max 限制 —— 範圍只能由 validateForm 擋。
  *    正式站 2026-10 有生日在 2026 年、把民國年打成 0044 年的名單。
  *    （也有剛好 2010-01-01 的名單，那是 Android 停在 max 直接按確定；範圍含端點擋不到它，
- *     靠的是上面的「帶值＋未確認」。電腦、鍵盤、讀屏這些不帶值的路徑仍可能送出端點值。）
+ *     靠的是上面的「帶值＋未確認」。鍵盤、讀屏這些不帶值的路徑仍可能送出端點值。）
  */
 const BIRTH_DATE_START = '1961-01-01'
 const BIRTH_DATE_MIN = '1920-01-01'
@@ -243,7 +245,7 @@ const BIRTH_DATE_PRESET_ERROR = '請點選學員的生日（目前是預設的 1
 const birthDatePreset = ref(false)   // true＝值是系統帶的 1961-01-01，使用者還沒選過
 
 const primeBirthDate = (e: MouseEvent) => {
-  if (window.matchMedia('(any-pointer: fine)').matches) return
+  if (e.button !== 0) return
   const el = e.target as HTMLInputElement
   // 已經有值、或只打了一半（value 仍是 ''、badInput 為 true）都不要蓋掉
   if (formData.birthDate || el.value || el.validity.badInput) return
