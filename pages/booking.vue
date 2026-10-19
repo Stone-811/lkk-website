@@ -225,26 +225,32 @@ onMounted(async () => {
  *    所以被擋下時另給一顆「生日就是 1961/1/1」。
  * ⚠️ 只在 mousedown 帶值：iOS 的 focus 太晚（舊版 WebKit 先把空值交給選擇器才派 focus），
  *    pointerdown／touchstart 則是手指放上去捲動頁面也會觸發。
- *    只對觸控帶值：電腦可以直接打年份，帶值反而要覆寫三格。
+ * ⚠️ 只在「沒有滑鼠或觸控板」的裝置帶值（any-pointer: fine 不成立）：
+ *    有精細指標時 Chrome 的日期欄是可以直接打字的年／月／日三格，帶值反而要覆寫三格，
+ *    觸控筆電只打年份還會默默存成 xx-01-01。Chromium 自己決定要不要給可打字的三格，
+ *    看的也是有沒有精細指標。不用 pointerType 判斷：iOS 會把點在欄位邊緣的 tap
+ *    校正到欄位上，mousedown 落在欄位、pointerdown 卻落在外層，判斷會時有時無。
  * ⚠️ 頁面沒有 <form>（送出鈕是 type=button），min/max 不會被瀏覽器檢查，
  *    iPhone 的選擇器也不受 min/max 限制 —— 範圍只能由 validateForm 擋。
- *    正式站 2026-10 有生日在 2026 年、剛好 2010-01-01、把民國年打成 0044 年的名單。
+ *    正式站 2026-10 有生日在 2026 年、把民國年打成 0044 年的名單。
+ *    （也有剛好 2010-01-01 的名單，那是 Android 停在 max 直接按確定；範圍含端點擋不到它，
+ *     靠的是上面的「帶值＋未確認」。電腦、鍵盤、讀屏這些不帶值的路徑仍可能送出端點值。）
  */
 const BIRTH_DATE_START = '1961-01-01'
 const BIRTH_DATE_MIN = '1920-01-01'
 const BIRTH_DATE_MAX = '2010-01-01'
+const BIRTH_DATE_PRESET_ERROR = '請點選學員的生日（目前是預設的 1961/1/1）'
 const birthDatePreset = ref(false)   // true＝值是系統帶的 1961-01-01，使用者還沒選過
-let lastPointerType = ''
-const rememberPointerType = (e: PointerEvent) => { lastPointerType = e.pointerType }
 
 const primeBirthDate = (e: MouseEvent) => {
-  if (lastPointerType !== 'touch') return
+  if (window.matchMedia('(any-pointer: fine)').matches) return
   const el = e.target as HTMLInputElement
-  // 已經有值、或電腦上只打了一半（value 仍是 ''、badInput 為 true）都不要蓋掉
+  // 已經有值、或只打了一半（value 仍是 ''、badInput 為 true）都不要蓋掉
   if (formData.birthDate || el.value || el.validity.badInput) return
   el.value = BIRTH_DATE_START
   formData.birthDate = BIRTH_DATE_START   // 一定要改 formData，只改 el.value 會被 v-model 改回 ''
   birthDatePreset.value = true
+  clearBirthDateError()                   // 先前「請選擇出生年月日」的紅字已經不對了
 }
 
 const clearBirthDateError = () => {
@@ -370,7 +376,7 @@ const validateForm = () => {
   if (formData.phone && !/^09\d{8}$/.test(formData.phone)) newErrors.phone = '請輸入有效的手機號碼'
   if (!formData.gender) newErrors.gender = '請選擇性別'
   if (!formData.birthDate) newErrors.birthDate = '請選擇出生年月日'
-  else if (birthDatePreset.value) newErrors.birthDate = '請點選學員的生日（目前是預設的 1961/1/1）'
+  else if (birthDatePreset.value) newErrors.birthDate = BIRTH_DATE_PRESET_ERROR
   else if (formData.birthDate < BIRTH_DATE_MIN || formData.birthDate > BIRTH_DATE_MAX) {
     newErrors.birthDate = '請確認出生年月日，年份請用西元（民國 50 年＝1961 年）'
   }
@@ -702,7 +708,6 @@ const handleSubmit = async () => {
                         :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange min-h-[50px]', errors.birthDate ? 'border-red-500' : 'border-cream-200']"
                         :max="BIRTH_DATE_MAX"
                         :min="BIRTH_DATE_MIN"
-                        @pointerdown="rememberPointerType"
                         @mousedown="primeBirthDate"
                         @input="onBirthDateInput"
                       />
@@ -714,7 +719,7 @@ const handleSubmit = async () => {
                       </p>
                       <p v-if="errors.birthDate" class="text-red-500 text-sm mt-1">{{ errors.birthDate }}</p>
                       <button
-                        v-if="errors.birthDate && birthDatePreset && formData.birthDate === BIRTH_DATE_START"
+                        v-if="errors.birthDate === BIRTH_DATE_PRESET_ERROR && birthDatePreset && formData.birthDate === BIRTH_DATE_START"
                         type="button"
                         class="mt-2 min-h-[44px] px-4 rounded-lg border border-cream-200 text-sm text-navy-700 transition-all hover:border-orange/50"
                         @click="confirmPresetBirthDate"
