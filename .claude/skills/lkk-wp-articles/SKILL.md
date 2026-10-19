@@ -1,6 +1,6 @@
 ---
 name: lkk-wp-articles
-description: 新站以根目錄網址渲染舊站 WordPress 文章的那一層（headless），以及四個彙整頁的分頁內搜尋、載入更多、主題分頁與返回還原。要動 pages/[...slug].vue、server/api/public/article、wp-articles、sitemap.xml.ts、server/utils/article-sections.ts、四個彙整頁、components/common/Article*.vue、composables/useArticleBrowser.ts，或被問「文章為什麼打不開／跑版／拿到別篇／搜不到／載入更多卡住／已刪的文章還看得到／返回跑錯分頁／sitemap 怎麼變那麼少／dev 站會不會被 Google 收錄」時使用。內含九個實測過的地雷、2026-10-13 正式站連不上舊站那次停擺的完整查法與三方對照、sitemap 的靜默失敗模式、WP REST 搜尋的實際行為，以及一條比程式碼更重要的教訓：驗證沒覆蓋到的那一層，就是會壞的那一層。
+description: 新站以根目錄網址渲染舊站 WordPress 文章的那一層（headless），以及四個彙整頁的分頁內搜尋、載入更多、主題分頁與返回還原。要動 pages/[...slug].vue、server/api/public/article、wp-articles、sitemap.xml.ts、server/utils/article-sections.ts、四個彙整頁、pages/news.vue 的搜尋、components/common/Article*.vue、composables/useArticleBrowser.ts，或被問「文章為什麼打不開／跑版／拿到別篇／搜不到／載入更多卡住／已刪的文章還看得到／返回跑錯分頁或搜尋結果不見／文章裡的按鈕顏色不對／刪掉的頁面網址顯示什麼／sitemap 怎麼變那麼少／dev 站會不會被 Google 收錄」時使用。內含九個實測過的地雷、2026-10-13 正式站連不上舊站那次停擺的完整查法與三方對照、已刪文章在 swr 快取下持續回 200 的成因與修法（含本機假 WordPress 的驗法）、已下架頁面（franchise、shop）的兩道擋法、Stackable 按鈕與社群圖示的區分、搜尋關鍵字寫進網址與返回剛才列表的做法、sitemap 的靜默失敗模式、WP REST 搜尋的實際行為，以及一條比程式碼更重要的教訓：驗證沒覆蓋到的那一層，就是會壞的那一層。
 ---
 
 # WordPress 文章渲染層
@@ -90,9 +90,26 @@ WordPress REST 實測 **0.8–1.3 秒**，併發時會逾時。
 ### 6. 與本站路由同名的文章打不開
 
 實測 666 篇有 **1 筆**：「中高齡健康訓練創業說明會」代稱是 `franchise`，
-而本站 `/franchise` 是加盟頁，靜態路由優先。
+而本站 `/franchise` 原本是加盟頁，靜態路由優先。
 
 那篇在本站永遠取不到，已從彙整頁整篇排除。根治要在 WordPress 改代稱並補 301。
+
+🔴 **2026-10-16 起 `/franchise` 與 `/shop` 兩頁已刪除**（業主：停止招募加盟、不賣商品，網址要顯示找不到頁面）。
+頁面檔一刪，網址就掉進 `[...slug]` 來查 WordPress —— **franchise 那篇會頂上來**，內容正是加盟說明。
+所以 `article/[slug].get.ts` 加了 `RETIRED_PAGES`，擋兩道：
+
+1. **打上游之前**：`slug.toLowerCase()` 在清單裡就直接 404（WP 查代稱不分大小寫，`/Franchise` 也查得到）
+2. **拿到上游回應之後**：用 **WordPress 回傳的正式代稱** `post.slug` 再擋一次，放在寫入快取與備份之前。
+   WP 會把查詢代稱再正規化（小寫、`.` 變 `-`、去掉頭尾 `-`、逗號分隔多個代稱），
+   `/franchise-/`、`/franchise./`、`/-franchise/`、`/x,franchise/` 躲得過第一道、仍會查到那篇
+
+⚠️ **刪掉一個第一層頁面時，四個 `RESERVED_ROUTES` 不要跟著拿掉。** 拿掉的話 sitemap 會開始列出那篇
+WP 文章、彙整頁也會冒出它的卡片，而網址實際是 404。刪頁的步驟是：
+刪頁面檔 → 從 `sitemap.xml.ts` 的 `STATIC_PATHS` 移除 → 若 WP 有同代稱文章就加進 `RETIRED_PAGES`
+→ 發 prod 時刪除要另外 `git rm`（見 [[lkk-deploy-verify]]）。
+
+舊站 `l-kk.tw/franchise/` 經萬用 301 到本站 `/franchise/`，現在也是 404（業主選的結果）。
+文章內指向舊站購物車／結帳（`PAGE_MAP` 的 `checkout`、`shoppingcart` → `/shop`）的連結同樣變成 404，業主同意。
 
 ⚠️ **新增第一層路由時有四個地方要登記**，少一個就會出事：
 
@@ -446,7 +463,7 @@ log 只記失敗不記成功，健康時的回源量在這個 repo 裡量不到�
 
 | 症狀 | 說明 |
 |---|---|
-| 已刪的文章還看得到 | 連不上就一律吐 7 天長效備份（回應裡 `stale: true`），所以停擺期間讀不到「這篇已被刪」這個事實。**不是 API 分不出被刪與連不上** ——上游回空陣列（＝被刪）本來就直接 404、完全不碰備份（`article/[slug].get.ts:81-83`）；只有 `$fetch` 拋錯或回非陣列（＝連不上／限流）才走備份（:69-78）。停擺期間請求全部逾時，API 根本沒機會看到那個空陣列 |
+| 已刪的文章還看得到 | 兩種成因，**先看 Cloud Run log 分辨**：① 停擺期間：連不上就一律吐 7 天長效備份（回應裡 `stale: true`），API 沒機會看到「被刪」的空陣列；② **平常也會**：快取過這篇的執行個體在 swr 模式下一直回舊的 200，log 會出現 `[cache] SWR handler error`。② 已於 2026-10-16 修正，見下方「已刪文章的快取清除」 |
 | 隨機幾篇文章 503 | 那幾篇在這個執行個體上沒有備份 |
 | 四個彙整頁空白 | `wp-articles` 的 `fetchTab`／`fetchAllCases` 全數拋錯 |
 | **sitemap 從約 720 筆掉到 26 筆** | 最隱蔽的一項，見下 |
@@ -460,6 +477,58 @@ log 只記失敗不記成功，健康時的回源量在這個 repo 裡量不到�
 
 **一次就能分辨的方法**：看舊站的 access log，搜停擺期間打 `/wp-json/wp/v2/posts` 的請求。
 完全沒有紀錄 → 封包在 nginx 之前就被丟 → 伺服器層；有紀錄但是 403/503 → 應用層。
+
+---
+
+## 已刪文章的快取清除（2026-10-16）
+
+### 為什麼平常也會「刪了還在」
+
+`article/[slug].get.ts` 是 `defineCachedEventHandler({ maxAge: 600, swr: true })`。
+nitropack 的 `runtime/internal/cache.mjs`：快取過期後**先回舊的 entry、在背景跑 handler**；
+背景那次丟出的 404 只會被記成 `console.error('[cache] SWR handler error.')`，**舊 entry 不清、mtime 不更新**，
+所以下一個請求又回舊的 200、又在背景失敗一次。快取過這篇的執行個體會一直這樣，直到被回收（可以活好幾天）。
+
+### 現在的做法：只在「上游確定回空陣列」那一條清
+
+`forgetDeletedArticle(slug)`：
+1. 先 `hasItem` 看這篇的快取與 7 天備份在不在，**都沒有就直接 404**（沒東西可清）
+2. 有東西要清時，先打一次**上游健康檢查**（`/wp/v2/posts?per_page=1&_fields=id`，5 秒逾時）：
+   看不到任何文章就當成上游異常，**什麼都不動**
+3. 健康才 `removeItem` 快取與備份，log `[Article] 上游確認已刪除，清除快取與備份 <slug> { hadCache, hadBackup }`
+
+🔴 **健康檢查是回歸審查補上的**：WordPress 在資料庫查詢被中途砍掉、外掛擋匿名 REST 時，也會用 HTTP 200 回 `[]`。
+沒有這道檢查的話，一次上游異常就會把熱門文章的備份清掉，暫時故障變成永久 404。
+
+🔴 **不要改成 `swr: false`**：過期就前景等上游，停擺時每篇文章都讓讀者等滿 12 秒逾時，
+請求疊起來擴出沒有備份的新執行個體，回到 10-13 那種自我延續的迴圈。
+也不要加 `staleMaxAge`（在 nitropack 2.13.4 它只影響 swr:false 與回應標頭，不限制伺服器吐舊值多久）。
+
+### 快取鍵只組一次
+
+存放鍵是 `/cache:nitro/handlers:article:article<sha1 前 20 碼>.json`，對應 cache.mjs 的
+`[base, group, name, key + '.json'].join(':')`。handler 明確設 `name: 'article'`（預設是共用的 `_`）；
+鍵裡**不放連字號**（`escapeKey` 會把 `\W` 全刪）。`articleCacheKey()` 由 `getKey` 與清除共用 ——
+兩邊各拼一次的話，一旦對不上，`removeItem` 打到不存在的鍵**不會報錯**，等於沒修。
+log 裡的 `hadCache: true` 就是鍵組對了的證據。
+
+### 時間線與已知限制
+
+- 刪文後：Nitro 快取最多 600 秒 → 過期後第一個請求仍回舊 200（背景清除）→ 之後 404；
+  CDN 的 s-maxage 與條件式請求的 304 會再延長，**實際約 10～30 分鐘**。急件用強制 rollout 一次清掉
+- **業主「把文章切回草稿慢慢改」的期間，新站會顯示找不到頁面**（業主 2026-10-16 已知悉同意）
+- 低流量時段 Cloud Run 節流 CPU，背景重抓可能逾時改走備份、以 `stale:true` 寫回 —— 這種情況已刪文章仍會存活。
+  上線後若 log 在非停擺期間出現「上游失敗，改用上一份快取」＋ TimeoutError，就是這條
+
+### 本機怎麼驗（線上無法安全地「刪一篇文章」）
+
+production build ＋ 一支幾十行的假 WordPress（`node:http`，`/__mode?slug=x&m=article|empty|error|html` 切換回應），
+`WORDPRESS_API_URL=http://127.0.0.1:8787/wp-json PORT=3999 node .output/server/index.mjs`，只用 curl 打 API。
+等快取過期要 600 秒，**暫時把 `maxAge` 改 3 並在那行加 `// TEMP-LOCAL-TEST`**，測完改回、
+`grep -c TEMP-LOCAL-TEST` 必須是 0 才能 commit。2026-10-16 驗過的情境：
+真刪除 → 清除、之後 404、上游 500 時 503（備份已清）；全站都查不到的假空陣列 → 不清、持續 200；
+另一篇在上游 500／HTML 錯誤頁時 → `stale:true` 的 200（沒被誤判成刪除）；中文代稱一樣清得掉。
+假 WP 要模擬代稱正規化，才測得到 `RETIRED_PAGES` 第二道。不要用 `npm run dev`（storage 掛載不同，測了不算數）。
 
 ---
 
@@ -482,6 +551,48 @@ log 只記失敗不記成功，健康時的回源量在這個 repo 裡量不到�
 
 ---
 
+## 文章內的按鈕與社群圖示（2026-10-16）
+
+業主要求：**文字按鈕一律橘底白字，社群圖示不動**。樣式在 `pages/[...slug].vue` 的 scoped style。
+
+### 先分清楚是哪一種
+
+| 種類 | 外層區塊 | 數量（2026-10-16 WP 搜尋） |
+|---|---|---|
+| Stackable 文字按鈕 | `.wp-block-stackable-button` 裡的 `a.stk-button` | 360 篇含 `stk-button` |
+| **文章底部社群圖示**（FB／IG／YouTube／LINE，無文字） | `.wp-block-stackable-icon-button` 裡的 `a` | 284 篇 |
+| WordPress 內建按鈕 | `a.wp-block-button__link` | 11 篇 |
+
+🔴 **社群圖示的 `<a>` 也帶 `stk-button` class**，只寫 `.stk-button` 會連社群圖示一起改。
+要用外層區塊區分。抽樣 50 篇全部 226 個 `stk-button` 連結：文字按鈕 58 個都在
+`.wp-block-stackable-button` 裡、社群圖示 168 個都在 `.wp-block-stackable-icon-button` 裡，沒有第三種，
+也沒有舊版外掛的 `ugb-button`。（`wp-block-stackable-button-group` 是不同的 class token，不會誤中。）
+
+### 為什麼原本是「深藍底＋黑字」
+
+作者幾乎都把按鈕文字設成粗體（抽樣 9 個有 8 個包 `<strong>`），而本站 `.article-body strong` 一律 `#1a1a1a`。
+按鈕本身的白字只作用在 `<a>`，子元素的 strong 自己有顏色 → 黑字。所以白字規則要寫到**子元素**（`.stk-button *`）。
+
+### 顏色優先順序
+
+- 作者在 WP 個別設的顏色是 Stackable 每個區塊自帶的 `<style>`：`.stk-xxxx .stk-button{background:… !important}`。
+  我們的選擇器多一層 `.article-body`，兩邊都 `!important` 時由我們勝出，所以底色、字色用 `!important`
+- **社群圖示畫面上一直是品牌色**（FB `#3b5998`、IG、YouTube、LINE 各自的色），不是本站規則寫的深藍 ——
+  那條沒有 `!important`，被 Stackable 的品牌色蓋掉。業主說「社群圖示維持深藍」，實際意思是「維持現狀」
+- Stackable 按鈕的尺寸（padding、圓角）**不加** `!important`，作者調過的大小保留
+- **內建按鈕的 padding 要 `!important`**：作者用 `var(--wp--preset--spacing--80)` 這類主題變數寫在行內，
+  本站沒定義，算出來是 0，字貼著橘色邊緣（`/personal-trainer-2/`）
+- ⚠️ 本站**沒有載入 Stackable 的前台 CSS**，自帶 style 也沒設 `content`，所以按鈕的 `::before`／`::after` 不會產生。
+  透明外框款的框線雖然寫在 `:before`，實際畫面不受影響，不必處理
+
+### 驗證
+
+正式站與 dev 用同一篇文章比對 computed style（`getComputedStyle` 取 background、color、padding、radius，含子元素顏色），
+社群圖示四個值要完全相同。⚠️ **剛部署完 CDN 會回舊 HTML（樣式內嵌在 HTML 裡）**，
+看到舊樣式先用 `?v=xxx` 繞過快取確認，不要誤判成改壞（見 [[lkk-deploy-verify]]）。
+
+---
+
 ## 四個彙整頁：搜尋、載入更多、主題分頁
 
 > 2026-09-30～10-02 建置。篇數為當下量測，會長。
@@ -496,6 +607,8 @@ log 只記失敗不記成功，健康時的回源量在這個 repo 裡量不到�
 `/news`（媒體報導）**不在這一層**：它上半部是寫死在頁面裡的精選版面，
 其中 AFP 與 CNA 兩則只有站外連結、WordPress 沒有對應文章，所以彙整頁取代不了它。
 底部的「查看全部報導」指向 `/news-center`。
+⚠️ 它的搜尋是**自己寫的純前端比對**，沒有用 `useArticleBrowser`（只 import 了 `MIN_SEARCH_LENGTH`
+與 `normalizeSearchQuery`）。改共用搜尋行為時要記得它，2026-10-16 就因此漏過一次。
 
 建 `/news-center` 之前，WP 新聞報導分類裡**有 12 篇在站上沒有任何入口** ——
 網址直接打得開，但沒有任何頁面連到。這是「只看頁面不看分類」會漏掉的缺口。
@@ -599,22 +712,51 @@ orderby=relevance：深蹲時膝蓋會發出咔咔聲就一定有問題嗎？
 寫死的 `to="/knowledge-center"` ＋「← 回到知識科普」（`git show 9e169de^:pages/[...slug].vue`
 第 107、110 行），網址與文字都寫死，它同時解釋兩個現象。
 
-**已於 commit `9e169de` 修正**：現在讀 API 回的 `backTo`（`pages/[...slug].vue:46-47`、`:119-124`），
+**已於 commit `9e169de` 修正**：現在讀 API 回的 `backTo`，
 寫死值只留作「備份副本缺 backTo 時」的 fallback。
 
 另外當時**完全沒有把分類寫進網址**，所以瀏覽器上一頁也還原不了分類。
 
-現況（2026-10-16 實測）：四個彙整頁**本身**仍是 0 —— 分類不在頁面層處理，
-同步網址的程式全部集中在 `composables/useArticleBrowser.ts:85-111`
-（`active` 初值讀 `?tab=`，`setActive` 經 `syncTabToUrl` 用 `router.replace` 寫回）。
-所以 grep 四個頁面會是 0，但 composable 是 5，不要據此以為沒做。
+分類同步網址的程式全部集中在 `composables/useArticleBrowser.ts`
+（`active` 初值讀 `?tab=`，`setActive` 經 `syncTabToUrl` 用 `router.replace` 寫回），
+所以 grep 四個彙整頁本身會是 0，不要據此以為沒做。
 
-兩條路徑分別修：
+現況（2026-10-16 起）：
 
 | 路徑 | 做法 | 能做到什麼 |
 |---|---|---|
-| 瀏覽器上一頁 | `useArticleBrowser` 的 `active` 初值讀 `?tab=`，`setActive` 用 `router.replace` 同步回網址 | **精確還原**讀者剛才那個分類 |
-| 頁面上的「← 回到」 | 由文章 API 依文章自己的分類算出 `backTo`（`server/utils/article-sections.ts`） | 回到**正確的彙整頁 ＋ 一個合理的分類**，不保證等於來源 |
+| 瀏覽器上一頁 | 分類 `?tab=` 與**搜尋關鍵字 `?q=`** 都用 `router.replace` 寫進網址，進頁時讀回 | **精確還原**分類與搜尋結果 |
+| 頁面上的「← 回到」，**從彙整頁點進來** | 讀 vue-router 寫在 `history.state.back` 的上一頁完整路徑；是五個彙整頁之一就 `router.back()` | 等同瀏覽器上一頁 |
+| 頁面上的「← 回到」，從 Google／外部／另一篇文章進來 | 文章 API 依文章自己的分類算出的 `backTo`（`server/utils/article-sections.ts`） | 回到**正確的彙整頁 ＋ 一個合理的分類** |
+
+### 2026-10-16：搜尋關鍵字寫進網址、返回回到剛才的列表
+
+業主回報：知識分享搜尋「癌症」→ 點文章 → 回上一頁，**搜尋結果整個不見**；按「← 回到知識科普」則跑到「醫療衛教」。
+（學員案例的「癌症」是主題分頁，原本就還原得了；知識分享沒有癌症分類，只能用搜尋。）
+
+`useArticleBrowser`（四個彙整頁共用）：
+- 送出時 `router.replace` 寫入 `?q=`，清除時拿掉；進頁時用 `normalizeSearchQuery`（與送出相同的正規化、
+  不滿 `MIN_SEARCH_LENGTH` 或是陣列就當成沒帶）讀回
+- 首屏：**SSR 與瀏覽器端都先把目前分類標成載入中**，畫面一開始就是搜尋狀態、不會先閃預設列表，
+  也不會 hydration 不一致；真正的搜尋請求只在 `onMounted` 發（搜尋不快取，不在 SSR 打上游）
+- 首屏連分類清單都沒拿到（`ready` 為 false）時**不還原**，維持「清單暫時讀取不到」——
+  否則會顯示「再按一次搜尋」，但那時搜尋鈕是停用的
+- 🔴 **刻意不監聽同一頁的 `?q=` 變化**。加過又拿掉：在搜尋結果頁點頁首「知識科普」時元件不會重新掛載，
+  跟著網址清掉搜尋、分類卻停在原處（`?tab=` 從來沒監聽），畫面落到網址表達不出的狀態，
+  而且「點頁首會重設」是業主沒同意過的畫面行為。從文章返回時頁面會重新掛載，本來就用不到監聽
+
+`pages/[...slug].vue` 的返回連結：
+- 掛載後才判斷 `history.state.back`（SSR 拿不到 history，先渲染分類推算的連結，避免 hydration 不一致）
+- 🔴 這時要用**一般 `<a>` 自己處理 click**，不能在 `NuxtLink` 上掛 `@click`：NuxtLink 自己的導航會先跑，
+  `preventDefault` 來不及擋，變成先 push 列表、再 back 回文章
+- 點過文章裡的頁內錨點後，瀏覽器多一筆同篇文章的歷史，`back()` 只會回到同一篇。
+  偵測到 `route.hash` 或 `history.state.current` 與掛載時不同，就改 `router.push(列表網址)`
+- 從 `<a>` 用 Cmd／Ctrl／中鍵開新分頁照 `href` 走
+- 連結文字格式不變（「← 回到○○」），名稱對齊分類推算那份：知識科普、學員案例、活動資訊、媒體報導
+
+⚠️ 還沒做（業主說先不做）：回到列表時**捲動位置**與「載入更多」載過的頁數不保留。
+搜尋模式下結果在掛載後才回來，瀏覽器的捲動還原會先套在骨架的高度上，讀者通常落在列表前段。
+要做的話，審查建議用「只在瀏覽器端、以路徑＋分類＋關鍵字為鍵」的模組層快取保存 view，命中就同步寫回、不發請求。
 
 🔴 **學員案例必須排在知識科普之前判斷。** 案例文章的主題分類（癌症、肌少症…）
 在 WordPress 裡掛在「知識分享」底下，所以一篇案例**同時帶著知識類的分類 id**。

@@ -69,7 +69,7 @@ description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁�
 | 生日下方的免費提示 | 滿 50 歲時顯示 | 不顯示 |
 
 ⚠️ **其中只有六處由 `pricingCopy` 收斂。** 付款欄位與生日提示另有兩個各自的 `v-if`
-直接讀 `variant.allAgesFree`（`pages/booking.vue:966`、`:641`），值由 `:239-241` 的 watch 填入。
+直接讀 `variant.allAgesFree`（`pages/booking.vue:1042`、`:709`），值由 `:300-302` 的 watch 填入。
 **這兩處是改價格規則時最容易漏掉的。**
 
 集中設計是刻意的（註解寫「避免價格訊息散落多處各自分支」），但它沒有涵蓋那兩個欄位的顯示條件。
@@ -99,6 +99,16 @@ description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁�
 🔴 **`co` 帶的是代號不是公司名，查不到就當沒帶。** 若讓網址上的字直接進
 `payload.company`，任何人都能偽造合作方名稱 —— 那串字會進通知信主旨的【】、
 進名單、進後台「公司」篩選的選項清單，而且事後清不掉。
+
+⚠️ **上面這道防護只在前端成立**（2026-10-16 稽核）。`server/api/leads/booking.post.ts` 直接收下
+   `body.company`、`body.paymentMethod`、`body.leadSource`，只檢查姓名、電話、分店、方便時段四個必填。
+   直接 POST 就能寫入任意公司名與「50歲以上免費」，後端不會拿生日核對。`group-class.post.ts` 同理。
+   要在後端重算時（修正計畫 W3），**照字面做會闖禍**，動工前先讀：
+   - 前端目前**沒有送 `co`**，後端只用 `formVariant` 重算的話，台灣人壽連結的名單公司欄會全變空白
+   - `leadSource` 本來就由 `?src=` 決定、可以自由帶，不能改成只從 config 重算
+   - `paymentMethod` 的合法值是送出的 value（`活動免費`、`50歲以上免費`、`臨櫃付款`），不是選單上的顯示文字
+   - 布林欄位（`filledBySelf`、`hasMedicalCondition`）若被 `String()`，`'false'` 為真，**每封通知信都會標「有特殊健康狀況」**
+   - 錯誤回應要維持 `{ success:false, error:'中文' }`；改成 `createError` 的話前端只會顯示「true」
 
 🔴 **到期日用台北時間算。** Cloud Run 跑 UTC、台灣是 +8，直接比會提早八小時失效。
 用 `Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' })` 取 `YYYY-MM-DD` 再字串比大小。
@@ -135,11 +145,64 @@ description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁�
    `cooperation`／`franchise` 用的是另一條容許市話的正則，`group-class` 會先
    `replace(/[\s-]/g,'')`。受眾含企業窗口或長輩時要考慮換。
 
+### 出生年月日（2026-10-19 起：手機與電腦點開都從 1961 開始）
+
+原生 `type=date`，業主要求長輩點開時直接停在 1961 年。**原生日期欄沒有「起始顯示日」的設定**，
+選擇器一律從欄位現有的值開始；值是空的時候各平台停的地方都不一樣，而且都很遠：
+
+| 平台 | 空值點開停在 | 打開時會不會自己寫值 |
+|---|---|---|
+| iPhone（Safari、LINE） | **今天**，而且**不理 min/max** | **會**，一打開就把今天寫進欄位並觸發 input |
+| Android 的 LINE（WebView）、Chrome ≤151 | max（2010-01-01） | 不會，按「設定」才寫 |
+| Android Chrome 152+（Material 對話框） | min 所在月（1920-01），上方預選今天 | 不會，但「確定」一開始就能按 |
+| 桌機 Chrome／Firefox | 2010 年 1 月 | 不會，可以直接打年份 |
+
+（WebKit `WKDateTimeInputControl.mm` 的 `setDateTimePickerToInitialValue` 已親自核對；
+Android 與桌機是讀 Chromium／Firefox 原始碼推得，**都沒有實機驗證**。）
+
+做法（`pages/booking.vue` 的 `primeBirthDate` 一帶，註解寫得很完整）：
+- **主鍵 mousedown 時、欄位空白，就先帶 `1961-01-01`，不分裝置**（業主 10-19：電腦也要從 1961 開始）。
+  不用 focus（iOS 舊版 WebKit 先把空值交給選擇器才派 focus，來不及）；
+  不用 pointerdown／touchstart（手指放上去捲動頁面也會觸發）；鍵盤 Tab 進來不帶值，照常打字。
+  電腦 Chrome 實測：點年／月／日任一格帶值後，三格重排、焦點落在「年」，接著打 19550503 得到 1955-05-03；
+  點日曆圖示時，click 當下（選單讀值的時機）值已是 1961-01-01。
+  代價：電腦只打年份就送出，月日會是帶入的 01/01（手機只轉年份滾輪也一樣），已接受。
+  ⚠️ 演變：第一版用「上一個 pointerdown 是 touch」只對手機帶值——iOS 會把點在欄位邊緣的 tap
+  校正到欄位上（mousedown 落在欄位、pointerdown 落在外層），判斷時有時無；第二版改看 `any-pointer: fine`；
+  第三版業主要電腦也帶，判斷整個拿掉。
+- 🔴 **帶入的值是「未確認」（`birthDatePreset`）**：不算年齡（`confirmedBirthDate`）、
+  不出現免費提示與免費付款選項、送出擋下「請點選學員的生日（目前是預設的 1961/1/1）」。
+  不這樣做的話，點開就關的人會送出 1961-01-01——看起來像真的生日、又剛好符合 50 歲以上免費。
+- 生日剛好 1961/1/1 的人重選同一天**不會觸發 input**（值沒變，WebKit 與 Blink 都直接 return），
+  所以被擋下時才出現「生日就是 1961/1/1」按鈕。
+- **範圍檢查 1920-01-01～2010-01-01 在 `validateForm`**：頁面沒有 `<form>`、送出鈕是 type=button，
+  瀏覽器的 min/max 驗證從不執行；iPhone 的選擇器也不受限。超出範圍顯示
+  「請確認出生年月日，年份請用西元（民國 50 年＝1961 年）」。⚠️ 後端仍不檢查。
+  上限 2010-01-01 的由來：7/20 從 Next.js 搬到 Nuxt 時（`14ed934`）順手寫的，沒有業務理由（舊版年份列到今年）；
+  它是寫死的日期、不會跟著年份走。**業主 2026-10-19 決定維持原樣，不要改成「滿 N 歲」，也不要再提。**
+  範圍**含端點**（與 min/max 的語意一致），所以擋不到「剛好 2010-01-01／1920-01-01」——
+  那是 Android 選擇器停在端點直接按確定，靠的是「帶值＋未確認」；不帶值的路徑（鍵盤、讀屏）仍可能送出端點值。
+- 帶值時會清掉先前「請選擇出生年月日」的紅字；「生日就是 1961/1/1」只在紅字正好是未確認那句時出現。
+- 只有生日這一欄改好就清紅字；其他欄位維持按送出才更新。
+
+**為什麼要範圍檢查**：2026-10-19 統計正式站 218 筆預約名單，16 筆生日不合理——
+7 筆生日在 2026 年 10、11 月（iPhone 一打開是當月月曆，疑似當成預約日期在點）、
+3 筆剛好 2010-01-01（Android／桌機的預設值直接按確定）、
+6 筆年份小於 1920，其中 5 筆是 0027／0035／0040／0044／0062＝**把民國年打進西元欄**。
+前兩類共 10 筆算成 0 歲，免費選項被藏起來，全部只能選臨櫃付款。
+（請求日誌查不到裝置：App Hosting 的 CDN 把 User-Agent 全換成「Google」。）
+
+⚠️ 驗證邊界：headless Chrome 跑的是桌機版選擇器，只能驗「帶值、未確認、範圍、紅字」這些邏輯
+（2026-10-19 在 dev 站 44 項全過，含電腦點三格＋打字、日曆圖示、右鍵、Tab）；
+**選擇器實際從哪裡開始只能請業主實機看**——手機如此，電腦也一樣：headless Chrome 不會真的打開日期選單。
+測試腳本的寫法：模擬手機（`touch: true`）用真的觸控點欄位、送出前先勾同意事項（否則送出鈕是 disabled）、
+姓名永遠留空，確保一定被驗證擋下、不會真的寫進名單。
+
 ⚠️ 分店清單 SSR 時是**寫死的四間**，client 掛載後才用原生 `fetch` 打
 `/api/public/stores` 覆蓋。所以 SSR 的 HTML 裡永遠是那份寫死的清單。
 
-⚠️ `handleSubmit`（`pages/booking.vue:354`）**沒有再入保護**——開頭只有 `validateForm()`，
-   擋重複送出全靠 1026 行的 `:disabled="isSubmitting || ..."`。
+⚠️ `handleSubmit`（`pages/booking.vue:419`）**沒有再入保護**——開頭只有 `validateForm()`，
+   擋重複送出全靠 1102 行的 `:disabled="isSubmitting || ..."`。
    對照 `pages/group-booking.vue:291-292` 的 `handleSubmit()` 開頭就有 `if (submitting.value) return`。
    ⚠️ 兩頁的識別字不同名：booking 的 ref 叫 `isSubmitting`（187 行），
    group-booking 叫 `submitting`（227 行）。跨檔引用時不要憑記憶套用另一頁的名字。
@@ -183,4 +246,7 @@ description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁�
 - 送出成功後整段取代表單（不是另一頁），成功區塊的 `id="lead-success"`
   是 GTM 轉換事件的觸發依據，**不要改這個 id**。
 - 錯誤處理只有 `alert()`。
+- 通知信與確認信從 2026-10-16 起會把使用者填的值做 HTML 跳脫（主旨與 LINE 連結不動）。
+  改信件內容前先做快照比對，見 [[lkk-admin-leads]]。
 - iOS 的 `input[type=date]` 會撐破容器，而且修掉之後空值時高度會塌 —— 見 [[lkk-mobile-audit]]。
+  生日欄的起始年份與範圍檢查見上面「出生年月日」。
