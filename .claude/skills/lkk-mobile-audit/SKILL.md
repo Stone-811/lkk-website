@@ -78,7 +78,7 @@ iOS 模擬器需要**完整 Xcode**（只有 command-line tools 開不起來）�
 - **空值點開會停在今天，而且立刻把今天寫進欄位**（`WKDateTimeInputControl.mm`）。
 - **iPhone 的選擇器不理 `min`／`max`**（範圍寫死成 distantPast～西元 10000 年），
   頁面沒有 `<form>` 時就要自己在送出前檢查範圍。
-- 預約表單的生日欄因此改成「觸控點擊時先帶 1961-01-01、標成未確認」，細節見 [[lkk-booking-form]]。
+- 預約表單的生日欄因此改成「點下去時先帶 1961-01-01、標成未確認」（手機與電腦都是），細節見 [[lkk-booking-form]]。
 
 ---
 
