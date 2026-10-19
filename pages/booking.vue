@@ -209,10 +209,71 @@ onMounted(async () => {
   }
 })
 
+/**
+ * 出生年月日：手機點開時讓日期選擇器從 1961 年開始（2026-10 業主指定，方便長輩調整）。
+ *
+ * 原生日期欄沒有「起始顯示日」可設，選擇器一律從欄位現有的值開始；值是空的時候：
+ *   - iPhone（Safari、LINE）停在今天，而且一點開就把今天寫進欄位，也不理 min/max
+ *     （WebKit WKDateTimeInputControl.mm 的 setDateTimePickerToInitialValue）
+ *   - Android 的 LINE 停在 max（2010），Android Chrome 152+ 停在 min（1920）
+ * 所以唯一的做法是在選擇器讀值之前先把值帶成 1961-01-01。
+ *
+ * 🔴 帶入的值必須標成「未確認」：點開就關掉的人會留下 1961-01-01，
+ *    看起來像真的生日、又剛好符合 50 歲以上免費。未確認時不算年齡、送出時擋下，
+ *    要等使用者真的在選擇器裡選過（觸發 input）才算數。
+ * ⚠️ 生日剛好是 1961-01-01 的人重選同一天不會觸發 input（值沒變），
+ *    所以被擋下時另給一顆「生日就是 1961/1/1」。
+ * ⚠️ 只在 mousedown 帶值：iOS 的 focus 太晚（舊版 WebKit 先把空值交給選擇器才派 focus），
+ *    pointerdown／touchstart 則是手指放上去捲動頁面也會觸發。
+ *    只對觸控帶值：電腦可以直接打年份，帶值反而要覆寫三格。
+ * ⚠️ 頁面沒有 <form>（送出鈕是 type=button），min/max 不會被瀏覽器檢查，
+ *    iPhone 的選擇器也不受 min/max 限制 —— 範圍只能由 validateForm 擋。
+ *    正式站 2026-10 有生日在 2026 年、剛好 2010-01-01、把民國年打成 0044 年的名單。
+ */
+const BIRTH_DATE_START = '1961-01-01'
+const BIRTH_DATE_MIN = '1920-01-01'
+const BIRTH_DATE_MAX = '2010-01-01'
+const birthDatePreset = ref(false)   // true＝值是系統帶的 1961-01-01，使用者還沒選過
+let lastPointerType = ''
+const rememberPointerType = (e: PointerEvent) => { lastPointerType = e.pointerType }
+
+const primeBirthDate = (e: MouseEvent) => {
+  if (lastPointerType !== 'touch') return
+  const el = e.target as HTMLInputElement
+  // 已經有值、或電腦上只打了一半（value 仍是 ''、badInput 為 true）都不要蓋掉
+  if (formData.birthDate || el.value || el.validity.badInput) return
+  el.value = BIRTH_DATE_START
+  formData.birthDate = BIRTH_DATE_START   // 一定要改 formData，只改 el.value 會被 v-model 改回 ''
+  birthDatePreset.value = true
+}
+
+const clearBirthDateError = () => {
+  if (!errors.value.birthDate) return
+  const { birthDate: _, ...rest } = errors.value
+  errors.value = rest
+}
+
+const onBirthDateInput = () => {
+  birthDatePreset.value = false
+  clearBirthDateError()
+}
+
+const confirmPresetBirthDate = () => {
+  birthDatePreset.value = false
+  clearBirthDateError()
+}
+
+// 算年齡用的生日：未確認的預設值、或超出範圍的值都不算
+const confirmedBirthDate = computed(() => {
+  const v = formData.birthDate
+  if (!v || birthDatePreset.value || v < BIRTH_DATE_MIN || v > BIRTH_DATE_MAX) return ''
+  return v
+})
+
 // Calculate age from birthdate
 const userAge = computed(() => {
-  if (!formData.birthDate) return null
-  const birthDate = new Date(formData.birthDate)
+  if (!confirmedBirthDate.value) return null
+  const birthDate = new Date(confirmedBirthDate.value)
   const today = new Date()
   let age = today.getFullYear() - birthDate.getFullYear()
   const m = today.getMonth() - birthDate.getMonth()
@@ -253,7 +314,7 @@ const lineMessageUrl = computed(
 )
 
 // Watch birthDate changes to auto-clear invalid payment method
-watch(() => formData.birthDate, () => {
+watch(confirmedBirthDate, () => {
   // 全齡免費變體：付款固定為活動免費，不受年齡影響
   if (variant.value.allAgesFree) return
   // If user is under 50 and had selected "50歲以上免費", clear the selection
@@ -309,6 +370,10 @@ const validateForm = () => {
   if (formData.phone && !/^09\d{8}$/.test(formData.phone)) newErrors.phone = '請輸入有效的手機號碼'
   if (!formData.gender) newErrors.gender = '請選擇性別'
   if (!formData.birthDate) newErrors.birthDate = '請選擇出生年月日'
+  else if (birthDatePreset.value) newErrors.birthDate = '請點選學員的生日（目前是預設的 1961/1/1）'
+  else if (formData.birthDate < BIRTH_DATE_MIN || formData.birthDate > BIRTH_DATE_MAX) {
+    newErrors.birthDate = '請確認出生年月日，年份請用西元（民國 50 年＝1961 年）'
+  }
   // Email 為選填（2026-10 業主指定）。有填才驗格式 ——
   // 後端本來就是選填：沒有 email 就不寄客戶確認信（server/api/leads/booking.post.ts）
   if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -635,8 +700,11 @@ const handleSubmit = async () => {
                         type="date"
                         name="birthDate"
                         :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange min-h-[50px]', errors.birthDate ? 'border-red-500' : 'border-cream-200']"
-                        max="2010-01-01"
-                        min="1920-01-01"
+                        :max="BIRTH_DATE_MAX"
+                        :min="BIRTH_DATE_MIN"
+                        @pointerdown="rememberPointerType"
+                        @mousedown="primeBirthDate"
+                        @input="onBirthDateInput"
                       />
                       <p v-if="isFreeEligible && !variant.allAgesFree" class="text-green-600 text-sm mt-1 font-medium flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -645,6 +713,14 @@ const handleSubmit = async () => {
                         第一堂體驗課 50歲以上免費
                       </p>
                       <p v-if="errors.birthDate" class="text-red-500 text-sm mt-1">{{ errors.birthDate }}</p>
+                      <button
+                        v-if="errors.birthDate && birthDatePreset && formData.birthDate === BIRTH_DATE_START"
+                        type="button"
+                        class="mt-2 min-h-[44px] px-4 rounded-lg border border-cream-200 text-sm text-navy-700 transition-all hover:border-orange/50"
+                        @click="confirmPresetBirthDate"
+                      >
+                        生日就是 1961/1/1
+                      </button>
                     </div>
                   </div>
 
