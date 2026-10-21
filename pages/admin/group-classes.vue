@@ -130,7 +130,7 @@ function handleExport() {
       p.experience || '',
       p.medicalHistory || '',
       statusLabels[lead.status]?.label || lead.status,
-      isProxy ? '親友代填' : '本人填寫',
+      isProxy ? '他人代填' : '本人填寫',
       isProxy ? p.fillerName || '' : '',
       isProxy ? p.relationship || '' : '',
       isProxy ? p.contactPhone || '' : '',
@@ -335,7 +335,7 @@ function handleExport() {
           <div class="p-4 grid grid-cols-2 gap-4">
             <div>
               <p class="text-xs text-gray-500 mb-0.5">填寫者</p>
-              <p class="font-medium text-gray-900">{{ lead.payload?.isFillerSelf === '否' ? '親友代填' : '本人填寫' }}</p>
+              <p class="font-medium text-gray-900">{{ lead.payload?.isFillerSelf === '否' ? '他人代填' : '本人填寫' }}</p>
             </div>
             <div v-if="lead.payload?.isFillerSelf === '否' && lead.payload?.fillerName">
               <p class="text-xs text-gray-500 mb-0.5">代填者姓名</p>

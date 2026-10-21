@@ -34,6 +34,12 @@ booking 的量遠大於其他（當時正式站 206 筆：booking 198、group_cl
 2. `where type == X` 全部撈出 → 確認資料其實還在
 這兩步就能區分「資料不見」和「查詢看不到」。
 
+**統計名單內容（例：生日分布、付款方式）也用同一招，但只取需要的欄位**：
+`select` 只列 `payload.birthDate`、`payload.paymentMethod`、`createdAt` 這類欄位，在本機彙總成筆數，
+**不讀姓名、電話、Email，也不把個別值貼進對話**。要給業主找名單時給「送出日期」，讓他在後台自己對。
+（2026-10-19 用這招查出 218 筆預約有 16 筆生日不合理，見 lkk-booking-form「出生年月日」。）
+請求 log 對不出裝置：App Hosting 的 CDN 把 User-Agent 全換成 `Google`。
+
 ⚠️ **這類「先 limit 再篩」在全站還可能有**：全表讀取或固定上限的查詢，資料一長大就無聲漏資料。
 看到 `.limit(` 後面接 JS `.filter(` 就要警覺。
 

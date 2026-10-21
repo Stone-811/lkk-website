@@ -497,7 +497,7 @@ const inputClass =
                   <div>
                     <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">是否為你本人親自填寫？ <span class="text-orange">*</span></label>
                     <div class="grid grid-cols-2 gap-1.5">
-                      <label v-for="opt in [{ v: '是', l: '是，我是本人' }, { v: '否', l: '否，我是幫家人/朋友填' }]" :key="opt.v" class="flex cursor-pointer">
+                      <label v-for="opt in [{ v: '是', l: '是，我是本人' }, { v: '否', l: '否，我是幫他人代填' }]" :key="opt.v" class="flex cursor-pointer">
                         <input v-model="formData.isFillerSelf" type="radio" :value="opt.v" class="peer sr-only" />
                         <span class="flex-1 flex items-center justify-center px-2 py-2.5 bg-cream border-[1.5px] border-navy-700/15 rounded-[10px] text-sm text-ink/70 text-center transition peer-checked:border-orange peer-checked:bg-orange/[0.08] peer-checked:text-[#d45c04] peer-checked:font-semibold">{{ opt.l }}</span>
                       </label>

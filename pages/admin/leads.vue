@@ -138,7 +138,7 @@ function handleExport() {
       : lead.payload?.sources || ''
 
     // 填寫者 / 代填資訊
-    const filledBy = lead.payload?.filledBySelf === false ? '親友代填' : '本人填寫'
+    const filledBy = lead.payload?.filledBySelf === false ? '他人代填' : '本人填寫'
     const relationship = lead.payload?.filledBySelf === false ? (lead.payload?.relationship || '') : ''
     const bookerName = lead.payload?.filledBySelf === false ? (lead.payload?.bookerName || '') : ''
     const contactPhone = lead.payload?.contactPhone || ''
@@ -373,7 +373,7 @@ function handleExport() {
           <div class="p-4 grid grid-cols-2 gap-4">
             <div>
               <p class="text-xs text-gray-500 mb-0.5">填寫者</p>
-              <p class="font-medium text-gray-900">{{ lead.payload?.filledBySelf === false ? '親友代填' : '本人填寫' }}</p>
+              <p class="font-medium text-gray-900">{{ lead.payload?.filledBySelf === false ? '他人代填' : '本人填寫' }}</p>
             </div>
             <div v-if="lead.payload?.filledBySelf === false && lead.payload?.relationship">
               <p class="text-xs text-gray-500 mb-0.5">與學員關係</p>

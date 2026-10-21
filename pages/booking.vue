@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, watch } from 'vue'
 import { getBookingVariant, withFreeTrialPartner } from '~/config/bookingVariants'
-import { relationshipOptions } from '~/config/formOptions'
+import { bookingRelationshipOptions, STAFF_RELATIONSHIP } from '~/config/formOptions'
 import { buildReferralSources, composeReferral } from '~/config/referralSources'
 
 useHead({
@@ -271,6 +271,16 @@ const confirmPresetBirthDate = () => {
   clearBirthDateError()
 }
 
+// 練健康同仁代填：方便聯繫的電話改為選填（有填仍要驗格式）
+const CONTACT_PHONE_REQUIRED_ERROR = '請輸入方便聯繫的電話'
+const contactPhoneOptional = computed(() => formData.relationship === STAFF_RELATIONSHIP)
+watch(contactPhoneOptional, (optional) => {
+  // 改選同仁後，先前「請輸入方便聯繫的電話」的紅字已經不對了
+  if (!optional || errors.value.contactPhone !== CONTACT_PHONE_REQUIRED_ERROR) return
+  const { contactPhone: _, ...rest } = errors.value
+  errors.value = rest
+})
+
 // 算年齡用的生日：未確認的預設值、或超出範圍的值都不算
 const confirmedBirthDate = computed(() => {
   const v = formData.birthDate
@@ -392,7 +402,7 @@ const validateForm = () => {
   if (formData.filledBySelf === '他人代填') {
     if (!formData.relationship) newErrors.relationship = '請選擇與學員的關係'
     if (!formData.bookerName.trim()) newErrors.bookerName = '請輸入預約者姓名'
-    if (!formData.contactPhone.trim()) newErrors.contactPhone = '請輸入方便聯繫的電話'
+    if (!formData.contactPhone.trim() && !contactPhoneOptional.value) newErrors.contactPhone = CONTACT_PHONE_REQUIRED_ERROR
     if (formData.contactPhone && !/^09\d{8}$/.test(formData.contactPhone)) {
       newErrors.contactPhone = '請輸入有效的手機號碼'
     }
@@ -799,7 +809,7 @@ const handleSubmit = async () => {
                         :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange', errors.relationship ? 'border-red-500' : 'border-cream-200']"
                       >
                         <option value="">請選擇</option>
-                        <option v-for="r in relationshipOptions" :key="r" :value="r">{{ r }}</option>
+                        <option v-for="r in bookingRelationshipOptions" :key="r" :value="r">{{ r }}</option>
                       </select>
                       <p v-if="errors.relationship" class="text-red-500 text-sm mt-1">{{ errors.relationship }}</p>
                     </div>
@@ -821,7 +831,9 @@ const handleSubmit = async () => {
 
                       <div>
                         <label class="block text-sm font-medium mb-2 text-navy-700">
-                          方便聯繫的電話 <span class="text-red-500">*</span>
+                          方便聯繫的電話
+                          <span v-if="!contactPhoneOptional" class="text-red-500">*</span>
+                          <span v-else class="text-ink-500 font-normal">（選填）</span>
                         </label>
                         <input
                           v-model="formData.contactPhone"
