@@ -190,19 +190,6 @@ useHead({
 
       <!-- 內容來自 WordPress，已在伺服器端改寫過內部連結 -->
       <div class="article-body" v-html="post.html"></div>
-
-      <div class="mt-14 pt-8 border-t border-navy/10">
-        <p class="font-serif text-xl font-black text-navy-700 mb-3">想實際試試看？</p>
-        <p class="text-ink/70 leading-relaxed mb-5">
-          練健康在台北有四間分店，由專業教練依你的身體狀況安排訓練。
-        </p>
-        <NuxtLink
-          to="/booking"
-          class="inline-block bg-orange hover:bg-orange-light text-white font-bold px-7 py-3 rounded-full transition-colors"
-        >
-          預約體驗
-        </NuxtLink>
-      </div>
     </article>
   </div>
 </template>

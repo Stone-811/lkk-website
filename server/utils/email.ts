@@ -528,7 +528,7 @@ export async function sendBookingConfirmation(data: {
   // 填表人資料（僅代填時顯示）
   const fillerRows: Array<{ label: string; value: string }> = []
   if (data.filledBySelf === false) {
-    fillerRows.push({ label: '填表人', value: '親友代為填寫' })
+    fillerRows.push({ label: '填表人', value: '他人代為填寫' })
     if (data.relationship) fillerRows.push({ label: '與學員關係', value: data.relationship })
     if (data.bookerName) fillerRows.push({ label: '填表人姓名', value: data.bookerName })
     if (data.contactPhone) fillerRows.push({ label: '聯絡電話', value: data.contactPhone })
@@ -669,7 +669,7 @@ export async function sendGroupClassConfirmation(data: {
   // 填表人資料（僅代填時顯示）
   const fillerRows: Array<{ label: string; value: string }> = []
   if (data.isFillerSelf === '否') {
-    fillerRows.push({ label: '填表人', value: '親友代為填寫' })
+    fillerRows.push({ label: '填表人', value: '他人代為填寫' })
     if (data.relationship) fillerRows.push({ label: '與學員的關係', value: data.relationship })
     if (data.fillerName) fillerRows.push({ label: '報名者姓名', value: data.fillerName })
     if (data.contactPhone) fillerRows.push({ label: '方便聯繫的電話', value: data.contactPhone })
