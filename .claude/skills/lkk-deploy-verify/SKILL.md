@@ -1,6 +1,6 @@
 ---
 name: lkk-deploy-verify
-description: 確認一次改動真的到了 dev 或 prod。推完分支、要輪詢線上狀態、或想判斷「部署好了沒」時使用。內含依改動類型選驗證法的對照表、marker 的四種自爆寫法、另有一節講「舊版也會通過」這種假通過、推完一定要先等 rollout 到 SUCCEEDED 再驗、rollout→build→commit 的對照腳本、業主回報「改了沒變」時先確認是不是瀏覽器沒重新整理、後台這類「本機驗不到」的改動怎麼用臨時公開端點測純函式並誠實標註驗證邊界、三方對照（開發機／dev／prod）分辨上游壞掉還是我們連不上、只是搬位置的改動怎麼用 byte offset 驗順序，以及查「線上正在跑哪個 commit」的方法（用 gapi.cjs，權杖不經手）。另含 2026-10-16 起的：發 prod 時有刪除檔案要分兩步（diff-filter AMR 帶入、D 用 git rm）、從 commit hash 對 build 再對 rollout 的等待腳本、剛部署完 CDN 回舊 HTML（內嵌樣式也是舊的）要用 ?v= 繞過（/booking 與 /group-booking 的 ?v= 是變體參數，改用 ?qa=）、curl 抓頁面 JS chunk 驗正式站新程式、看標頭要用 GET 不要用 HEAD、驗正式站用 curl 避免污染 GA4、量頁面 JS 下載量、本機 production server 加假上游、用 jiti 在瀏覽器外測純函式、內建瀏覽器擋彈出視窗，以及寫檔工具會把反斜線 u 跳脫轉成實際字元這類工具本身的坑。發 prod 的流程本身見 CLAUDE.md 與 lkk-project-context。
+description: 確認一次改動真的到了 dev 或 prod。推完分支、要輪詢線上狀態、或想判斷「部署好了沒」時使用。內含依改動類型選驗證法的對照表、marker 的四種自爆寫法、另有一節講「舊版也會通過」這種假通過、推完一定要先等 rollout 到 SUCCEEDED 再驗、rollout→build→commit 的對照腳本、業主回報「改了沒變」時先確認是不是瀏覽器沒重新整理、後台這類「本機驗不到」的改動怎麼用臨時公開端點測純函式並誠實標註驗證邊界、三方對照（開發機／dev／prod）分辨上游壞掉還是我們連不上、只是搬位置的改動怎麼用 byte offset 驗順序，以及查「線上正在跑哪個 commit」的方法（用 gapi.cjs，權杖不經手）。另含 2026-10-16 起的：發 prod 時有刪除檔案要分兩步（diff-filter AMR 帶入、D 用 git rm）、從 commit hash 對 build 再對 rollout 的等待腳本、剛部署完 CDN 回舊 HTML（內嵌樣式也是舊的）要用 ?v= 繞過（/booking 與 /group-booking 的 ?v= 是變體參數，改用 ?qa=）、curl 抓頁面 JS chunk 驗正式站新程式（含跟著動態 import 爬全站 chunk 驗要登入的後台頁、本機與 Cloud Build 的 chunk 檔名不同）、看標頭要用 GET 不要用 HEAD、驗正式站用 curl 避免污染 GA4、量頁面 JS 下載量、本機 production server 加假上游、用 jiti 在瀏覽器外測純函式、內建瀏覽器擋彈出視窗，以及寫檔工具會把反斜線 u 跳脫轉成實際字元這類工具本身的坑。發 prod 的流程本身見 CLAUDE.md 與 lkk-project-context。
 ---
 
 # 部署驗證
@@ -341,6 +341,11 @@ git diff --name-only origin/dev --cached
 - 驗正式站某頁的新程式（不開瀏覽器、不污染 GA4）：curl 抓那頁的 HTML，取出所有 `/_nuxt/*.js`，
   逐一 curl 下來 grep 這次新加的字串（2026-10-19 生日欄：grep `1961-01-01` 與新紅字，命中 1 個 chunk）。
   選舊版一定沒有的字串當標記，才不會「舊版也通過」
+- **要登入的後台頁也能這樣驗**：頁面 HTML 只列這一頁的 chunk，但 entry chunk 裡有整個路由表的 `"./xxx.js"` 動態 import。
+  `scripts/crawl-chunks.sh <網站> <起始路徑> <資料夾>` 跟著它一路抓（2026-10-21 從 `/booking` 抓到 61 個，後台客戶預約、
+  團課預約的 chunk 都在裡面），再 grep 新字串、並確認舊字串**全站 0 處**（那次「親友代填」「家人/朋友填」都是 0）。
+  ⚠️ **本機 `npm run build` 的 chunk 檔名（hash）跟 Cloud Build 的不一樣**：那次本機找到的 5 個檔名，正式站 4 個 404。
+  不能拿本機檔名直接 curl，一定要從線上的 HTML 出發。
 - 一般網址約 10 分鐘內會被背景更新；業主那邊「剛上線怎麼沒變」先請他重新整理一兩次
 - 站內換頁（SPA）載入的是新 JS，所以「點進去正常、直接打開網址不正常」也是這個原因
 
