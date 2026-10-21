@@ -69,8 +69,8 @@ description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁�
 | 生日下方的免費提示 | 滿 50 歲時顯示 | 不顯示 |
 
 ⚠️ **其中只有六處由 `pricingCopy` 收斂。** 付款欄位與生日提示另有兩個各自的 `v-if`
-直接讀 `variant.allAgesFree`（`pages/booking.vue:1049` 的 `id="paymentMethod"` 區塊、`:716` 的 `isFreeEligible && !variant.allAgesFree` 提示），
-值由 `:308-310` 的 `watch(() => variant.value.allAgesFree` 填入。（行號以 2026-10-19 的 d76e443 為準，會跑掉時用引號裡的字串搜尋。）
+直接讀 `variant.allAgesFree`（`pages/booking.vue:1061` 的 `id="paymentMethod"` 區塊、`:726` 的 `isFreeEligible && !variant.allAgesFree` 提示），
+值由 `:318-320` 的 `watch(() => variant.value.allAgesFree` 填入。（行號以 2026-10-21 的 e16e2d1 為準，會跑掉時用引號裡的字串搜尋。）
 **這兩處是改價格規則時最容易漏掉的。**
 
 集中設計是刻意的（註解寫「避免價格訊息散落多處各自分支」），但它沒有涵蓋那兩個欄位的顯示條件。
@@ -218,8 +218,8 @@ Android 與桌機是讀 Chromium／Firefox 原始碼推得，**都沒有實機�
 ⚠️ 分店清單 SSR 時是**寫死的四間**，client 掛載後才用原生 `fetch` 打
 `/api/public/stores` 覆蓋。所以 SSR 的 HTML 裡永遠是那份寫死的清單。
 
-⚠️ `handleSubmit`（`pages/booking.vue:427`）**沒有再入保護**——開頭只有 `validateForm()`，
-   擋重複送出全靠 1109 行的 `:disabled="isSubmitting || ..."`（行號以 d76e443 為準）。
+⚠️ `handleSubmit`（`pages/booking.vue:437`）**沒有再入保護**——開頭只有 `validateForm()`，
+   擋重複送出全靠 1121 行的 `:disabled="isSubmitting || ..."`（行號以 e16e2d1 為準）。
    對照 `pages/group-booking.vue:291-292` 的 `handleSubmit()` 開頭就有 `if (submitting.value) return`。
    ⚠️ 兩頁的識別字不同名：booking 的 ref 叫 `isSubmitting`（187 行），
    group-booking 叫 `submitting`（227 行）。跨檔引用時不要憑記憶套用另一頁的名字。
@@ -258,6 +258,8 @@ Android 與桌機是讀 Chromium／Firefox 原始碼推得，**都沒有實機�
   `store` 存整串字 vs `storeId` 存 id、`ageRange` 三段區間 vs `birthDate` 精確日期），
   自己的變體設定檔 `groupClassVariants`。兩者只共用 `config/formOptions.ts`
   與 `config/referralSources.ts`。**改 booking 不會自動影響它。**
+  ⚠️ 但改 `formOptions.ts` 的 `relationshipOptions` 會兩邊一起變。只給預約用的是 `bookingRelationshipOptions`
+  （多了「練健康同仁」，2026-10-21），要只動一邊就改衍生清單，不要動共用的那份。
 - **四張前台表單沒有共用任何表單元件**，各自用 inline class。
   （`components/SearchableSelect.vue` 確實存在，但只服務後台名單的篩選列。）
 - 送出成功後整段取代表單（不是另一頁），成功區塊的 `id="lead-success"`
