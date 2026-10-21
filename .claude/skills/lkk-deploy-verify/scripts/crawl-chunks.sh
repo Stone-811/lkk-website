@@ -10,11 +10,11 @@ mkdir -p "$W"; : > "$W/.seen"
 curl -s "$P$START" | grep -o '/_nuxt/[A-Za-z0-9_-]*\.js' | sed 's#/_nuxt/##' | sort -u > "$W/.q"
 while [ -s "$W/.q" ]; do
   f=$(head -1 "$W/.q"); sed -i '' 1d "$W/.q"
-  grep -qx "$f" "$W/.seen" && continue
+  grep -qxF -- "$f" "$W/.seen" && continue   # -F：檔名當固定字串；--：hash 開頭可能是「-」
   echo "$f" >> "$W/.seen"
   curl -s "$P/_nuxt/$f" > "$W/$f"
   grep -o '"\./[A-Za-z0-9_-]*\.js"' "$W/$f" | tr -d '"' | sed 's#^\./##' | sort -u | while read -r n; do
-    grep -qx "$n" "$W/.seen" || echo "$n" >> "$W/.q"
+    grep -qxF -- "$n" "$W/.seen" </dev/null || echo "$n" >> "$W/.q"
   done
 done
 echo "chunks: $(wc -l < "$W/.seen" | tr -d ' ')"

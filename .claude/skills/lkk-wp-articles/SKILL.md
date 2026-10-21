@@ -554,7 +554,9 @@ production build ＋ 一支幾十行的假 WordPress（`node:http`，`/__mode?sl
 ## 文章底部不放預約區塊（2026-10-21 業主要求刪除）
 
 `pages/[...slug].vue` 原本在內文後面有一塊版型自帶的「想實際試試看？／練健康在台北有四間分店…／預約體驗」，
-已刪除，**不要加回去**。文章頁剩下的預約入口：頁尾導覽的「預約體驗」、手機底部固定按鈕（`MobileBookingButton`），
+已刪除，**不要加回去**。文章頁（default layout）剩下的預約入口：
+頁首「預約體驗」按鈕（`Header.vue`，lg 以上常駐；手機在漢堡選單底部）、頁首服務選單的「一對一體驗報名」、
+頁尾導覽的「預約體驗」（`Footer.vue`）、手機底部固定按鈕（`MobileBookingButton`，md 以下），
 以及作者在 WordPress 內文自己放的按鈕（屬於文章內容，要在 WP 後台逐篇改）。
 學員案例（`/cases-center`）、活動資訊（`/activity-center`）列表頁底部那兩塊長得很像的預約區塊**沒有一起刪**——業主只點名文章頁。
 

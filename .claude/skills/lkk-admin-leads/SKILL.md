@@ -141,8 +141,10 @@ Firestore 沒存這個字：2026-10-21 起是「他人代填／本人填寫」�
 4. 用 repo 的 `node_modules/.bin/jiti` 跑，輸出 JSON，比對
 
 2026-10-21 實際用過（確認信「親友代為填寫」→「他人代為填寫」）：harness 在 `scripts/email-snapshot.ts`、比對在
-`scripts/email-snapshot-diff.py`。7 種通知信＋7 封確認信，結果剛好 3 處差異＝三封代填確認信，其他逐字相同。
+`scripts/email-snapshot-diff.py`。8 個通知信 fixture＋7 封確認信，結果剛好 3 處差異＝三封代填確認信，其他逐字相同。
 用 `globalThis.__stub` 而不是攔 nodemailer：email.ts 複製到 scratchpad 後 `import('nodemailer')` 會找不到套件。
+fixture 涵蓋：booking 通知信含 `company`／`leadSource`（活動來源橫幅與主旨【company】）、合作與加盟的 details 分支；
+函式參數用 `as any` 傳，**欄位名寫錯不會報錯、只會沒驗到**——改信件欄位時對照 email.ts 的參數型別補 fixture。
 
 重構與行為改動**分兩個 commit**：先只搬程式碼、比對 0 差異，再改行為。
 重構跟改動放同一個 commit 的話，「改前」快照只能從重構後產生，重構本身的錯誤沒人比得到。
