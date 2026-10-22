@@ -1,6 +1,6 @@
 ---
 name: lkk-booking-form
-description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁有 22 個欄位、一套「廠商變體」機制（?v=）、一份「不限年齡免費合作方名冊」（?co=）、七條同意事項，而且價格文案散在八個地方，其中六處靠一個 computed（pricingCopy）收斂，付款欄位與生日下方的免費提示是另外兩個 v-if。要動欄位、文案、價格規則、同意事項、合作案連結，或被問「怎麼幫某公司開一張專屬表單」「為什麼某個連結看到的價格不一樣」「名單的公司／來源欄是哪來的」「生日欄能不能從 1961 年開始」「名單上的生日怎麼是今年／0044 年」「代填的關係選項」「練健康同仁為什麼電話不用填」時使用。內含 2026-10-19 生日欄改成點開從 1961 開始（帶值＋未確認防呆＋範圍檢查）的做法、正式站生日資料的統計，2026-10-21「與學員的關係」只在預約表單多了「練健康同仁」（選了電話改選填），以及業主拍板與不做的項目。團體課報名（group-booking）是另一支整頁複製的實作，共用的只有兩個 config。UTM 連結產生器看 lkk-admin-campaigns。
+description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁有 22 個欄位、一套「廠商變體」機制（?v=）、一份「不限年齡免費合作方名冊」（?co=）、七條同意事項，而且價格文案散在八個地方，其中六處靠一個 computed（pricingCopy）收斂，付款欄位與生日下方的免費提示是另外兩個 v-if。要動欄位、文案、價格規則、同意事項、合作案連結，或被問「怎麼幫某公司開一張專屬表單」「為什麼某個連結看到的價格不一樣」「名單的公司／來源欄是哪來的」「生日欄能不能從 1961 年開始」「名單上的生日怎麼是今年／0044 年」「代填的關係選項」「練健康同仁為什麼電話不用填」時使用。內含 2026-10-19 生日欄改成點開從 1961 開始（帶值＋未確認防呆＋範圍檢查）的做法、正式站生日資料的統計，2026-10-21／22「與學員的關係」多了「練健康同仁」（選了電話改選填，預約與團課兩張表單都有），以及業主拍板與不做的項目。團體課報名（group-booking）是另一支整頁複製的實作，共用的只有兩個 config。UTM 連結產生器看 lkk-admin-campaigns。
 ---
 
 # 預約體驗表單
@@ -141,8 +141,11 @@ description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁�
 分店、方便時段（至少 1）、付款方式、得知管道、同意事項勾選。
 **條件必填**：「他人代填」時要填關係／代填者姓名／聯繫電話。
 關係選「練健康同仁」時，聯繫電話改**選填**（有填仍驗格式；2026-10-21 業主要求）。
-這個選項只在預約表單：`config/formOptions.ts` 的 `bookingRelationshipOptions`＝共用清單在「其他」前插入 `STAFF_RELATIONSHIP`，
-團課表單仍用共用的 `relationshipOptions`（團課後端代填電話必填）。
+選項在 `config/formOptions.ts` 共用的 `relationshipOptions`（「其他」前的 `STAFF_RELATIONSHIP`），預約與團課兩張表單都有。
+（10-21 先只做預約，用過一份衍生清單 `bookingRelationshipOptions`；10-22 業主要求團課也加，已併回共用清單、衍生清單刪除。）
+團課那邊：`pages/group-booking.vue` 同樣用 `contactPhoneOptional`，後端 `server/api/leads/group-class.post.ts` 在
+`relationship === STAFF_RELATIONSHIP` 時不要求 `contactPhone`；團課沒填電話存 `null`（不像預約會退回學員電話），
+後台詳情與 CSV 該欄就是空的。團課的電話會先去空白與橫線，所以只打空白＝沒填、`0912-345-678` 也收。
 同仁沒填電話時，前端送空字串、後端照舊存 `contactPhone || phone`＝學員電話——
 後台詳情因為「與學員電話相同就不顯示」而不出現，客戶預約 CSV 的「聯繫電話」欄（`pages/admin/leads.vue:121`）是學員電話（和本人填寫的列一樣）。
 寫法（`pages/booking.vue`，搜 `contactPhoneOptional`）：
@@ -208,7 +211,7 @@ Android 與桌機是讀 Chromium／Firefox 原始碼推得，**都沒有實機�
   各平台行為的完整整理、帶值時機的理由、測試腳本範本在個人 skill `native-date-input`。
 
 **業主 2026-10-21 的決定（代填改名＋練健康同仁）**：
-- 「練健康同仁」**只加預約表單**，團課不加；放在「其他」前面
+- 「練健康同仁」放在「其他」前面。10-21 業主選「只加預約表單」，**10-22 改口要團課也加**（同一條規則：姓名必填、電話選填）
 - 後台兩頁的詳情與 CSV「填寫者」、客戶確認信「填表人」都改成「他人代填／他人代為填寫」
 - 我提過、業主還沒回的（提一次就好，不要每次都問）：團課按鈕實測 360、375px 折成「否，我是幫他人代／填」留一個孤字
   （320px 是「…他人／代填」，390、414px 一行；其他寬度沒量，依 CSS 推算孤字區間約 348～377px）；
@@ -237,9 +240,9 @@ Android 與桌機是讀 Chromium／Firefox 原始碼推得，**都沒有實機�
 
 ⚠️ `handleSubmit`（`pages/booking.vue:437`）**沒有再入保護**——開頭只有 `validateForm()`，
    擋重複送出全靠 1121 行的 `:disabled="isSubmitting || ..."`（行號以 e16e2d1 為準）。
-   對照 `pages/group-booking.vue:291-292` 的 `handleSubmit()` 開頭就有 `if (submitting.value) return`。
+   對照 `pages/group-booking.vue:301-302` 的 `handleSubmit()` 開頭就有 `if (submitting.value) return`。
    ⚠️ 兩頁的識別字不同名：booking 的 ref 叫 `isSubmitting`（187 行），
-   group-booking 叫 `submitting`（227 行）。跨檔引用時不要憑記憶套用另一頁的名字。
+   group-booking 叫 `submitting`（237 行，以 0e3b57b 為準）。跨檔引用時不要憑記憶套用另一頁的名字。
 
 ⚠️ **四張表單一行機器人防護都沒有**。CLAUDE.md 與 README 都寫了要做 reCAPTCHA，
    但程式碼是 0 命中、package.json 無相關套件。新開投放用的表單時要知道這件事，
@@ -275,8 +278,8 @@ Android 與桌機是讀 Chromium／Firefox 原始碼推得，**都沒有實機�
   `store` 存整串字 vs `storeId` 存 id、`ageRange` 三段區間 vs `birthDate` 精確日期），
   自己的變體設定檔 `groupClassVariants`。兩者只共用 `config/formOptions.ts`
   與 `config/referralSources.ts`。**改 booking 不會自動影響它。**
-  ⚠️ 但改 `formOptions.ts` 的 `relationshipOptions` 會兩邊一起變。只給預約用的是 `bookingRelationshipOptions`
-  （多了「練健康同仁」，2026-10-21），要只動一邊就改衍生清單，不要動共用的那份。
+  ⚠️ 改 `formOptions.ts` 的 `relationshipOptions` 會兩張表單一起變（「練健康同仁」就是兩邊一起加的）。
+  只要動一邊時另做衍生清單，不要改共用的那份。
 - **四張前台表單沒有共用任何表單元件**，各自用 inline class。
   （`components/SearchableSelect.vue` 確實存在，但只服務後台名單的篩選列。）
 - 送出成功後整段取代表單（不是另一頁），成功區塊的 `id="lead-success"`
