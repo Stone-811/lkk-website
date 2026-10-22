@@ -105,6 +105,10 @@ booking 的量遠大於其他（當時正式站 206 筆：booking 198、group_cl
 
 `buildCsv`／`toCsvCell` 匯出成純函式，可以用 jiti 在瀏覽器外測（見 [[lkk-deploy-verify]]）。
 
+「填寫者」欄（客戶預約、團課預約兩頁）的值是**匯出當下**用 `filledBySelf === false`／`isFillerSelf === '否'` 算的，
+Firestore 沒存這個字：2026-10-21 起是「他人代填／本人填寫」（之前是「親友代填」），舊名單重新匯出也是新字，
+業主以前下載的檔案不會變。詳情彈窗的「填寫者」同一個算法。
+
 ---
 
 ## 通知信與確認信（`server/utils/email.ts`）
@@ -135,6 +139,12 @@ booking 的量遠大於其他（當時正式站 206 筆：booking 198、group_cl
    （**要確認剛好 2 處**），stub 的 `sendMail` 只把 `{subject, html}` 存起來
 3. harness 呼叫四個 `send*Confirmation` 與 `buildLeadNotificationEmail`（四種 type × 一般／含 `& < > " '` 的資料）
 4. 用 repo 的 `node_modules/.bin/jiti` 跑，輸出 JSON，比對
+
+2026-10-21 實際用過（確認信「親友代為填寫」→「他人代為填寫」）：harness 在 `scripts/email-snapshot.ts`、比對在
+`scripts/email-snapshot-diff.py`。8 個通知信 fixture＋7 封確認信，結果剛好 3 處差異＝三封代填確認信，其他逐字相同。
+用 `globalThis.__stub` 而不是攔 nodemailer：email.ts 複製到 scratchpad 後 `import('nodemailer')` 會找不到套件。
+fixture 涵蓋：booking 通知信含 `company`／`leadSource`（活動來源橫幅與主旨【company】）、合作與加盟的 details 分支；
+函式參數用 `as any` 傳，**欄位名寫錯不會報錯、只會沒驗到**——改信件欄位時對照 email.ts 的參數型別補 fixture。
 
 重構與行為改動**分兩個 commit**：先只搬程式碼、比對 0 差異，再改行為。
 重構跟改動放同一個 commit 的話，「改前」快照只能從重構後產生，重構本身的錯誤沒人比得到。

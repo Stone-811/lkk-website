@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, watch } from 'vue'
 import { getBookingVariant, withFreeTrialPartner } from '~/config/bookingVariants'
-import { bookingRelationshipOptions, STAFF_RELATIONSHIP } from '~/config/formOptions'
+import { relationshipOptions, STAFF_RELATIONSHIP } from '~/config/formOptions'
 import { buildReferralSources, composeReferral } from '~/config/referralSources'
 
 useHead({
@@ -809,7 +809,7 @@ const handleSubmit = async () => {
                         :class="['w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange', errors.relationship ? 'border-red-500' : 'border-cream-200']"
                       >
                         <option value="">請選擇</option>
-                        <option v-for="r in bookingRelationshipOptions" :key="r" :value="r">{{ r }}</option>
+                        <option v-for="r in relationshipOptions" :key="r" :value="r">{{ r }}</option>
                       </select>
                       <p v-if="errors.relationship" class="text-red-500 text-sm mt-1">{{ errors.relationship }}</p>
                     </div>
