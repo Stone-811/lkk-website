@@ -1,5 +1,7 @@
 // 團體課報名表單 → 寫入 type:'group_class' 名單（後台「團課預約」/admin/group-classes 讀取）
 // ＋寄管理者通知信、填單人確認信（架構比照 /api/leads/booking）
+import { STAFF_RELATIONSHIP } from '~/config/formOptions'
+
 // 課程價目（確認信顯示用；與 /group-booking 表單一致）
 const COURSE_PRICES: Record<string, string> = {
   '基礎重訓團班': '$2,400',
@@ -44,7 +46,8 @@ export default defineEventHandler(async (event) => {
       setResponseStatus(event, 400)
       return { success: false, error: 'Email 格式不正確' }
     }
-    if (isFillerSelf === '否' && (!fillerName || !relationship || !contactPhone)) {
+    // 練健康同仁代填時，方便聯繫的電話可以不填（與前端 pages/group-booking.vue 同一條規則）
+    if (isFillerSelf === '否' && (!fillerName || !relationship || (!contactPhone && relationship !== STAFF_RELATIONSHIP))) {
       setResponseStatus(event, 400)
       return { success: false, error: '請填寫與學員的關係、報名者姓名與方便聯繫的電話' }
     }

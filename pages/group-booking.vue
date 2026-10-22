@@ -2,7 +2,7 @@
 import { buildReferralSources, composeReferral } from '~/config/referralSources'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { getGroupClassVariant } from '~/config/groupClassVariants'
-import { relationshipOptions } from '~/config/formOptions'
+import { relationshipOptions, STAFF_RELATIONSHIP } from '~/config/formOptions'
 
 const route = useRoute()
 // 廠商變體表單：?v=<key> 對應 config/groupClassVariants.ts（未知值自動 fallback 成 default）
@@ -224,6 +224,16 @@ const faqs = [
 ]
 
 const errors = ref<Record<string, string>>({})
+
+// 練健康同仁代填：方便聯繫的電話改為選填（有填仍要驗格式），作法同 pages/booking.vue
+const CONTACT_PHONE_REQUIRED_ERROR = '請輸入方便聯繫的電話'
+const contactPhoneOptional = computed(() => formData.relationship === STAFF_RELATIONSHIP)
+watch(contactPhoneOptional, (optional) => {
+  // 改選同仁後，先前「請輸入方便聯繫的電話」的紅字已經不對了
+  if (!optional || errors.value.contactPhone !== CONTACT_PHONE_REQUIRED_ERROR) return
+  const { contactPhone: _, ...rest } = errors.value
+  errors.value = rest
+})
 const submitting = ref(false)
 const isSuccess = ref(false)
 
@@ -277,7 +287,7 @@ function validate() {
     if (!formData.relationship) e.relationship = '請選擇與學員的關係'
     if (!formData.fillerName.trim()) e.fillerName = '請輸入報名者姓名'
     const cp = formData.contactPhone.replace(/[\s-]/g, '')
-    if (!cp) e.contactPhone = '請輸入方便聯繫的電話'
+    if (!cp) { if (!contactPhoneOptional.value) e.contactPhone = CONTACT_PHONE_REQUIRED_ERROR }
     else if (!/^09\d{8}$/.test(cp)) e.contactPhone = '請輸入有效的手機號碼'
   }
   if (!formData.course) e.course = '請選擇想報名的課程'
@@ -521,7 +531,7 @@ const inputClass =
                         <p v-if="errors.fillerName" class="text-red-600 text-sm mt-1">{{ errors.fillerName }}</p>
                       </div>
                       <div>
-                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">方便聯繫的電話 <span class="text-orange">*</span></label>
+                        <label class="block text-sm font-semibold text-[#1a3545] mb-1.5">方便聯繫的電話 <span v-if="!contactPhoneOptional" class="text-orange">*</span><span v-else class="text-ink/65 font-normal text-sm">（選填）</span></label>
                         <input v-model="formData.contactPhone" type="tel" placeholder="0912345678" :class="inputClass" />
                         <p v-if="errors.contactPhone" class="text-red-600 text-sm mt-1">{{ errors.contactPhone }}</p>
                       </div>
