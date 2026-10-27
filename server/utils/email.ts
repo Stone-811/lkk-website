@@ -240,7 +240,7 @@ export function buildLeadNotificationEmail(data: LeadNotificationData): { subjec
       rows += opt('健康狀況說明', data.medicalConditionNote, { top: true, pre: true })
     }
     if (data.preferredTime && data.preferredTime.length > 0) {
-      rows += notifRow('方便聯繫時段', data.preferredTime.join('、'))
+      rows += notifRow('偏好的上課時段', data.preferredTime.join('、'))
     }
     rows += opt('付款方式', bookingFeeLabel(data.birthDate, data.paymentMethod))
     if (data.exerciseGoals && data.exerciseGoals.length > 0) {
@@ -549,7 +549,7 @@ export async function sendBookingConfirmation(data: {
     { label: '預約分店', value: data.storeName },
   ]
   if (data.preferredTime && data.preferredTime.length > 0) {
-    bookingRows.push({ label: '方便聯繫時段', value: data.preferredTime.join('、') })
+    bookingRows.push({ label: '偏好的上課時段', value: data.preferredTime.join('、') })
   }
   const feeLabel = bookingFeeLabel(data.birthDate, data.paymentMethod)
   if (feeLabel) bookingRows.push({ label: '付款方式', value: feeLabel })

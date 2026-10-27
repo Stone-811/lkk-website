@@ -102,7 +102,7 @@ description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁�
 進名單、進後台「公司」篩選的選項清單，而且事後清不掉。
 
 ⚠️ **上面這道防護只在前端成立**（2026-10-16 稽核）。`server/api/leads/booking.post.ts` 直接收下
-   `body.company`、`body.paymentMethod`、`body.leadSource`，只檢查姓名、電話、分店、方便時段四個必填。
+   `body.company`、`body.paymentMethod`、`body.leadSource`，只檢查姓名、電話、分店、偏好的上課時段四個必填。
    直接 POST 就能寫入任意公司名與「50歲以上免費」，後端不會拿生日核對。`group-class.post.ts` 同理。
    要在後端重算時（修正計畫 W3），**照字面做會闖禍**，動工前先讀：
    - 前端目前**沒有送 `co`**，後端只用 `formVariant` 重算的話，台灣人壽連結的名單公司欄會全變空白
@@ -138,7 +138,7 @@ description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁�
 22 個 `formData` key，全部寫在頁面裡，沒有抽成元件。
 
 **必填**：姓名、手機（`/^09\d{8}$/`）、性別、出生年月日、健康狀況（是／否）、
-分店、方便時段（至少 1）、付款方式、得知管道、同意事項勾選。
+分店、偏好的上課時段（至少 1；2026-10-27 前叫「方便聯繫時段」，key 仍是 `preferredTime`，所以之前的名單這欄是聯繫時段）、付款方式、得知管道、同意事項勾選。
 **條件必填**：「他人代填」時要填關係／代填者姓名／聯繫電話。
 關係選「練健康同仁」時，聯繫電話改**選填**（有填仍驗格式；2026-10-21 業主要求）。
 選項在 `config/formOptions.ts` 共用的 `relationshipOptions`（「其他」前的 `STAFF_RELATIONSHIP`），預約與團課兩張表單都有。

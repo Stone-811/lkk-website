@@ -106,7 +106,7 @@ const whatYouGet = [
   '訓練目標評估與規劃建議',
 ]
 
-// 方便聯繫時段選項（多選）
+// 偏好的上課時段選項（多選；2026-10-27 前叫「方便聯繫時段」，送出的 key 仍是 preferredTime）
 const contactTimeOptions = [
   '不限',
   '平日10:00-17:00',
@@ -464,7 +464,7 @@ const handleSubmit = async () => {
       finalExerciseGoals.push(`其他: ${formData.exerciseGoalOther}`)
     }
 
-    // 組合聯繫時段
+    // 組合偏好的上課時段
     let finalPreferredTimes = [...formData.preferredTimes]
     if (formData.preferredTimes.includes('其他') && formData.preferredTimeOther.trim()) {
       finalPreferredTimes = finalPreferredTimes.filter(t => t !== '其他')
@@ -915,10 +915,10 @@ const handleSubmit = async () => {
                     </div>
                   </div>
 
-                  <!-- 方便聯繫時段 -->
+                  <!-- 偏好的上課時段 -->
                   <div id="preferredTimes">
                     <label class="block text-sm font-medium mb-2 text-navy-700">
-                      方便聯繫時段 <span class="text-red-500">*</span>
+                      偏好的上課時段 <span class="text-red-500">*</span>
                       <span class="text-ink-500 font-normal ml-1">（可複選）</span>
                     </label>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -954,7 +954,7 @@ const handleSubmit = async () => {
                       v-model="formData.preferredTimeOther"
                       type="text"
                       class="w-full mt-2 px-4 py-3 border border-cream-200 rounded-lg focus:ring-2 focus:ring-orange"
-                      placeholder="請說明其他方便時段"
+                      placeholder="請說明其他偏好的上課時段"
                     />
                     <p v-if="errors.preferredTimes" class="text-red-500 text-sm mt-2">{{ errors.preferredTimes }}</p>
                   </div>
