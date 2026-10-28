@@ -146,8 +146,13 @@ canonical       指向 dev 自己的 hosted.app 網址
 | 檔案 | 作用 |
 |---|---|
 | `server/utils/site-hosts.ts` | 主機名白名單，單一來源 |
-| `server/routes/robots.txt.ts` | 依主機回 `Allow: /` 或 `Disallow: /`（`public/robots.txt` 必須刪掉） |
+| `server/routes/robots.txt.ts` | 正式主機 `Allow: /`＋Sitemap；非正式主機也是 `Allow: /`、不宣告 sitemap（`public/robots.txt` 必須刪掉） |
 | `server/middleware/noindex-nonproduction.ts` | 非正式主機補 `X-Robots-Tag: noindex, nofollow` |
+
+🔴 **非正式主機的 robots.txt 不能是 `Disallow: /`**。9/19 曾把 Disallow 與 noindex 一起加，結果 Google
+被 robots.txt 擋住、讀不到 noindex，9/19 以前已收錄的 dev 頁面到 10-28 還搜得到（Stone 回報）。
+10-28 改成非正式主機也允許爬、只靠 noindex 讓 Google 自己移除；同時請 Stone 在 Search Console
+驗證 dev 網址前綴（HTML 檔驗證）並用「移除」工具暫時隱藏整個前綴（6 個月），等 noindex 生效。
 
 ⚠️ 判斷方式一定要是**白名單正式主機、其餘一律 noindex**，不能寫成黑名單——
 兩個方向的後果不對稱：漏擋一個預覽網址只是重複內容，**誤擋正式站是流量歸零**。
