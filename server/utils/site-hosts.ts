@@ -19,9 +19,9 @@
  *    www 沒有 DNS 紀錄（NXDOMAIN）也不打算加，所以不放進來。
  *
  * ⚠️ 因此：**日後新增任何對外網址都必須同時加進這份名單**——
- *    不在名單上的主機會拿到 Disallow: / ＋ noindex。
+ *    不在名單上的主機會拿到 X-Robots-Tag: noindex（robots.txt 仍允許爬，原因見 robots.txt.ts）。
  *    漏加的症狀是「新網址上線後完全不被 Google 收錄」，而且從畫面上
- *    看不出任何異常（頁面正常顯示），只能從 robots.txt 與回應標頭發現。
+ *    看不出任何異常（頁面正常顯示），只能從回應標頭發現。
  */
 export const PRODUCTION_HOSTS = new Set([
   'lkkwellness.com',
