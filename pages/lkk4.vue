@@ -210,8 +210,8 @@ interface EntryFee {
   tiers?: { size: string; price: string }[]
 }
 const entryFees: EntryFee[] = [
-  { name: '早鳥優惠價', price: '2,700', period: '2026/6/29 12:00 – 2026/7/12 23:55' },
-  { name: '一般報名費', price: '3,000', period: '2026/7/13 00:00 – 2026/10/30 23:55', current: true },
+  { name: '早鳥優惠價', price: '2,700', period: '2026/6/29 – 2026/7/12' },
+  { name: '一般報名費', price: '3,000', period: '2026/7/13 – 2026/11/7', current: true },
   // 團體接力賽依隊伍人數分三種價格，不是「每人一價」——
   // 所以用 tiers 而不是 price，卡片會改走另一種版面（見下方 v-if）
   {
@@ -321,7 +321,7 @@ const faqs = [
   },
   {
     q: '報名費用是多少？',
-    a: '個人賽：早鳥優惠價 NT$2,700、一般報名費 NT$3,000，報名於 2026/10/30 截止。團體接力賽：2 人 NT$3,350、3 人 NT$3,700、4 人 NT$4,000。詳細資訊請見上方「賽制與報名」，或直接前往 Accupass 活動頁。',
+    a: '個人賽：早鳥優惠價 NT$2,700、一般報名費 NT$3,000，報名於 2026/11/7 截止。團體接力賽：2 人 NT$3,350、3 人 NT$3,700、4 人 NT$4,000。詳細資訊請見上方「賽制與報名」，或直接前往 Accupass 活動頁。',
   },
   {
     q: '報名後想變更或退費怎麼辦？',
@@ -472,9 +472,6 @@ const faqs = [
               loading="lazy"
             />
           </Lkk4Ticket>
-          <p class="text-center text-[13px] text-white/60 mt-4">
-            ＊四項賽制為 2026 年最新修訂標準，詳細官方競賽計分規則將於正式賽前 3 個月完整公告。
-          </p>
         </div>
       </div>
     </section>
@@ -790,7 +787,7 @@ const faqs = [
               </div>
             </div>
             <div class="bg-white rounded-xl px-5 py-3.5 text-sm text-ink/70 border-2 border-cream-200 mb-12">
-              賽程預計於 <strong class="text-navy-800">2026/11/6（星期五）前</strong>公佈。
+              選手出賽時間、出賽順序及賽道分配，預計於 <strong class="text-navy-800">2026/11/13（五）前</strong>公布。
             </div>
 
             <!-- 比賽方式與計分 -->
