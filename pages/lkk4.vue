@@ -476,7 +476,7 @@ const faqs = [
 
         <!-- 場地動線圖（2026-11-03 業主提供，可切換個人賽／團體接力賽並播放動線） -->
         <div class="max-w-5xl mx-auto mt-10 lg:mt-14">
-          <Lkk4Ticket pad="p-5 sm:p-7 lg:p-10">
+          <Lkk4Ticket pad="p-4 sm:p-7 lg:p-10">
             <Lkk4RouteMap />
           </Lkk4Ticket>
         </div>

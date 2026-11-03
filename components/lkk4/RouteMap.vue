@@ -78,7 +78,7 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
 
   /* ---------- 標記：關卡徽章、重量、折返線、預備區 ---------- */
   const M = $('marks')
-  function badge(x: number, y: number, n: string, t: string, ph: number) { const b = el('g', { class: 'badge' }, M); el('circle', { cx: x, cy: y, r: 62, fill: C[ph] }, b); el('text', { class: 'n', x, y: y + 26 }, b, n); el('text', { class: 't', x: x + 84, y: y + 22, fill: C[ph] }, b, t) }
+  function badge(x: number, y: number, n: string, t: string, ph: number) { const b = el('g', { class: 'stg-badge' }, M); el('circle', { cx: x, cy: y, r: 62, fill: C[ph] }, b); el('text', { class: 'n', x, y: y + 26 }, b, n); el('text', { class: 't', x: x + 84, y: y + 22, fill: C[ph] }, b, t) }
   badge(3160, -140, '1', '六角槓硬舉 1 分鐘', 1)
   badge(1500, -140, '2', '推雪橇＋農夫走路 3 分鐘', 2)
   badge(100, -140, '3', '風扇車 10 分鐘', 3)
@@ -318,10 +318,10 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
   grp.onchange = (e: any) => { g = G[e.target.value]; setWeights(); caption(shown); render(t) }
   $('five').onchange = (e: any) => rootEl.querySelectorAll<HTMLElement>('.others').forEach(o => o.dataset.on = e.target.checked ? 'on' : 'off')
   const prevGrp = { v: grp.value }
-  rootEl.querySelectorAll<HTMLElement>('[data-mode]').forEach(b => b.onclick = () => {
+  rootEl.querySelectorAll<HTMLElement>('button[data-mode]').forEach(b => b.onclick = () => {
     const m = b.dataset.mode!; if (m === mode) return
     stop(); mode = m; M2 = MODES[m]; svg.dataset.mode = m
-    rootEl.querySelectorAll('[data-mode]').forEach(x => x.setAttribute('aria-pressed', String((x as HTMLElement).dataset.mode === m)))
+    rootEl.querySelectorAll('button[data-mode]').forEach(x => x.setAttribute('aria-pressed', String((x as HTMLElement).dataset.mode === m)))
     rosterEl.hidden = m !== 'team'; $('fiveWrap').hidden = m === 'team'
     if (m === 'team') { prevGrp.v = grp.value; grp.value = 'team'; grp.disabled = true } else { grp.value = prevGrp.v; grp.disabled = false }
     g = G[grp.value]; setWeights()
@@ -350,7 +350,7 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
         </div>
         <label class="rm-select">
           <span>組別</span>
-          <select data-id="grp" aria-label="組別">
+          <select data-id="grp" aria-label="組別" autocomplete="off">
             <option value="m69">69 歲以下・男</option>
             <option value="f69">69 歲以下・女</option>
             <option value="m70">70 歲以上・男</option>
@@ -358,7 +358,7 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
             <option value="team">團體接力賽</option>
           </select>
         </label>
-        <label class="rm-chip" data-id="fiveWrap"><input type="checkbox" data-id="five">五位一起入場</label>
+        <label class="rm-chip" data-id="fiveWrap"><input type="checkbox" data-id="five" autocomplete="off">五位一起入場</label>
       </div>
     </header>
 
@@ -376,7 +376,7 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
       </button>
     </div>
 
-    <div class="rm-roster" data-id="roster" hidden aria-label="隊員" />
+    <div class="rm-roster" data-id="roster" role="group" hidden aria-label="隊員" />
 
     <div class="rm-cap" data-id="cap" aria-live="polite" />
 
@@ -419,8 +419,8 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
   --floor: #f6f1e7; --station: #ffffff; --sep: #d6cab4;
   --track: #dbe9e1; --gear: #f4e4b4; --stage: #eadbd0;
   --block: #aeb8bc; --seat: #b9c2c5; --booth: #eef0ec;
-  --s0: #5f7a89; --s1: #c2410c; --s2: #0e8574; --s3: #4a53c4; --dn: #ffffff; --idle: #a7b1b5; --s2b: #a87700;
-  --s1t: rgba(194, 65, 12, .09); --s2t: rgba(14, 133, 116, .09); --s3t: rgba(74, 83, 196, .09); --s0t: rgba(95, 122, 137, .11);
+  --s0: #546f7e; --s1: #c2410c; --s2: #0b7868; --s3: #4a53c4; --dn: #ffffff; --idle: #6e7d84; --s2b: #8f6400;
+  --s1t: rgba(194, 65, 12, .08); --s2t: rgba(11, 120, 104, .08); --s3t: rgba(74, 83, 196, .08); --s0t: rgba(84, 111, 126, .10);
   --body: var(--font-main, 'Microsoft JhengHei', system-ui, sans-serif);
   display: grid;
   gap: 14px;
@@ -439,18 +439,19 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
 /* 控制項 */
 .lkk4-route .rm-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .lkk4-route .rm-seg { display: inline-flex; padding: 3px; gap: 2px; background: #fff; border: 2px solid var(--line); border-radius: 999px; }
-.lkk4-route .rm-seg button { font: 700 14px var(--body); color: var(--muted); background: transparent; border: 0; border-radius: 999px; padding: 7px 15px; cursor: pointer; transition: background .2s, color .2s; }
+.lkk4-route .rm-seg button { font: 700 15px/1.4 var(--body); color: var(--muted); background: transparent; border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; transition: background .2s, color .2s; }
 .lkk4-route .rm-seg button:hover { color: var(--ink); }
 .lkk4-route .rm-seg button[aria-pressed="true"] { background: #1a3545; color: #fff; }
 .lkk4-route .rm-select { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 0 6px 0 14px; font-size: 13px; font-weight: 700; color: var(--muted); }
 .lkk4-route .rm-select select {
-  font: 700 14px var(--body); color: var(--ink); background: transparent; border: 0; padding: 8px 26px 8px 2px; cursor: pointer;
+  /* 16px：小於 16px 的 select 在 iPhone 點下去會整頁放大 */
+  font: 700 16px/1.4 var(--body); color: var(--ink); background: transparent; border: 0; padding: 8px 26px 8px 2px; cursor: pointer;
   appearance: none; -webkit-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 7.5l5 5 5-5' fill='none' stroke='%231a3545' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 4px center; background-size: 16px;
 }
 .lkk4-route .rm-select select:disabled { color: var(--muted); cursor: not-allowed; }
-.lkk4-route .rm-chip { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 7px 14px; font: 700 14px var(--body); color: var(--ink); cursor: pointer; }
+.lkk4-route .rm-chip { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 9px 15px; font: 700 15px/1.4 var(--body); color: var(--ink); cursor: pointer; }
 .lkk4-route .rm-chip input { width: 16px; height: 16px; margin: 0; accent-color: #1a3545; }
 .lkk4-route button:focus-visible, .lkk4-route select:focus-visible, .lkk4-route .rm-chip:focus-within { outline: 2px solid #c2410c; outline-offset: 2px; }
 
@@ -476,9 +477,13 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
 .lkk4-route .play .pi svg { width: 18px; height: 18px; color: #fff; }
 .lkk4-route .play .i-pause, .lkk4-route .play[data-playing="true"] .i-play { display: none; }
 .lkk4-route .play[data-playing="true"] .i-pause { display: block; }
+/* 五欄只在 lg 以上；平板四個關卡一排、播放鍵自己一排，手機兩欄 */
+@media (max-width: 1023px) {
+  .lkk4-route .rm-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .lkk4-route .play { grid-column: 1 / -1; }
+}
 @media (max-width: 767px) {
   .lkk4-route .rm-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .lkk4-route .play { grid-column: span 2; }
 }
 
 /* 說明卡 */
@@ -491,12 +496,14 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
 .lkk4-route .rm-cap p { margin: 0; line-height: 1.8; max-width: 70ch; font-size: 15px; color: rgba(26, 26, 26, .78); }
 .lkk4-route .rm-cap ol { margin: 0; padding-left: 1.3em; list-style: decimal; line-height: 1.85; font-size: 15px; color: rgba(26, 26, 26, .78); }
 .lkk4-route .rm-cap b { color: #1a3545; }
+/* 總覽（「比賽怎麼走」）的 --c 是外框色，太淡不能拿來當字色 */
+.lkk4-route .rm-cap[style*="--line"] h4 em { color: var(--muted); background: #f3ede2; }
 
 /* 平面圖 */
 .lkk4-route .rm-plan { background: var(--paper); border: 2px solid var(--line); border-radius: 18px; overflow-x: auto; padding: 6px; }
 .lkk4-route .rm-plan svg { display: block; width: 100%; min-width: 680px; height: auto; }
 .lkk4-route .rm-hint { display: none; margin: -6px 0 0; font-size: 12.5px; color: var(--muted); text-align: right; }
-@media (max-width: 720px) { .lkk4-route .rm-hint { display: block; } }
+@media (max-width: 1023px) { .lkk4-route .rm-hint { display: block; } }
 .lkk4-route .floor { fill: var(--floor); } .lkk4-route .station { fill: var(--station); } .lkk4-route .sep { fill: var(--sep); }
 .lkk4-route .track { fill: var(--track); } .lkk4-route .gear { fill: var(--gear); } .lkk4-route .stagez { fill: var(--stage); }
 .lkk4-route .block { fill: var(--block); } .lkk4-route .seat { fill: var(--seat); } .lkk4-route .booth { fill: var(--booth); stroke: var(--line); stroke-width: 6; }
@@ -506,9 +513,9 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
 .lkk4-route .lane-no { font: 900 64px var(--body); fill: var(--muted); }
 .lkk4-route .prep { font: 900 58px var(--body); fill: var(--s0); }
 .lkk4-route .lower { opacity: .6; }
-.lkk4-route .badge circle { stroke: var(--paper); stroke-width: 10; }
-.lkk4-route .badge text.n { font: 900 74px var(--body); fill: #fff; text-anchor: middle; }
-.lkk4-route .badge text.t { font: 900 60px var(--body); }
+.lkk4-route .stg-badge circle { stroke: var(--paper); stroke-width: 10; }
+.lkk4-route .stg-badge text.n { font: 900 74px var(--body); fill: #fff; text-anchor: middle; }
+.lkk4-route .stg-badge text.t { font: 900 60px var(--body); }
 .lkk4-route .wt { font: 800 46px var(--body); text-anchor: middle; }
 .lkk4-route .turn { stroke: var(--s2); stroke-width: 6; stroke-dasharray: 24 18; }
 .lkk4-route .turnd { stroke: var(--s2); stroke-width: 6; }
