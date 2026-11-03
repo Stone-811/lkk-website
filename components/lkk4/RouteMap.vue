@@ -229,6 +229,8 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
   MODES.ind.total = Math.max(...IND.map(a => a.end))
   let mode = 'ind', M2 = MODES.ind
 
+  // 鏡頭跟隨用：render 記下「這一幀該跟著誰」的 x（個人賽跟大圓點，團體賽跟正在做關卡的隊員）
+  let followX: number | null = null
   function stepAt(a: any, t: number) { for (const s of a.steps) if (t < s.t1) return s; return a.steps[a.steps.length - 1] }
   function render(t: number) {
     M2.actors.forEach((a: any) => {
@@ -243,6 +245,7 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
       const active = cur.act && t >= a.steps[0].t0
       const ci = cur.col ?? (cur.mv ? cur.ph : (cur.prev && cur.prev.col) ?? cur.ph)
       a.dot.setAttribute('cx', pos.x); a.dot.setAttribute('cy', pos.y)
+      if (!a.small && (mode === 'ind' || active)) followX = pos.x
       a.dot.setAttribute('fill', active || mode === 'ind' ? C[ci] : 'var(--idle)')
       a.dot.classList.toggle('idle', mode === 'team' && !active)
       a.num.setAttribute('x', pos.x); a.num.setAttribute('y', pos.y + (a.small ? 17 : 20))
@@ -303,14 +306,42 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
   }
   function phaseAt(t: number) { for (let p = 3; p >= 0; p--) if (t >= M2.st[p]) return p; return 0 }
   let disposed = false
+
+  /*
+   * 平面圖跟著圓點捲動（2026-11-03 新增，原版沒有）。
+   * 只在 .rm-plan 需要左右捲動時作用（手機、平板、窄視窗）；整張圖看得到時什麼都不做，
+   * 所以電腦全螢幕看起來跟原版一樣。不碰時間軸，只改外框的 scrollLeft。
+   * 使用者自己左右滑就暫停跟隨（scrollLeft 跟我們上次設的值不同＝有人動過），
+   * 下次按播放或點某一關（都會走 start）才恢復。
+   */
+  const plan = rootEl.querySelector<HTMLElement>('.rm-plan')!
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  let followPaused = false, sl = 0, lastSet = -1
+  function resumeFollow() { followPaused = false; sl = plan.scrollLeft; lastSet = plan.scrollLeft }
+  function follow(dt: number) {
+    if (followPaused || followX == null) return
+    const max = plan.scrollWidth - plan.clientWidth
+    if (max <= 1) return
+    const vb = svg.viewBox.baseVal
+    const sr = svg.getBoundingClientRect(), pr = plan.getBoundingClientRect()
+    const px = sr.left - pr.left + plan.scrollLeft + (followX - vb.x) / vb.width * sr.width
+    const target = Math.max(0, Math.min(max, px - plan.clientWidth / 2))
+    const k = reduceMotion ? 1 : 1 - Math.pow(0.002, Math.min(dt, 0.1))
+    sl += (target - sl) * k
+    plan.scrollLeft = sl
+    lastSet = plan.scrollLeft
+  }
+  const onPlanScroll = () => { if (Math.abs(plan.scrollLeft - lastSet) > 3) followPaused = true }
+  plan.addEventListener('scroll', onPlanScroll, { passive: true })
   function frame(now: number) {
     if (!playing || disposed) return
-    t += (now - last) / 1000; last = now
+    const dt = (now - last) / 1000
+    t += dt; last = now
     if (t >= until) { t = until; stop() }
-    render(t); setActive(phaseAt(Math.min(t, until - 0.01)))
+    render(t); setActive(phaseAt(Math.min(t, until - 0.01))); follow(dt)
     if (playing) requestAnimationFrame(frame)
   }
-  function start(from: number, to: number) { t = from; until = to; playing = true; last = performance.now(); setPlayUI(true); requestAnimationFrame(frame) }
+  function start(from: number, to: number) { resumeFollow(); t = from; until = to; playing = true; last = performance.now(); setPlayUI(true); requestAnimationFrame(frame) }
   function stop() { playing = false; setPlayUI(false) }
   btns.forEach(b => b.onclick = () => { const p = +b.dataset.go!; stop(); setActive(p); start(p === 0 ? 0 : M2.st[p], M2.en[p]) })
   playBtn.onclick = () => { if (playing) { stop(); return } start(t >= M2.total - 0.05 || until !== M2.total ? 0 : t, M2.total) }
@@ -331,7 +362,7 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
 
   setWeights(); caption('all'); render(0)
 
-  return () => { disposed = true; playing = false }
+  return () => { disposed = true; playing = false; plan.removeEventListener('scroll', onPlanScroll) }
 }
 </script>
 
