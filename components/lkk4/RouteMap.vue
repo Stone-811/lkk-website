@@ -331,8 +331,21 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
     plan.scrollLeft = sl
     lastSet = plan.scrollLeft
   }
-  const onPlanScroll = () => { if (Math.abs(plan.scrollLeft - lastSet) > 3) followPaused = true }
+  // 每一幀都會把 scrollLeft 設回去，手指拖動的差距常常小於 3px，光看 scroll 事件抓不到，
+  // 所以直接看輸入：手指左右拖（橫向位移大於縱向）、橫向滾輪／shift＋滾輪、滑鼠按住（拖捲軸）。
+  // 上下滑整頁不算，免得手機往下捲就停止跟隨。
+  let tx = 0, ty = 0
+  const pause = () => { followPaused = true }
+  const onPlanScroll = () => { if (Math.abs(plan.scrollLeft - lastSet) > 3) pause() }
+  const onTouchStart = (e: TouchEvent) => { tx = e.touches[0].clientX; ty = e.touches[0].clientY }
+  const onTouchMove = (e: TouchEvent) => { const dx = e.touches[0].clientX - tx, dy = e.touches[0].clientY - ty; if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) pause() }
+  const onWheel = (e: WheelEvent) => { if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) pause() }
+  const onPointerDown = (e: PointerEvent) => { if (e.pointerType === 'mouse') pause() }
   plan.addEventListener('scroll', onPlanScroll, { passive: true })
+  plan.addEventListener('touchstart', onTouchStart, { passive: true })
+  plan.addEventListener('touchmove', onTouchMove, { passive: true })
+  plan.addEventListener('wheel', onWheel, { passive: true })
+  plan.addEventListener('pointerdown', onPointerDown)
   function frame(now: number) {
     if (!playing || disposed) return
     const dt = (now - last) / 1000
@@ -362,7 +375,10 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
 
   setWeights(); caption('all'); render(0)
 
-  return () => { disposed = true; playing = false; plan.removeEventListener('scroll', onPlanScroll) }
+  return () => { disposed = true; playing = false; plan.removeEventListener('scroll', onPlanScroll)
+    plan.removeEventListener('touchstart', onTouchStart); plan.removeEventListener('touchmove', onTouchMove)
+    plan.removeEventListener('wheel', onWheel); plan.removeEventListener('pointerdown', onPointerDown)
+  }
 }
 </script>
 
