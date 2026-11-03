@@ -37,14 +37,6 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
   }
   const C = ['var(--s0)', 'var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s2b)'] // 4 = 農夫走路
 
-  /* ---------- 組別重量（官網） ---------- */
-  const G: Record<string, any> = {
-    m69: { dl: [80, 100, 120], sled: 100, farm: 28 }, f69: { dl: [50, 60, 80], sled: 75, farm: 20 },
-    m70: { dl: [40, 50, 60], sled: 60, farm: 20 }, f70: { dl: [30, 40, 50], sled: 40, farm: 12 },
-    team: { dl: [30, 40, 50], sled: 40, farm: 12 },
-  }
-  let g = G.f70
-
   /* ---------- 賽道 ---------- */
   const LANE_Y = [60, 330, 600, 870, 1140], LH = 200
   // x, w, kind
@@ -83,7 +75,8 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
   badge(1500, -140, '2', '推雪橇＋農夫走路 3 分鐘', 2)
   badge(100, -140, '3', '風扇車 10 分鐘', 3)
   el('text', { class: 'wt', x: 184, y: -20, fill: C[3], 'text-anchor': 'start' }, M, '3 km')
-  const wtT = [3475, 3325, 3175].map(x => el('text', { class: 'wt', x, y: -20, fill: C[1] }, M, ''))
+  // 不標公斤數：各組重量不同，以頁面上的重量表為準
+  ;[3475, 3325, 3175].forEach((x, i) => el('text', { class: 'wt', x, y: -20, fill: C[1] }, M, ['輕', '中', '重'][i]))
   el('text', { class: 'wt', x: 2850, y: -20, fill: C[2] }, M, '雪橇／握把')
   el('line', { class: 'turn', x1: 960, y1: 40, x2: 960, y2: 1360 }, M);
   [[960, -30, 960, -10], [2780, -30, 2780, -10]].forEach(([a, b, c, d]) => el('line', { class: 'turnd', x1: a, y1: b, x2: c, y2: d }, M))
@@ -141,17 +134,17 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
     const cy = LANE_Y[i] + LH / 2, sx = 3660 + i * 105, A = Actor(delay)
     A.mv(0, `M${sx} 2590V2420H3810V${cy}H3660`, 5, () => '走到賽道入口')
     A.mv(1, `M3660 ${cy}H3475`, 0.8, () => '硬舉・輕')
-    A.st(1, 1.6, () => `硬舉・輕 ${g.dl[0]} kg`)
+    A.st(1, 1.6, () => '硬舉・輕')
     A.mv(1, `M3475 ${cy}H3325`, 0.6, () => '換到中')
-    A.st(1, 1.6, () => `硬舉・中 ${g.dl[1]} kg`)
+    A.st(1, 1.6, () => '硬舉・中')
     A.mv(1, `M3325 ${cy}H3175`, 0.6, () => '換到重')
-    A.st(1, 1.6, () => `硬舉・重 ${g.dl[2]} kg`)
+    A.st(1, 1.6, () => '硬舉・重')
     A.mv(2, `M3175 ${cy}H2800V${cy - 35}`, 1.2, () => '走到雪橇')
-    A.mv(2, `M2800 ${cy - 35}H995A35 35 0 0 0 995 ${cy + 35}H2800`, 7, () => `推雪橇 ${g.sled} kg`)
+    A.mv(2, `M2800 ${cy - 35}H995A35 35 0 0 0 995 ${cy + 35}H2800`, 7, () => '推雪橇')
     A.st(2, 1, () => '換農夫走路', { col: 4 })
-    A.mv(2, `M2800 ${cy + 35}V${cy - 75}H1035A75 75 0 0 0 960 ${cy}`, 3.6, () => `農夫走路 ${g.farm} kg`, { col: 4, noArrow: 1 })
+    A.mv(2, `M2800 ${cy + 35}V${cy - 75}H1035A75 75 0 0 0 960 ${cy}`, 3.6, () => '農夫走路', { col: 4, noArrow: 1 })
     A.st(2, 1, () => '換另一手', { col: 4 })
-    A.mv(2, `M960 ${cy}A75 75 0 0 0 1035 ${cy + 75}H2800`, 3.6, () => `農夫走路・另一手 ${g.farm} kg`, { col: 4 })
+    A.mv(2, `M960 ${cy}A75 75 0 0 0 1035 ${cy + 75}H2800`, 3.6, () => '農夫走路・另一手', { col: 4 })
     A.mv(3, `M2800 ${cy + 75}V${cy}H700`, 3.5, () => '走到風扇車')
     A.st(3, 6, () => '風扇車', { ring: 1 })
     A.st(3, 1.2, () => '完賽！')
@@ -175,25 +168,25 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
     A.waitUntil(go)
     // A：輕、中
     A.mv(1, `M3600 ${cy - 50}L3475 ${cy}`, 0.6, () => 'A：硬舉・輕')
-    A.st(1, 1.6, () => `A：硬舉・輕 ${g.dl[0]} kg`)
+    A.st(1, 1.6, () => 'A：硬舉・輕')
     A.mv(1, `M3475 ${cy}H3325`, 0.6, () => 'A：換到中')
-    A.st(1, 1.6, () => `A：硬舉・中 ${g.dl[1]} kg`)
+    A.st(1, 1.6, () => 'A：硬舉・中')
     const h1 = A.t
     A.st(1, 1, () => 'A → B 交棒')
     A.mv(0, `M3325 ${cy}V${cy + 85}H3600`, 0.9, null, { act: false })
     // B：重＋推雪橇
     B.waitUntil(h1)
     B.mv(1, `M3720 ${cy - 50}V${cy - 85}H3175V${cy}`, 1.3, () => 'B 接棒')
-    B.st(1, 1.6, () => `B：硬舉・重 ${g.dl[2]} kg`)
+    B.st(1, 1.6, () => 'B：硬舉・重')
     B.mv(2, `M3175 ${cy}H2800V${cy - 35}`, 1.2, () => 'B：走到雪橇')
-    B.mv(2, `M2800 ${cy - 35}H995A35 35 0 0 0 995 ${cy + 35}H2800`, 7, () => `B：推雪橇 ${g.sled} kg`)
+    B.mv(2, `M2800 ${cy - 35}H995A35 35 0 0 0 995 ${cy + 35}H2800`, 7, () => 'B：推雪橇')
     const h2 = B.t
     B.st(2, 1, () => 'B → C 交棒')
     B.mv(0, `M2800 ${cy + 35}V${cy - 85}H3025`, 0.8, null, { act: false })
     // C：農夫走路來回
     C2.waitUntil(h2)
     C2.mv(2, `M3600 ${cy + 50}V${cy + 85}H2800V${cy - 75}`, 2, () => 'C 接棒，換農夫走路', { col: 4 })
-    C2.mv(2, `M2800 ${cy - 75}H1035A75 75 0 0 0 960 ${cy}`, 3.6, () => `C：農夫走路 ${g.farm} kg`, { col: 4, noArrow: 1 })
+    C2.mv(2, `M2800 ${cy - 75}H1035A75 75 0 0 0 960 ${cy}`, 3.6, () => 'C：農夫走路', { col: 4, noArrow: 1 })
     C2.st(2, 1, () => 'C：換另一手', { col: 4 })
     C2.mv(2, `M960 ${cy}A75 75 0 0 0 1035 ${cy + 75}H2800`, 3.6, () => 'C：農夫走路・另一手', { col: 4 })
     // C：風扇車前半
@@ -278,15 +271,15 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
     const IND_T: Record<string, any> = {
       all: { c: 'var(--line)', h: '比賽怎麼走', em: '每位選手總時間 20 分鐘', html: '<ol><li>在<b>預備區</b>等候，聽到鈴聲後由工作人員帶到自己的賽道。</li><li><b>第一關 拿得動</b>：在最右側六角槓區，輕、中、重依序硬舉。</li><li><b>第二關 推得實、走得穩</b>：往左進跑道，先推雪橇、再換農夫走路，都是推／走到跑道另一端（12.5 公尺）再折返回來。</li><li><b>第三關 走得久</b>：走到最左側風扇車，完成 3 公里就完賽。</li></ol>' },
       0: { c: 'var(--s0)', h: '入場', em: '每 5 分鐘響鈴・每次 5 位', html: '<p>依出場順序在右下角預備區等候。聽到鈴聲後，工作人員會帶你沿右側通道走到自己的賽道入口。</p>' },
-      1: { c: 'var(--s1)', h: '第一關 拿得動・六角槓硬舉', em: '限時 1:00', html: `<p>從入口往左，三支六角槓依序是 <b>輕 ${g.dl[0]} kg → 中 ${g.dl[1]} kg → 重 ${g.dl[2]} kg</b>。就像從地上提起一袋菜籃，一支完成再換下一支。</p>` },
-      2: { c: 'var(--s2)', h: '第二關 推得實、走得穩', em: '限時 3:00', html: `<p>先推 <b style="color:var(--s2)">雪橇 ${g.sled} kg</b>，推到跑道另一端（12.5 公尺）再推回來。接著換 <b style="color:var(--s2b)">農夫走路</b>，單手提 ${g.farm} kg 走到對面，換另一手再走回來。兩項都是來回 25 公尺。</p>` },
+      1: { c: 'var(--s1)', h: '第一關 拿得動・六角槓硬舉', em: '限時 1:00', html: '<p>從入口往左，三支六角槓依序是 <b>輕 → 中 → 重</b>。就像從地上提起一袋菜籃，一支完成再換下一支。</p>' },
+      2: { c: 'var(--s2)', h: '第二關 推得實、走得穩', em: '限時 3:00', html: '<p>先推 <b style="color:var(--s2)">雪橇</b>，推到跑道另一端（12.5 公尺）再推回來。接著換 <b style="color:var(--s2b)">農夫走路</b>，單手提著走到對面，換另一手再走回來。兩項都是來回 25 公尺。</p>' },
       3: { c: 'var(--s3)', h: '第三關 走得久・風扇車', em: '限時 10:00', html: '<p>沿跑道走到最左邊的風扇車，用自己的節奏騎完 <b>3 公里</b>，就完成比賽了。</p>' },
     }
     const TEAM_T: Record<string, any> = {
       all: { c: 'var(--line)', h: '團體接力賽怎麼走', em: '2–4 人・全隊 14 分鐘內完成', html: '<ol><li>全隊一起入場，站在<b>同一條賽道</b>上。</li><li>三個關卡可以<b>隨時換手</b>，從當下的進度接著做，不停錶、不限次數。</li><li>沒輪到的隊友在自己的賽道裡等候、陪同，不要走出賽道。</li><li>下面是 3 人隊伍的範例：A 做輕、中 → B 接重、推雪橇 → C 農夫走路、騎風扇車 → 騎到一半換 B 騎完。誰做哪一段，隊伍可以自己決定。</li></ol>' },
       0: { c: 'var(--s0)', h: '全隊一起入場', em: '2–4 位隊友', html: '<p>聽到鈴聲後，隊友們一起由工作人員帶到同一條賽道。還沒輪到的人，先在賽道入口旁等候。</p>' },
-      1: { c: 'var(--s1)', h: '第一關 拿得動・六角槓硬舉', em: '限時 1:00', html: `<p><b>A</b> 先做輕 ${g.dl[0]} kg、中 ${g.dl[1]} kg，做完交棒給 <b>B</b>；B 接著做重 ${g.dl[2]} kg。</p>` },
-      2: { c: 'var(--s2)', h: '第二關 推得實、走得穩', em: '限時 3:00', html: `<p><b>B</b> 做完硬舉，直接去推 <b style="color:var(--s2)">雪橇 ${g.sled} kg</b> 來回，再交棒給 <b>C</b>；C 做 <b style="color:var(--s2b)">農夫走路</b> ${g.farm} kg，走到對面換另一手再走回來。</p>` },
+      1: { c: 'var(--s1)', h: '第一關 拿得動・六角槓硬舉', em: '限時 1:00', html: '<p><b>A</b> 先做輕、中，做完交棒給 <b>B</b>；B 接著做重。</p>' },
+      2: { c: 'var(--s2)', h: '第二關 推得實、走得穩', em: '限時 3:00', html: '<p><b>B</b> 做完硬舉，直接去推 <b style="color:var(--s2)">雪橇</b> 來回，再交棒給 <b>C</b>；C 做 <b style="color:var(--s2b)">農夫走路</b>，走到對面換另一手再走回來。</p>' },
       3: { c: 'var(--s3)', h: '第三關 走得久・風扇車', em: '限時 10:00', html: '<p><b>C</b> 走到風扇車開始騎，騎到一半換 <b>B</b> 接手，公里數接著算，騎滿 3 公里就全隊完賽。B 可以先走到風扇車旁邊準備。</p>' },
     }
     const T = (mode === 'team' ? TEAM_T : IND_T)[p]
@@ -300,7 +293,6 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
       if (Math.abs(d) > 1) window.scrollBy({ top: d, behavior: 'instant' as ScrollBehavior })
     }
   }
-  function setWeights() { wtT.forEach((e: any, i: number) => e.textContent = ['輕', '中', '重'][i] + ' ' + g.dl[i]) }
 
   /* ---------- 播放控制 ---------- */
   let t = 0, until = M2.total, playing = false, last = 0, shown: any = 'all'
@@ -366,22 +358,17 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
   function stop() { playing = false; setPlayUI(false) }
   btns.forEach(b => b.onclick = () => { const p = +b.dataset.go!; stop(); setActive(p); start(p === 0 ? 0 : M2.st[p], M2.en[p]) })
   playBtn.onclick = () => { if (playing) { stop(); return } start(t >= M2.total - 0.05 || until !== M2.total ? 0 : t, M2.total) }
-  const grp = $('grp')
-  grp.onchange = (e: any) => { g = G[e.target.value]; setWeights(); caption(shown); render(t) }
   $('five').onchange = (e: any) => rootEl.querySelectorAll<HTMLElement>('.others').forEach(o => o.dataset.on = e.target.checked ? 'on' : 'off')
-  const prevGrp = { v: grp.value }
   rootEl.querySelectorAll<HTMLElement>('button[data-mode]').forEach(b => b.onclick = () => {
     const m = b.dataset.mode!; if (m === mode) return
     stop(); mode = m; M2 = MODES[m]; svg.dataset.mode = m
     rootEl.querySelectorAll('button[data-mode]').forEach(x => x.setAttribute('aria-pressed', String((x as HTMLElement).dataset.mode === m)))
     rosterEl.hidden = m !== 'team'; $('fiveWrap').hidden = m === 'team'
-    if (m === 'team') { prevGrp.v = grp.value; grp.value = 'team'; grp.disabled = true } else { grp.value = prevGrp.v; grp.disabled = false }
-    g = G[grp.value]; setWeights()
     t = 0; until = M2.total; svg.dataset.active = 'all'; btns.forEach(x => x.setAttribute('aria-pressed', 'false'))
     shown = 'all'; caption('all'); render(0)
   })
 
-  setWeights(); caption('all'); render(0)
+  caption('all'); render(0)
 
   return () => { disposed = true; playing = false; plan.removeEventListener('scroll', onPlanScroll)
     plan.removeEventListener('touchstart', onTouchStart); plan.removeEventListener('touchmove', onTouchMove)
@@ -403,16 +390,6 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
           <button type="button" data-mode="ind" aria-pressed="true">個人賽</button>
           <button type="button" data-mode="team" aria-pressed="false">團體接力賽</button>
         </div>
-        <label class="rm-select">
-          <span>組別</span>
-          <select data-id="grp" aria-label="組別" autocomplete="off">
-            <option value="m69">69 歲以下・男</option>
-            <option value="f69">69 歲以下・女</option>
-            <option value="m70">70 歲以上・男</option>
-            <option value="f70" selected>70 歲以上・女</option>
-            <option value="team">團體接力賽</option>
-          </select>
-        </label>
         <label class="rm-chip" data-id="fiveWrap"><input type="checkbox" data-id="five" autocomplete="off">五位一起入場</label>
       </div>
     </header>
@@ -497,18 +474,9 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
 .lkk4-route .rm-seg button { font: 700 15px/1.4 var(--body); color: var(--muted); background: transparent; border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; transition: background .2s, color .2s; }
 .lkk4-route .rm-seg button:hover { color: var(--ink); }
 .lkk4-route .rm-seg button[aria-pressed="true"] { background: #1a3545; color: #fff; }
-.lkk4-route .rm-select { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 0 6px 0 14px; font-size: 13px; font-weight: 700; color: var(--muted); }
-.lkk4-route .rm-select select {
-  /* 16px：小於 16px 的 select 在 iPhone 點下去會整頁放大 */
-  font: 700 16px/1.4 var(--body); color: var(--ink); background: transparent; border: 0; padding: 8px 26px 8px 2px; cursor: pointer;
-  appearance: none; -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 7.5l5 5 5-5' fill='none' stroke='%231a3545' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 4px center; background-size: 16px;
-}
-.lkk4-route .rm-select select:disabled { color: var(--muted); cursor: not-allowed; }
 .lkk4-route .rm-chip { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 9px 15px; font: 700 15px/1.4 var(--body); color: var(--ink); cursor: pointer; }
 .lkk4-route .rm-chip input { width: 16px; height: 16px; margin: 0; accent-color: #1a3545; }
-.lkk4-route button:focus-visible, .lkk4-route select:focus-visible, .lkk4-route .rm-chip:focus-within { outline: 2px solid #c2410c; outline-offset: 2px; }
+.lkk4-route button:focus-visible, .lkk4-route .rm-chip:focus-within { outline: 2px solid #c2410c; outline-offset: 2px; }
 
 /* 流程按鈕 */
 .lkk4-route .rm-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
