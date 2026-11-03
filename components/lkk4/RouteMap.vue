@@ -273,6 +273,7 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
 
   /* ---------- 說明卡 ---------- */
   const capEl = $('cap')
+  const planEl = rootEl.querySelector<HTMLElement>('.rm-plan')!
   function caption(p: any) {
     const IND_T: Record<string, any> = {
       all: { c: 'var(--line)', h: '比賽怎麼走', em: '每位選手總時間 20 分鐘', html: '<ol><li>在<b>預備區</b>等候，聽到鈴聲後由工作人員帶到自己的賽道。</li><li><b>第一關 拿得動</b>：在最右側六角槓區，輕、中、重依序硬舉。</li><li><b>第二關 推得實、走得穩</b>：往左進跑道，先推雪橇、再換農夫走路，都是推／走到跑道另一端（12.5 公尺）再折返回來。</li><li><b>第三關 走得久</b>：走到最左側風扇車，完成 3 公里就完賽。</li></ol>' },
@@ -289,8 +290,15 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
       3: { c: 'var(--s3)', h: '第三關 走得久・風扇車', em: '限時 10:00', html: '<p><b>C</b> 走到風扇車開始騎，騎到一半換 <b>B</b> 接手，公里數接著算，騎滿 3 公里就全隊完賽。B 可以先走到風扇車旁邊準備。</p>' },
     }
     const T = (mode === 'team' ? TEAM_T : IND_T)[p]
+    // 說明卡在平面圖上方，換關時長度會變，平面圖跟著上下跳（手機最明顯，iPhone Safari 也沒有
+    // scroll anchoring 幫忙校正）。平面圖正在畫面上時，換完內容把整頁捲回原位，讓圖停在同一處。
+    const pr0 = planEl.getBoundingClientRect()
     capEl.style.setProperty('--c', T.c)
     capEl.innerHTML = `<h4>${T.h}<em>${T.em}</em></h4>${T.html}`
+    if (pr0.bottom > 0 && pr0.top < window.innerHeight) {
+      const d = planEl.getBoundingClientRect().top - pr0.top
+      if (Math.abs(d) > 1) window.scrollBy({ top: d, behavior: 'instant' as ScrollBehavior })
+    }
   }
   function setWeights() { wtT.forEach((e: any, i: number) => e.textContent = ['輕', '中', '重'][i] + ' ' + g.dl[i]) }
 
