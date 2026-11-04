@@ -42,44 +42,6 @@ const fourWords = [
   { key: '穩', t: '走得穩', d: '單手提重物也不晃' },
 ]
 
-const disciplines = [
-  {
-    id: 'deadlift',
-    n: '01',
-    icon: 'lift',
-    life: '拿得動',
-    name: '六角槓硬舉',
-    meta: ['肌力'],
-    desc: '把重量從地上拉起來——就像提起購物袋、搬起箱子、拿起行李。要問的不是「硬舉幾公斤」，是生活需要時，你還拿得動嗎。',
-  },
-  {
-    id: 'sled',
-    n: '02',
-    icon: 'push',
-    life: '推得實',
-    name: '推雪橇',
-    meta: ['全身肌力應用'],
-    desc: '全身一起出力，把東西往前推——就像推購物車、推門、移動家具。比起需要肩膀高舉的動作，推的方式對很多長輩的身體更友善。',
-  },
-  {
-    id: 'farmer',
-    n: '03',
-    icon: 'walk',
-    life: '走得穩',
-    name: '單側農夫走路',
-    meta: ['平衡', '握力', '負重行走'],
-    desc: '重量壓在身體單側，還要穩穩走——就像單手提菜、提水、一手拿東西一手做別的事。重點不是提多重，是提著東西還能不能穩穩走回家。',
-  },
-  {
-    id: 'bike',
-    n: '04',
-    icon: 'endure',
-    life: '走得久',
-    name: '風扇車',
-    meta: ['有氧能力'],
-    desc: '考驗的是體力能不能撐得久——就像出門一整天、爬樓梯、陪家人到處走。要問的不是騎多快，是體力還能不能帶你去想去的地方。',
-  },
-]
 
 // ── 自我測驗：4 題累加計分，11 分以上／8–10 分／7 分以下三種結果 ──
 const quizQuestions = [
@@ -230,7 +192,7 @@ const raceRules = [
   '比賽開始後，每 5 分鐘會響鈴一次，每一次響鈴會安排 5 位選手入場比賽。',
   '請選手依出場序提前至預備區準備，並依響鈴聲與工作人員引導入場比賽。',
   '每位選手入場後，需依序完成 3 個關卡。',
-  '每位選手比賽總時間為 20 分鐘。',
+  '每位選手比賽總時間為 14 分鐘。',
   '成績計算方式為三個關卡完成時間加總，總時間越短，名次越前面。',
   '團體接力賽－重量參照「70 歲（含）以上・女」，不參與排名。需於 14 分鐘內完成比賽，未完成者也需離場。',
 ]
@@ -394,7 +356,7 @@ const faqs = [
          所以 lg 以下改用 fourWords 重建成可讀的文字版（內容與圖上逐字相同）。
 
       loading="lazy" 不能省：display:none 不會擋下載，少了它，每個手機訪客都會
-      下載這張 93 KB 卻永遠看不到（同檔 stages.webp 也是這個做法）。
+      下載這張 93 KB 卻永遠看不到（同檔的關卡路線圖 stages-2026.webp 也是這個做法）。
     -->
     <section class="py-10 lg:py-14">
       <div class="container mx-auto px-4">
@@ -437,40 +399,24 @@ const faqs = [
           </p>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-4 mb-10">
-          <div
-            v-for="d in disciplines"
-            :key="d.id"
-            class="relative bg-cream border-[2.5px] border-navy-900 rounded-[20px] p-6 lg:p-7"
-          >
-            <div class="absolute top-6 right-7 font-black text-sm text-cream-500">{{ d.n }}</div>
-            <div class="w-14 h-14 rounded-full border-[2.5px] border-navy-700 bg-white flex items-center justify-center mb-4">
-              <Lkk4Icon :name="d.icon" class="w-7 h-7" />
-            </div>
-            <div class="font-serif text-2xl font-black text-orange-700 leading-none mb-1.5">{{ d.life }}</div>
-            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3">
-              <span class="text-sm font-bold text-ink/70">{{ d.name }}</span>
-              <span
-                v-for="m in d.meta"
-                :key="m"
-                class="text-[11px] font-bold text-navy-800 bg-navy-700/10 rounded-full px-2 py-0.5"
-              >{{ m }}</span>
-            </div>
-            <p class="text-[15px] text-ink/70 leading-relaxed">{{ d.desc }}</p>
-          </div>
-        </div>
-
         <!-- 關卡路線圖 -->
         <div class="max-w-2xl mx-auto">
           <Lkk4Ticket pad="p-3 lg:p-4">
             <img
-              src="/images/lkk4/stages.webp"
-              alt="LKK4 關卡路線圖：Stage 01 六角槓硬舉，1 分鐘內依序完成不同重量；Stage 02+03 推雪橇與農夫走路，3 分鐘內完成，去回需換手，單項來回共 25 公尺；Stage 04 風扇車，10 分鐘內挑戰完成 3 公里。"
+              src="/images/lkk4/stages-2026.webp"
+              alt="2026 年第六屆 練健康 LKK4 聖誕老人功能錦標賽關卡路線圖：01 六角槓硬舉，1 分鐘內依序完成不同重量（肌力）；02 推雪橇，與 03 合計 3 分鐘內完成，單項來回共 25 公尺（爆發力）；03 農夫走路，去回需換手，單項來回共 25 公尺（協調與平衡）；04 風扇車，10 分鐘內挑戰完成 3 公里（有氧能力）。健康是練出來的。"
               class="w-full h-auto rounded-2xl"
-              width="1100"
-              height="1375"
+              width="1080"
+              height="1920"
               loading="lazy"
             />
+          </Lkk4Ticket>
+        </div>
+
+        <!-- 場地動線圖（2026-11-03 業主提供，可切換個人賽／團體接力賽並播放動線） -->
+        <div class="max-w-5xl mx-auto mt-10 lg:mt-14">
+          <Lkk4Ticket pad="p-4 sm:p-7 lg:p-10">
+            <Lkk4RouteMap />
           </Lkk4Ticket>
         </div>
       </div>
@@ -981,5 +927,21 @@ const faqs = [
         </div>
       </div>
     </section>
+
+    <!-- 手機版底部固定報名鍵（2026-11-04 業主要求，樣式照 LayoutMobileBookingButton；
+         那顆預約體驗鍵在 /lkk4 本來就隱藏，這裡換成 LKK4 報名） -->
+    <div class="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-white via-white to-transparent md:hidden">
+      <a
+        :href="ACCUPASS_URL"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex items-center justify-center w-full py-4 px-6 bg-orange hover:bg-orange-400 text-white font-bold text-lg rounded-full shadow-lg transition-all duration-300 active:scale-95"
+      >
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5h14a2 2 0 012 2v3a2 2 0 000 4v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a2 2 0 000-4V7a2 2 0 012-2z" />
+        </svg>
+        立即報名LKK4
+      </a>
+    </div>
   </div>
 </template>

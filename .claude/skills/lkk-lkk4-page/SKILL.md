@@ -22,7 +22,7 @@ description: 改 /lkk4 賽事頁（pages/lkk4.vue）之前必讀。這頁把同�
 | 事實 | 出現在（行號會漂，用字串 grep） |
 |---|---|
 | **隊伍人數 2–4 人** | `teamSteps[0]` 標題／`teamBadges[0]`／`teamVsGroup` 接力賽定義／`competitionGroups` relay items／FAQ「接力賽 vs 積分獎」 **共 5 處** |
-| **14 分鐘完賽** | `teamSteps[2]` 說明／`raceRules[5]` |
+| **14 分鐘完賽**（2026-11-04 起個人賽也是 14 分鐘，原本 20） | 團體：`teamSteps[2]`／`raceRules[5]`；個人：`raceRules[3]`；動線圖 `components/lkk4/RouteMap.vue` 的說明卡 `IND_T.all.em`、`TEAM_T.all.em` |
 | **不排名** | `teamNotes[3]`／`competitionGroups` relay items／`raceRules[5]` |
 | **重量依 70 歲以上女子組** | `teamNotes[2]`／`raceRules[5]`／`weightTable` 最後一列「團體接力賽（新增）」 |
 | **協助者條款** | `teamNotes[1]`／FAQ 輪椅那題 |
@@ -30,7 +30,7 @@ description: 改 /lkk4 賽事頁（pages/lkk4.vue）之前必讀。這頁把同�
 | **同時報名要付兩份** | 賽制區「個人賽＋團體接力賽」色塊／FAQ「可以同時報名嗎」 |
 | **退費條款** | `relayExtras[1].text`／FAQ 退費那題 |
 | **服裝與輔具** | `relayExtras[0].items`／FAQ 服裝那題 |
-| **四個生活詞「推得實／拿得動／走得久／走得穩」** | `fourWords`（4 筆）／`disciplines[].life`（4 筆）／Hero 段落／`milestones` 2026／橫幅 `alt` **這五處四個詞同時出現**；另有賽事緣起段落與兩個測驗選項只提其中一個。`grep -c 推得實` 目前 **8 行** |
+| **四個生活詞「推得實／拿得動／走得久／走得穩」** | `fourWords`（4 筆）／Hero 段落／`milestones` 2026／橫幅 `alt` **這四處四個詞同時出現**（`disciplines` 卡片 2026-11-04 業主刪掉了）；另有賽事緣起段落、兩個測驗選項與 `RouteMap.vue` 的關卡鍵／說明卡。`grep -c 推得實 pages/lkk4.vue` 目前 **7 行** |
 
 **改任何一個數字或條款之前，先把它當字串 grep 一遍。** 只改業主指名的那一處，
 幾乎一定會留下矛盾。
@@ -50,7 +50,7 @@ grep -n "2–4\|14 分鐘\|不排名\|70 歲以上女子\|協助者" pages/lkk4.
 |---|---|---|
 | Hero | — | 主視覺圖＋`ACCUPASS_URL` |
 | 實拿久穩 | — | 橫幅圖＋`fourWords`（見下節） |
-| 四大功能挑戰 | `#challenges` | `disciplines`（`meta` 是**陣列**，一張卡可以掛多顆標籤） |
+| 四大功能挑戰 | `#challenges` | 標題＋關卡路線圖 `stages-2026.webp`（1080×1920）＋場地動線圖 `<Lkk4RouteMap />`。四張 `disciplines` 卡片 2026-11-04 業主要求刪除，不要加回來 |
 | 自我測驗 | `#quiz` | `quizQuestions` / `qOutcome` |
 | 團體接力賽 | `#team` | `teamSteps`（4 張編號卡）／`teamNotes`（不用擔心的幾件事）／`teamBadges`／`teamVsGroup` |
 | 賽事緣起 | `#story` | `milestones` |
@@ -152,12 +152,14 @@ cols = (a[692:715, :] < 140).sum(axis=0)      # 說明文字那一帶
 | 長者推廣組（80 歲以上）卡片與組別說明段落 | 2026-10-09 業主要求移除 |
 | `teamNotes[3]` 的「80 歲以上長輩參與組別，」前綴 | 長者推廣組移除後變成指涉不存在的東西；業主確認不排名與完賽證書適用整個接力賽 |
 | 「第一關：六角槓硬舉輕／中／重各 1 下」 | **業主說那是錯誤資訊**，不要再提議補回去 |
+| 四大功能挑戰的四張說明卡（`disciplines`） | 2026-11-04 業主要求刪除，路線圖與動線圖已涵蓋 |
+| 場地動線圖的組別選單與公斤數 | 2026-11-03 業主要求刪除；各組重量只看 `weightTable` |
 | 「團體接力賽規則」的比賽內容／接力規則兩張卡 | 條文在 `teamSteps`／`teamNotes`／`raceRules`／`stations` 都還在 |
 
 ## 慣例
 
-- 四項挑戰的能力標籤 `disciplines[].meta` 是**陣列**，模板 `v-for` 出多顆 pill。
-  標籤一變長就要確認外層有 `flex-wrap`，否則窄螢幕會撐破卡片。
+- 手機底部有固定的「立即報名」鍵（`pages/lkk4.vue` 結尾，只在 `md` 以下，樣式照 `LayoutMobileBookingButton`，那顆預約鍵在 /lkk4 本來就隱藏）。
+- 動線圖手機版順序（2026-11-04 業主指定）：標題 → 播放全程 → 平面圖 → 四個關卡 → 說明卡 → 圖例，用外層 grid 的 `order` 排；電腦版關卡＋播放鍵五欄並排、平板關卡四欄＋播放鍵一列，維持不變。
 - 組別卡目前三張（女子組／男子組／團體接力賽），grid 是 `md:grid-cols-3`。
   **四張卡的時代**是 `md:grid-cols-2 lg:grid-cols-4`。張數一變斷點要重算，
   而且**算的時候別漏掉票券**：768px 視埠 → container 736（`container` 自己的 padding
