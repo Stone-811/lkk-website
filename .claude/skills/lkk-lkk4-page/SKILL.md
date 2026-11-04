@@ -102,6 +102,37 @@ cols = (a[692:715, :] < 140).sum(axis=0)      # 說明文字那一帶
 
 ---
 
+---
+
+## 場地動線圖 `components/lkk4/RouteMap.vue`（2026-11-03 上線，prod 2ec1f7a）
+
+業主給的單檔 HTML（`~/Downloads/LKK4 場地動線圖 原版.html`）搬進來的 SVG 動畫：
+個人賽／團體接力賽切換、四個關卡鍵、播放全程、說明卡、隊員名單、圖例。
+頁面上放在 `#challenges` 關卡路線圖下方，外面包一張 `Lkk4Ticket`。
+
+**引擎照原版逐行搬，業主要求「不要更動到既有的動態流程」。** 允許改的只有外觀與
+跟 Vue 共存需要的部分（`$` 改成在元件內 `querySelector('[data-id=…]')`、marker id 加前綴、
+播放鍵 ▶／❚❚ 字元換 SVG——iPhone 會把 ▶ 畫成 Emoji、teardown）。改路線或秒數先對照原版。
+
+| 要知道的事 | 細節 |
+|---|---|
+| 樣式非 scoped | SVG 是 `createElementNS` 產的，Vue scoped 屬性掛不上；全部用 `.lkk4-route` 開頭限定 |
+| 撞到全站 class | `main.css` 有全域 `.badge`、`.block`、`.ring`。原版的 `.badge` 已改名 `stg-badge`；新增 class 前先 grep `assets/css/main.css` |
+| 沒有公斤數 | 組別選單與所有「xx kg」11-03 刪掉（業主說選單「點了沒差異」——其實只改小字）。重量只在 `weightTable` |
+| 時間 | 說明卡總覽：個人「每位選手比賽總時間為 14 分鐘」、團體「全隊 14 分鐘內完成」；關卡鍵 1／3／10 分 |
+| 手機跟隨 | 平面圖可橫捲時（`scrollWidth > clientWidth`，即 <1024px），播放中 `plan.scrollLeft` 以指數平滑追圓點（個人賽追主角、團體賽追當棒隊員）；電腦版不捲 |
+| 使用者自己滑就停止跟隨 | 不能只比對 scrollLeft 差值（每幀都被我們改掉，差值 <3px 抓不到），另外聽 touchmove（橫向為主且 >8px）、橫向 wheel／shift+wheel、滑鼠 pointerdown。上下捲頁不算。按播放或關卡鍵恢復跟隨 |
+| 說明卡換關不跳 | 電腦／平板說明卡在平面圖上方，換關高度會變；平面圖在畫面上時換完內容 `scrollBy` 補回位移（iPhone Safari 沒有 scroll anchoring）。手機說明卡在下方，補償自然是 0 |
+| 版面 | 外層五欄 grid：電腦四個關卡（佔前四欄）＋播放鍵（第五欄）；平板關卡四欄、播放鍵一列；手機用 `order` 排成 標題 → 播放全程 → 平面圖（＋滑動提示）→ 關卡兩欄 → 隊員 → 說明卡 → 圖例 |
+| 組別相關 select 字級 | 已無 select；若再加下拉，字級要 16px 以上，否則 iPhone 點下去整頁放大 |
+
+**Stone 已決定不做（不要再提）**：上下方向也跟著紅點捲頁（提過 A：按播放先把平面圖捲進畫面；
+B：平面圖上方 sticky 迷你控制列）。11-03 回覆「先維持現狀好了」。
+
+**驗證**：Browser pane 被藏起來時 rAF 停住、圓點不動，一律用 headless Chrome
+（skill `headless-chrome-qa` 的 cdp.mjs）。量「圓點在不在平面圖可視範圍」與 `plan.scrollLeft`；
+滑動測試的座標要在換關之後重新量（說明卡高度變了，平面圖位置會移）。真機 iPhone 沒驗過。
+
 ## 業主的改稿工作法：用 class 字串指位置
 
 2026-10-08～09 連續六輪改稿，業主每一條都長這樣：
@@ -158,7 +189,7 @@ cols = (a[692:715, :] < 140).sum(axis=0)      # 說明文字那一帶
 
 ## 慣例
 
-- 手機底部有固定的「立即報名」鍵（`pages/lkk4.vue` 結尾，只在 `md` 以下，樣式照 `LayoutMobileBookingButton`，那顆預約鍵在 /lkk4 本來就隱藏）。
+- 手機底部有固定的「立即報名LKK4」鍵（文字照業主打的、不加空格；`pages/lkk4.vue` 結尾，只在 `md` 以下，樣式照 `LayoutMobileBookingButton`，那顆預約鍵在 /lkk4 本來就隱藏）。
 - 動線圖手機版順序（2026-11-04 業主指定）：標題 → 播放全程 → 平面圖 → 四個關卡 → 說明卡 → 圖例，用外層 grid 的 `order` 排；電腦版關卡＋播放鍵五欄並排、平板關卡四欄＋播放鍵一列，維持不變。
 - 組別卡目前三張（女子組／男子組／團體接力賽），grid 是 `md:grid-cols-3`。
   **四張卡的時代**是 `md:grid-cols-2 lg:grid-cols-4`。張數一變斷點要重算，

@@ -401,6 +401,13 @@ CDN 命中代表請求**根本沒到 Cloud Run**，也就不會回源打 WordPre
   目前用文章標題與摘要代替。
 - **4 篇沒有 meta description**：純影片嵌入的媒體報導，內文去掉標籤後是空的。
   這不是缺陷——Google 會自行產生摘要，硬塞與標題重複的字串更差。
+- **文章裡一串字中間多出空格（2026-11-03，certifications-202610physiogym 的「LKK-MY-C 26022」）**：
+  不是內容有空格，是 WordPress 把同一串字包成**兩個** `<span class="stk-highlight">`
+  （顏色或其他屬性不同，Gutenberg 只合併屬性完全相同的相鄰格式），而我們的
+  `pages/[...slug].vue` 對每個 `.stk-highlight` 加了 `padding: 0 0.15em`，兩段之間就出現縫。
+  **不改程式碼**，請業主在 WP 編輯器把那格切到「以 HTML 編輯」，把兩個 span 合成一個（第一次只在
+  視覺編輯器重套顏色沒用，因為屬性仍不同）。改完新站約 10 分鐘後才會更新（文章 API
+  `maxAge: 600, swr`），驗證用 curl 抓文章 API 看那串字是不是只剩一個 span。
 - **圖片仍在 `l-kk.tw/wp-content/uploads/`**：666 篇只有 15% 有特色圖片，
   內文圖片也少，量太小不值得為它做遷移。
 
