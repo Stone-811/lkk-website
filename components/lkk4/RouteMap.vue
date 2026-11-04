@@ -8,8 +8,8 @@
  *    播放鍵的 ▶／❚❚ 字元換成 SVG（iPhone 會把 ▶ 畫成 Emoji）。
  *    要改路線或時間，先對照原版，不要順手「整理」。
  *
- * ⚠️ 重量（G）、20 分鐘、14 分鐘、12.5 m 折返、每 5 分鐘 5 位，在 pages/lkk4.vue 的
- *    weightTable／raceRules／stations／teamSteps 也各寫了一次。改數字時兩邊一起改
+ * ⚠️ 個人與團體都是 14 分鐘、12.5 m 折返、每 5 分鐘 5 位，在 pages/lkk4.vue 的
+ *    raceRules／stations／teamSteps 也各寫了一次（公斤數這裡刻意不寫，以 weightTable 為準）。改數字時兩邊一起改
  *    （見 skill lkk-lkk4-page 的「同一個事實散落在哪裡」）。
  *
  * ⚠️ SVG 內容是 onMounted 用 createElementNS 產生的，Vue 的 scoped 樣式掛不上去，
@@ -269,7 +269,7 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
   const planEl = rootEl.querySelector<HTMLElement>('.rm-plan')!
   function caption(p: any) {
     const IND_T: Record<string, any> = {
-      all: { c: 'var(--line)', h: '比賽怎麼走', em: '每位選手總時間 20 分鐘', html: '<ol><li>在<b>預備區</b>等候，聽到鈴聲後由工作人員帶到自己的賽道。</li><li><b>第一關 拿得動</b>：在最右側六角槓區，輕、中、重依序硬舉。</li><li><b>第二關 推得實、走得穩</b>：往左進跑道，先推雪橇、再換農夫走路，都是推／走到跑道另一端（12.5 公尺）再折返回來。</li><li><b>第三關 走得久</b>：走到最左側風扇車，完成 3 公里就完賽。</li></ol>' },
+      all: { c: 'var(--line)', h: '個人怎麼走', em: '每位選手比賽總時間為 14 分鐘', html: '<ol><li>在<b>預備區</b>等候，聽到鈴聲後由工作人員帶到自己的賽道。</li><li><b>第一關 拿得動</b>：在最右側六角槓區，輕、中、重依序硬舉。</li><li><b>第二關 推得實、走得穩</b>：往左進跑道，先推雪橇、再換農夫走路，都是推／走到跑道另一端（12.5 公尺）再折返回來。</li><li><b>第三關 走得久</b>：走到最左側風扇車，完成 3 公里就完賽。</li></ol>' },
       0: { c: 'var(--s0)', h: '入場', em: '每 5 分鐘響鈴・每次 5 位', html: '<p>依出場順序在右下角預備區等候。聽到鈴聲後，工作人員會帶你沿右側通道走到自己的賽道入口。</p>' },
       1: { c: 'var(--s1)', h: '第一關 拿得動・六角槓硬舉', em: '限時 1:00', html: '<p>從入口往左，三支六角槓依序是 <b>輕 → 中 → 重</b>。就像從地上提起一袋菜籃，一支完成再換下一支。</p>' },
       2: { c: 'var(--s2)', h: '第二關 推得實、走得穩', em: '限時 3:00', html: '<p>先推 <b style="color:var(--s2)">雪橇</b>，推到跑道另一端（12.5 公尺）再推回來。接著換 <b style="color:var(--s2b)">農夫走路</b>，單手提著走到對面，換另一手再走回來。兩項都是來回 25 公尺。</p>' },
@@ -399,14 +399,14 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
       <button type="button" class="step" data-go="1" style="--c:var(--s1);--ct:var(--s1t)"><span class="no">第一關</span><b>拿得動</b><span class="d">六角槓硬舉・1 分</span></button>
       <button type="button" class="step" data-go="2" style="--c:var(--s2);--ct:var(--s2t)"><span class="no">第二關</span><b>推得實、走得穩</b><span class="d">推雪橇＋農夫走路・3 分</span></button>
       <button type="button" class="step" data-go="3" style="--c:var(--s3);--ct:var(--s3t)"><span class="no">第三關</span><b>走得久</b><span class="d">風扇車 3 km・10 分</span></button>
-      <button type="button" class="step play" data-id="playAll" data-playing="false">
-        <span class="pi" aria-hidden="true">
-          <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg>
-          <svg class="i-pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor" /></svg>
-        </span>
-        <span class="pt"><b data-id="playTxt">播放全程</b><span class="d">約 45 秒示意</span></span>
-      </button>
     </div>
+    <button type="button" class="step play" data-id="playAll" data-playing="false">
+      <span class="pi" aria-hidden="true">
+        <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg>
+        <svg class="i-pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor" /></svg>
+      </span>
+      <span class="pt"><b data-id="playTxt">播放全程</b><span class="d">約 45 秒示意</span></span>
+    </button>
 
     <div class="rm-roster" data-id="roster" role="group" hidden aria-label="隊員" />
 
@@ -455,11 +455,16 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
   --s1t: rgba(194, 65, 12, .08); --s2t: rgba(11, 120, 104, .08); --s3t: rgba(74, 83, 196, .08); --s0t: rgba(84, 111, 126, .10);
   --body: var(--font-main, 'Microsoft JhengHei', system-ui, sans-serif);
   display: grid;
-  gap: 14px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px 8px;
   color: var(--ink);
   font-family: var(--body);
 }
 .lkk4-route [hidden] { display: none !important; }
+/* 外層是五欄 grid：只有電腦版的四個關卡（佔前四欄）＋播放鍵（第五欄）並排，其餘每塊都佔滿一整列 */
+.lkk4-route > * { grid-column: 1 / -1; }
+.lkk4-route > .rm-steps { grid-column: 1 / 5; }
+.lkk4-route > .play { grid-column: 5; }
 
 /* 標題列 */
 .lkk4-route .rm-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px 20px; margin-bottom: 4px; }
@@ -479,7 +484,7 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
 .lkk4-route button:focus-visible, .lkk4-route .rm-chip:focus-within { outline: 2px solid #c2410c; outline-offset: 2px; }
 
 /* 流程按鈕 */
-.lkk4-route .rm-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.lkk4-route .rm-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .lkk4-route .step {
   position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left;
   padding: 12px 14px 12px 16px; border-radius: 16px; border: 2px solid var(--line); background: var(--paper);
@@ -500,13 +505,22 @@ function mountRouteMap(rootEl: HTMLElement): () => void {
 .lkk4-route .play .pi svg { width: 18px; height: 18px; color: #fff; }
 .lkk4-route .play .i-pause, .lkk4-route .play[data-playing="true"] .i-play { display: none; }
 .lkk4-route .play[data-playing="true"] .i-pause { display: block; }
-/* 五欄只在 lg 以上；平板四個關卡一排、播放鍵自己一排，手機兩欄 */
+/* 五欄並排只在 lg 以上；平板四個關卡一排、播放鍵自己一排 */
 @media (max-width: 1023px) {
-  .lkk4-route .rm-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .lkk4-route .play { grid-column: 1 / -1; }
+  .lkk4-route > .rm-steps, .lkk4-route > .play { grid-column: 1 / -1; }
+  .lkk4-route > .play { margin-top: -6px; }
 }
+/* 手機（2026-11-04 業主指定）：標題 → 播放全程 → 平面圖 → 四個關卡（兩欄）→ 說明卡；圖例維持在最後 */
 @media (max-width: 767px) {
   .lkk4-route .rm-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lkk4-route > .rm-head { order: 0; }
+  .lkk4-route > .play { order: 1; margin-top: 0; }
+  .lkk4-route > .rm-plan { order: 2; }
+  .lkk4-route > .rm-hint { order: 3; }
+  .lkk4-route > .rm-steps { order: 4; }
+  .lkk4-route > .rm-roster { order: 5; }
+  .lkk4-route > .rm-cap { order: 6; }
+  .lkk4-route > .rm-legend { order: 7; }
 }
 
 /* 說明卡 */
