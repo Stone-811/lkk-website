@@ -1,0 +1,943 @@
+{
+  "formId": "booking",
+  "schemaVersion": "1.0",
+  "describes": "練健康官網 /booking「預約體驗」表單的現況（2026-11-08，dev 與正式站相同）。這份是描述檔，網站本身還沒有讀它。",
+  "sourceOfTruth": [
+    "pages/booking.vue",
+    "server/api/leads/booking.post.ts",
+    "server/utils/leads.ts",
+    "config/formOptions.ts",
+    "config/referralSources.ts",
+    "config/bookingVariants.ts",
+    "config/freeTrialPartners.ts",
+    "composables/useUtm.ts"
+  ],
+  "conventions": {
+    "condition": "條件寫法：{\"field\":<欄位 key>,\"op\":<運算>,\"value\":<值>}；運算有 eq、neq、in、notIn、includes（多選含某值）、truthy、falsy、gte。field 以 \"$variant.\" 開頭時讀網址變體設定、以 \"$derived.\" 開頭時讀衍生值。多個條件用 {\"all\":[…]} 或 {\"any\":[…]} 組合。 field 以 \"$state.\" 開頭時讀畫面狀態（例如 isSubmitting）。",
+    "required": "required 為 true／false，或一個條件物件（條件成立才必填）。",
+    "showIf": "showIf 不成立時欄位不顯示、不驗證，送出值見各欄位 store.whenHidden。",
+    "options": "選項的 value 就是存進資料庫的字，label 是畫面上的字；兩者相同時只寫 value。value 收到名單後不要改字（舊名單無法回填，CSV 會裂成兩種寫法）；選項只新增或停用。",
+    "store.path": "存進 Firestore 集合 leads 的位置：頂層欄位直接寫名稱，其他寫 payload.<名稱>。",
+    "trim": "必填判斷用去掉前後空白後的值；存進資料庫的是原值（沒有 trim），除非另外註明。",
+    "arrays": "多選欄位存成陣列時，順序是使用者點選的先後，不是選項順序。",
+    "rawValue": "「有值」若沒特別註明，指原值非空字串（只打空白也算有值）；格式檢查也用原值，不去前後空白。"
+  },
+  "submit": {
+    "endpoint": "POST /api/leads/booking",
+    "contentType": "application/json",
+    "buttonText": "送出預約",
+    "submittingText": "送出中...",
+    "onFailure": {
+      "httpError": "alert「送出失敗，請稍後再試」",
+      "networkError": "alert「網路錯誤，請稍後再試」",
+      "note": "兩種都不顯示伺服器回傳的 error 文字"
+    },
+    "onSuccess": {
+      "container": "id=\"lead-success\"、data-form=\"booking\"（GTM 轉換靠它觸發，不要改）",
+      "title": "預約成功！",
+      "body": "我們將於 2~3 天內主動與你聯繫確認體驗課時間{填了 Email 才加：，並寄送 Email 通知你}。",
+      "lineHint": "為了更快為你服務，我們已為你預填預約資訊，請點下方按鈕加入官方 LINE，直接送出即可（訊息需由你親自按下傳送）。",
+      "lineButton": "加入官方 LINE 並傳送預約資訊",
+      "lineMessageTemplate": "你好，我是 {name trim}，我已報名練健康{有選分店時：半形空格＋分店名} 的個人教練體驗課，請協助確認。",
+      "lineUrlFormat": "https://line.me/R/oaMessage/@201fzruh/?{encodeURIComponent(訊息)}",
+      "addFriend": {
+        "text": "還不是官方 LINE 好友？先點此加入好友",
+        "url": "https://line.me/R/ti/p/%40201fzruh"
+      }
+    },
+    "serverValidation": [
+      "name、phone、storeId、preferredTime（至少一項）缺任一項 → 400「請填寫必要欄位」",
+      "phone 不符合 ^09\\d{8}$ → 400「手機號碼格式不正確」",
+      "email 有值且不符合 Email 格式 → 400「Email 格式不正確」",
+      "伺服器例外 → 500「系統錯誤，請稍後再試」",
+      "其他欄位伺服器都不檢查（性別、生日範圍、健康狀況、付款方式、選項是否在清單內、同意事項）"
+    ],
+    "sideEffects": [
+      "寄管理者通知信（不等結果）",
+      "填了 Email 才寄客戶確認信（不等結果）",
+      "讀 stores/<storeId> 取分店名給信件用（名單本身不存分店名）",
+      "在伺服器 log 印出 name、phone、email、line、paymentMethod"
+    ],
+    "disabledIf": {
+      "any": [
+        {
+          "field": "$state.isSubmitting",
+          "op": "truthy"
+        },
+        {
+          "all": [
+            {
+              "field": "source",
+              "op": "notIn",
+              "value": [
+                "參觀",
+                "電話詢問"
+              ]
+            },
+            {
+              "field": "agreeToTerms",
+              "op": "falsy"
+            }
+          ]
+        }
+      ]
+    },
+    "belowButtonNotes": [
+      "送出即表示同意我們以電話或 LINE 與你聯繫安排體驗課，個人資料僅用於此目的。",
+      {
+        "text": "送出後請稍候，頁面將導向加入 LINE 官方帳號，加入後即可收到最新通知。",
+        "note": "實際上不會自動導向，成功後只顯示成功區塊"
+      }
+    ],
+    "response": {
+      "ok": {
+        "success": true,
+        "message": "預約成功，我們將盡快與您聯繫"
+      },
+      "error": {
+        "success": false,
+        "error": "<訊息>"
+      }
+    }
+  },
+  "context": {
+    "description": "網址參數會改變表單的樣子與存進名單的隱藏欄位。",
+    "params": {
+      "v": "廠商變體代號，對應下方 variants；查不到就用 default。原字照樣存進 payload.formVariant（查不到的代號也會存）。",
+      "co": "免費合作方代號，對應下方 freeTrialPartners；未過到期日（台北時間，含當日）才套用，套用後覆蓋 company。到期判斷用填表者裝置時鐘換算的台北日期；co 可搭配任何 v，只改 company，不改 allAgesFree。",
+      "src": "名單來源；只在是單一非空字串時採用（重複帶或空值就用變體的 leadSource），存進 payload.leadSource。自由文字、不驗證、不限長度，會出現在通知信。"
+    },
+    "variantProperties": {
+      "lockStoreId": "鎖定分店，細節見 sections 裡 storeId.lockedBy",
+      "hideSources": "隱藏「從哪裡得知練健康？」整題，也不必填",
+      "extraSources": "在「從哪裡得知練健康？」的「其他」前面加入額外選項（不展開細項）",
+      "allAgesFree": "不限年齡免費：付款方式整題隱藏，值自動設為「活動免費」；生日下方不顯示 50 歲免費提示",
+      "company": "存進 payload.company",
+      "leadSource": "存進 payload.leadSource（網址 src 優先）",
+      "hero": "頁面上方標題、副標、按鈕文字（不影響欄位）"
+    },
+    "variants": {
+      "default": {},
+      "abbott": {
+        "company": "亞培",
+        "leadSource": "LINE"
+      },
+      "gigabyte": {
+        "company": "技嘉",
+        "leadSource": "網站"
+      },
+      "nanshan": {
+        "allAgesFree": true,
+        "company": "南山",
+        "leadSource": "網站",
+        "extraSources": [
+          "南山健康守護圈"
+        ]
+      },
+      "freetrial": {
+        "allAgesFree": true,
+        "leadSource": "網站"
+      }
+    },
+    "freeTrialPartners": {
+      "taiwanlife": {
+        "company": "台灣人壽",
+        "endDate": "2027-10-31"
+      }
+    }
+  },
+  "derived": {
+    "age": "以填表者裝置的今天算足歲（生日字串以 UTC 解析再取本地年月日，台灣 UTC+8 不受影響）。生日是系統帶入但未確認的 1961-01-01、或超出 1920-01-01～2010-01-01 時不算，視為沒有年齡。年齡沒有存進名單，事後要用 payload.birthDate 對 createdAt（台北時間）重算，或看 payload.paymentMethod。",
+    "isFreeEligible": "age 不是空值且 age >= 50"
+  },
+  "sections": [
+    {
+      "id": "student",
+      "title": "學員基本資料",
+      "fields": [
+        {
+          "key": "name",
+          "label": "學員姓名",
+          "type": "text",
+          "placeholder": "要來上課的人",
+          "required": true,
+          "errors": {
+            "required": "請輸入學員姓名"
+          },
+          "store": {
+            "path": "name"
+          }
+        },
+        {
+          "key": "phone",
+          "label": "學員手機",
+          "type": "tel",
+          "placeholder": "0912345678",
+          "required": true,
+          "validation": [
+            {
+              "rule": "pattern",
+              "value": "^09\\d{8}$",
+              "message": "請輸入有效的手機號碼",
+              "note": "用原值比對，不去空白與橫線",
+              "when": "原值非空字串就檢查（只打空白也算有值）；失敗時這句會蓋掉 required 訊息"
+            }
+          ],
+          "errors": {
+            "required": "請輸入手機號碼"
+          },
+          "store": {
+            "path": "phone"
+          }
+        },
+        {
+          "key": "gender",
+          "label": "性別",
+          "type": "select",
+          "placeholder": "請選擇",
+          "options": [
+            {
+              "value": "男"
+            },
+            {
+              "value": "女"
+            }
+          ],
+          "required": true,
+          "errors": {
+            "required": "請選擇性別"
+          },
+          "store": {
+            "path": "payload.gender"
+          }
+        },
+        {
+          "key": "birthDate",
+          "label": "出生年月日（要上課的學員）",
+          "type": "date",
+          "format": "YYYY-MM-DD",
+          "min": "1920-01-01",
+          "max": "2010-01-01",
+          "required": true,
+          "picker": {
+            "startAt": "1961-01-01",
+            "behavior": "使用者按下欄位（滑鼠主鍵 mousedown）且欄位是空的時，先帶入 1961-01-01，讓日期選擇器從 1961 年開始；這個值標為「未確認」，要等使用者真的選過日期才算數。鍵盤 Tab 進來不帶值。",
+            "unconfirmedError": "請點選學員的生日（目前是預設的 1961/1/1）",
+            "confirmButton": {
+              "text": "生日就是 1961/1/1",
+              "showWhen": "出現上面那句錯誤、而且值仍是未確認的 1961-01-01",
+              "action": "把值標為已確認"
+            },
+            "ownerDecision": "起始 1961 與上限 2010 是業主決定，手機與電腦都一樣"
+          },
+          "validation": [
+            {
+              "rule": "range",
+              "min": "1920-01-01",
+              "max": "2010-01-01",
+              "inclusive": true,
+              "message": "請確認出生年月日，年份請用西元（民國 50 年＝1961 年）"
+            }
+          ],
+          "hint": {
+            "text": "第一堂體驗課 50歲以上免費",
+            "showIf": {
+              "all": [
+                {
+                  "field": "$derived.isFreeEligible",
+                  "op": "truthy"
+                },
+                {
+                  "field": "$variant.allAgesFree",
+                  "op": "falsy"
+                }
+              ]
+            }
+          },
+          "errors": {
+            "required": "請選擇出生年月日"
+          },
+          "store": {
+            "path": "payload.birthDate",
+            "note": "字串 YYYY-MM-DD；伺服器不檢查範圍"
+          }
+        },
+        {
+          "key": "email",
+          "label": "Email",
+          "labelSuffix": "（選填）",
+          "type": "email",
+          "placeholder": "your@email.com",
+          "required": false,
+          "validation": [
+            {
+              "rule": "pattern",
+              "value": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+              "message": "請輸入有效的 Email",
+              "when": "去掉前後空白後有值才檢查",
+              "note": "用原值比對，不去前後空白；前後有空白的 Email 會被判定格式錯誤（前端與伺服器都是）"
+            }
+          ],
+          "store": {
+            "path": "email",
+            "empty": null
+          },
+          "knownIssue": "只打空白時前端放行，但伺服器會判定格式錯誤回 400，畫面只顯示「送出失敗」。"
+        },
+        {
+          "key": "line",
+          "label": "Line ID",
+          "labelSuffix": "（選填）",
+          "type": "text",
+          "placeholder": "方便我們聯繫你",
+          "required": false,
+          "store": {
+            "path": "payload.line",
+            "empty": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "filler-health",
+      "title": "填寫者資料 & 健康狀況",
+      "fields": [
+        {
+          "key": "filledBySelf",
+          "label": "是否為本人填寫",
+          "type": "select",
+          "default": "本人填寫",
+          "options": [
+            {
+              "value": "本人填寫"
+            },
+            {
+              "value": "他人代填"
+            }
+          ],
+          "required": true,
+          "store": {
+            "path": "payload.filledBySelf",
+            "valueType": "boolean",
+            "map": {
+              "本人填寫": true,
+              "他人代填": false
+            },
+            "note": "存的是布林，不是字。後台以 === false 判斷代填。"
+          }
+        },
+        {
+          "key": "relationship",
+          "label": "與學員的關係",
+          "type": "select",
+          "placeholder": "請選擇",
+          "showIf": {
+            "field": "filledBySelf",
+            "op": "eq",
+            "value": "他人代填"
+          },
+          "options": [
+            {
+              "value": "配偶"
+            },
+            {
+              "value": "子女"
+            },
+            {
+              "value": "父母"
+            },
+            {
+              "value": "兄弟姊妹"
+            },
+            {
+              "value": "朋友"
+            },
+            {
+              "value": "練健康同仁",
+              "note": "選這項時「方便聯繫的電話」改選填"
+            },
+            {
+              "value": "其他"
+            }
+          ],
+          "optionsSharedWith": "group-booking（config/formOptions.ts，改了兩張表單一起變）",
+          "required": true,
+          "errors": {
+            "required": "請選擇與學員的關係"
+          },
+          "store": {
+            "path": "payload.relationship",
+            "whenHidden": null
+          }
+        },
+        {
+          "key": "bookerName",
+          "label": "預約者姓名",
+          "type": "text",
+          "placeholder": "請輸入你的姓名",
+          "showIf": {
+            "field": "filledBySelf",
+            "op": "eq",
+            "value": "他人代填"
+          },
+          "required": true,
+          "errors": {
+            "required": "請輸入預約者姓名"
+          },
+          "store": {
+            "path": "payload.bookerName",
+            "whenHidden": null
+          }
+        },
+        {
+          "key": "contactPhone",
+          "label": "方便聯繫的電話",
+          "labelSuffixWhenOptional": "（選填）",
+          "type": "tel",
+          "placeholder": "0912345678",
+          "showIf": {
+            "field": "filledBySelf",
+            "op": "eq",
+            "value": "他人代填"
+          },
+          "required": {
+            "field": "relationship",
+            "op": "neq",
+            "value": "練健康同仁"
+          },
+          "validation": [
+            {
+              "rule": "pattern",
+              "value": "^09\\d{8}$",
+              "message": "請輸入有效的手機號碼",
+              "when": "原值非空字串就檢查（只打空白也算有值，選填時也會被擋）；失敗時這句會蓋掉 required 訊息"
+            }
+          ],
+          "errors": {
+            "required": "請輸入方便聯繫的電話"
+          },
+          "store": {
+            "path": "payload.contactPhone",
+            "whenHidden": "$field.phone",
+            "fallback": "$field.phone",
+            "note": "本人填寫時前端送學員手機；代填但留空時伺服器改存學員手機"
+          },
+          "errorRules": [
+            "relationship 改成「練健康同仁」時，若畫面上的錯誤是「請輸入方便聯繫的電話」就自動清除；格式錯誤不清"
+          ]
+        },
+        {
+          "key": "hasMedicalCondition",
+          "label": "是否有疾病，或 3 年內曾開過刀或住院？",
+          "type": "select",
+          "placeholder": "請選擇",
+          "options": [
+            {
+              "value": "否"
+            },
+            {
+              "value": "是"
+            }
+          ],
+          "required": true,
+          "errors": {
+            "required": "請選擇健康狀況"
+          },
+          "store": {
+            "path": "payload.hasMedicalCondition",
+            "valueType": "boolean",
+            "map": {
+              "是": true,
+              "否": false
+            }
+          }
+        },
+        {
+          "key": "medicalConditionNote",
+          "label": "請簡述情況",
+          "labelSuffix": "（選填）",
+          "type": "textarea",
+          "placeholder": "身體若有任何狀況，都請稍作描述喔！若無則填寫：無",
+          "showIf": {
+            "field": "hasMedicalCondition",
+            "op": "eq",
+            "value": "是"
+          },
+          "required": false,
+          "store": {
+            "path": "payload.medicalConditionNote",
+            "whenHidden": null,
+            "empty": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "booking",
+      "title": "預約資訊",
+      "fields": [
+        {
+          "key": "storeId",
+          "label": "選擇分店",
+          "type": "select",
+          "placeholder": "請選擇分店",
+          "optionsSource": {
+            "endpoint": "GET /api/public/stores",
+            "value": "id",
+            "label": "name",
+            "afterSelectShow": "地址（city＋district＋address）・電話",
+            "fallback": [
+              {
+                "value": "nanjing",
+                "label": "南京店",
+                "address": "台北市中山區南京東路三段 29 號 B1",
+                "phone": "(02) 2507-4196"
+              },
+              {
+                "value": "songjiang",
+                "label": "松江店",
+                "address": "台北市中山區松江路 122 號 B1",
+                "phone": "(02) 2537-1055"
+              },
+              {
+                "value": "ximending",
+                "label": "西門店",
+                "address": "台北市中正區寶慶路 39 號",
+                "phone": "(02) 2370-3245"
+              },
+              {
+                "value": "xindian",
+                "label": "七張店",
+                "address": "新北市新店區北新路二段 252 號 B1-2",
+                "phone": "(02) 8914-6428"
+              }
+            ],
+            "note": "伺服器輸出（SSR）與首次畫面用頁面內建的四間（fallback）；掛載後在瀏覽器呼叫 API，回傳非空就整批換掉。API 在 Firestore 失敗或沒資料時仍回 200，內容是伺服器端的備用清單（順序：七張、南京、松江、西門）；只有請求失敗、非 2xx 或回空陣列時才維持頁面 fallback。",
+            "filter": "isActive == true",
+            "order": "sortOrder 遞增"
+          },
+          "lockedBy": {
+            "source": "$variant.lockStoreId",
+            "match": "依序比對分店的 id、slug 或名稱；頁面 fallback 沒有 slug，用 slug 鎖定要等 API 載入成功才比對得到（建議一律填分店 id）",
+            "onMatch": "不顯示下拉與必填星號，自動帶入該分店 id，唯讀顯示分店名稱，有地址時再顯示地址・電話",
+            "onNoMatch": "唯讀框顯示 lockStoreId 原字，storeId 為空；送出被「請選擇分店」擋下，但鎖定時這句錯誤不會顯示，使用者無法修正"
+          },
+          "required": true,
+          "errors": {
+            "required": "請選擇分店"
+          },
+          "store": {
+            "path": "storeId",
+            "note": "通常是 stores 文件 id；頁面沒拿到 API 資料時會是內建代號 nanjing／songjiang／ximending／xindian（不一定對應 Firestore 文件）。伺服器不檢查分店是否存在，查不到時信件上的分店名是空的。後台店員角色依這個欄位只看自己店的名單。"
+          }
+        },
+        {
+          "key": "preferredTimes",
+          "label": "偏好的上課時段",
+          "labelSuffix": "（可複選）",
+          "type": "checkbox-group",
+          "options": [
+            {
+              "value": "不限"
+            },
+            {
+              "value": "平日10:00-17:00"
+            },
+            {
+              "value": "平日18:00-21:00"
+            },
+            {
+              "value": "假日10:00-17:00"
+            },
+            {
+              "value": "假日18:00-21:00"
+            },
+            {
+              "value": "其他"
+            }
+          ],
+          "other": {
+            "triggerValue": "其他",
+            "detailKey": "preferredTimeOther",
+            "detailType": "text",
+            "detailPlaceholder": "請說明其他偏好的上課時段",
+            "detailRequired": false,
+            "compose": "說明 trim 後非空時，從陣列移除「其他」，在陣列最後加上「其他: <說明原值>」（冒號後一個半形空格，說明不 trim）；說明沒填或只有空白時保留「其他」"
+          },
+          "required": true,
+          "errors": {
+            "required": "請至少選擇一個時段"
+          },
+          "store": {
+            "path": "payload.preferredTime",
+            "valueType": "string[]",
+            "note": "存的 key 少一個 s。2026-10-27 前這題叫「方便聯繫時段」，key 沒改但意思改了",
+            "order": "點選順序（不是選項順序）；有說明的「其他: …」永遠在最後"
+          }
+        },
+        {
+          "key": "source",
+          "label": "從哪裡得知練健康？",
+          "labelSuffix": "（單選）",
+          "type": "radio",
+          "showIf": {
+            "field": "$variant.hideSources",
+            "op": "falsy"
+          },
+          "options": [
+            {
+              "value": "官網"
+            },
+            {
+              "value": "社群",
+              "detail": {
+                "type": "select",
+                "placeholder": "請選擇平台",
+                "optionsSource": {
+                  "endpoint": "GET /api/public/referral-options",
+                  "firestore": "settings/referralOptions.social",
+                  "firestoreShape": "[{label: string, active?: boolean}]",
+                  "filter": "label trim 後非空且 active !== false，回傳 trim 後的 label",
+                  "missingField": "欄位不存在時用 defaultOptions",
+                  "allInactive": "欄位存在但全部停用時回空陣列，前台整個隱藏這個主選項"
+                },
+                "defaultOptions": [
+                  "IG",
+                  "FB",
+                  "Threads",
+                  "Line",
+                  "YT",
+                  "Podcast"
+                ]
+              }
+            },
+            {
+              "value": "參觀",
+              "note": "選這項時同意事項改選填"
+            },
+            {
+              "value": "電話詢問",
+              "note": "選這項時同意事項改選填"
+            },
+            {
+              "value": "傳單/DM"
+            },
+            {
+              "value": "親友推薦"
+            },
+            {
+              "value": "練健康夥伴推薦",
+              "detail": {
+                "type": "text",
+                "placeholder": "請填寫同仁姓名"
+              }
+            },
+            {
+              "value": "醫師/醫療轉介",
+              "detail": {
+                "type": "text",
+                "placeholder": "請填寫醫師或院所名稱"
+              }
+            },
+            {
+              "value": "實體活動",
+              "detail": {
+                "type": "select",
+                "placeholder": "請選擇活動",
+                "optionsSource": {
+                  "endpoint": "GET /api/public/referral-options",
+                  "firestore": "settings/referralOptions.event",
+                  "firestoreShape": "[{label: string, active?: boolean}]",
+                  "filter": "label trim 後非空且 active !== false，回傳 trim 後的 label",
+                  "missingField": "欄位不存在時用 defaultOptions",
+                  "allInactive": "欄位存在但全部停用時回空陣列，前台整個隱藏這個主選項"
+                },
+                "defaultOptions": [
+                  "聖誕老人賽事",
+                  "高齡博覽會"
+                ]
+              }
+            },
+            {
+              "value": "其他",
+              "detail": {
+                "type": "text",
+                "placeholder": "請說明從哪裡得知"
+              }
+            }
+          ],
+          "optionRules": [
+            "$variant.extraSources 的選項插在「其他」前面，沒有細項",
+            "有細項下拉、但下拉一個選項都沒有時，整個主選項不顯示",
+            "換主選項時清空細項"
+          ],
+          "optionsSharedWith": "group-booking（config/referralSources.ts）",
+          "detailKey": "sourceDetail",
+          "required": true,
+          "detailRequired": "選到有細項的選項時，細項也必填（去掉前後空白後不可空）",
+          "errors": {
+            "required": "請選擇從哪裡得知練健康",
+            "detailRequired": "顯示該細項的 placeholder 文字"
+          },
+          "store": {
+            "path": "payload.sources",
+            "valueType": "string[]",
+            "compose": "有細項時存「<主選項>: <細項>」（細項 trim、冒號後一個半形空格），沒有就只存主選項；單選但刻意存成長度 1 的陣列",
+            "whenHidden": [],
+            "alsoWrites": {
+              "path": "sourceChannel",
+              "value": "payload.sources 以「, 」串接；整題隱藏時是空字串"
+            }
+          }
+        },
+        {
+          "key": "exerciseGoals",
+          "label": "訓練目的",
+          "labelSuffix": "（可複選）",
+          "type": "checkbox-group",
+          "options": [
+            {
+              "value": "增加肌力與活動力"
+            },
+            {
+              "value": "慢性病控制"
+            },
+            {
+              "value": "降低跌倒風險"
+            },
+            {
+              "value": "體態管理"
+            },
+            {
+              "value": "傷後復健"
+            },
+            {
+              "value": "增加運動表現"
+            },
+            {
+              "value": "減少疼痛"
+            },
+            {
+              "value": "其他"
+            }
+          ],
+          "other": {
+            "triggerValue": "其他",
+            "detailKey": "exerciseGoalOther",
+            "detailType": "text",
+            "detailPlaceholder": "例如：改善腰痠背痛、上樓梯更有力、久坐姿態調整、或簡述希望體驗的專項訓練...等等",
+            "detailRequired": false,
+            "compose": "說明 trim 後非空時，從陣列移除「其他」，在陣列最後加上「其他: <說明原值>」（冒號後一個半形空格，說明不 trim）；說明沒填或只有空白時保留「其他」"
+          },
+          "hint": {
+            "text": "註：訓練無法取代醫療，所有身體疾患務必先尋求醫療人員協助。"
+          },
+          "required": false,
+          "store": {
+            "path": "payload.exerciseGoals",
+            "valueType": "string[]",
+            "empty": [],
+            "note": "payload.exerciseGoalOther 也會寫入但目前永遠是 null（舊欄位，說明已併進陣列）",
+            "order": "點選順序（不是選項順序）；有說明的「其他: …」永遠在最後"
+          }
+        },
+        {
+          "key": "paymentMethod",
+          "label": "付款方式",
+          "type": "select",
+          "placeholder": "請選擇",
+          "showIf": {
+            "field": "$variant.allAgesFree",
+            "op": "falsy"
+          },
+          "options": [
+            {
+              "value": "50歲以上免費",
+              "label": "50 歲以上（第一堂免費）",
+              "showIf": {
+                "field": "$derived.isFreeEligible",
+                "op": "truthy"
+              }
+            },
+            {
+              "value": "臨櫃付款",
+              "label": "臨櫃付款（第一堂 $500）"
+            }
+          ],
+          "valueRules": [
+            "$variant.allAgesFree 時整題隱藏，值自動設為「活動免費」（不在選項裡的隱藏值）",
+            "生日改成未滿 50 歲（或未確認、超出範圍）時，已選的「50歲以上免費」會被清空"
+          ],
+          "required": true,
+          "errors": {
+            "required": "請選擇付款方式"
+          },
+          "store": {
+            "path": "payload.paymentMethod",
+            "possibleValues": [
+              "50歲以上免費",
+              "臨櫃付款",
+              "活動免費",
+              null
+            ],
+            "whenHidden": "活動免費",
+            "note": "伺服器存 paymentMethod || null 且不驗證；null 只會出現在不經表單直接呼叫 API 時"
+          }
+        },
+        {
+          "key": "message",
+          "label": "備註",
+          "labelSuffix": "（若是要一對二的體驗課程，請提供親友姓名、年齡及簡述身體狀況）",
+          "type": "textarea",
+          "placeholder": "例如：王小明／65歲／2023年5月右膝韌帶斷裂手術，希望可以改善重心前傾、走路不穩，增加走路穩定度",
+          "required": false,
+          "store": {
+            "path": "message",
+            "empty": null
+          }
+        }
+      ]
+    }
+  ],
+  "consent": {
+    "key": "agreeToTerms",
+    "title": "參加練健康相關課程，了解並願遵守下列事項：",
+    "items": [
+      "一、每人限享一次免費體驗資格。若您先前已透過練健康其他活動或合作專案使用過免費體驗課，恕無法重複使用，實際資格以系統紀錄為準。",
+      "二、若有心臟病、高血壓、癲癇、傳染性皮膚病或其他可能影響運動訓練之疾病，或於五年內曾因重大傷病接受手術，或有住院超過三週之病史，請務必主動告知。",
+      "三、了解訓練本身具有造成自身或他人事故或傷害之風險，願意承擔相關風險，並於課程期間盡力防止事故或傷害發生。",
+      "四、課程期間願遵守練健康教練的所有指示及場地規範，不擅自使用教練指導範圍以外的場地或設備器材。若有違反訓練常規之行為，經教練制止後仍未立即改善，練健康得要求您離場並取消上課資格。",
+      "五、同意練健康於所有課程中進行拍照及錄影，並無償使用所拍攝之照片及影片於宣傳、教學及紀錄等用途。若您不希望入鏡或被拍攝，請隨時告知教練或工作人員。",
+      "六、上課前，請確認身上未配戴金屬扣環、拉鍊或其他硬物，並將指甲修剪整齊。課程期間，請穿著輕便、合身的運動服裝，並自備換洗衣物、毛巾及飲用水。",
+      "七、置物櫃僅供暫時存放物品，請自行妥善保管貴重財物。"
+    ],
+    "checkboxLabel": "我已詳閱並同意以上事項",
+    "type": "checkbox",
+    "required": {
+      "field": "source",
+      "op": "notIn",
+      "value": [
+        "參觀",
+        "電話詢問"
+      ]
+    },
+    "labelSuffixWhenOptional": "（選填）",
+    "errors": {
+      "required": "請勾選同意事項",
+      "unreachable": "必填且沒勾時送出鈕已停用，這句錯誤目前不會顯示"
+    },
+    "store": {
+      "path": null,
+      "note": "沒有存進名單：勾選結果、條文內容與版本都沒記錄"
+    },
+    "implicitConsentText": "送出即表示同意我們以電話或 LINE 與你聯繫安排體驗課，個人資料僅用於此目的。"
+  },
+  "hiddenFields": [
+    {
+      "key": "sourcePage",
+      "value": "/booking",
+      "store": {
+        "path": "sourcePage",
+        "fallback": "/booking"
+      }
+    },
+    {
+      "key": "formVariant",
+      "value": "網址參數 v 的原字",
+      "store": {
+        "path": "payload.formVariant",
+        "empty": null
+      },
+      "valueType": "string | string[] | null（網址重複帶 v 時是陣列；變體只取第一個）"
+    },
+    {
+      "key": "company",
+      "value": "$variant.company（網址 co 命中未到期的合作方時改用合作方公司名）",
+      "store": {
+        "path": "payload.company",
+        "empty": null
+      }
+    },
+    {
+      "key": "leadSource",
+      "value": "網址參數 src，沒有就用 $variant.leadSource",
+      "store": {
+        "path": "payload.leadSource",
+        "empty": null
+      }
+    },
+    {
+      "key": "utm",
+      "value": "cookie lkk_utm（保存 30 天）",
+      "shape": {
+        "source": "string（選填）",
+        "medium": "string（選填）",
+        "campaign": "string（選填）",
+        "content": "string（選填）",
+        "term": "string（選填）",
+        "referrer": "string（選填）",
+        "landingPage": "string（選填，含查詢字串的完整路徑）",
+        "capturedAt": "ISO 時間字串（選填，第一次捕捉這組 utm 的時間，不是送出時間）"
+      },
+      "store": {
+        "path": "payload.utm",
+        "empty": null
+      },
+      "capture": "任何頁面進站或站內換頁時，網址帶 utm_* 就寫入 cookie（不限 /booking）；每個值 trim 後截到 200 字；與現有完全相同不重寫，否則整組覆蓋（以最後一次為準）"
+    }
+  ],
+  "record": {
+    "collection": "leads",
+    "systemFields": {
+      "type": "booking",
+      "status": "new（後台可改：new／contacted／scheduled／completed／cancelled）",
+      "internalNote": "null（後台可改）",
+      "createdAt": "Firestore Timestamp",
+      "updatedAt": "Firestore Timestamp"
+    },
+    "topLevel": [
+      "type",
+      "name",
+      "phone",
+      "email",
+      "storeId",
+      "sourcePage",
+      "sourceChannel",
+      "message",
+      "payload",
+      "status",
+      "internalNote",
+      "createdAt",
+      "updatedAt"
+    ],
+    "payload": [
+      "gender",
+      "birthDate",
+      "line",
+      "filledBySelf",
+      "relationship",
+      "bookerName",
+      "contactPhone",
+      "hasMedicalCondition",
+      "medicalConditionNote",
+      "preferredTime",
+      "paymentMethod",
+      "exerciseGoals",
+      "exerciseGoalOther",
+      "sources",
+      "utm",
+      "formVariant",
+      "company",
+      "leadSource"
+    ],
+    "notStored": [
+      "agreeToTerms",
+      "preferredTimeOther（併入 preferredTime）",
+      "sourceDetail（併入 sources）",
+      "exerciseGoalOther 的內容（併入 exerciseGoals）",
+      "題目版本",
+      "age、isFreeEligible（事後要自己重算）"
+    ]
+  },
+  "hiddenFieldsTrust": "這些值由前端算好後隨 body 送出，伺服器原樣存、不驗證；直接呼叫 API 可寫入任意值。company 只在頁面上靠 co 代號限制，讀名單的系統不要把 payload.company 當成已驗證的資料。"
+}
