@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { canAccessAdminPath } from '~/utils/adminAccess'
 import { validatePasswordStrength, PASSWORD_HINT } from '~/utils/passwordPolicy'
 
@@ -8,9 +8,10 @@ const router = useRouter()
 
 const menuItems = [
   { name: '儀表板', path: '/admin', icon: 'dashboard' },
-  { name: '客戶預約', path: '/admin/leads', icon: 'calendar', badge: true },
-  { name: '團課預約', path: '/admin/group-classes', icon: 'usergroup' },
-  { name: '合作表單', path: '/admin/cooperation', icon: 'briefcase' },
+  // badge：側欄橘色數字取 /api/admin/leads/new-counts 的哪一個鍵（狀態為「新名單」的筆數）
+  { name: '客戶預約', path: '/admin/leads', icon: 'calendar', badge: 'booking' },
+  { name: '團課預約', path: '/admin/group-classes', icon: 'usergroup', badge: 'group_class' },
+  { name: '合作表單', path: '/admin/cooperation', icon: 'briefcase', badge: 'cooperation' },
   { name: '分店管理', path: '/admin/stores', icon: 'store' },
   { name: '教練管理', path: '/admin/coaches', icon: 'people' },
   { name: '講師管理', path: '/admin/lecturers', icon: 'school' },
@@ -35,20 +36,29 @@ const user = useState<{ id: string; name: string; email: string; role: string; p
 )
 const isLoading = ref(false)
 
-// Pending leads count
-const pendingLeadsCount = ref(0)
+// 各名單頁的新名單數（僅供選單 badge）。
+// 進後台時算一次，之後每次在後台換頁重算——在名單頁把名單改成「已聯繫」後，
+// 換到別頁數字就會跟著變（同一頁內改狀態不會即時更新）。
+type NewLeadCounts = { booking: number; group_class: number; cooperation: number }
+const newLeadCounts = ref<NewLeadCounts>({ booking: 0, group_class: 0, cooperation: 0 })
 
-// 取得待處理名單數（僅供選單 badge）
-onMounted(async () => {
+function badgeCount(key?: string): number {
+  return key ? newLeadCounts.value[key as keyof NewLeadCounts] || 0 : 0
+}
+
+async function refreshNewLeadCounts() {
+  // 看不到任何名單頁的帳號（例如只管教練）打這支會 403，乾脆不打
+  if (!visibleMenuItems.value.some((item) => item.badge)) return
   try {
-    const res = await $fetch<{ success: boolean; data?: any[] }>('/api/admin/leads?status=new')
-    if (res?.success) {
-      pendingLeadsCount.value = res.data?.length || 0
-    }
+    const res = await $fetch<{ success: boolean; data?: NewLeadCounts }>('/api/admin/leads/new-counts')
+    if (res?.success && res.data) newLeadCounts.value = res.data
   } catch (error) {
-    console.error('Error fetching leads count:', error)
+    console.error('Error fetching new lead counts:', error)
   }
-})
+}
+
+onMounted(refreshNewLeadCounts)
+watch(() => route.path, refreshNewLeadCounts)
 
 // Logout function
 async function logout() {
@@ -195,12 +205,12 @@ const isActive = (path: string) => {
 
               <span>{{ item.name }}</span>
 
-              <!-- Badge for pending leads -->
+              <!-- Badge：該名單頁的新名單數 -->
               <span
-                v-if="item.badge && pendingLeadsCount > 0"
+                v-if="badgeCount(item.badge) > 0"
                 class="ml-auto bg-orange text-white text-xs px-2 py-0.5 rounded-full"
               >
-                {{ pendingLeadsCount }}
+                {{ badgeCount(item.badge) }}
               </span>
             </NuxtLink>
           </li>
