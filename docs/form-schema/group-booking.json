@@ -1,0 +1,1049 @@
+{
+  "formId": "group-booking",
+  "schemaVersion": "1.0",
+  "describes": "練健康官網 /group-booking「團體課程報名」表單的現況（2026-11-09，dev 與正式站相同：相關檔案在 origin/prod 與 dev HEAD 之間沒有差異）。這份是描述檔，網站本身還沒有讀它。名單寫進 leads 集合，type 是 group_class，後台在 /admin/group-classes（團課預約）讀取。",
+  "sourceOfTruth": [
+    "pages/group-booking.vue",
+    "server/api/leads/group-class.post.ts",
+    "server/utils/leads.ts",
+    "server/utils/email.ts",
+    "server/api/public/referral-options.get.ts",
+    "config/groupClassVariants.ts",
+    "config/referralSources.ts",
+    "config/formOptions.ts",
+    "composables/useUtm.ts",
+    "plugins/utm.client.ts",
+    "nuxt.config.ts",
+    "components/layout/MobileBookingButton.vue",
+    "server/api/admin/leads/index.get.ts",
+    "server/api/admin/dashboard.get.ts",
+    "utils/adminAccess.ts"
+  ],
+  "conventions": {
+    "condition": "條件寫法：{\"field\":<欄位 key>,\"op\":<運算>,\"value\":<值>}；運算有 eq、neq、in、notIn、includes（多選含某值）、truthy、falsy、gte。field 以 \"$variant.\" 開頭時讀網址變體設定、以 \"$derived.\" 開頭時讀衍生值。多個條件用 {\"all\":[…]} 或 {\"any\":[…]} 組合。 field 以 \"$state.\" 開頭時讀畫面狀態（例如 submitting）。",
+    "required": "required 為 true／false，或一個條件物件（條件成立才必填）。",
+    "showIf": "showIf 不成立時欄位不顯示、不驗證，送出值見各欄位 store.whenHidden。",
+    "options": "選項的 value 就是存進資料庫的字，label 是畫面上的字；兩者相同時只寫 value。value 收到名單後不要改字（舊名單無法回填，CSV 會裂成兩種寫法）；選項只新增或停用。",
+    "store.path": "存進 Firestore 集合 leads 的位置：頂層欄位直接寫名稱，其他寫 payload.<名稱>。",
+    "trim": "必填判斷用去掉前後空白後的值；存進資料庫的是原值（沒有 trim），除非另外註明。",
+    "arrays": "多選欄位存成陣列時，順序是使用者點選的先後，不是選項順序。",
+    "rawValue": "「有值」若沒特別註明，指原值非空字串（只打空白也算有值）；格式檢查也用原值，不去前後空白。",
+    "$field": "（本檔新增說明，booking.json 已在用）值寫成 \"$field.<key>\" 時，指同一張表單另一個欄位的值。",
+    "normalize": "（本檔新增）normalize 為 \"stripSpacesHyphens\" 時，先刪掉所有空白（JavaScript 的 \\s，含全形空白、換行）與半形橫線 -，必填判斷、格式檢查都用刪過的值；store.normalized 為 true 時存進資料庫的也是刪過的值。",
+    "radioNoClear": "（本檔新增）type 為 radio 的欄位一旦選了就只能換選項、不能取消；選填的 radio 選過之後無法回到「沒填」。",
+    "differsFromBooking": "（本檔新增）欄位上的 differsFromBooking 說明同一個概念在 /booking（booking.json）的寫法差在哪；整理版見最後的 differencesFromBooking。讀三份 schema 的系統不能假設同名 key 意思相同。",
+    "serverChecks": "（本檔新增）false 表示這條規則／這題只有前端檢查，伺服器不驗；伺服器實際的檢查以 submit.serverValidation 為準。",
+    "validation.when／failIf": "（本檔新增 failIf）validation 規則的 when 一律是說明文字（何時才檢查），和 booking.json 相同；需要機器判斷的條件寫在 failIf（條件物件），成立時顯示 message。",
+    "store.alsoWrites": "（本檔新增說明，booking.json 已在用物件形式）同一個答案另外寫到的位置：物件 {path, value, note?}；同時寫多個位置時是這種物件的陣列。",
+    "store.valueType": "（本檔新增說明）指透過本頁表單送出時的型別。伺服器不檢查型別，直接呼叫 API 時可能存成其他型別（見 submit.serverValidation）。",
+    "lineMessageTemplate": "（本檔新增說明）booking.json 是一個字串；本檔是物件 {self, proxy, useProxyWhen（條件物件）, useProxyWhenNote, venue, course, example}，代填時改用 proxy 句型。"
+  },
+  "submit": {
+    "endpoint": "POST /api/leads/group-class",
+    "contentType": "application/json",
+    "buttonText": "送出團體課程報名",
+    "buttonIcon": "右箭頭 SVG（送出中不顯示）",
+    "submittingText": "送出中…",
+    "submittingTextNote": "結尾是單一字元 …（U+2026），booking 是三個半形句點",
+    "reentryGuard": "送出中再按會直接忽略（handleSubmit 一開始檢查 submitting）",
+    "validationTiming": "只在按送出時整批檢查；每次送出整個錯誤表重算。修改欄位時錯誤不會即時清掉（唯一例外見 contactPhone.errorRules）。驗證失敗不會捲動或移動焦點到第一個錯誤，也沒有總結訊息。",
+    "onFailure": {
+      "httpError": "alert(伺服器回傳的 error 文字；沒有就「送出失敗，請稍後再試」)",
+      "networkError": "alert「送出失敗，請稍後再試」",
+      "okButNotSuccess": "HTTP 200 但 success 不是 true 時 alert(res.error 或「送出失敗，請稍後再試」)；伺服器目前不會這樣回",
+      "note": "和 booking 不同：這裡會把伺服器的 400／500 訊息原文顯示給使用者"
+    },
+    "onSuccess": {
+      "container": "id=\"lead-success\"、data-form=\"group-booking\"（GTM 轉換靠它觸發，不要改）",
+      "behavior": "整頁（Hero、表單、右側介紹）換成成功區塊，平滑捲到頁首；沒有「再填一份」，要重新整理頁面",
+      "title": "團體課程報名已送出！",
+      "body": "你的報名資料已即時同步後台系統。由於團體課程需依當期名額與人數安排梯次，我們已為你預填好學員姓名與報名課程，請點下方按鈕加入「練健康 LINE 官方帳號」並直接送出（訊息需由你親自按下傳送），教練將以最快速度為你確認開課日期！",
+      "bodyBold": "我們已為你預填好學員姓名與報名課程",
+      "lineButton": "加入官方 LINE 並傳送報名資訊",
+      "lineMessageTemplate": {
+        "self": "你好，我是 {name trim}，我已報名{venue}的{course}，請協助確認開課梯次。",
+        "proxy": "你好，我是 {fillerName trim}，我替 {name trim} 報名{venue}的{course}，請協助確認開課梯次。",
+        "useProxyWhen": {
+          "all": [
+            {
+              "field": "isFillerSelf",
+              "op": "eq",
+              "value": "否"
+            },
+            {
+              "field": "fillerName",
+              "op": "truthy"
+            }
+          ]
+        },
+        "useProxyWhenNote": "fillerName 以 trim 後的值判斷（不是 rawValue）；送出前驗證已保證代填時 trim 後非空，所以實際等同 isFillerSelf eq 否",
+        "venue": "店名 = store 以全形「｜」切開取第一段再 trim；有店名時是「練健康 <店名> 」（店名前後各一個半形空格），沒有時是「練健康」",
+        "course": "course trim；空的時候用「團體課程」",
+        "example": "你好，我是 王小明，我已報名練健康 南京店 的基礎重訓團班，請協助確認開課梯次。"
+      },
+      "lineUrlFormat": "https://line.me/R/oaMessage/@201fzruh/?{encodeURIComponent(訊息)}",
+      "addFriend": {
+        "text": "還不是官方 LINE 好友？先點此加入好友",
+        "url": "https://line.me/R/ti/p/%40201fzruh"
+      },
+      "nextSteps": {
+        "title": "接下來的確認流程",
+        "items": [
+          "加入官方 LINE 並傳送姓名與課程後，教練將於 2-3 個工作天內確認梯次與繳費方式",
+          "若你未加入 LINE，我們也將於 2-3 個工作天內嘗試撥打你填寫的手機號碼聯繫"
+        ]
+      }
+    },
+    "serverValidation": [
+      "name、gender、ageRange、phone、email、isFillerSelf、course、store、medicalHistory 任一項是 falsy（用原值判斷，只打空白會通過）→ 400「請填寫所有必填欄位（標有 * 的項目）」",
+      "phone 轉字串、刪掉空白與半形橫線後不符合 ^09\\d{8}$ → 400「手機號碼格式不正確」",
+      "email 原值不符合 ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$ → 400「Email 格式不正確」",
+      "isFillerSelf === \"否\" 且（fillerName falsy、或 relationship falsy、或 contactPhone falsy 而 relationship 不是「練健康同仁」）→ 400「請填寫與學員的關係、報名者姓名與方便聯繫的電話」。contactPhone 用原值判斷，只打空白或橫線會通過伺服器，但正規化後存成 null；所以非同仁代填的名單，經 API 直接送入時 payload.contactPhone 也可能是 null。",
+      "任何例外 → 500「系統錯誤，請稍後再試」，包括：body 為空或 JSON null（解構 body 時拋錯）、Content-Type 為 application/json 但 JSON 格式錯誤（readBody 拋的 400 被 catch 吞掉改成 500）、Firestore 寫入失敗。其他 Content-Type 的壞 JSON 會被 readBody 當成字串，結果是 400 必填訊息。",
+      "伺服器不檢查型別：所有必填只用 truthy 判斷，值原樣寫入。直接呼叫 API 可把 name／email／gender／course／store／medicalHistory／fillerName／relationship 等存成陣列、物件或數字，preferredTime 可存成陣列，source 陣列元素可為任意型別，utm 可為任意形狀。email 為單元素陣列時 regex 會先轉字串而通過。巢狀陣列（例如 source [[…]]）會讓 Firestore 寫入失敗，回 500「系統錯誤，請稍後再試」。只有頂層 phone 一定是字串（經 String() 正規化）。",
+      "沒有驗證碼（reCAPTCHA／Turnstile）、沒有頻率限制、沒有重複送出檢查（server/middleware 只有 admin-api-guard、noindex-nonproduction、redirect-canonical）。每次通過檢查的 POST 都新增一筆名單（自動 id），並寄確認信到送來的任意 email（信中帶送來的姓名、備註等，已做 HTML 跳脫）。防重複只有前端的 submitting 鎖。",
+      "其他伺服器都不檢查：選項是否在清單內（性別、年齡區間、課程、分店、關係、重訓經驗、得知管道）、contactPhone 格式、舉重團班只限南京店、得知管道必填與細項必填、isFillerSelf 是否只有「是」「否」、長度上限"
+    ],
+    "sideEffects": [
+      "寄管理者通知信（不等結果）：主旨「【練健康】新團體課報名表單{有 company 時：【company】} - {name}」；有 company 或 leadSource 時信首加一條「活動來源：company · leadSource」。收件人＝Firestore settings/notifications.emailRecipients（逗號分隔）；文件不存在時用環境變數 NOTIFICATION_EMAIL；emailOnNewLead 為 false、收件人為空或讀取設定失敗就不寄。",
+      "email 有值就嘗試寄填單人確認信（不等結果；email 必填，所以每筆都會嘗試寄）：主旨「【練健康】感謝您報名團體課程」，內含課程價目（基礎重訓團班 $2,400、樂齡肌力體適能團班 $2,400、練健康舉重團班 $3,200，寫死在 API 裡，格式「<課程>（<價目>／4 堂一期）」）。",
+      "SMTP_HOST、SMTP_USER、SMTP_PASS 缺任何一項時兩封都不寄。寄信成功與否不影響 API 回應，也不記進名單（只寫 log）。兩封的 Reply-To 是 SMTP_REPLY_TO（預設 service@l-kk.tw）。",
+      "兩封信的 contactPhone 用的是送來的原值（沒刪空白橫線），名單裡存的是刪過的值",
+      "在伺服器 log 印出 id、name、phone（正規化後）、course、storeName",
+      "不讀 stores 集合（分店是寫死的字串）"
+    ],
+    "disabledIf": {
+      "field": "$state.submitting",
+      "op": "truthy"
+    },
+    "belowButtonNotes": [
+      "送出即表示同意我們以電話或 LINE 與你聯繫確認開課梯次，個人資料僅用於此報名目的。"
+    ],
+    "response": {
+      "ok": {
+        "success": true,
+        "message": "報名成功，我們將盡快與您聯繫確認課程時間"
+      },
+      "error": {
+        "success": false,
+        "error": "<訊息>"
+      },
+      "note": "成功的 message 前端沒有顯示"
+    }
+  },
+  "context": {
+    "description": "網址參數會改變表單的樣子與存進名單的隱藏欄位。和 booking 不同：沒有 co（免費合作方）參數。",
+    "params": {
+      "v": "團課變體代號，對應下方 variants；查不到（或空值）就用 default；重複帶時變體取第一個。原字照樣存進 payload.formVariant（查不到的代號也會存；重複帶時存整個陣列）。",
+      "src": "名單來源；只在是單一非空字串時採用（重複帶或空值就用變體的 leadSource），存進 payload.leadSource。自由文字、不驗證、不限長度，會出現在管理者通知信的「活動來源」。"
+    },
+    "variantProperties": {
+      "lockStore": "鎖定分店，細節見 sections 裡 store.lockedBy",
+      "lockCourse": "鎖定課程，細節見 sections 裡 course.lockedBy",
+      "hideSources": "隱藏「你是從哪裡得知練健康團體課程資訊的呢？」整題，也不必填",
+      "company": "存進 payload.company",
+      "leadSource": "存進 payload.leadSource（網址 src 優先）",
+      "hero": "頁面上方 badge、title、titleHighlight、checklist、ctaText（不影響欄位）；預設依序是「一期4堂 · 隨時可續課」「自己練沒有動力嗎？」「找個班一起練」、四條清單（四堂學會重訓六大基礎動作／教練隨堂指導，暖身收操都安排好／樂齡族群也有專屬強度調整／南京・松江・西門・七張 四店開課）、「團體課報名」。CTA 下方的價格說明那一行（見 pageCopy.heroPriceLine）與安心保證條不受變體影響。"
+    },
+    "variants": {
+      "default": {}
+    },
+    "variantsNote": "目前只有 default。abbott（亞培）與 nanshan（南山）於 2026-09-11 依業主要求刪除（程式裡留註解）；舊連結 ?v=abbott／?v=nanshan 會落到 default，formVariant 仍存原字，但 company 為 null、leadSource 只剩網址 src。所以目前 payload.company 永遠是 null。"
+  },
+  "derived": {
+    "lockedStore": "$variant.lockStore 有值時，在 store 選項中找第一個「完全相等或以它開頭」的字串；找不到或沒設定為 null",
+    "lockedCourse": "$variant.lockCourse 有值時，在 course 選項中找 value 完全相等的；找不到或沒設定為 null",
+    "isWeightlifting": "course 等於「練健康舉重團班」",
+    "contactPhoneOptional": "relationship 等於「練健康同仁」（config/formOptions.ts 的 STAFF_RELATIONSHIP）"
+  },
+  "pageCopy": {
+    "headTitle": "團體課程報名｜練健康 LKK Wellness Center",
+    "metaDescription": "練健康團體課程報名：基礎重訓、樂齡肌力、舉重團班，一期4堂、隨時可續課，南京・松江・西門・七張四店開課。填表後教練 2-3 個工作天內主動聯繫確認梯次。",
+    "heroPriceLine": "4堂 $2,400 起・請假可順延一週・無須綁約長期課程（「4堂 $2,400 起」為粗體；寫死，變體 hero 不能覆蓋）",
+    "reassure": [
+      "沒有重訓基礎也能報名",
+      "不須從月初開始，隨時可報名",
+      "請假最晚提前一週可順延",
+      "教練 2-3 個工作天內主動聯繫"
+    ],
+    "reassureNote": "Hero 與表單之間的安心保證條，寫死，變體不能覆蓋",
+    "formHeader": "團體課程報名",
+    "formSubheader": "教練會在 2-3 個工作天內主動聯繫確認開課梯次",
+    "formBadge": "一期4堂・隨時開放報名",
+    "pricesHardcoded": "課程價目寫死在四處：頁面的 courses（課程選項卡片）、courseCards（右側課程介紹）、Hero 價格說明那一行、API 的 COURSE_PRICES（確認信）；改價要四處一起改",
+    "note": "表單右側（手機在下方）另有課程介紹、各店開課時段、三步驟、FAQ，都是寫死的展示內容，不影響欄位。開課時段分頁的 id（nanjing／songjiang／ximen／qizhang）只用於畫面，和 booking 的分店代號（ximending／xindian）不同，也不會存進名單。手機底部固定的「立即預約體驗」按鈕在此頁隱藏（MobileBookingButton 的 HIDDEN_PATHS）。頁面有 CDN 快取標頭 s-maxage=30、stale-while-revalidate=120（nuxt.config.ts routeRules）。"
+  },
+  "sections": [
+    {
+      "id": "basic",
+      "title": "第一部分：基本資料",
+      "fields": [
+        {
+          "key": "name",
+          "label": "學員姓名",
+          "type": "text",
+          "placeholder": "學員姓名",
+          "required": true,
+          "errors": {
+            "required": "請填寫學員姓名"
+          },
+          "store": {
+            "path": "name",
+            "note": "原值，不 trim；伺服器用原值判斷有沒有填"
+          },
+          "differsFromBooking": "booking 的必填訊息是「請輸入學員姓名」，placeholder 是「要來上課的人」；存的位置相同"
+        },
+        {
+          "key": "gender",
+          "label": "學員性別",
+          "type": "radio",
+          "options": [
+            {
+              "value": "男"
+            },
+            {
+              "value": "女"
+            }
+          ],
+          "required": true,
+          "errors": {
+            "required": "請選擇性別"
+          },
+          "store": {
+            "path": "payload.gender",
+            "empty": null
+          },
+          "differsFromBooking": "booking 是下拉（placeholder「請選擇」），label 是「性別」（團課是「學員性別」）；值與存的位置相同"
+        },
+        {
+          "key": "ageRange",
+          "label": "學員年齡區間",
+          "type": "radio",
+          "options": [
+            {
+              "value": "50歲以下"
+            },
+            {
+              "value": "50–65歲",
+              "note": "中間是 en dash（U+2013），不是半形 -"
+            },
+            {
+              "value": "65歲以上"
+            }
+          ],
+          "required": true,
+          "errors": {
+            "required": "請選擇年齡區間"
+          },
+          "store": {
+            "path": "payload.ageRange",
+            "empty": null
+          },
+          "knownIssue": "區間邊界重疊：50 歲同時符合「50歲以下」與「50–65歲」，65 歲同時符合「50–65歲」與「65歲以上」，由填表者自己選。",
+          "differsFromBooking": "booking 沒有年齡區間，收的是 payload.birthDate（YYYY-MM-DD）；兩邊的年齡無法直接合併，團課也沒有 50 歲免費的邏輯"
+        },
+        {
+          "key": "phone",
+          "label": "手機號碼",
+          "type": "tel",
+          "inputmode": "tel",
+          "placeholder": "0987654321",
+          "required": true,
+          "normalize": "stripSpacesHyphens",
+          "validation": [
+            {
+              "rule": "pattern",
+              "value": "^09\\d{8}$",
+              "message": "手機格式不正確（09 開頭共 10 碼）",
+              "when": "正規化後非空才檢查；正規化後是空的（例如只打空白）顯示 required 訊息"
+            }
+          ],
+          "errors": {
+            "required": "請填寫手機號碼"
+          },
+          "store": {
+            "path": "phone",
+            "normalized": true,
+            "note": "伺服器存刪掉空白與橫線後的值"
+          },
+          "differsFromBooking": "booking 用原值比對、存原值，訊息是「請輸入手機號碼」／「請輸入有效的手機號碼」；團課先刪空白橫線再比對、存正規化後的值。label：booking「學員手機」、團課「手機號碼」；placeholder：booking 0912345678、團課 0987654321"
+        },
+        {
+          "key": "email",
+          "label": "電子郵件",
+          "type": "email",
+          "placeholder": "name@email.com",
+          "required": true,
+          "validation": [
+            {
+              "rule": "pattern",
+              "value": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+              "message": "Email 格式不正確",
+              "when": "去掉前後空白後有值才檢查",
+              "note": "用 formData.email 比對，不另外 trim；但欄位是 <input type=\"email\">，瀏覽器會先刪掉換行與前後 ASCII 空白，v-model 拿到的已是刪過的值，所以前後半形空白、tab 不會造成錯誤，送出與存進去的也是刪過的值。前後若是全形空白（U+3000）等非 ASCII 空白，瀏覽器不刪，而 regex 的 \\s 會比對到，前端與伺服器都會判定「Email 格式不正確」。直接呼叫 API 時伺服器用原值比對，前後半形空白也會被擋。"
+            }
+          ],
+          "errors": {
+            "required": "請填寫電子郵件"
+          },
+          "store": {
+            "path": "email",
+            "note": "原值（瀏覽器已刪前後 ASCII 空白與換行）；伺服器寫 email || null，但 email 必填，實際上不會是 null"
+          },
+          "differsFromBooking": "booking 的 Email 是選填（label「Email」＋「（選填）」，空的存 null）；團課必填（label「電子郵件」），而且每筆都會嘗試寄確認信。placeholder：booking your@email.com、團課 name@email.com；格式錯誤訊息：booking「請輸入有效的 Email」、團課「Email 格式不正確」"
+        },
+        {
+          "key": "isFillerSelf",
+          "label": "是否為你本人親自填寫？",
+          "type": "radio",
+          "default": null,
+          "options": [
+            {
+              "value": "是",
+              "label": "是，我是本人"
+            },
+            {
+              "value": "否",
+              "label": "否，我是幫他人代填"
+            }
+          ],
+          "required": true,
+          "errors": {
+            "required": "請選擇"
+          },
+          "store": {
+            "path": "payload.isFillerSelf",
+            "valueType": "string",
+            "possibleValues": [
+              "是",
+              "否"
+            ],
+            "note": "存的是字「是」「否」，不是布林；伺服器不檢查值域，直接呼叫 API 可存任意字串（只有 \"否\" 會被當成代填）"
+          },
+          "differsFromBooking": "booking 的 key 是 filledBySelf，預設已選「本人填寫」，選項是「本人填寫」「他人代填」，存成布林（本人 true、代填 false）；團課沒有預設值、必須自己選，存字串「是」「否」"
+        }
+      ]
+    },
+    {
+      "id": "filler",
+      "title": null,
+      "titleNote": "沒有標題，是第一部分裡的一個虛線框，包住下面三個欄位，只在 isFillerSelf 為「否」時出現（顯示條件以各欄位的 showIf 為準）",
+      "fields": [
+        {
+          "key": "relationship",
+          "label": "與學員的關係",
+          "type": "select",
+          "placeholder": "請選擇",
+          "showIf": {
+            "field": "isFillerSelf",
+            "op": "eq",
+            "value": "否"
+          },
+          "options": [
+            {
+              "value": "配偶"
+            },
+            {
+              "value": "子女"
+            },
+            {
+              "value": "父母"
+            },
+            {
+              "value": "兄弟姊妹"
+            },
+            {
+              "value": "朋友"
+            },
+            {
+              "value": "練健康同仁",
+              "note": "選這項時「方便聯繫的電話」改選填"
+            },
+            {
+              "value": "其他"
+            }
+          ],
+          "optionsSharedWith": "booking（config/formOptions.ts，改了兩張表單一起變）",
+          "required": true,
+          "errors": {
+            "required": "請選擇與學員的關係"
+          },
+          "store": {
+            "path": "payload.relationship",
+            "whenHidden": null,
+            "note": "isFillerSelf 不是「否」時伺服器一律存 null（就算 body 裡有之前填過又切回本人的值）"
+          }
+        },
+        {
+          "key": "fillerName",
+          "label": "報名者姓名",
+          "type": "text",
+          "placeholder": "請輸入你的姓名",
+          "showIf": {
+            "field": "isFillerSelf",
+            "op": "eq",
+            "value": "否"
+          },
+          "required": true,
+          "errors": {
+            "required": "請輸入報名者姓名"
+          },
+          "store": {
+            "path": "payload.fillerName",
+            "whenHidden": null,
+            "note": "原值，不 trim；伺服器用原值判斷有沒有填"
+          },
+          "differsFromBooking": "booking 的 key 是 bookerName，label「預約者姓名」，訊息「請輸入預約者姓名」"
+        },
+        {
+          "key": "contactPhone",
+          "label": "方便聯繫的電話",
+          "labelSuffixWhenOptional": "（選填）",
+          "type": "tel",
+          "placeholder": "0912345678",
+          "showIf": {
+            "field": "isFillerSelf",
+            "op": "eq",
+            "value": "否"
+          },
+          "required": {
+            "field": "relationship",
+            "op": "neq",
+            "value": "練健康同仁"
+          },
+          "normalize": "stripSpacesHyphens",
+          "validation": [
+            {
+              "rule": "pattern",
+              "value": "^09\\d{8}$",
+              "message": "請輸入有效的手機號碼",
+              "when": "正規化後非空就檢查（選填時有填也要符合）；只打空白或橫線視為沒填",
+              "serverChecks": false
+            }
+          ],
+          "errors": {
+            "required": "請輸入方便聯繫的電話"
+          },
+          "errorRules": [
+            "relationship 改成「練健康同仁」時，若畫面上的錯誤是「請輸入方便聯繫的電話」就自動清除；格式錯誤不清"
+          ],
+          "store": {
+            "path": "payload.contactPhone",
+            "normalized": true,
+            "whenHidden": null,
+            "empty": null,
+            "note": "只在 isFillerSelf 為「否」時存，值是刪掉空白橫線後的字，空的存 null；伺服器不檢查格式。伺服器的必填檢查用原值，只打空白或橫線會通過伺服器，但正規化後存成 null；所以非同仁代填的名單，經 API 直接送入時 payload.contactPhone 也可能是 null。"
+          },
+          "differsFromBooking": "booking 本人填寫時存學員手機、代填留空時也補學員手機（fallback $field.phone），且存原值；團課本人填寫或留空都存 null，存正規化後的值"
+        }
+      ]
+    },
+    {
+      "id": "course",
+      "title": "第二部分：課程資訊",
+      "fields": [
+        {
+          "key": "course",
+          "label": "想報名的課程",
+          "type": "radio",
+          "options": [
+            {
+              "value": "基礎重訓團班",
+              "price": "$2,400"
+            },
+            {
+              "value": "樂齡肌力體適能團班",
+              "price": "$2,400"
+            },
+            {
+              "value": "練健康舉重團班",
+              "price": "$3,200",
+              "showIf": {
+                "any": [
+                  {
+                    "field": "$derived.lockedStore",
+                    "op": "falsy"
+                  },
+                  {
+                    "field": "$derived.lockedStore",
+                    "op": "eq",
+                    "value": "南京店｜台北市中山區南京東路三段29號B1"
+                  }
+                ]
+              }
+            }
+          ],
+          "optionDisplay": "卡片：上面是課名（value），下面是價目；價目只顯示、不存",
+          "lockedBy": {
+            "source": "$variant.lockCourse",
+            "match": "課名完全相等",
+            "onMatch": "不顯示選項與必填星號，自動帶入該課程，唯讀顯示課名與價目",
+            "onNoMatch": "當作沒鎖定，照常顯示選項"
+          },
+          "required": true,
+          "errors": {
+            "required": "請選擇想報名的課程"
+          },
+          "store": {
+            "path": "payload.course",
+            "empty": null,
+            "note": "課名字串；伺服器不檢查是否在清單內。價目沒存，只出現在確認信"
+          },
+          "differsFromBooking": "booking 沒有課程欄（只有個人教練體驗課）"
+        },
+        {
+          "key": "store",
+          "label": "想去哪一間分店上課？",
+          "type": "select",
+          "placeholder": "請選擇偏好的分店地點",
+          "placeholderDisabled": true,
+          "options": [
+            {
+              "value": "南京店｜台北市中山區南京東路三段29號B1"
+            },
+            {
+              "value": "松江店｜台北市中山區松江路122號B1"
+            },
+            {
+              "value": "西門店｜台北市中正區寶慶路39號"
+            },
+            {
+              "value": "七張店｜新北市新店區北新路二段252號B1-2"
+            }
+          ],
+          "optionsNote": "寫死在頁面裡，不讀 stores API；value 是「店名｜地址」整串，分隔符是全形「｜」",
+          "optionRules": [
+            "course 是「練健康舉重團班」時下拉只剩南京店",
+            "course 變成「練健康舉重團班」且沒有鎖定分店時，store 自動改成南京店；之後換回其他課程，store 保持南京店不會還原"
+          ],
+          "hint": {
+            "text": "練健康舉重團班目前僅南京店開班",
+            "showIf": {
+              "field": "course",
+              "op": "eq",
+              "value": "練健康舉重團班"
+            }
+          },
+          "lockedBy": {
+            "source": "$variant.lockStore",
+            "match": "選項字串完全相等或以 lockStore 開頭（例如填「南京店」）",
+            "onMatch": "不顯示下拉與必填星號，自動帶入該整串值並唯讀顯示整串（含地址）；鎖在南京以外時課程選項不出現舉重團班",
+            "onNoMatch": "當作沒鎖定，照常顯示下拉"
+          },
+          "required": true,
+          "validation": [
+            {
+              "rule": "custom",
+              "when": "store 有值時才檢查",
+              "failIf": {
+                "all": [
+                  {
+                    "field": "$derived.isWeightlifting",
+                    "op": "truthy"
+                  },
+                  {
+                    "field": "store",
+                    "op": "neq",
+                    "value": "南京店｜台北市中山區南京東路三段29號B1"
+                  }
+                ]
+              },
+              "message": "舉重團班目前僅南京店開班",
+              "serverChecks": false
+            }
+          ],
+          "errors": {
+            "required": "請選擇分店"
+          },
+          "store": {
+            "path": "payload.store",
+            "empty": null,
+            "note": "整串「店名｜地址」原值；伺服器不檢查是否在清單內",
+            "alsoWrites": [
+              {
+                "path": "payload.storeName",
+                "value": "store 以「｜」切開取第一段再 trim（例如「南京店」）；空的存 null"
+              },
+              {
+                "path": "storeId",
+                "value": null,
+                "note": "頂層 storeId 永遠是 null"
+              }
+            ]
+          },
+          "differsFromBooking": "booking 存頂層 storeId（Firestore stores 文件 id 或內建代號 nanjing／songjiang／ximending／xindian），選項來自 GET /api/public/stores；團課存 payload.store（店名＋地址字串）與 payload.storeName，storeId 為 null。要對應兩邊分店只能用店名比對。後台名單列表 API 對 store_staff 只在帳號有 storeId 時才依 storeId 篩選：有 storeId 的店員在 /admin/group-classes 看到空清單，沒有 storeId 的店員看得到全部團課名單；儀表板「最新名單」不分角色、不篩分店，店員仍會看到團課名單（分店顯示 -）。"
+        },
+        {
+          "key": "preferredTime",
+          "label": "偏好的上課星期／時段",
+          "labelSuffix": "（選填，可參考右側各店開課時段）",
+          "type": "text",
+          "placeholder": "例如：週四晚上、週六上午皆可",
+          "required": false,
+          "store": {
+            "path": "payload.preferredTime",
+            "valueType": "string",
+            "empty": null,
+            "note": "自由文字原值（只打空白會存空白）；不驗證"
+          },
+          "differsFromBooking": "同一個 key payload.preferredTime，booking 是必填複選、存 string[]（選項字串＋「其他: …」），團課是選填自由文字、存 string 或 null。讀名單時要先看 type。"
+        },
+        {
+          "key": "experience",
+          "label": "過去是否有重訓經驗？",
+          "labelSuffix": "（選填）",
+          "type": "radio",
+          "options": [
+            {
+              "value": "完全新手"
+            },
+            {
+              "value": "有一些基礎"
+            },
+            {
+              "value": "有規律訓練習慣",
+              "label": "規律訓練中"
+            }
+          ],
+          "required": false,
+          "store": {
+            "path": "payload.experience",
+            "empty": null,
+            "note": "存 value，不是畫面上的字：畫面「規律訓練中」存成「有規律訓練習慣」"
+          },
+          "knownIssue": "radio 選過就不能取消，選填但選了之後無法回到沒填",
+          "differsFromBooking": "booking 沒有這題"
+        },
+        {
+          "key": "medicalHistory",
+          "label": "是否有任何疾病、舊傷或開刀史？",
+          "type": "textarea",
+          "placeholder": "例如：高血壓、糖尿病、骨質疏鬆、膝關節退化、心臟病、曾動過何種手術...等。若完全健康，請填寫「無」。",
+          "required": true,
+          "errors": {
+            "required": "請填寫（若完全健康請填「無」）"
+          },
+          "store": {
+            "path": "payload.medicalHistory",
+            "valueType": "string",
+            "note": "自由文字原值；伺服器用原值判斷有沒有填"
+          },
+          "differsFromBooking": "booking 拆成 payload.hasMedicalCondition（是／否 存布林）＋ payload.medicalConditionNote（選填說明）；團課是一題必填自由文字，健康的人填「無」，沒有布林可篩"
+        }
+      ]
+    },
+    {
+      "id": "survey",
+      "title": "第三部分：其他調查",
+      "fields": [
+        {
+          "key": "source",
+          "label": "你是從哪裡得知練健康團體課程資訊的呢？",
+          "labelSuffix": "（單選）",
+          "type": "radio",
+          "showIf": {
+            "field": "$variant.hideSources",
+            "op": "falsy"
+          },
+          "options": [
+            {
+              "value": "官網"
+            },
+            {
+              "value": "社群",
+              "detail": {
+                "type": "select",
+                "placeholder": "請選擇平台",
+                "optionsSource": {
+                  "endpoint": "GET /api/public/referral-options",
+                  "firestore": "settings/referralOptions.social",
+                  "firestoreShape": "[{label: string, active?: boolean}]",
+                  "filter": "label trim 後非空且 active !== false，回傳 trim 後的 label",
+                  "missingField": "欄位不存在、文件不存在或讀取失敗時用 defaultOptions",
+                  "allInactive": "欄位存在但全部停用時回空陣列，前台整個隱藏這個主選項"
+                },
+                "defaultOptions": [
+                  "IG",
+                  "FB",
+                  "Threads",
+                  "Line",
+                  "YT",
+                  "Podcast"
+                ]
+              }
+            },
+            {
+              "value": "參觀"
+            },
+            {
+              "value": "電話詢問"
+            },
+            {
+              "value": "傳單/DM"
+            },
+            {
+              "value": "親友推薦"
+            },
+            {
+              "value": "練健康夥伴推薦",
+              "detail": {
+                "type": "text",
+                "placeholder": "請填寫同仁姓名"
+              }
+            },
+            {
+              "value": "醫師/醫療轉介",
+              "detail": {
+                "type": "text",
+                "placeholder": "請填寫醫師或院所名稱"
+              }
+            },
+            {
+              "value": "實體活動",
+              "detail": {
+                "type": "select",
+                "placeholder": "請選擇活動",
+                "optionsSource": {
+                  "endpoint": "GET /api/public/referral-options",
+                  "firestore": "settings/referralOptions.event",
+                  "firestoreShape": "[{label: string, active?: boolean}]",
+                  "filter": "label trim 後非空且 active !== false，回傳 trim 後的 label",
+                  "missingField": "欄位不存在、文件不存在或讀取失敗時用 defaultOptions",
+                  "allInactive": "欄位存在但全部停用時回空陣列，前台整個隱藏這個主選項"
+                },
+                "defaultOptions": [
+                  "聖誕老人賽事",
+                  "高齡博覽會"
+                ]
+              }
+            },
+            {
+              "value": "其他",
+              "detail": {
+                "type": "text",
+                "placeholder": "請說明從哪裡得知"
+              }
+            }
+          ],
+          "optionRules": [
+            "有細項下拉、但下拉一個選項都沒有時，整個主選項不顯示",
+            "換主選項時清空細項",
+            "下拉選項在伺服器輸出頁面時就抓（useFetch，SSR）；API 本身有 30 秒伺服器快取，頁面另有 CDN 快取（s-maxage=30、stale-while-revalidate=120）"
+          ],
+          "optionsSharedWith": "booking（config/referralSources.ts）",
+          "detailKey": "sourceDetail",
+          "required": true,
+          "detailRequired": "選到有細項的選項時，細項也必填（去掉前後空白後不可空）",
+          "errors": {
+            "required": "請選擇從哪裡得知練健康",
+            "detailRequired": "顯示該細項的 placeholder 文字"
+          },
+          "serverChecks": false,
+          "store": {
+            "path": "payload.source",
+            "valueType": "string[]",
+            "compose": "有細項時存「<主選項>: <細項>」（細項 trim、冒號後一個半形空格），沒有就只存主選項；單選但刻意存成長度 1 的陣列",
+            "whenHidden": [],
+            "serverShape": "伺服器收到陣列就原樣存，收到單一字串包成陣列，falsy 存 []；不檢查內容"
+          },
+          "differsFromBooking": "選項清單與組字方式和 booking 相同，但存的 key 是 payload.source（單數），booking 是 payload.sources；booking 另寫頂層 sourceChannel（「, 」串接），團課的 sourceChannel 永遠是 null。booking 選「參觀」「電話詢問」會讓同意事項變選填，團課沒有同意事項所以沒有這個作用；booking 有 $variant.extraSources，團課沒有。題目文字也不同（booking 是「從哪裡得知練健康？」）。"
+        },
+        {
+          "key": "note",
+          "label": "備註與其他想補充說明的細節",
+          "labelSuffix": "（選填）",
+          "type": "textarea",
+          "placeholder": "例如想找同伴一起上課、特定教練指定需求、或其他特殊身體狀況備忘...",
+          "required": false,
+          "store": {
+            "path": "message",
+            "empty": null,
+            "alsoWrites": {
+              "path": "payload.note",
+              "value": "同一個原值（空的存 null）"
+            },
+            "note": "存兩份：頂層 message 與 payload.note"
+          },
+          "differsFromBooking": "booking 的 key 是 message，只存頂層 message"
+        }
+      ]
+    }
+  ],
+  "consent": {
+    "key": null,
+    "note": "沒有同意事項勾選框，也沒有條文；只有送出鈕下方一句隱含同意文字。沒有任何同意紀錄存進名單。",
+    "implicitConsentText": "送出即表示同意我們以電話或 LINE 與你聯繫確認開課梯次，個人資料僅用於此報名目的。",
+    "differsFromBooking": "booking 有七條同意事項＋勾選框（agreeToTerms，依得知管道決定是否必填，同樣不存）"
+  },
+  "hiddenFields": [
+    {
+      "key": "sourcePage",
+      "value": "/group-booking",
+      "store": {
+        "path": "sourcePage",
+        "fallback": "/group-booking"
+      }
+    },
+    {
+      "key": "formVariant",
+      "value": "網址參數 v 的原字",
+      "store": {
+        "path": "payload.formVariant",
+        "empty": null
+      },
+      "valueType": "string | string[] | null（網址重複帶 v 時是陣列；變體只取第一個）"
+    },
+    {
+      "key": "company",
+      "value": "$variant.company",
+      "store": {
+        "path": "payload.company",
+        "empty": null
+      },
+      "note": "目前沒有任何變體設 company，所以永遠是 null；團課沒有 co 參數"
+    },
+    {
+      "key": "leadSource",
+      "value": "網址參數 src（單一非空字串），沒有就用 $variant.leadSource",
+      "store": {
+        "path": "payload.leadSource",
+        "empty": null
+      }
+    },
+    {
+      "key": "utm",
+      "value": "cookie lkk_utm（保存 30 天）",
+      "shape": {
+        "source": "string（選填）",
+        "medium": "string（選填）",
+        "campaign": "string（選填）",
+        "content": "string（選填）",
+        "term": "string（選填）",
+        "referrer": "string（選填）",
+        "landingPage": "string（選填，含查詢字串的完整路徑）",
+        "capturedAt": "ISO 時間字串（選填，第一次捕捉這組 utm 的時間，不是送出時間）"
+      },
+      "store": {
+        "path": "payload.utm",
+        "empty": null
+      },
+      "capture": "任何頁面進站或站內換頁時（只在瀏覽器端，plugins/utm.client.ts），網址帶非空 utm_*（重複帶取第一個）就處理，不限 /group-booking：每個值 trim 後截 200 字。只比對 source／medium／campaign／content／term 五個值，五個都和 cookie 相同就不重寫（landingPage、referrer、capturedAt 保留舊的）；有任一不同就整組覆蓋，只留這次網址有的 utm 鍵（沒帶的舊鍵不合併、直接消失），並重設 referrer（document.referrer）、landingPage（fullPath）、capturedAt。"
+    }
+  ],
+  "requestBody": {
+    "note": "前端把整個表單狀態展開送出，再覆蓋 source、sourcePage、formVariant、company、leadSource、utm。所以 body 也帶著 sourceDetail（伺服器忽略），以及切回本人填寫前填過的 relationship／fillerName／contactPhone（伺服器在 isFillerSelf 不是「否」時存 null，但這些原值仍會傳給兩封信的函式，信件只在「否」時顯示）。",
+    "keys": [
+      "name",
+      "gender",
+      "ageRange",
+      "phone",
+      "email",
+      "isFillerSelf",
+      "fillerName",
+      "relationship",
+      "contactPhone",
+      "course",
+      "store",
+      "preferredTime",
+      "experience",
+      "medicalHistory",
+      "source",
+      "sourceDetail",
+      "note",
+      "sourcePage",
+      "formVariant",
+      "company",
+      "leadSource",
+      "utm"
+    ]
+  },
+  "record": {
+    "collection": "leads",
+    "systemFields": {
+      "type": "group_class",
+      "status": "new（後台可改：new／contacted／scheduled／completed／cancelled）",
+      "internalNote": "null（後台可改）",
+      "createdAt": "Firestore Timestamp",
+      "updatedAt": "Firestore Timestamp"
+    },
+    "topLevel": [
+      "type",
+      "name",
+      "phone",
+      "email",
+      "storeId",
+      "sourcePage",
+      "sourceChannel",
+      "message",
+      "payload",
+      "status",
+      "internalNote",
+      "createdAt",
+      "updatedAt"
+    ],
+    "topLevelValues": {
+      "storeId": "永遠 null",
+      "sourceChannel": "永遠 null",
+      "phone": "正規化後（刪空白與橫線）",
+      "message": "note 原值或 null"
+    },
+    "payload": [
+      "gender",
+      "ageRange",
+      "isFillerSelf",
+      "fillerName",
+      "relationship",
+      "contactPhone",
+      "course",
+      "store",
+      "storeName",
+      "preferredTime",
+      "experience",
+      "medicalHistory",
+      "source",
+      "note",
+      "utm",
+      "formVariant",
+      "company",
+      "leadSource"
+    ],
+    "notStored": [
+      "sourceDetail（併入 source）",
+      "課程價目（只出現在確認信）",
+      "同意紀錄（表單沒有同意勾選框）",
+      "題目版本",
+      "鎖定分店／鎖定課程的狀態（只能從 formVariant 推）",
+      "送出當下的變體設定（hideSources／lockStore／lockCourse／hero），只存 ?v= 原字",
+      "IP、User-Agent、請求標頭（刻意不記 IP，見 composables/useUtm.ts 註解）",
+      "兩封信是否寄出（只寫 log）",
+      "LINE 預填訊息與使用者是否傳送"
+    ]
+  },
+  "hiddenFieldsTrust": "這些值由前端算好後隨 body 送出，伺服器原樣存、不驗證；直接呼叫 API 可寫入任意值。讀名單的系統不要把 sourcePage、payload.company、payload.leadSource、payload.formVariant、payload.utm 當成已驗證的資料（sourcePage 只有在 falsy 時才由伺服器補 /group-booking）。",
+  "knownQuirks": [
+    "年齡區間邊界重疊（50、65 歲各落在兩個區間），而且「50–65歲」用的是 en dash（U+2013）。",
+    "重訓經驗「規律訓練中」存成「有規律訓練習慣」（畫面字與存的字不同）。",
+    "選填的 radio（重訓經驗）選了就不能取消。",
+    "選了舉重團班後分店自動改成南京店；改回其他課程時分店不會還原，仍是南京店。",
+    "舉重團班只限南京店的規則只有前端擋，伺服器不檢查。",
+    "變體同時 lockCourse 舉重團班、lockStore 南京以外時，課程選項隱藏、送出被「舉重團班目前僅南京店開班」擋下，使用者無法修正（程式刻意不自動改分店）；目前沒有變體這樣設定。",
+    "lockStore／lockCourse 對不到選項時靜默當作沒鎖定。",
+    "分店清單寫死在頁面；頂層 storeId 永遠是 null。名單列表 API 只對有 storeId 的 store_staff 依 storeId 篩選，所以這類店員在 /admin/group-classes 看到空清單，沒有 storeId 的店員看得到全部；儀表板「最新名單」不篩分店，店員仍看得到團課名單（分店顯示 -）。",
+    "備註存兩份（頂層 message 與 payload.note）。",
+    "伺服器必填檢查用原值，只打空白的 name、medicalHistory、fillerName 會通過伺服器（前端會擋）；只打空白或橫線的 contactPhone 也會通過，存成 null。",
+    "伺服器不檢查型別，直接呼叫 API 可把欄位存成陣列、物件或數字。",
+    "沒有驗證碼、頻率限制或重複送出檢查；每次通過檢查的 POST 都新增一筆名單並寄確認信到送來的 email。",
+    "得知管道的必填與細項必填只在前端；被變體隱藏時存 []。",
+    "contactPhone 伺服器不驗格式；信件裡顯示的是原值，名單存的是正規化後的值。",
+    "電話格式錯誤訊息在兩支電話欄位不同：學員手機「手機格式不正確（09 開頭共 10 碼）」、方便聯繫的電話「請輸入有效的手機號碼」；placeholder 也不同（0987654321／0912345678）。",
+    "「是否為你本人親自填寫？」的錯誤訊息只有「請選擇」兩個字。",
+    "錯誤只在按送出時出現、改了欄位也不會消失；送出失敗時不會捲動或聚焦到第一個錯誤，也沒有總結訊息。",
+    "Email 用原值比對、不另外 trim，但 type=email 的輸入框會由瀏覽器先刪前後 ASCII 空白；只有前後是全形空白（U+3000）等非 ASCII 空白時，前端與伺服器才會判定格式錯誤。直接呼叫 API 時前後半形空白也會被擋。",
+    "formVariant 在網址重複帶 v 時存成陣列。",
+    "伺服器 log 會印出姓名與手機。",
+    "送出中文字「送出中…」用的是 U+2026，和 booking 的「送出中...」不同。",
+    "空 body、JSON null、application/json 的壞 JSON 都回 500「系統錯誤，請稍後再試」，不是 400。"
+  ],
+  "differencesFromBooking": [
+    {
+      "concept": "名單類型與端點",
+      "booking": "type booking，POST /api/leads/booking",
+      "groupBooking": "type group_class，POST /api/leads/group-class"
+    },
+    {
+      "concept": "學員年齡",
+      "booking": "payload.birthDate（YYYY-MM-DD，必填，範圍 1920-01-01～2010-01-01）",
+      "groupBooking": "payload.ageRange（50歲以下／50–65歲／65歲以上），沒有生日"
+    },
+    {
+      "concept": "手機",
+      "booking": "頂層 phone 存原值，原值比對 ^09\\d{8}$；label「學員手機」",
+      "groupBooking": "頂層 phone 存刪掉空白與橫線後的值，正規化後比對；label「手機號碼」"
+    },
+    {
+      "concept": "Email",
+      "booking": "選填，空的存 null，有填才寄確認信",
+      "groupBooking": "必填，每筆都會嘗試寄確認信（SMTP 設定齊全時）"
+    },
+    {
+      "concept": "LINE ID",
+      "booking": "payload.line（選填）",
+      "groupBooking": "沒有這題"
+    },
+    {
+      "concept": "本人／代填",
+      "booking": "payload.filledBySelf 布林（true＝本人），預設本人",
+      "groupBooking": "payload.isFillerSelf 字串「是」「否」，沒有預設"
+    },
+    {
+      "concept": "代填者姓名",
+      "booking": "payload.bookerName（預約者姓名）",
+      "groupBooking": "payload.fillerName（報名者姓名）"
+    },
+    {
+      "concept": "方便聯繫的電話",
+      "booking": "payload.contactPhone 原值；本人填寫或代填留空時存學員手機",
+      "groupBooking": "payload.contactPhone 正規化值；本人填寫或留空時存 null"
+    },
+    {
+      "concept": "與學員的關係",
+      "booking": "payload.relationship，選項共用 config/formOptions.ts",
+      "groupBooking": "相同 key、相同選項、相同「練健康同仁」規則"
+    },
+    {
+      "concept": "健康狀況",
+      "booking": "payload.hasMedicalCondition 布林＋ payload.medicalConditionNote",
+      "groupBooking": "payload.medicalHistory 必填自由文字（健康填「無」）"
+    },
+    {
+      "concept": "分店",
+      "booking": "頂層 storeId（stores 文件 id 或內建代號），選項來自 stores API",
+      "groupBooking": "頂層 storeId 為 null；payload.store「店名｜地址」＋ payload.storeName「店名」，選項寫死"
+    },
+    {
+      "concept": "偏好時段",
+      "booking": "payload.preferredTime 必填複選 string[]",
+      "groupBooking": "payload.preferredTime 選填自由文字 string 或 null（同 key 不同型別）"
+    },
+    {
+      "concept": "得知管道",
+      "booking": "payload.sources（string[]）＋頂層 sourceChannel（「, 」串接）",
+      "groupBooking": "payload.source（string[]，單數 key），頂層 sourceChannel 為 null；選項清單與組字相同"
+    },
+    {
+      "concept": "備註",
+      "booking": "頂層 message",
+      "groupBooking": "頂層 message ＋ payload.note（同值兩份）"
+    },
+    {
+      "concept": "課程",
+      "booking": "沒有（個人教練體驗課）",
+      "groupBooking": "payload.course（三選一）"
+    },
+    {
+      "concept": "其他 booking 才有的欄位",
+      "booking": "payload.paymentMethod、payload.exerciseGoals、payload.exerciseGoalOther、payload.gender（下拉）",
+      "groupBooking": "沒有付款方式與訓練目的；gender 同 key 同值（radio）；另有 payload.experience"
+    },
+    {
+      "concept": "同意事項",
+      "booking": "七條＋勾選框（不存）",
+      "groupBooking": "沒有，只有隱含同意文字"
+    },
+    {
+      "concept": "變體與網址參數",
+      "booking": "config/bookingVariants.ts（lockStoreId、hideSources、extraSources、allAgesFree、company、leadSource、hero），另有 co 參數",
+      "groupBooking": "config/groupClassVariants.ts（lockStore、lockCourse、hideSources、company、leadSource、hero），沒有 co；目前只有 default"
+    },
+    {
+      "concept": "送出失敗",
+      "booking": "固定 alert「送出失敗，請稍後再試」或「網路錯誤，請稍後再試」",
+      "groupBooking": "alert 伺服器回傳的錯誤原文，沒有才用「送出失敗，請稍後再試」"
+    },
+    {
+      "concept": "後台與權限",
+      "booking": "/admin/leads；有 storeId 的 store_staff 只看自己店，沒有 storeId 的 store_staff 看全部；儀表板「最新名單」不篩分店",
+      "groupBooking": "/admin/group-classes；有 storeId 的 store_staff 看到空清單（storeId 為 null），沒有 storeId 的看全部；儀表板「最新名單」仍會出現團課名單（分店顯示 -）"
+    }
+  ]
+}

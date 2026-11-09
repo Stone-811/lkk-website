@@ -1,0 +1,460 @@
+{
+  "formId": "cooperation",
+  "schemaVersion": "1.0",
+  "describes": "練健康官網 /cooperation「合作洽詢」表單的現況（2026-11-09，依 dev 分支程式碼）。這份是描述檔，網站本身還沒有讀它。頁面沒有網址變體（沒有 ?v= ?co= ?src=），也沒有讀任何 config/*.ts。",
+  "sourceOfTruth": [
+    "pages/cooperation.vue",
+    "server/api/leads/cooperation.post.ts",
+    "server/utils/leads.ts",
+    "server/utils/email.ts",
+    "composables/useUtm.ts",
+    "plugins/utm.client.ts",
+    "components/layout/MobileBookingButton.vue（頁面上疊加的手機版浮動按鈕）",
+    "pages/admin/cooperation.vue（後台讀取方，非表單本身）"
+  ],
+  "conventions": {
+    "condition": "條件寫法：{\"field\":<欄位 key>,\"op\":<運算>,\"value\":<值>}；運算有 eq、neq、in、notIn、includes（多選含某值）、truthy、falsy、gte。field 以 \"$variant.\" 開頭時讀網址變體設定、以 \"$derived.\" 開頭時讀衍生值、以 \"$state.\" 開頭時讀畫面狀態（例如 isSubmitting）。多個條件用 {\"all\":[…]} 或 {\"any\":[…]} 組合。本表單沒有 $variant 與 $derived。",
+    "required": "required 為 true／false，或一個條件物件（條件成立才必填）。",
+    "showIf": "showIf 不成立時欄位不顯示、不驗證，送出值見各欄位 store.whenHidden。本表單所有欄位都一直顯示。",
+    "options": "選項的 value 就是存進資料庫的字，label 是畫面上的字；兩者相同時只寫 value。value 收到名單後不要改字（舊名單無法回填，CSV 會裂成兩種寫法）；選項只新增或停用。",
+    "store.path": "存進 Firestore 集合 leads 的位置：頂層欄位直接寫名稱，其他寫 payload.<名稱>。",
+    "trim": "必填判斷用去掉前後空白後的值；存進資料庫的是原值（沒有 trim），除非另外註明（本表單的 email 例外，見該欄位）。",
+    "arrays": "多選欄位存成陣列時，順序是使用者點選的先後，不是選項順序。本表單沒有多選欄位。",
+    "rawValue": "「有值」若沒特別註明，指原值非空字串（只打空白也算有值）；格式檢查也用原值，不去前後空白（phone 例外，見該欄位）。",
+    "optionRef": "【本表單新增】字串值寫成 \"$option.<欄位 key>.<屬性>\" 時，表示該欄位「目前選中的選項」上的那個屬性（例如 \"$option.cooperationType.messagePlaceholder\"＝目前選中洽詢項目的 messagePlaceholder）。",
+    "type.tabs": "【本表單新增】type \"tabs\"：一排並排按鈕（不是 <select>／radio），單選、一定有一個被選中、沒有「未選」狀態；可放在 <form> 外面。存法與 radio 相同（存選中選項的 value）。",
+    "fieldKeys": "【本表單新增】欄位上的額外鍵：typeNote（type 的補充說明）；rows（textarea 行數）；labelSuffix（標籤後固定的字）；labelSuffixWhenOptional（required 條件不成立時標籤後的字，成立時改顯示「*」）；options[].messagePlaceholder（選中該選項時 message 的 placeholder，搭配 optionRef）；validation[].preprocess（比對前對值做的處理，只用於比對）；validation[].accepts／rejects（實測會通過／被擋的範例值，非完整清單）；store.valueType（存入的型別）；store.empty（沒填時存的值）。",
+    "submitKeys": "【本表單新增】submit.validationOrder：字串陣列，每項「欄位 規則 → 「錯誤訊息」」，依序檢查；submit.serverValidation：伺服器實際的檢查，依文字描述；submit.disabledNote：disabledIf 之外的停用說明；context.pageMeta：表單周圍的頁面文案與疊加元件；record.constantFields：伺服器寫死、與使用者輸入無關的欄位值。",
+    "topLevelExtra": "【本表單新增】頂層多了兩區：crossFormDifferences（與 /booking、後台、CLAUDE.md 的差異，給同時讀三份 schema 的系統用）與 knownQuirks（現況的怪異行為與 bug，只記錄、未修）。",
+    "errorDisplay": "【本表單新增】錯誤不是逐欄顯示：按送出時依 submit.validationOrder 由上往下檢查，遇到第一個失敗就停，只在表單最上方的紅框顯示那一句（不捲動、不聚焦、不標紅欄位）。紅框要等下一次按送出、而且 handleSubmit 真的執行時才會清除或更新，修改欄位不會清。按送出時若被瀏覽器內建 Email 檢查擋下，handleSubmit 不會執行，紅框會繼續顯示上一次的錯誤；切換上方洽詢項目分頁也不會清除紅框。",
+    "serverTruthy": "【本表單新增】伺服器的必填檢查是 JavaScript 真值判斷（!value）：原值非空字串就算有值，不 trim，只打空白會通過；也不檢查型別（見 submit.serverValidation）。",
+    "nativeValidation": "【本表單新增】<form> 沒有 novalidate，所以瀏覽器內建的表單檢查會先跑：只有 type=\"email\" 會被檢查（欄位都沒有 required 屬性）。內建檢查不通過時瀏覽器跳出自己的提示（文字依瀏覽器而定），handleSubmit 根本不會執行。"
+  },
+  "submit": {
+    "endpoint": "POST /api/leads/cooperation",
+    "contentType": "application/json",
+    "contentTypeNote": "這是頁面送出的格式，伺服器不強制：application/x-www-form-urlencoded 也會被 h3 readBody 解析成全字串物件並可寫入（utm 會變成字串，重複的 key 變陣列）。",
+    "buttonText": "送出合作洽詢表單 →",
+    "submittingText": "送出中...",
+    "validationOrder": [
+      "organization 必填 → 「請填寫公司/單位名稱」",
+      "name 必填 → 「請填寫聯絡人姓名」",
+      "phone 必填 → 「請填寫聯絡電話」",
+      "phone 格式 → 「電話格式不正確，請輸入有效的手機或市話號碼」",
+      "email 必填 → 「請填寫電子郵件」",
+      "email 格式 → 「電子郵件格式不正確」",
+      "companySize（cooperationType 是「講座及課程邀約」時）→ 「請填寫規模人數」",
+      "budgetRange（cooperationType 是「講座及課程邀約」時）→ 「請填寫預算區間」",
+      "message 必填 → 「請填寫合作內容詳情」"
+    ],
+    "onFailure": {
+      "httpError": "表單上方紅框顯示伺服器回傳的 error 文字（error.data.error）；沒有就顯示「網路錯誤，請稍後再試」",
+      "networkError": "表單上方紅框顯示「網路錯誤，請稍後再試」",
+      "successFalse": "2xx 但 success 不是 true 時顯示 res.error 或「送出失敗，請稍後再試」；伺服器 2xx 一律 success:true，這條目前走不到",
+      "note": "與 /booking 不同：伺服器失敗／網路錯誤時這裡用頁內紅框、不用 alert，而且會顯示伺服器的錯誤文字。失敗時已填內容保留。"
+    },
+    "onSuccess": {
+      "container": "id=\"lead-success\"、data-form=\"cooperation\"（GTM 轉換靠它觸發，不要改）",
+      "title": "表單已送出！",
+      "body": "我們將於 3-5 個工作天內與你聯繫",
+      "againButton": {
+        "text": "填寫另一份表單",
+        "action": "回到空白表單"
+      },
+      "reset": "送出成功後 formData 全部清空；上方洽詢項目分頁（cooperationType）不重設，維持剛才選的那個",
+      "note": "成功區塊取代表單，但上方洽詢項目分頁仍顯示且可點；沒有 LINE 導流（與 /booking 不同）。伺服器回傳的 message 不顯示。成功後不捲動、不移動焦點（與 /booking 會捲到成功畫面不同）；表單換成較短的成功區塊後頁面變短，使用者可能看不到成功訊息。"
+    },
+    "serverValidation": [
+      "organization、name、phone、email、message、cooperationType 任一項不是真值 → 400「請填寫必要欄位」（只打空白會通過，見 conventions.serverTruthy）",
+      "cooperationType === 「講座及課程邀約」且 companySize 或 budgetRange 不是真值 → 400「請填寫規模人數與預算區間」",
+      "phone 去掉所有空白後不符合 ^(09\\d{8}|0\\d{1,2}-?\\d{3,4}-?\\d{4})$ → 400「電話格式不正確」",
+      "email 不符合 ^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$（原值，不去空白）→ 400「電子郵件格式不正確」",
+      "伺服器例外 → 500「系統錯誤，請稍後再試」：Content-Type 為 application/json 但 JSON 格式錯誤、body 為空或 null（解構出錯）、phone 是非字串真值（.replace 出錯）、Firestore 寫入失敗。body 是 JSON 字串／數字／陣列等非物件時解構不會出錯，會得到 400「請填寫必要欄位」",
+      "伺服器檢查順序：必要欄位 → 規模／預算 → 電話 → Email",
+      "不檢查型別：除 phone 外，任何真值（數字、陣列、物件）都會通過必填並原樣存入；email 以 String() 後比對（例如陣列 [\"a@b.co\"] 會過，並以陣列存入）；cooperationType 不是字串時（例如 [\"講座及課程邀約\"]）因為用 === 而跳過規模／預算檢查。經表單送出時一律是字串，直接呼叫 API 的名單不能假設這些欄位是字串",
+      "其他都不檢查：cooperationType 是否在三個選項內（任意字都會存）、lineId、各欄長度、sourcePage、utm 內容",
+      "沒有驗證碼（reCAPTCHA／Turnstile）、沒有頻率限制、沒有重複送出保護（只有前端按鈕停用）"
+    ],
+    "sideEffects": [
+      "寄管理者通知信（不等結果；主旨「【練健康】新合作洽詢表單 - <name>」）：需 SMTP_HOST、SMTP_USER、SMTP_PASS 齊全；收件人取 Firestore settings/notifications 的 emailRecipients（逗號分隔），文件不存在時改用環境變數 NOTIFICATION_EMAIL；emailOnNewLead 為 false、沒有收件人或讀設定失敗就不寄。信中把 organization 標成「公司/單位」、message 標成「留言內容」、companySize 標成「公司規模」。信中「前往後台查看詳情 →」連到 <NUXT_PUBLIC_SITE_URL>/admin/leads，但該頁只列 booking；合作洽詢名單實際在 /admin/cooperation",
+      "寄客戶確認信給 email（不等結果；主旨「【練健康】感謝您的合作洽詢」）：SMTP 環境變數齊全時每筆都寄（email 必填）；信中回列公司/單位、聯絡人、聯絡電話、Email、LINE ID、洽詢類型、規模人數、預算區間、合作內容詳情（有值才列，已 HTML 跳脫）",
+      "寄信成敗不影響回應：寄信失敗或載入 email 模組失敗只記 log，名單已寫入、一律回 success:true",
+      "API 本身在伺服器 log 印出 id、name、organization、cooperationType；寄確認信成功時 email.ts 另外印出填表者 Email（[cooperation] Confirmation sent to: <email>），寄通知信成功時印出管理者收件人。電話不印。"
+    ],
+    "disabledIf": {
+      "field": "$state.isSubmitting",
+      "op": "truthy"
+    },
+    "disabledNote": "送出中所有輸入框也一起停用；上方洽詢項目分頁按鈕不停用。沒有同意勾選框，所以不會因同意事項停用。",
+    "belowButtonNotes": [
+      "送出即代表你同意本網頁資訊將僅作為商務對接與回覆洽詢使用。"
+    ],
+    "response": {
+      "ok": {
+        "success": true,
+        "message": "表單已送出，我們將於 3-5 個工作天內與您聯繫"
+      },
+      "error": {
+        "success": false,
+        "error": "<訊息>"
+      }
+    }
+  },
+  "context": {
+    "description": "本表單不讀網址參數（沒有 v／co／src），所以沒有 variants、freeTrialPartners、company、leadSource、formVariant。唯一由網址間接帶入的是 utm（cookie，見 hiddenFields）。",
+    "params": {},
+    "pageMeta": {
+      "title": "合作洽詢｜練健康 LKK Wellness Center",
+      "metaDescription": "練健康與醫療單位、企業、學術機構合作，提供講座、企業健康促進、媒體採訪與異業合作服務。",
+      "formAnchor": "#work（頁首「填寫洽詢表單 →」按鈕捲到這裡）",
+      "sectionEyebrow": "Contact Form",
+      "sectionHeading": "與我們攜手，共創雙贏的健康價值",
+      "introText": "不論你是需要專業授課的醫療學術單位、期望舉辦員工健康促進講座的企業品牌，或是海外地區的訓練營授權洽詢。歡迎填寫下方表單，團隊將於 3-5 個工作天內由專人主動與你聯繫。",
+      "mobileOverlay": "手機版（md 以下）底部固定顯示「立即預約體驗」按鈕（z-50，連到 /booking#form，另一張表單）；MobileBookingButton 的 HIDDEN_PATHS 只有 /booking、/group-booking、/lkk4，本頁沒有隱藏它，填表時會疊在畫面底部"
+    }
+  },
+  "derived": {},
+  "sections": [
+    {
+      "id": "enquiry-type",
+      "title": "請選擇你的洽詢項目：",
+      "fields": [
+        {
+          "key": "cooperationType",
+          "label": "請選擇你的洽詢項目：",
+          "type": "tabs",
+          "typeNote": "三顆並排的按鈕（不是 <select>／radio），在 <form> 外面；一定有一個被選中，沒有「未選」狀態（見 conventions.type.tabs）",
+          "default": "講座及課程邀約",
+          "options": [
+            {
+              "value": "講座及課程邀約",
+              "label": "🎤 講座及課程邀約",
+              "messagePlaceholder": "請簡述你的講座及課程需求，例如：預計舉辦日期、聽眾背景、期望講授的主題方向、授課形式...等。",
+              "note": "選這項時 companySize、budgetRange 改必填"
+            },
+            {
+              "value": "採訪邀約",
+              "label": "📰 採訪邀約",
+              "messagePlaceholder": "請簡述你的採訪需求，例如：預計採訪日期、報導主題、採訪形式...等。"
+            },
+            {
+              "value": "異業合作",
+              "label": "🤝 異業合作",
+              "messagePlaceholder": "請簡述你的合作提案，例如：商品或品牌曝光、團購合作、海外教練培訓授權洽談、加盟...等。"
+            }
+          ],
+          "optionsSharedWith": "pages/admin/cooperation.vue 的篩選清單（手動對齊，不是共用 config）；server/api/leads/cooperation.post.ts 寫死「講座及課程邀約」判斷規模／預算必填",
+          "required": true,
+          "valueRules": [
+            "切換分頁不會清空 companySize、budgetRange、message；切到非講座類型時已填的規模／預算照樣送出並存進名單",
+            "切換分頁會改變 message 的 placeholder，以及規模人數／預算區間標籤後的「*」或「(選填)」"
+          ],
+          "store": {
+            "path": "payload.cooperationType",
+            "valueType": "string（只有經表單送出時保證；直接呼叫 API 可存任意真值，見 submit.serverValidation）",
+            "note": "存 value（不含 emoji）。程式註解還寫著舊選項「講座邀約／企業健康促進邀請／媒體採訪與異業合作」，CLAUDE.md 也是舊的三項；較早的名單可能是舊值（未查 Firestore，未證實）。加盟表單與 /api/leads/franchise 已於 bfa10d3 刪除；只有舊的 type=franchise 名單有同名的 payload.cooperationType（加盟合作類型，可能是 null），意思不同。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "title": null,
+      "titleNote": "表單沒有分區標題，以下依畫面由上到下排列",
+      "fields": [
+        {
+          "key": "organization",
+          "label": "公司 / 單位名稱",
+          "type": "text",
+          "placeholder": "請輸入完整的公司或單位名稱",
+          "required": true,
+          "errors": {
+            "required": "請填寫公司/單位名稱"
+          },
+          "store": {
+            "path": "payload.organization",
+            "note": "原值，不 trim"
+          }
+        },
+        {
+          "key": "name",
+          "label": "聯絡人姓名",
+          "type": "text",
+          "placeholder": "請輸入聯絡人姓名",
+          "required": true,
+          "errors": {
+            "required": "請填寫聯絡人姓名"
+          },
+          "store": {
+            "path": "name",
+            "note": "原值，不 trim。是聯絡窗口，不是學員"
+          }
+        },
+        {
+          "key": "phone",
+          "label": "聯絡電話",
+          "type": "tel",
+          "placeholder": "請輸入你的聯絡電話",
+          "required": true,
+          "validation": [
+            {
+              "rule": "pattern",
+              "value": "^(09\\d{8}|0\\d{1,2}-?\\d{3,4}-?\\d{4})$",
+              "preprocess": "比對前去掉所有空白字元（JS \\s，含全形空白與中間的空白）；只用於比對，存的是原值",
+              "message": "電話格式不正確，請輸入有效的手機或市話號碼",
+              "when": "去掉前後空白後有值才檢查（必填檢查在前）",
+              "accepts": [
+                "0912345678",
+                "0912 345 678",
+                "0912　345678（全形空白也會被 \\s 去掉）",
+                "02-2500-0131",
+                "0225000131",
+                "037-123-4567",
+                "049-2345678",
+                "02-250-0131",
+                "091234567（9 碼也會過，被當成市話）",
+                "09123456789（11 碼也會過：0+91+2345+6789 走市話分支）",
+                "0800123456（不加橫線的 0800 會過）"
+              ],
+              "rejects": [
+                "0912-345-678",
+                "0912-345678",
+                "(02)2500-0131",
+                "+886912345678",
+                "02-2500-0131#11（分機）",
+                "0800-123-456（加橫線的 0800 才被擋）",
+                "全形數字"
+              ]
+            }
+          ],
+          "errors": {
+            "required": "請填寫聯絡電話"
+          },
+          "store": {
+            "path": "phone",
+            "note": "原值：可能含空白、橫線、前後空白；與 /booking 只收 10 碼手機不同，讀名單時要自己正規化"
+          }
+        },
+        {
+          "key": "email",
+          "label": "電子郵件",
+          "type": "email",
+          "placeholder": "example@email.com",
+          "required": true,
+          "validation": [
+            {
+              "rule": "pattern",
+              "value": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+              "message": "電子郵件格式不正確",
+              "when": "去掉前後空白後有值才檢查（必填檢查在前）",
+              "note": "用 formData.email 比對。瀏覽器的 type=email 值淨化已先去掉前後 ASCII 空白與換行（依 HTML 規範，未在本機實測），所以只打半形空白會變成空字串、顯示「請填寫電子郵件」；全形空白不會被去掉，會被這條規則擋下。另外瀏覽器內建 type=email 檢查會先跑（見 conventions.nativeValidation）：像 a@b 這種瀏覽器放行但這條規則擋下；本機部分含中文等非 ASCII 字元的地址會先被瀏覽器擋下、顯示瀏覽器自己的提示"
+            }
+          ],
+          "errors": {
+            "required": "請填寫電子郵件"
+          },
+          "store": {
+            "path": "email",
+            "note": "伺服器寫 email || null，不 trim；但 email 必填，經表單送出時不會是 null。conventions.trim 的「存原值」在這裡例外：經表單送出時瀏覽器已去掉前後半形空白與換行，存進去的實際上是去過前後空白的值（全形空白不會被去掉，但會被格式規則擋下）；只有直接呼叫 API 才可能送含空白的值，而含空白會被伺服器 emailRegex 擋下。"
+          }
+        },
+        {
+          "key": "lineId",
+          "label": "Line ID",
+          "labelSuffix": "(選填)",
+          "type": "text",
+          "placeholder": "請輸入 Line ID 以利快速聯絡",
+          "required": false,
+          "store": {
+            "path": "payload.lineId",
+            "empty": null
+          }
+        },
+        {
+          "key": "companySize",
+          "label": "規模人數",
+          "labelSuffixWhenOptional": "(選填)",
+          "type": "text",
+          "placeholder": "例如：50 人、100-200 人",
+          "required": {
+            "field": "cooperationType",
+            "op": "eq",
+            "value": "講座及課程邀約"
+          },
+          "errors": {
+            "required": "請填寫規模人數"
+          },
+          "store": {
+            "path": "payload.companySize",
+            "valueType": "string（自由文字，不是數字也不是選項）",
+            "empty": null
+          }
+        },
+        {
+          "key": "budgetRange",
+          "label": "預算區間",
+          "labelSuffixWhenOptional": "(選填)",
+          "type": "text",
+          "placeholder": "例如：5 萬以下、5-10 萬、10 萬以上",
+          "required": {
+            "field": "cooperationType",
+            "op": "eq",
+            "value": "講座及課程邀約"
+          },
+          "errors": {
+            "required": "請填寫預算區間"
+          },
+          "store": {
+            "path": "payload.budgetRange",
+            "valueType": "string（自由文字，不是選項）",
+            "empty": null
+          }
+        },
+        {
+          "key": "message",
+          "label": "合作內容詳情",
+          "type": "textarea",
+          "rows": 4,
+          "placeholder": "$option.cooperationType.messagePlaceholder",
+          "placeholderNote": "依目前選中的 cooperationType 而變（見 conventions.optionRef 與 enquiry-type 的 options）",
+          "required": true,
+          "errors": {
+            "required": "請填寫合作內容詳情"
+          },
+          "store": {
+            "path": "message",
+            "note": "原值，不 trim"
+          }
+        }
+      ]
+    }
+  ],
+  "consent": {
+    "key": null,
+    "type": "none",
+    "note": "沒有同意勾選框，只有按鈕下方一句默示同意文字；沒有存進名單",
+    "implicitConsentText": "送出即代表你同意本網頁資訊將僅作為商務對接與回覆洽詢使用。",
+    "store": {
+      "path": null
+    }
+  },
+  "hiddenFields": [
+    {
+      "key": "sourcePage",
+      "value": "/cooperation",
+      "store": {
+        "path": "sourcePage",
+        "fallback": "/cooperation",
+        "note": "伺服器存 sourcePage || '/cooperation'，不驗證內容"
+      }
+    },
+    {
+      "key": "utm",
+      "value": "cookie lkk_utm（保存 30 天），送出當下讀取",
+      "shape": {
+        "source": "string（選填）",
+        "medium": "string（選填）",
+        "campaign": "string（選填）",
+        "content": "string（選填）",
+        "term": "string（選填）",
+        "referrer": "string（選填，捕捉當下的 document.referrer，不截斷）",
+        "landingPage": "string（選填，route.fullPath：含查詢字串與 # 錨點的完整路徑，不截斷）",
+        "capturedAt": "ISO 時間字串（選填，第一次捕捉這組 utm 的時間，不是送出時間）"
+      },
+      "store": {
+        "path": "payload.utm",
+        "empty": null
+      },
+      "capture": "任何頁面進站或站內換頁時，網址帶 utm_* 就寫入 cookie（不限 /cooperation）；五個 utm 值（source、medium、campaign、content、term）trim 後截到 200 字，referrer 與 landingPage 不截斷；若五個 utm 值與 cookie 現有值完全相同就不重寫（landingPage、referrer、capturedAt 維持第一次捕捉時的值，30 天效期也不會延長），否則整組覆蓋（以最後一次為準）。與 /booking 同一顆 cookie、同一個寫法。"
+    }
+  ],
+  "record": {
+    "collection": "leads",
+    "systemFields": {
+      "type": "cooperation",
+      "status": "new（後台可改：new／contacted／scheduled／completed／cancelled）",
+      "internalNote": "null（後台可改）",
+      "createdAt": "Firestore Timestamp",
+      "updatedAt": "Firestore Timestamp"
+    },
+    "constantFields": {
+      "storeId": null,
+      "sourceChannel": null
+    },
+    "topLevel": [
+      "type",
+      "name",
+      "phone",
+      "email",
+      "storeId",
+      "sourcePage",
+      "sourceChannel",
+      "message",
+      "payload",
+      "status",
+      "internalNote",
+      "createdAt",
+      "updatedAt"
+    ],
+    "payload": [
+      "cooperationType",
+      "organization",
+      "lineId",
+      "companySize",
+      "budgetRange",
+      "utm"
+    ],
+    "notStored": [
+      "畫面上的洽詢項目 label（含 emoji）與分頁索引，只存 value",
+      "默示同意（沒有勾選框，也沒記錄條文版本）",
+      "題目版本",
+      "前端送出的其他多餘欄位（伺服器只取上列 key）"
+    ]
+  },
+  "crossFormDifferences": {
+    "vsBooking": [
+      "LINE：booking 存 payload.line，這裡存 payload.lineId",
+      "電話：booking 只收 ^09\\d{8}$ 手機原值；這裡收手機或市話、可含橫線與空白，存原值",
+      "Email：booking 選填（可能是 null）；這裡必填",
+      "message：booking 選填（備註，可能是 null）；這裡必填（合作內容詳情）",
+      "name：booking 是學員姓名；這裡是聯絡窗口姓名",
+      "公司：booking 的 payload.company 是網址變體帶入的合作公司（隱藏欄位）；這裡的 payload.organization 是填表者自己打的單位名稱，兩者不同概念、不同 key",
+      "storeId、sourceChannel：這裡固定 null；booking 的 storeId 必有值，sourceChannel 是得知管道以「, 」串接的字串，得知管道被變體隱藏或沒填時為 null",
+      "沒有 payload.formVariant、payload.company、payload.leadSource、payload.sources（得知管道）",
+      "錯誤顯示：booking 的前端驗證一次檢查全部欄位、逐欄顯示錯誤；只有伺服器失敗／網路錯誤才用 alert，而且不顯示伺服器文字。這裡的前端驗證只在表單上方紅框顯示第一個錯誤；HTTP 錯誤時同一個紅框顯示伺服器的 error 文字",
+      "送出成功：booking 會捲動到成功畫面頂端；這裡不捲動、不移動焦點",
+      "同意事項：booking 有七條條文與勾選框（同樣沒存）；這裡只有一句默示同意",
+      "伺服器錯誤訊息：電話「電話格式不正確」、Email「電子郵件格式不正確」（booking 是「手機號碼格式不正確」「Email 格式不正確」）"
+    ],
+    "vsAdmin": [
+      "後台 /admin/cooperation 把 cooperation 與 franchise 名單合併顯示；加盟表單與 /api/leads/franchise 已於 bfa10d3 刪除，franchise 名單都是舊資料，但其 payload.cooperationType（加盟合作類型，可能是 null，空時後台顯示「加盟」）與 payload.organization 和本表單同名，讀名單時要先看 type",
+      "後台篩選只認三個新值；其他值只會出現在「全部來源」",
+      "後台詳情與管理者通知信把 companySize 標成「公司規模」，表單與客戶確認信標成「規模人數」；管理者通知信把 message 標成「留言內容」、organization 標成「公司/單位」",
+      "後台 CSV 欄名是「單位」「Line ID」「留言內容」；lineId／organization 為 null 時匯出「-」而不是空白",
+      "後台 CSV 匯出沒有 companySize、budgetRange 兩欄；UTM 只有 source／medium／campaign／content 四欄（沒有 term、referrer、landingPage、capturedAt）；「目標區域」欄對合作洽詢名單恆為空"
+    ],
+    "vsClaudeMd": [
+      "CLAUDE.md 寫的 cooperationType 選項（講座邀約／企業健康促進邀請／媒體採訪與異業合作）是舊的",
+      "CLAUDE.md 寫的 API 路徑 /api/public/leads/cooperation 不存在，實際是 /api/leads/cooperation",
+      "CLAUDE.md 說表單有 reCAPTCHA／Turnstile，實際沒有"
+    ]
+  },
+  "knownQuirks": [
+    "前端必填用 trim、伺服器用真值：直接呼叫 API 時只有空白的值會被存進去",
+    "電話規則的市話分支會讓 9 碼（091234567）與 11 碼（09123456789）的 09 開頭數字通過；手機寫成 0912-345-678 或 0912-345678 反而被擋；0800 號碼不加橫線會過、加橫線會被擋",
+    "電話存原值，不正規化：同一支號碼可能出現「02-2500-0131」「0225000131」「 02 2500 0131 」等不同寫法",
+    "切換洽詢項目不清空規模人數／預算區間：選採訪邀約或異業合作時，名單仍可能有這兩個值（之前在講座分頁填的）",
+    "伺服器不檢查 cooperationType 是否為三個選項之一，直接呼叫 API 可寫入任意字；也不檢查任何欄位的型別",
+    "成功後表單清空但洽詢項目分頁不重設；「填寫另一份表單」會沿用上一次的分頁",
+    "成功後不捲動：長表單換成短成功區塊，使用者可能看不到成功訊息",
+    "錯誤紅框只顯示第一個錯誤，而且修改欄位、切換分頁都不會清除，要再按一次送出（被瀏覽器 Email 檢查擋下時也不會清）",
+    "res.success 為 false 的分支實際走不到（伺服器非 2xx 會被 $fetch 當成例外）",
+    "程式註解（pages/cooperation.vue 送出處）還寫著舊的三種洽詢類型名稱，與實際選項不符",
+    "瀏覽器內建 Email 檢查與程式的 Email 規則不一致，兩邊各擋各的（見 conventions.nativeValidation）",
+    "沒有長度上限：任何文字欄位、message 都不限長度（前端無 maxlength，伺服器不檢查）",
+    "客戶確認信寄到填入的 email，不驗證信箱所有權、無驗證碼／頻率限制，信中回列填寫的全部文字（已 HTML 跳脫）；直接呼叫 API 可讓網站寄出含任意文字的信到任意通過格式檢查的地址，同時每次都新增一筆名單",
+    "手機版底部「立即預約體驗」浮動按鈕在本頁不隱藏，會導去另一張表單（/booking#form）",
+    "管理者通知信的「前往後台查看詳情 →」連到 /admin/leads（只列 booking），找不到這筆合作洽詢名單"
+  ],
+  "hiddenFieldsTrust": "伺服器對所有 body 欄位都只做 submit.serverValidation 列出的檢查：sourcePage、utm 由前端送出，原樣存、不驗證；其他欄位也不檢查型別與長度。直接呼叫 API 可寫入任意值（含非字串）。"
+}
