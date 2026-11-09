@@ -42,6 +42,13 @@ async function fetchLeads(): Promise<AdminLead[]> {
 
 const storeFilterOptions = computed(() => stores.value.map((s) => ({ value: s.id, label: s.name })))
 
+// 儀表板「待處理名單」卡片連到 /admin/leads?status=new：進頁時把狀態篩選設成網址帶的值
+// （只認 LEAD_STATUS_FILTER_OPTIONS 裡有的值，其他當作沒帶）。之後照常可用篩選列或 chip 移除。
+const route = useRoute()
+const initialStatus = LEAD_STATUS_FILTER_OPTIONS.some((o) => o.value === route.query.status)
+  ? (route.query.status as string)
+  : 'all'
+
 const {
   isLoading, error,
   searchQuery, dateFrom, dateTo,
@@ -62,7 +69,7 @@ const {
     },
     {
       key: 'status', label: '狀態', widthClass: 'w-28', placeholder: '搜尋狀態…',
-      value: ref('all'),
+      value: ref(initialStatus),
       options: computed(() => LEAD_STATUS_FILTER_OPTIONS),
       match: (lead, v) => lead.status === v,
       chipLabel: (v) => LEAD_STATUS_FILTER_OPTIONS.find((o) => o.value === v)?.label || v,
