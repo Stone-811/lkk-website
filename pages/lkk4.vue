@@ -173,7 +173,7 @@ interface EntryFee {
 }
 const entryFees: EntryFee[] = [
   { name: '早鳥優惠價', price: '2,700', period: '2026/6/29 – 2026/7/12' },
-  { name: '一般報名費', price: '3,000', period: '2026/7/13 – 2026/11/7', current: true },
+  { name: '一般報名費', price: '3,000', period: '2026/7/13 – 2026/12/12 或額滿為止', current: true },
   // 團體接力賽依隊伍人數分三種價格，不是「每人一價」——
   // 所以用 tiers 而不是 price，卡片會改走另一種版面（見下方 v-if）
   {
@@ -256,7 +256,8 @@ const tshirtFits = [
   { body: '生理女', height: '165 cm', weight: '58 kg', size: 'M', fit: '略寬鬆' },
 ]
 
-const faqs = [
+/** link：答案後面接一條可點的網址（照業主給的原樣顯示網址本身） */
+const faqs: { q: string; a: string; link?: string }[] = [
   {
     q: '比賽在什麼時候、哪裡舉行？',
     a: '2026 年 12 月 13 日（日）09:00–17:00，台北世貿一館 C 區（台北市信義區信義路五段 5 號），第六屆聖誕老人 LKK4 功能錦標賽。年齡以當天實際歲數計算。',
@@ -283,11 +284,12 @@ const faqs = [
   },
   {
     q: '報名費用是多少？',
-    a: '個人賽：早鳥優惠價 NT$2,700、一般報名費 NT$3,000，報名於 2026/11/7 截止。團體接力賽：2 人 NT$3,350、3 人 NT$3,700、4 人 NT$4,000。詳細資訊請見上方「賽制與報名」，或直接前往 Accupass 活動頁。',
+    a: '個人賽：早鳥優惠價 NT$2,700、一般報名費 NT$3,000，報名於 2026/12/12 截止或額滿為止。團體接力賽：2 人 NT$3,350、3 人 NT$3,700、4 人 NT$4,000。詳細資訊請見上方「賽制與報名」，或直接前往 Accupass 活動頁。',
   },
   {
     q: '報名後想變更或退費怎麼辦？',
-    a: '以實際產生之改票服務費為準，練健康保有更改比賽之權利。',
+    a: '本次皆是委託ACCUPASS代為退票，請您參考以下網址處理即可！',
+    link: 'https://accupass.uservoice.com/knowledgebase/articles/152170',
   },
   {
     q: '比賽時的服裝與輔具有什麼規定？',
@@ -887,7 +889,16 @@ const faqs = [
                 <span class="font-bold text-navy-800 leading-relaxed">{{ f.q }}</span>
                 <span class="text-2xl leading-none text-orange-700 shrink-0 mt-0.5 transition-transform group-open:rotate-45">＋</span>
               </summary>
-              <p class="text-[15px] text-ink/70 leading-relaxed pb-5 pr-8">{{ f.a }}</p>
+              <p class="text-[15px] text-ink/70 leading-relaxed pb-5 pr-8">
+                {{ f.a }}
+                <a
+                  v-if="f.link"
+                  :href="f.link"
+                  target="_blank"
+                  rel="noopener"
+                  class="block mt-1 text-orange-700 font-bold underline underline-offset-2 break-all hover:text-orange-800"
+                >{{ f.link }}</a>
+              </p>
             </details>
           </Lkk4Ticket>
         </div>

@@ -56,7 +56,10 @@ export default defineEventHandler(async (event) => {
       return createdAt >= startOfMonth && createdAt <= endOfMonth;
     });
 
-    const pendingLeads = allLeads.filter(lead => lead.status === 'new');
+    // 「待處理名單」卡片連到客戶預約頁（/admin/leads?status=new），所以只算 booking。
+    // 2026-11-09 之前是三種表單加總（正式站當時顯示 3，客戶預約實際 2 筆）；
+    // 團課、合作的新名單數改看側欄各自的橘色數字（/api/admin/leads/new-counts）。
+    const pendingLeads = allLeads.filter(lead => lead.type === 'booking' && lead.status === 'new');
 
     const thisMonthBookings = thisMonthLeads.filter(lead => lead.type === 'booking');
     // 團課報名表單寫入的是 type:'group_class'（見 server/api/leads/group-class.post.ts）

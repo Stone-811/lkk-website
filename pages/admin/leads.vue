@@ -42,6 +42,13 @@ async function fetchLeads(): Promise<AdminLead[]> {
 
 const storeFilterOptions = computed(() => stores.value.map((s) => ({ value: s.id, label: s.name })))
 
+// 儀表板「待處理名單」卡片連到 /admin/leads?status=new：進頁時把狀態篩選設成網址帶的值
+// （只認 LEAD_STATUS_FILTER_OPTIONS 裡有的值，其他當作沒帶）。之後照常可用篩選列或 chip 移除。
+const route = useRoute()
+const initialStatus = LEAD_STATUS_FILTER_OPTIONS.some((o) => o.value === route.query.status)
+  ? (route.query.status as string)
+  : 'all'
+
 const {
   isLoading, error,
   searchQuery, dateFrom, dateTo,
@@ -62,7 +69,7 @@ const {
     },
     {
       key: 'status', label: '狀態', widthClass: 'w-28', placeholder: '搜尋狀態…',
-      value: ref('all'),
+      value: ref(initialStatus),
       options: computed(() => LEAD_STATUS_FILTER_OPTIONS),
       match: (lead, v) => lead.status === v,
       chipLabel: (v) => LEAD_STATUS_FILTER_OPTIONS.find((o) => o.value === v)?.label || v,
@@ -241,7 +248,11 @@ function handleExport() {
           </tr>
           <tr v-for="lead in filteredLeads" :key="lead.id" class="hover:bg-gray-50">
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="font-medium text-gray-900">{{ lead.name }}</div>
+              <div class="font-medium text-gray-900 flex items-center gap-1.5">
+                {{ lead.name }}
+                <!-- 與團課預約頁同一個標籤；booking 的代填存成 filledBySelf === false（團課是 isFillerSelf === '否'） -->
+                <span v-if="lead.payload?.filledBySelf === false" class="inline-block bg-amber-100 text-amber-700 px-1.5 rounded text-[11px] font-normal">代填</span>
+              </div>
               <div v-if="lead.email" class="text-sm text-gray-500">{{ lead.email }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
