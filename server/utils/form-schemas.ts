@@ -1,8 +1,8 @@
 // 三張表單的 schema（給 CRM 讀的表單定義），同步到 Firestore 的 formSchemas 集合。
 //
 // 正本：docs/form-schema/{booking,group-booking,cooperation}.json（跟著程式一起進版控）。
-// 網站每台執行個體啟動時（發版、冷啟動、擴充）由 server/plugins/form-schema-sync.ts 呼叫
-// syncFormSchemas()：內容指紋跟 Firestore 上的一樣就跳過，不一樣才寫入。
+// 網站每台執行個體啟動時（發版、冷啟動、擴充），以及之後每 10 分鐘有請求時，
+// 由 server/plugins/form-schema-sync.ts 呼叫 syncFormSchemas()：內容指紋跟 Firestore 上的一樣就跳過，不一樣才寫入。
 // 所以 Firestore 裡的內容永遠等於「這個環境正在跑的那一版」——推 dev 寫 lkkdev、推 prod 寫 lkkprod。
 //
 // JSON 跟程式的選項有沒有對齊，由建置前的 scripts/check-form-schemas.mjs 檢查（不一致就建置失敗）。
@@ -13,6 +13,7 @@
 //   contentHash    下面 schemaJson 的 sha256（同步用；任何內容變動都會變）
 //   schemaJson     整份 schema 的 JSON 字串（CRM 讀了自己 JSON.parse）
 //   syncedAt       寫入時間
+//   revision       寫入的 Cloud Run revision（K_REVISION），查是哪一版寫的用
 // 用字串存而不是 Firestore map：schema 裡有陣列中的陣列、條件物件等巢狀結構，
 // Firestore 的 map 不收陣列裡直接放陣列，也會為每個欄位建索引；字串最單純，CRM 端也好解。
 import { createHash } from 'node:crypto'
@@ -62,7 +63,7 @@ export async function syncFormSchemas() {
       results.push(`${s.formId}=same`)
       continue
     }
-    await ref.set({ ...s, syncedAt: FieldValue.serverTimestamp() })
+    await ref.set({ ...s, syncedAt: FieldValue.serverTimestamp(), revision: process.env.K_REVISION || null })
     results.push(`${s.formId}=written(v${s.schemaVersion},${s.contentHash.slice(0, 8)})`)
   }
   return results

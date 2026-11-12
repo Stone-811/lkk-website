@@ -6,8 +6,11 @@
 //
 // 檢查範圍（只比對「存進名單的值」相關的東西）：
 //   - 每個有選項的欄位：值、順序、顯示文字，以及 price／messagePlaceholder／得知管道的展開設定
-//   - 網址變體（?v=）與免費合作方（?co=）的代號清單
-// 沒檢查：欄位標題、placeholder、錯誤訊息、驗證規則、同意事項文字——改這些時要自己同步 JSON。
+//   - 網址變體（?v=）與免費合作方（?co=）的代號，以及會進名單的設定值（company、leadSource…）
+//   - booking 頁面內建的備用分店（代號、名稱、地址、電話）
+//   - 頁面上用 v-model 綁的選擇題，都有被比對（防止頁面新增選擇題卻沒寫進 JSON）
+// 沒檢查：欄位標題、placeholder、錯誤訊息、驗證規則（含「選某項才必填」這類條件）、同意事項文字、
+// 隱藏值（例如「活動免費」）——改這些時要自己同步 JSON。
 //
 // 選項的來源有三種：config/*.ts 的 export、頁面 <script setup> 裡的 const 陣列、
 // 模板裡寫死的 <option value="…"> 或 v-for="opt in [...]"。下面 FIELDS 逐欄指定。
@@ -27,11 +30,21 @@ const fail = (where, msg) => errors.push(`${where}：${msg}`)
 
 // ---------- 從程式碼取選項 ----------
 
-/** 從 start（指向 '['）找到對應的 ']'，略過字串內容。 */
+/** 從 start（指向 '['）找到對應的 ']'，略過字串與行註解、區塊註解。 */
 function matchBracket(src, start) {
   let depth = 0
   for (let i = start; i < src.length; i++) {
     const c = src[i]
+    if (c === '/' && src[i + 1] === '/') {
+      i = src.indexOf('\n', i)
+      if (i === -1) break
+      continue
+    }
+    if (c === '/' && src[i + 1] === '*') {
+      i = src.indexOf('*/', i + 2) + 1
+      if (i === 0) break
+      continue
+    }
     if (c === "'" || c === '"' || c === '`') {
       for (i++; i < src.length && src[i] !== c; i++) if (src[i] === '\\') i++
       continue
@@ -44,10 +57,10 @@ function matchBracket(src, start) {
 
 const evalLiteral = (text) => new Function(`return (${text})`)()
 
-/** <script setup> 裡 `const name = [ ... ]` 的陣列（內容只能是字面值）。 */
+/** <script setup> 裡 `const name = [ ... ]`（或 `= ref([ ... ])`、有型別標註）的陣列，內容只能是字面值。 */
 function constArray(file, name) {
   const src = read(file)
-  const m = new RegExp(`const ${name}\\s*=\\s*\\[`).exec(src)
+  const m = new RegExp(`const ${name}(?:\\s*:[^=]+)?\\s*=\\s*(?:ref(?:<[^>]*>)?\\(\\s*)?\\[`).exec(src)
   if (!m) throw new Error(`${file} 找不到 const ${name} = [`)
   const start = m.index + m[0].length - 1
   return evalLiteral(src.slice(start, matchBracket(src, start) + 1))
@@ -61,15 +74,18 @@ function selectOptions(file, model) {
   const open = src.lastIndexOf('<select', at)
   const close = src.indexOf('</select>', at)
   if (open === -1 || close === -1) throw new Error(`${file} 的 formData.${model} 不在 <select> 裡`)
-  const block = src.slice(open, close)
+  // 註解掉的 <option> 不算；屬性值裡可能有 '>'（例如 v-if="age > 50"），所以照引號切
+  const block = src.slice(open, close).replace(/<!--[\s\S]*?-->/g, '')
   const out = []
-  for (const m of block.matchAll(/<option\b([^>]*)>([\s\S]*?)<\/option>/g)) {
+  for (const m of block.matchAll(/<option\b((?:[^>"']|"[^"]*"|'[^']*')*)>([\s\S]*?)<\/option>/g)) {
     const attrs = m[1]
     if (/(^|\s)(:value|v-bind:value|v-for)\b/.test(attrs)) {
       throw new Error(`${file} 的 formData.${model} 有動態選項，請改用別的取法`)
     }
-    const v = /\bvalue="([^"]*)"/.exec(attrs)
-    if (!v || v[1] === '') continue
+    const v = /(?:^|\s)value="([^"]*)"/.exec(attrs)
+    // 沒寫 value 時瀏覽器拿文字當值，這支取不到 → 擋下來，不要靜默略過
+    if (!v) throw new Error(`${file} 的 formData.${model} 有沒寫 value 的 <option>：${m[0].slice(0, 60)}`)
+    if (v[1] === '') continue
     out.push({ value: v[1], label: m[2].trim() })
   }
   return out
@@ -134,12 +150,41 @@ function compareReferral(where, schemaOpts, referralSources) {
   })
 }
 
-function compareKeys(where, schemaObj, codeObj) {
+/** 物件轉成 key 排序後的 JSON，拿來比對內容（不管 key 的先後）。 */
+const canon = (v) =>
+  JSON.stringify(v, (_, x) =>
+    x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort()) : x)
+
+/** 代號清單＋每個代號底下會進名單的設定值（omit 的是純畫面用、JSON 不收的欄位）。 */
+function compareVariants(where, schemaObj, codeObj, omit) {
   const a = Object.keys(schemaObj || {}).sort()
   const b = Object.keys(codeObj || {}).sort()
   if (JSON.stringify(a) !== JSON.stringify(b)) {
     fail(where, `代號清單不一致\n    JSON：${JSON.stringify(a)}\n    程式：${JSON.stringify(b)}`)
+    return
   }
+  for (const k of a) {
+    const code = Object.fromEntries(Object.entries(codeObj[k]).filter(([p]) => !omit.includes(p)))
+    if (canon(schemaObj[k]) !== canon(code)) {
+      fail(`${where} ${k}`, `設定不一致\n    JSON：${canon(schemaObj[k])}\n    程式：${canon(code)}`)
+    }
+  }
+}
+
+/**
+ * 頁面上用 v-model 綁的下拉、單選、複選，都要嘛在 FIELDS 裡比對、要嘛列在 NOT_OPTIONS 說明為什麼不比。
+ * 抓的是「頁面多了一個選擇題，JSON 卻沒寫」。（沒用 v-model、自己處理點選的欄位抓不到，
+ * 目前 booking 的時段／目的／得知管道就是這種，已在 FIELDS 裡。）
+ */
+function choiceModels(file) {
+  const src = read(file)
+  const keys = new Set()
+  for (const m of src.matchAll(/v-model="formData\.(\w+)"/g)) {
+    const st = src.lastIndexOf('<', m.index)
+    const tag = /^<((?:[^>"']|"[^"]*"|'[^']*')*)>/.exec(src.slice(st))?.[1] || ''
+    if (/^select\b/.test(tag) || /\btype="(radio|checkbox)"/.test(tag)) keys.add(m[1])
+  }
+  return keys
 }
 
 // ---------- 逐欄指定 ----------
@@ -154,6 +199,17 @@ const B = 'pages/booking.vue'
 const G = 'pages/group-booking.vue'
 const C = 'pages/cooperation.vue'
 const vfor = (o) => ({ value: o.v, label: o.l })
+const PAGES = { booking: B, 'group-booking': G, cooperation: C }
+// 頁面上的選擇題但不在 FIELDS 比對選項的：原因寫在旁邊
+const NOT_OPTIONS = {
+  booking: {
+    storeId: '選項來自分店 API；頁面內建的備用四間另外比對（optionsSource.fallback）',
+    sourceDetail: '得知管道的第二層，跟著 source 一起比對',
+    agreeToTerms: '同意事項勾選框，不是選項',
+  },
+  'group-booking': { sourceDetail: '得知管道的第二層，跟著 source 一起比對' },
+  cooperation: {},
+}
 
 const FIELDS = {
   booking: {
@@ -203,6 +259,12 @@ for (const [formId, fields] of Object.entries(FIELDS)) {
     }
   }
 
+  for (const key of choiceModels(PAGES[formId])) {
+    if (!(key in fields) && !(key in NOT_OPTIONS[formId])) {
+      fail(`${formId}.${key}`, `${PAGES[formId]} 有這個選擇題，但 check-form-schemas.mjs 沒有比對它（JSON 可能也漏寫）`)
+    }
+  }
+
   for (const [key, get] of Object.entries(fields)) {
     const where = `${formId}.${key}`
     try {
@@ -220,11 +282,22 @@ for (const [formId, fields] of Object.entries(FIELDS)) {
 }
 
 try {
-  compareKeys('booking 網址變體（?v=）', schema('booking').context?.variants, bookingVariants)
-  compareKeys('booking 免費合作方（?co=）', schema('booking').context?.freeTrialPartners, freeTrialPartners)
-  compareKeys('group-booking 網址變體（?v=）', schema('group-booking').context?.variants, groupClassVariants)
+  // hero／adminLabel 是頁面標題與後台下拉的顯示文字，note 是內部備註，JSON 不收
+  compareVariants('booking 網址變體（?v=）', schema('booking').context?.variants, bookingVariants, ['hero', 'adminLabel'])
+  compareVariants('booking 免費合作方（?co=）', schema('booking').context?.freeTrialPartners, freeTrialPartners, ['note'])
+  compareVariants('group-booking 網址變體（?v=）', schema('group-booking').context?.variants, groupClassVariants, ['hero'])
 } catch (e) {
   fail('網址變體', e.message)
+}
+
+// booking 分店：選項來自分店 API，但頁面內建四間當備用（SSR 與 API 失敗時用），這四間的代號會存進 leads.storeId
+try {
+  const fb = fieldOf(schema('booking'), 'storeId').optionsSource?.fallback
+  const code = constArray(B, 'stores').map((s) => ({ value: s.id, label: s.name, address: s.address, phone: s.phone }))
+  if (!Array.isArray(fb)) fail('booking.storeId', 'JSON 沒有 optionsSource.fallback')
+  else compareOptions('booking.storeId 備用分店', fb, code, ['address', 'phone'])
+} catch (e) {
+  fail('booking.storeId', e.message)
 }
 
 if (errors.length) {
