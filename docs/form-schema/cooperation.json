@@ -1,7 +1,7 @@
 {
   "formId": "cooperation",
   "schemaVersion": "1.0",
-  "describes": "練健康官網 /cooperation「合作洽詢」表單的現況（2026-11-09，依 dev 分支程式碼）。這份是描述檔，網站本身還沒有讀它。頁面沒有網址變體（沒有 ?v= ?co= ?src=），也沒有讀任何 config/*.ts。",
+  "describes": "練健康官網 /cooperation「合作洽詢」表單的現況（2026-11-09，依 dev 分支程式碼）。這份是描述檔（網站畫面不讀它）；網站每次啟動會把它同步到 Firestore formSchemas/cooperation，選項與程式是否一致由建置前的 scripts/check-form-schemas.mjs 檢查。頁面沒有網址變體（沒有 ?v= ?co= ?src=），也沒有讀任何 config/*.ts。",
   "sourceOfTruth": [
     "pages/cooperation.vue",
     "server/api/leads/cooperation.post.ts",

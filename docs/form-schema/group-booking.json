@@ -1,7 +1,7 @@
 {
   "formId": "group-booking",
   "schemaVersion": "1.0",
-  "describes": "練健康官網 /group-booking「團體課程報名」表單的現況（2026-11-09，dev 與正式站相同：相關檔案在 origin/prod 與 dev HEAD 之間沒有差異）。這份是描述檔，網站本身還沒有讀它。名單寫進 leads 集合，type 是 group_class，後台在 /admin/group-classes（團課預約）讀取。",
+  "describes": "練健康官網 /group-booking「團體課程報名」表單的現況（2026-11-09，dev 與正式站相同：相關檔案在 origin/prod 與 dev HEAD 之間沒有差異）。這份是描述檔（網站畫面不讀它）；網站每次啟動會把它同步到 Firestore formSchemas/group-booking，選項與程式是否一致由建置前的 scripts/check-form-schemas.mjs 檢查。名單寫進 leads 集合，type 是 group_class，後台在 /admin/group-classes（團課預約）讀取。",
   "sourceOfTruth": [
     "pages/group-booking.vue",
     "server/api/leads/group-class.post.ts",

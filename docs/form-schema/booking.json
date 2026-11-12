@@ -1,7 +1,7 @@
 {
   "formId": "booking",
   "schemaVersion": "1.0",
-  "describes": "練健康官網 /booking「預約體驗」表單的現況（2026-11-08，dev 與正式站相同）。這份是描述檔，網站本身還沒有讀它。",
+  "describes": "練健康官網 /booking「預約體驗」表單的現況（2026-11-08，dev 與正式站相同）。這份是描述檔（網站畫面不讀它）；網站每次啟動會把它同步到 Firestore formSchemas/booking，選項與程式是否一致由建置前的 scripts/check-form-schemas.mjs 檢查。",
   "sourceOfTruth": [
     "pages/booking.vue",
     "server/api/leads/booking.post.ts",
