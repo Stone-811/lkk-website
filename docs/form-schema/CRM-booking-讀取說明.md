@@ -2,7 +2,7 @@
 
 > 對象：CRM（同一個 Firebase 專案）的開發者
 > 環境：**lkkdev（測試）**；正式站 lkkprod 上線後路徑相同、只換專案
-> 更新：2026-11-13
+> 更新：2026-11-14
 
 練健康官網 `/booking`「預約體驗」表單的完整定義（欄位、選項、條件、存進名單的位置），
 已經放在 Firestore，CRM 直接讀即可。**這份 config 是唯讀的**：由官網自動維護，CRM 不要寫入。
@@ -135,6 +135,63 @@ CRM 的服務帳號需要 lkkdev 的 Firestore 讀取權限（例如 `roles/data
 | `message` | 備註 | textarea | 選填 | `message` | string／null |
 
 每個欄位的完整定義（選項、錯誤訊息、顯示條件、隱藏時存什麼）在 config 裡的 `field.options`、`field.showIf`、`field.store`。
+
+### 讀題目與選項：用哪些 key
+
+config 裡還有提示字、錯誤訊息、日期選擇器設定等給官網畫面用的 key，串接題目用不到，略過即可。
+要讀的只有下面這些。
+
+**位置**：`schema.sections[]`（段落，`title` 是段落標題）→ `section.fields[]`（每一題）。
+
+**每一題**
+
+| 要讀什麼 | key | 說明 |
+|---|---|---|
+| 欄位代號 | `key` | 不一定等於名單裡的欄位名（例：`preferredTimes` 存在 `payload.preferredTime`），名單位置看下一列 |
+| 名單裡的位置 | `store.path` | 頂層欄位直接是名稱（`name`），其他是 `payload.<名稱>` |
+| 題目 | `label` | 例：`性別`、`偏好的上課時段` |
+| 題目補充 | `labelSuffix` | 選填，例：`（選填）`、`（可複選）`；要顯示完整題目就接在 `label` 後面 |
+| 存的型別 | `store.valueType` | 沒寫就是字串；`boolean`、`string[]` 會寫出來 |
+| 布林對照 | `store.map` | 只有 `filledBySelf`、`hasMedicalCondition`，例：`{ "本人填寫": true, "他人代填": false }` |
+| 什麼時候才出現 | `showIf` | 條件不成立時這題不出現，名單裡存 `store.whenHidden` 的值（多半是 `null`） |
+
+**選項**：有三種來源，沒有這三種 key 的題目是自由輸入（姓名、電話、日期、備註…）。
+
+| 來源 | key | 用在哪些題 | 怎麼讀 |
+|---|---|---|---|
+| 固定選項 | `options[]` | 性別、本人填寫、關係、健康狀況、時段、得知管道、訓練目的、付款方式 | `value` 是名單裡存的字；`label` 是畫面上的字，**沒寫就等於 `value`**；`showIf` 是這個選項的出現條件 |
+| 動態選項 | `optionsSource` | 只有分店 `storeId` | 讀 `stores` 集合（第 4 節）；`optionsSource.fallback[]` 是內建四間的 `{ value, label }` |
+| 第二層 | `options[].detail` | 只有得知管道 `source` | `detail.type` 是 `select` 時，選項來自 `detail.optionsSource`（第 4 節），讀不到用 `detail.defaultOptions`；是 `text` 時是自由輸入 |
+
+另外兩個跟選項有關的 key：
+
+- `other`（時段、訓練目的）：選了 `other.triggerValue`（`其他`）可以再填說明，名單存成 `其他: <說明>`。
+- `store.possibleValues`（付款方式）：名單可能出現、但**不在 `options` 裡**的值，例如 `活動免費`。
+
+**讀取範例（Node.js）**：列出每一題的題目、名單位置與選項
+
+```js
+const fields = schema.sections.flatMap((s) => s.fields)
+
+for (const f of fields) {
+  const question = f.label + (f.labelSuffix ?? '')       // 題目
+  const path = f.store?.path                             // 名單位置，例：'payload.gender'
+  const options = (f.options ?? []).map((o) => ({
+    value: o.value,                                      // 名單裡存的字
+    label: o.label ?? o.value,                           // 畫面上的字
+  }))
+  // f.optionsSource → 分店，另外讀 stores
+  // o.detail        → 得知管道的第二層
+}
+```
+
+**把名單的值轉回畫面上的字**
+
+1. 布林欄位：用 `store.map` 反查（`true` → `本人填寫`）。
+2. 其他欄位：先拿整個值去比 `options[].value`，比到就用那個選項的 `label ?? value`。
+3. 比不到時，用**第一個「: 」（冒號＋半形空格）**切開，前半段比 `options[].value`，例：`社群: IG` → 主選項 `社群`、細項 `IG`；`其他: 朋友介紹` 同理。
+   時段的值本身有冒號（`平日10:00-17:00`）但沒有空格，所以步驟 2 就會比到，不會被切開。
+4. 還是比不到（已停用的舊選項、直接呼叫 API 寫入的值）：直接顯示原值，不要丟掉。
 
 ### 選項的 value 與 label
 
