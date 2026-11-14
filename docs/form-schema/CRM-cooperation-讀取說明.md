@@ -1,7 +1,7 @@
 # Hub／CRM 讀取「合作洽詢」表單 config 說明
 
 > 對象：Hub／CRM（同一個 Firebase 專案；前端是 Firebase Hosting 靜態 SPA，後端是 Cloud Run 的 `lkkhubapi`／`lkkcrmapi`）的開發者
-> 環境：**lkkdev（測試）**；正式站 lkkprod 上線後路徑相同、只換專案（lkkprod 目前還沒有這份文件，正式站發版後才會出現）
+> 環境：**lkkdev（測試）**；**lkkprod（正式）**，兩邊路徑相同、只換專案（兩邊 2026-11-14 都已寫入）
 > 更新：2026-11-14
 
 練健康官網 `/cooperation`「合作洽詢」表單裡**解讀名單需要的定義**（段落、題目、選項、存進名單的位置與存法、隱藏欄位），
@@ -32,7 +32,7 @@ Hub 要做的事只有一件：**拿到一筆名單時，用 config 把它轉成
 import { getFirestore } from 'firebase-admin/firestore'
 const db = getFirestore()
 
-// 查不到 leadType 時的退路（正式站還沒發版、或官網退回舊版時會用到）
+// 查不到 leadType 時的退路（官網退回舊版時會用到）
 const FORM_ID_BY_TYPE = { booking: 'booking', group_class: 'group-booking', cooperation: 'cooperation' }
 const cache = new Map() // formId → { contentHash, schema }
 
@@ -55,7 +55,7 @@ async function getConfig(leadType) {
 
 - **每次用之前都讀一次文件**（上面就是這樣做）。不要把 config 存一份就一直用：官網改了選項，Hub 會不知道。
 - 文件有 `retiredOn` 代表這張表單已下架，但舊名單照樣用它解讀。
-- `getConfig` 回傳 `null` 有兩種情況：`franchise`（刻意沒有 config），以及文件還沒寫入（例如 lkkprod 正式站還沒發版）。後者要告警，不要當成正常、默默照原值顯示（見第 2 節「權限」）。
+- `getConfig` 回傳 `null` 有兩種情況：`franchise`（刻意沒有 config），以及文件還沒寫入（例如新的環境官網還沒發版）。後者要告警，不要當成正常、默默照原值顯示（見第 2 節「權限」）。
 
 ### 步驟二：把名單的值轉成畫面上的字
 
@@ -165,7 +165,6 @@ function toRows(schema, lead, storeName) {
 > `db.collection('formSchemas').where('leadType', '==', lead.type)` 找到名單的 config。
 > 建置檢查保證所有 config（**含已下架的**）的 `leadType` 都不重複，所以最多只會查到一份；下架的表單也查得到（見下方「下架的表單」）。
 > **上面這張表還是要留在 Hub 程式裡當退路**：用 `leadType` 查不到（0 筆）時，改用這張表找文件 id 再讀一次，不要直接當成沒有 config。會查不到的情況：
-> - lkkprod 目前還沒有任何 `formSchemas` 文件（正式站還沒發版），正式站發版時 `leadType` 會一起出現。
 > - 官網如果退回 `leadType` 出現以前的版本（dev 的 `a6cf8c0` 或更早），舊版會把文件整份重寫成沒有 `leadType` 的樣子，直到下一次發新版才補回來。
 >
 > 表上也沒有（`franchise`）才是真的沒有 config，照原值顯示。`franchise` 是刻意沒有 config 的名單 `type`（列在建置檢查的「沒有 config」清單）。
@@ -206,7 +205,7 @@ config 只放解讀名單需要的部分，所以官網只改提示字、錯誤�
   所以「官網發版完成」不等於「這份文件已經更新」。
 - 之後只要有請求、距上次比對超過 10 分鐘就再比對一次（失敗的話 1 分鐘後有請求時再試）。
   **這個再比對也要有請求才會跑**：流量少的時段，補寫（例如下面說的發版時被舊版蓋回去的文件）會比 10 分鐘更晚。
-- **lkkprod 在正式站第一次發版前不存在**這份文件，讀取前一定要檢查文件存在（見第 2 節）。
+- 讀取前一定要檢查文件存在（見第 2 節）：新的環境在官網第一次發版、有人瀏覽網站以前不會有這份文件。
 - `syncedAt`／`revision` 是「最後一次內容變更」的時間與版本，**不是心跳，不代表同步仍在運作**。
   表單很久沒改時它們會停在很久以前；同步因故停擺時看起來也一模一樣，Hub 從這兩個欄位分不出來。
   要確認 Hub 讀到的是哪一版，請比對 `contentHash`（需要時跟官網維護者對前 8 碼）。
@@ -218,7 +217,7 @@ config 只放解讀名單需要的部分，所以官網只改提示字、錯誤�
      改之前的完整版本多了 `describes`、`conventions`、`submit`、`record` 這類頂層 key，每一題也多了提示字、條件等 key
      （第 3 節「不在 config 裡的東西」）；預約表單得知管道 `source` 與團課備註 `note` 的 `store.alsoWrites` 在舊版是單一物件，新版一律是陣列。
      第 0 節的程式兩種版本都能讀；新版沒有的 key 不要拿來用。
-     lkkprod 目前還沒有這些文件，正式站第一次發版時直接寫入新的形狀。官網如果退回這次改動以前的版本，文件會再變回完整版本，直到下一次發新版。
+     lkkprod 2026-11-14 第一次寫入時就是新的形狀。官網如果退回這次改動以前的版本，文件會再變回完整版本，直到下一次發新版。
 
 > config 是從官網維護者手寫的描述檔（`docs/form-schema/cooperation.json`，官網 repo 裡）挑出來的：同步時只留第 3 節列出的 key，其他留在官網 repo。描述檔不是從頁面自動產生的。
 > 選項（value、label、順序）由建置檢查保證跟官網程式一致；
@@ -251,7 +250,7 @@ let cached = null // { contentHash, schema }
 async function getCooperationSchema() {
   const snap = await db.doc('formSchemas/cooperation').get()
   if (!snap.exists) {
-    // 文件不存在（例：lkkprod 正式站還沒發版）→ 告警，沿用上次的 config，不要往下解析
+    // 文件不存在（例：新的環境官網還沒發版）→ 告警，沿用上次的 config，不要往下解析
     console.warn('formSchemas/cooperation 不存在')
     return cached?.schema ?? null
   }
@@ -282,7 +281,7 @@ from google.cloud import firestore
 db = firestore.Client(project="lkkdev")
 doc = db.document("formSchemas/cooperation").get()
 if not doc.exists:
-    # 文件不存在（例：lkkprod 正式站還沒發版）→ 告警，沿用上次的 config，不要往下解析
+    # 文件不存在（例：新的環境官網還沒發版）→ 告警，沿用上次的 config，不要往下解析
     logging.warning("formSchemas/cooperation 不存在")
 else:
     schema = json.loads(doc.get("schemaJson"))
@@ -307,7 +306,7 @@ Hub 前端（Firebase Hosting 上的靜態 SPA，用 Firebase Web SDK `firebase/
 Hub 的 `firebase.json` 不要有 `firestore` 區塊，部署一律加 `--only hosting`。
 
 Hub／CRM 的服務帳號需要 lkkdev（測試）與 lkkprod（正式）**各自**的 Firestore 讀取權限（例如 `roles/datastore.viewer`；IAM 角色按專案授予，兩個專案要分別開通，dev 開通不代表正式站讀得到）。
-讀取時丟出 `PERMISSION_DENIED` 是權限沒開；`snap.exists` 為 `false` 是文件還沒寫入（例：lkkprod 正式站還沒發版）。兩者是不同的問題，告警訊息要分開。
+讀取時丟出 `PERMISSION_DENIED` 是權限沒開；`snap.exists` 為 `false` 是文件還沒寫入（例：新的環境官網還沒發版）。兩者是不同的問題，告警訊息要分開。
 **目前 Hub／CRM 的服務帳號都還沒有這個權限**（`lkkhubapi-runtime`、`lkkapi-sa` 都沒有 Firestore 角色），開通方式另行討論（viewer 角色的範圍是整個資料庫，不只這份文件）。
 
 ---
