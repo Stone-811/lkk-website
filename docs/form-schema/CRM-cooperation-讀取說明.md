@@ -4,8 +4,12 @@
 > 環境：**lkkdev（測試）**；正式站 lkkprod 上線後路徑相同、只換專案（lkkprod 目前還沒有這份文件，正式站發版後才會出現）
 > 更新：2026-11-14
 
-練健康官網 `/cooperation` 表單的完整定義（欄位、選項、條件、存進名單的位置），
+練健康官網 `/cooperation`「合作洽詢」表單裡**解讀名單需要的定義**（段落、題目、選項、存進名單的位置與存法、隱藏欄位），
 已經放在 Firestore，Hub／CRM 直接讀即可。**這份 config 是唯讀的**：由官網自動維護，Hub／CRM 不要寫入。
+
+> 2026-11-14 起，Firestore 上的 config 是官網用白名單從描述檔（官網 repo 裡的完整表單定義）挑出來的版本，只留解讀名單用得到的 key（第 3 節）。
+> 提示字、錯誤訊息、必填與顯示條件、送出流程、同意事項、頁面文案、官網內部的注意事項都**不在 config 裡**；
+> 其中解讀名單時還用得到的（例如某一題為什麼常是空的、伺服器檢查了什麼、哪些值沒有經過驗證），直接寫在這份說明裡，並標明「不在 config 裡」。
 
 > 名稱：頁面、通知信、後台都叫「合作洽詢」，內部有時說「合作洽談」，指的是同一張表單。
 > 程式裡的代號一律是 `cooperation`。
@@ -129,9 +133,12 @@ function toRows(schema, lead, storeName) {
 | 值對不到任何選項 | 照原值顯示。多半是舊名單用的舊選項（第 5 節「舊值：洽詢項目改過名」） |
 | `schemaVersion` 是沒處理過的版本 | 告警，先不要自動套用（第 7 節） |
 | config 裡沒有、名單裡卻有的欄位 | 名單可能比 config 舊或新，照原值顯示、不要丟掉 |
-| 想顯示隱藏欄位（來源頁、UTM 等） | 見第 3 節 `hiddenFields`（這張表單只有 `sourcePage`、`utm`），位置一樣在 `store.path`；名單裡的樣子見第 5 節（含 `utm` 的形狀） |
+| 想顯示隱藏欄位（來源頁、UTM 等） | 見第 3 節「隱藏欄位（`hiddenFields[]`）」（這張表單只有 `sourcePage`、`utm`），位置一樣在 `store.path`；名單裡的樣子見第 5 節（含 `utm` 的形狀）。這些值由前端送出、伺服器沒驗證（第 6 節第 3 點） |
+| config 的說明文字提到 config 裡沒有的 key | 那是官網完整描述檔裡的段落，不在 Firestore 的 config 裡，不用去找；內容整理在第 6 節第 1、2 點 |
+| 某題在很多名單裡是空的、想知道什麼時候必填 | 必填與顯示條件不在 config 裡，見第 3 節「必填與顯示條件（不在 config 裡）」；沒填時存什麼見第 5 節「存值的細節」 |
+| config 裡有第 3 節沒列的 key | 略過，不要拿來用。lkkdev 在下一次 dev 發版前還是舊的完整版本，會多出 `conventions`、`submit` 等 key（第 1 節「什麼時候會更新」）；上面的程式兩種版本都能讀 |
 
-> 上面步驟一到三的程式碼已經拿官網的三份 config 與假資料實際跑過，例子裡的輸出就是實際跑出來的結果。
+> 上面步驟一到三的程式碼已經拿官網三份給 Hub 的 config（2026-11-14 白名單版本）與假資料實際跑過，例子裡的輸出就是實際跑出來的結果。
 
 ---
 
@@ -172,17 +179,17 @@ function toRows(schema, lead, storeName) {
 | `formId` | string | `cooperation` |
 | `leadType` | string | `cooperation`：這張表單寫進名單（`leads`）的 `type`。從 config 頂層的 `leadType` 抄過來（`schemaJson` 裡也有） |
 | `schemaVersion` | string | 目前 `1.0`。**只有不相容的改動才升版**（欄位改名或刪除、存放位置或值的存法改變）。記錄過的選項值與代號升版也不會從 config 消失（停用的在 `retiredOptions` 這類停用清單）。Hub 要怎麼處理見第 7 節，Hub 可以依賴什麼見第 3 節「選項的 value 與 label」 |
-| `contentHash` | string | 整份 config 的 sha256。內容任何變動（含新增選項、改文字）都會變 |
-| `schemaJson` | string | **整份 config 的 JSON 字串**，讀了要自己 `JSON.parse` |
+| `contentHash` | string | `schemaJson` 的 sha256。**只有 config 裡的內容變了才會變**（題目文字、選項、存放位置與型別、隱藏欄位、網址變體這類第 3 節列出的 key）；只改提示字、錯誤訊息、必填或顯示條件、按鈕與頁面文字時不會變（這些不在 config 裡）。哪些改動會讓它變見第 7 節 |
+| `schemaJson` | string | **給 Hub 的 config 的 JSON 字串**，讀了要自己 `JSON.parse`。內容是官網從描述檔用白名單挑出解讀名單需要的部分，形狀見第 3 節 |
 | `syncedAt` | timestamp | **最後一次內容變更**時寫入的時間（內容沒變就不會更新，不是心跳） |
 | `revision` | string | 最後一次內容變更時，寫入的官網版本（Cloud Run revision 名稱，例：`lkk-website-dev-build-2026-11-12-001`） |
 | `retiredOn` | string | **只有下架的表單才有**：下架日期（`YYYY-MM-DD`），從 config 頂層的 `retiredOn` 抄過來（`schemaJson` 裡也有）。目前三張表單都沒有這個欄位（見下方「下架的表單」） |
 
-> 為什麼存成字串：config 有多層巢狀與陣列，Firestore 的 map 不支援某些結構，字串最單純。
+> 為什麼存成字串：config 有多層巢狀與陣列，存成字串最單純，`contentHash` 也直接是這個字串的 sha256。
 
 ### 下架的表單
 
-表單下架時，官網只拿掉頁面與送出端點；config 的 JSON 留在官網 repo、頂層加上 `retiredOn`，官網也繼續同步這份文件，所以 **Firestore 上的文件不會刪除**：
+表單下架時，官網只拿掉頁面與送出端點；描述檔 JSON 留在官網 repo、頂層加上 `retiredOn`，官網也繼續同步這份文件，所以 **Firestore 上的文件不會刪除**：
 文件多一個 `retiredOn`，其餘內容跟下架前相同（`leadType` 也還在，用 `where('leadType', …)` 照樣查得到），之後不會再有這張表單的新名單。
 Hub 照樣用它解讀這張表單的舊名單，只是不該再把它當成現行表單（例如不再列在「可填的表單」）：判斷方式是文件有沒有 `retiredOn`。
 - `retiredOn` 也在 `schemaJson` 裡，所以下架那一次 `contentHash`（還有 `syncedAt`／`revision`）會變一次，之後跟其他沒改的表單一樣不再寫入，不會一直出現、消失。
@@ -191,6 +198,8 @@ Hub 照樣用它解讀這張表單的舊名單，只是不該再把它當成現�
 ### 什麼時候會更新
 
 官網伺服器會比對 config 與 Firestore 上的 `contentHash`，內容有變才寫入（整份覆蓋）：dev 站改了 → lkkdev 更新；正式站改了 → lkkprod 更新。
+config 只放解讀名單需要的部分，所以官網只改提示字、錯誤訊息、條件、按鈕文字這類畫面上的東西時，`contentHash` 不變、文件也不會重寫；
+`contentHash` 一變，就代表 Hub 讀得到的內容真的變了。
 
 - **發版後要等第一個請求打到官網伺服器，才會比對並寫入**。官網跑在 Cloud Run，閒置時 CPU 會被限縮，
   執行個體啟動時發出的比對會停住，等有請求進來才跑完。沒有流量時（例如 dev 站沒人逛的時段）寫入會延後，
@@ -202,13 +211,20 @@ Hub 照樣用它解讀這張表單的舊名單，只是不該再把它當成現�
   表單很久沒改時它們會停在很久以前；同步因故停擺時看起來也一模一樣，Hub 從這兩個欄位分不出來。
   要確認 Hub 讀到的是哪一版，請比對 `contentHash`（需要時跟官網維護者對前 8 碼）。
 - 表單下架或重新上架（`retiredOn` 出現或消失）也是一次內容變更，照上面的流程寫入（見上方「下架的表單」）。
-- 2026-11-14 加了 `leadType` 與閱讀規則（`conventions.options`，多了「停用的選項移到 `retiredOptions`」）的文字，
-  三張表單的 `contentHash` 因此各變了一次（lkkdev 2026-11-14 已寫入；正式站發版時也會變一次）；題目與選項內容沒有變。
+- 2026-11-14 有兩次改動，題目與選項內容都沒有變：
+  1. 加了 `leadType` 與閱讀規則的文字，三張表單的 `contentHash` 各變了一次（lkkdev 2026-11-14 已寫入）。
+  2. config 改成只放解讀名單需要的部分（第 3 節）。**下一次 dev 發版時**三張表單的 `contentHash` 會因為形狀改變再各變一次
+     （新的前 8 碼：`booking` 是 `237bb143`、`group-booking` 是 `f55e9856`、`cooperation` 是 `4a183ba2`）。
+     在那之前 lkkdev 上仍是舊的完整版本，多了 `describes`、`conventions`、`submit`、`record` 這類頂層 key，每一題也多了提示字、條件等 key
+     （第 3 節「不在 config 裡的東西」）；預約表單得知管道 `source` 與團課備註 `note` 的 `store.alsoWrites` 在舊版是單一物件，新版一律是陣列。
+     第 0 節的程式兩種版本都能讀；新版沒有的 key 不要拿來用。
+     lkkprod 目前還沒有這些文件，正式站第一次發版時直接寫入新的形狀。官網如果退回這次改動以前的版本，文件會再變回完整版本，直到下一次發新版。
 
-> config 是官網維護者手寫的描述檔（`docs/form-schema/cooperation.json`），不是從頁面自動產生的。
-> 選項（value、label、順序、`messagePlaceholder`）由建置檢查保證跟官網程式一致；
-> 2026-11-14 起建置檢查也會跟上一版的記錄比對，記錄過的值與代號不能消失或改字（見第 3 節「選項的 value 與 label」，檢查細節見文末附錄「官網這邊怎麼確保 config 正確」）。
-> 題目文字、提示字、錯誤訊息、必填條件、伺服器規則的描述是人工維護，少數情況可能比線上畫面慢一步（見第 6 節第 8 點）。
+> config 是從官網維護者手寫的描述檔（`docs/form-schema/cooperation.json`，官網 repo 裡）挑出來的：同步時只留第 3 節列出的 key，其他留在官網 repo。描述檔不是從頁面自動產生的。
+> 選項（value、label、順序）由建置檢查保證跟官網程式一致；
+> 2026-11-14 起建置檢查也會跟上一版的記錄比對，記錄過的值與代號不能消失或改字（見第 3 節「選項的 value 與 label」），
+> 並確認挑出來的 config 跟描述檔的每一題位置、型別、存的值、代號、段落標題、題目與選項文字完全相同（檢查細節見文末附錄「官網這邊怎麼確保 config 正確」）。
+> 題目文字與段落標題是人工維護，少數情況可能比線上畫面慢一步。
 > `store.path` 跟送出端點（`server/api/leads/*.post.ts`）實際的存法是否一致，也是人工維護，檢查比對不到。
 
 > 官網剛發版的幾分鐘內，新舊版本會短暫同時在跑，文件（連同 `revision`）可能「新 → 舊 → 新」來回一兩次，
@@ -277,7 +293,7 @@ else:
 
 - **不要把 config 或選項文字打包進 SPA**（建置時寫死），也**不要用固定 TTL 快取**（例如「快取 1 小時」）：
   官網改了選項，Hub 會在不知道的情況下繼續用舊的。照上面的範例，每次使用前讀 `contentHash`，有變才重新解析。
-- 把名單轉存到 Hub 自己的資料庫（Cloud SQL）時，**存原始值**（名單裡的 value，例如 `payload.cooperationType` 的值），不要只存當下轉出來的 label。
+- 把名單轉存到 Hub 自己的資料庫（Cloud SQL）時，**存原始值**（名單裡的 value），不要只存當下轉出來的 label。
   label 會隨 config 改變，只存 label 之後就對不回原始值。
 
 ### 權限
@@ -298,37 +314,43 @@ Hub／CRM 的服務帳號需要 lkkdev（測試）與 lkkprod（正式）**各�
 
 ## 3. config 長什麼樣子
 
-`JSON.parse(schemaJson)` 之後的頂層：
+`JSON.parse(schemaJson)` 之後的頂層只有下面這些 key（給 Hub 的版本：官網從描述檔用白名單挑出解讀名單需要的部分）：
 
 | key | 內容 |
 |---|---|
-| `formId`、`leadType`、`schemaVersion` | 同上 |
-| `describes` | 一句話說明 |
-| `conventions` | **閱讀規則**：條件怎麼寫、`required` 的意思、選項 value 與 label 的差別，以及這張表單才有的寫法（`tabs`、`$option.…`）。`labelSuffixWhenOptional` 也寫在這裡，但三張表單都有（預約、團課在 `contactPhone`，預約另有同意事項），這張用在 `companySize`、`budgetRange`。先讀這段 |
-| `sections` | 表單分兩段，每段有 `fields`（欄位定義，見下表） |
-| `consent` | 沒有同意勾選框，只有按鈕下方一句默示同意文字（`implicitConsentText`）。**沒有存進名單** |
-| `hiddenFields` | 使用者看不到、但會存進名單的值：只有來源頁 `sourcePage` 與 UTM |
-| `context` | 頁面文案（`pageMeta`）。**這張表單不讀網址參數**：`params` 是空物件，沒有變體、合作方、名單來源（所以也不會有預約、團課表單放停用變體的 `retiredVariants`，或預約表單放停用合作方的 `retiredFreeTrialPartners`；那兩張目前也還沒有這兩個 key） |
-| `derived` | 空物件（沒有衍生值） |
-| `submit` | 送出 API、前端檢查順序、伺服器驗證規則、成功／失敗畫面 |
-| `record` | **名單（`leads` 集合）的欄位清單**：哪些在頂層、哪些在 `payload`、哪些固定是 `null`（`constantFields`）、哪些沒存 |
-| `crossFormDifferences.vsBooking` | 跟預約表單的差異清單（同時串多張表單時必讀，第 5 節有整理）。Firestore 版的 `crossFormDifferences` **只有 `vsBooking`**；`conventions.topLevelExtra` 提到的「與後台、CLAUDE.md 的差異」（`vsAdmin`、`vsClaudeMd`）同步時已移除，不要讀 |
-| `knownQuirks` | 現況的怪異行為與 bug（只記錄、未修），解讀名單時會用到 |
-| `hiddenFieldsTrust` | 哪些值沒有經過伺服器驗證（重要，見第 6 節） |
+| `formId`、`leadType`、`schemaVersion` | 同第 1 節「文件欄位」 |
+| `retiredOn` | 只有下架的表單才有（第 1 節「下架的表單」）。本表單沒有 |
+| `sections` | 段落陣列，順序就是畫面上的順序；每段是 `{ id, title, fields }`，`title` 是段落標題（可能是 `null`），`fields` 是這一段的題目（見下方「欄位一覽」與「讀題目與選項：用哪些 key」）。本表單分兩段，第二段的 `title` 是 `null`。 |
+| `hiddenFields` | 使用者看不到、但會存進名單的值，見下方「隱藏欄位」。本表單只有 `sourcePage`、`utm` |
+| `context` | 網址參數帶來的代號與設定值：現行的在 `variants`（`?v=` 網址變體）、`freeTrialPartners`（`?co=` 免費合作方），下架的代號移到 `retiredVariants`、`retiredFreeTrialPartners`；沒有的就不出現。**本表單不讀網址參數，沒有這個 key** |
 
-### 條件寫法（`conventions.condition`）
+### 不在 config 裡的東西
 
-```json
-{ "field": "cooperationType", "op": "eq", "value": "講座及課程邀約" }
-```
+config 裡只有本節各表列出的 key。描述檔（`docs/form-schema/cooperation.json`）是官網自己用的完整表單定義，其他 key 同步到 Firestore 時刻意不放，例如：
 
-- `op`：`eq`、`neq`、`in`、`notIn`、`includes`、`truthy`、`falsy`、`gte`（三張表單共用的定義）
-- 這張表單實際用到的條件只有兩種：`companySize`、`budgetRange` 的 `required`（上面這個），以及送出按鈕的 `submit.disabledIf`（`$state.isSubmitting`）
-- **沒有任何欄位有 `showIf`**：所有欄位一直顯示，所以也沒有 `store.whenHidden`
+- 頂層：`describes`、`sourceOfTruth`、`conventions`（閱讀規則與條件寫法）、`submit`（送出流程與伺服器驗證）、`consent`（同意事項）、`derived`、`record`（名單的欄位清單）、`requestBody`、`pageCopy`、`hiddenFieldsTrust`、`knownQuirks`、`crossFormDifferences`、`differencesFromBooking`（不是每張表單都有）；`context` 裡的 `description`、`params`、`variantProperties` 這類說明。
+- 每一題：`placeholder`、`required`、`errors`、`validation`、`showIf` 與其他條件（`lockedBy`、`optionRules`、`valueRules`…）、`hint`、`picker`、`min`／`max`、`default`、`labelSuffixWhenOptional`、`knownIssue` 這類；段落的 `titleNote`。
+- 選項：`showIf`、`note`、`detail`（第二層選單）、`messagePlaceholder` 這類；`store`：`note`、`empty`、`whenHidden`、`fallback`、`order`、`normalized`、`serverShape` 這類；`optionsSource`：`afterSelectShow`、`filter`、`order`、`note`，以及備用分店的地址電話；隱藏欄位：`capture`、`note`，以及 `store` 裡 `path` 以外的 key。
+
+不放的原因：Hub 解讀名單用不到，而且只改這些時 `contentHash` 不會變，Hub 不會因為改了一句提示字就多存一個版本。
+其中解讀名單時還用得到的，寫在這份說明裡並標明「不在 config 裡」，位置見下表。
+lkkdev 在下一次 dev 發版前還是完整版本（第 1 節「什麼時候會更新」），這些 key 暫時還讀得到；**不要寫程式讀它們**，發版後就會消失。官網之後如果多放 key 進來，第 0 節的程式也不受影響；看到本節沒列的 key 略過即可。
+
+| 資訊（描述檔裡的 key） | 現在寫在哪 |
+|---|---|
+| 哪些題目什麼時候必填、為什麼常常沒填（`required`） | 下方「必填與顯示條件（不在 config 裡）」 |
+| 沒填時存 `null` 還是空白字串（`store.empty`） | 第 5 節「存值的細節」 |
+| 名單有哪些欄位、哪些固定是 `null`（`record`） | 第 5 節開頭的表 |
+| 伺服器檢查了什麼、沒檢查什麼，含隱藏欄位沒有驗證（`submit`、`hiddenFieldsTrust`） | 第 6 節第 1～3 點 |
+| 現況的怪異行為：電話存原值、切換洽詢項目不清空等（`knownQuirks`） | 第 5 節「存值的細節」、第 6 節 |
+| 跟預約表單的差異（`crossFormDifferences`） | 第 5 節「跟預約表單不一樣的地方」 |
+| 默示同意的文字（`consent`） | 第 6 節第 10 點 |
 
 ### 欄位一覽（`sections[].fields[]`）
 
-| key | 題目 | 類型 | 必填 | 存在名單的位置 | 存的型別 |
+「必填」欄是官網畫面的規則，**不在 config 裡**（細節見下方「必填與顯示條件」），列在這裡是為了說明名單裡為什麼會是空的。
+
+| key | 題目（`label`） | 類型（`type`） | 必填（官網規則，不在 config 裡） | 存在名單的位置（`store.path`） | 存的型別 |
 |---|---|---|---|---|---|
 | `cooperationType` | 請選擇你的洽詢項目： | **tabs**（三顆並排按鈕） | 必填（一定有一個被選中） | `payload.cooperationType` | string |
 | `organization` | 公司 / 單位名稱 | text | 必填 | `payload.organization` | string |
@@ -340,57 +362,72 @@ Hub／CRM 的服務帳號需要 lkkdev（測試）與 lkkprod（正式）**各�
 | `budgetRange` | 預算區間 | text | 洽詢項目是「講座及課程邀約」時必填 | `payload.budgetRange` | string／null（自由文字） |
 | `message` | 合作內容詳情 | textarea | **必填** | `message` | string |
 
-每個欄位的完整定義（選項、錯誤訊息、驗證規則、存法說明）在 config 裡的 `field.options`、`field.required`、`field.validation`、`field.store`。
+config 裡每一題只有 `key`、`label`、`labelSuffix`（只有 `lineId`）、`type`、`store`（`path`，部分題目有 `valueType`），洽詢項目另有 `options`。
+「存的型別」欄的 `null` 與自由文字說明是官網現況，config 只寫了其中一部分（見下表 `store.valueType`）。
+
+### 必填與顯示條件（不在 config 裡）
+
+下面是官網畫面現在的規則，只用來理解名單裡的空值與自動帶入的值。規則可能隨時改、不升版，`contentHash` 也不會變；名單也沒有記錄填表當下的規則，Hub 不要拿它驗證名單（伺服器實際擋了什麼見第 6 節）。
+
+- `companySize`（規模人數）、`budgetRange`（預算區間）：洽詢項目是「講座及課程邀約」時必填，其他兩項時選填（畫面題目後面顯示半形 `(選填)`）。
+  所以選「採訪邀約」「異業合作」的名單，這兩題常常是 `null`；反過來，這兩題有值**不代表**洽詢項目是講座（第 5 節「存值的細節」）。
+- `lineId` 選填；其他題目都必填。
+- **沒有任何題目會被隱藏**：所有題目一直顯示，所以不會有「因為沒顯示而沒填」的情況。
 
 ### 讀題目與選項：用哪些 key
-
-config 裡還有提示字（`placeholder`）、錯誤訊息（`errors`）、驗證範例（`validation[].accepts`／`rejects`）等給官網畫面與說明用的 key，串接題目用不到，略過即可。
-要讀的只有下面這些。
 
 **位置**：`schema.sections[]`（段落）→ `section.fields[]`（每一題）。
 
 - 第一段 `id` 是 `enquiry-type`，`title` 跟題目相同（`請選擇你的洽詢項目：`）。
 - 第二段 `id` 是 `contact`，**`title` 是 `null`**（畫面上沒有分區標題），要顯示段落標題的話自己處理空值。
 
-**每一題**
+**每一題**可能有的 key（三張表單共用同一套；這一題沒有的 key 就不會出現）：
 
 | 要讀什麼 | key | 說明 |
 |---|---|---|
-| 欄位代號 | `key` | 這張表單的 `key` 跟名單欄位名稱都一樣，但頂層或 `payload` 要看下一列 |
-| 名單裡的位置 | `store.path` | 頂層欄位直接是名稱（`name`、`phone`、`email`、`message`），其他是 `payload.<名稱>` |
-| 題目 | `label` | 例：`公司 / 單位名稱`、`規模人數` |
-| 題目補充 | `labelSuffix` | 只有 `lineId`：`(選填)`（**半形括號**，預約表單是全形`（選填）`）。畫面上 `label` 與補充之間有一個空格 |
-| 選填時的補充 | `labelSuffixWhenOptional` | 這張表單用在 `companySize`、`budgetRange`：`required` 條件不成立時題目後面顯示 `(選填)`，成立時改顯示必填記號。值是**半形** `(選填)`，預約、團課表單同一個 key 的值是全形`（選填）` |
-| 必填 | `required` | `true`／`false`，或一個條件物件（`companySize`、`budgetRange`） |
-| 存的型別 | `store.valueType` | 只有 `cooperationType`、`companySize`、`budgetRange` 有寫，**而且寫的是說明文字**（例：`string（自由文字，不是選項）`），不是預約表單那種 `boolean`、`string[]` 代號。要判斷型別請用 `startsWith('string')`，不要用 `===` |
-| 沒填時存什麼 | `store.empty` | `lineId`、`companySize`、`budgetRange` 都是 `null` |
+| 欄位代號 | `key` | 不一定等於名單裡的欄位名，名單位置一律看 `store.path` |
+| 題目 | `label` | 畫面上的題目文字 |
+| 題目補充 | `labelSuffix` | 例：`（選填）`、`（可複選）`；要顯示完整題目就接在 `label` 後面 |
+| 題型 | `type` | 例：`text`、`tel`、`email`、`date`、`textarea`、`select`、`radio`、`checkbox-group`、`tabs` |
+| 名單裡的位置 | `store.path` | 頂層欄位直接是名稱（例：`name`），其他是 `payload.<名稱>` |
+| 存的型別 | `store.valueType` | 沒寫就是字串。開頭是型別字（`boolean`、`string[]`、`string`），後面可能接說明文字，判斷型別請用 `startsWith`，不要用 `===` |
+| 布林對照 | `store.map` | 畫面選項 → 存的值，例：`{ "本人填寫": true, "他人代填": false }` |
+| 可能出現的所有值 | `store.possibleValues` | 名單裡可能出現的**所有**值，可能有不在 `options` 裡的值 |
+| 組合值的寫法 | `store.compose` | 「主選項: 細項」怎麼組成的說明文字（給人看的，不是程式規則） |
+| 順帶寫入的位置 | `store.alsoWrites` | **一律是陣列**，每個元素是 `{ path, value }`：`path` 是另外寫到的位置，`value` 是說明文字或固定值 |
+| 選項 | `options`、`retiredOptions`、`optionsSource`、`other` | 見下表 |
 
-這張表單**沒有** `store.map`（沒有布林欄位）、`showIf`、`store.whenHidden`、`store.possibleValues`。
+**選項**的 key（四種都沒有的題目是自由輸入）：
 
-**選項**：只有一種來源，也只有一題有選項。其他八題都是自由輸入。
+| 來源 | key | 怎麼讀 |
+|---|---|---|
+| 固定選項 | `options[]` | 每個選項是 `{ value, label?, price? }`：`value` 是名單裡存的字；`label` 是畫面上的字，**沒寫就等於 `value`**；`price` 是課程價目（只顯示、不存進名單） |
+| 已停用的選項 | `retiredOptions[]` | 2026-11-14 起停用的選項從 `options` 移到這裡，格式同 `options`，另可有 `retiredOn`（停用日）、`note`。**畫面上已經不出現**，只用來解讀舊名單；列可選清單時不要列出。沒有停用的選項時沒有這個 key，當成空陣列 |
+| 動態選項 | `optionsSource` | `{ endpoint, value, label, fallback }`：選項在 Firestore 的集合裡（第 4 節），`value`、`label` 是拿哪個欄位當存的值與畫面文字，`fallback[]` 是內建備用選項的 `{ value, label }` |
+| 「其他」再填說明 | `other` | `{ triggerValue, compose }`：選了 `triggerValue` 可以再填說明，名單存成「`triggerValue`: 說明」；`compose` 是這個寫法的說明文字 |
 
-| 來源 | key | 用在哪些題 | 怎麼讀 |
-|---|---|---|---|
-| 固定選項 | `options[]` | 只有洽詢項目 `cooperationType` | `value` 是名單裡存的字；`label` 是畫面上的字（三個選項都有寫 `label`）；`messagePlaceholder` 是選這項時「合作內容詳情」的提示字 |
-| 已停用的選項 | `retiredOptions[]` | 同一題（`cooperationType`） | 2026-11-14 起，停用的選項從 `options` 移到這裡，格式同 `options`（`value`、可省略的 `label`），另可有 `retiredOn`（停用日）、`note`（說明）。畫面上不再出現，**只用來解讀舊名單**；列新表單的選項時不要列出。目前沒有任何停用的選項，這個 key 不存在，讀的時候當成空陣列 |
-| 動態選項 | 無 | — | 沒有 `optionsSource`，不用讀 `stores` 或 `settings/referralOptions` |
-| 第二層 | 無 | — | 沒有 `options[].detail`，也沒有 `other`（「其他」加說明） |
+**這張表單**：
+
+- `key` 跟名單欄位名稱都一樣，但頂層或 `payload` 要看 `store.path`：頂層是 `name`、`phone`、`email`、`message`，其他在 `payload`。
+- `labelSuffix`：只有 `lineId`：`(選填)`（**半形括號**，預約、團課表單是全形`（選填）`）。畫面上 `label` 與補充之間有一個空格。`companySize`、`budgetRange` 畫面上有時也顯示 `(選填)`，那是依洽詢項目切換的，不在 config 裡（見上方「必填與顯示條件」）。
+- `type`：`tabs`（洽詢項目，三顆並排按鈕）、`text`、`tel`、`email`、`textarea`。
+- `store.valueType`：只有 `cooperationType`、`companySize`、`budgetRange` 有寫，**而且是 `string` 後面接說明文字**（例：`string（自由文字，不是選項）`），判斷型別要用 `startsWith('string')`。`cooperationType` 經 API 直接寫入時可能是任意值，見第 6 節第 1、2 點。沒寫 `store.valueType` 的題目存的都是字串。
+- 沒填時存什麼不在 config 裡：`lineId`、`companySize`、`budgetRange` 完全沒打字是 `null`，只打空白是空白字串（第 5 節「存值的細節」）。
+- `options`：只有洽詢項目 `cooperationType`，三個選項都有寫 `label`，每個選項只有 `value`、`label`。`retiredOptions` 目前沒有。
+- 沒有 `store.map`（沒有布林欄位）、`store.possibleValues`、`store.compose`、`store.alsoWrites`、`optionsSource`（不用讀 `stores` 或 `settings/referralOptions`）、`other`。預約、團課表單得知管道那種第二層選單本來就不在 config 裡（第 4 節），這張表單也沒有那題。
 
 三個選項（依畫面順序）：
 
-| `value`（名單存的字） | `label`（畫面上的字） | 備註 |
+| `value`（名單存的字） | `label`（畫面上的字） | 備註（官網畫面行為，不在 config 裡） |
 |---|---|---|
 | `講座及課程邀約` | 表情符號＋空格＋`講座及課程邀約` | 預設選中；選這項時規模人數、預算區間改必填 |
 | `採訪邀約` | 表情符號＋空格＋`採訪邀約` | |
 | `異業合作` | 表情符號＋空格＋`異業合作` | |
 
 - 三個 `label` 都是「一個表情符號＋半形空格＋`value`」。Hub／CRM 不想顯示表情符號的話，直接顯示 `value` 即可，意思完全相同。
-- `default` 是 `講座及課程邀約`：這題是分頁按鈕，沒有「未選」狀態，經表單送出的名單一定是三個值之一。
-
-另外兩個跟這題有關的 key：
-
-- `message` 的 `placeholder` 是 `$option.cooperationType.messagePlaceholder`，**不是實際文字**，而是「目前選中選項的 `messagePlaceholder`」（規則在 `conventions.optionRef`）。要顯示提示字就去選項上取。
-- `valueRules`：切換洽詢項目**不會清空**規模人數、預算區間、合作內容詳情（見第 5 節）。
+- 這題是分頁按鈕，預設選中 `講座及課程邀約`，沒有「未選」狀態，經表單送出的名單一定是三個值之一（直接呼叫 API 的例外見第 6 節第 2 點）。
+- 選不同洽詢項目時，「合作內容詳情」的提示字會跟著換，但提示字不存進名單、也不在 config 裡，Hub 用不到。
+- 切換洽詢項目**不會清空**規模人數、預算區間、合作內容詳情（第 5 節「存值的細節」）。
 
 **讀取範例（Node.js）**：列出每一題的題目、名單位置與選項
 
@@ -409,7 +446,6 @@ for (const f of fields) {
     label: o.label ?? o.value,
     retiredOn: o.retiredOn ?? null,
   }))
-  const requiredWhen = typeof f.required === 'object' ? f.required : null // 條件必填
 }
 
 // 名單值 → 畫面上的字：先查 options、再查 retiredOptions，都沒有就回原值
@@ -435,7 +471,8 @@ function toLabel(field, value) {
     停用的選項會移到同一題的 `retiredOptions`；改字＝停用舊的＋新增新的。同一個值不會同時出現在現行與停用清單。
   - 題目或隱藏欄位刪除或改 `key`、`store.path` 或存的型別改變、`store.alsoWrites` 少寫一個位置、`leadType` 改變，**一定會升 `schemaVersion`**（第 7 節）。
   - 例外：題目整題被升版刪除後，config 裡就沒有這一題了，舊名單的這個值照原值顯示。
-  - 題目文字、選項的 `label` 與 `messagePlaceholder`、提示字、必填條件**不在這道保護內**，可能隨時改、不升版，所以 Hub 轉存時要存原始值（見第 2 節「快取與轉存」）。
+  - 題目文字、選項的 `label`**不在這道保護內**，可能隨時改、不升版（改了 `contentHash` 會變），所以 Hub 轉存時要存原始值（見第 2 節「快取與轉存」）。
+    提示字、必填條件不在 config 裡，改了 Hub 也看不到（第 3 節「必填與顯示條件」是這份說明更新時的現況）。
 
   檢查怎麼做、記錄了哪些東西、擋不到什麼，見文末附錄「官網這邊怎麼確保 config 正確」。
 - 2026-11-14 以前改過：洽詢項目在 2026-08-24，值與意思都變過，見第 5 節「舊值」。
@@ -443,12 +480,36 @@ function toLabel(field, value) {
   **更早消失的值不在 `retiredOptions` 裡**（第 5 節的三個舊值就不在 config 裡），所以舊名單的值仍可能兩邊都對不到，照原值顯示，不需要對照表。
   對不到的值分不出「2026-11-14 以前停用的正式選項」和「直接呼叫 API 寫進來的值」；只有在需要區分這兩種時（例如做資料品質報表），才需要 Hub／CRM 自己保存這份清單，至少包含第 5 節的三個舊值，而且不要自動對應到新值。
 
+### 隱藏欄位（`hiddenFields[]`）
+
+使用者看不到、但會存進名單的值。每一項可能有的 key：
+
+| key | 說明 |
+|---|---|
+| `key` | 隱藏欄位的代號 |
+| `value` | 值從哪裡來的**說明文字**，不是名單裡的值，不要拿它當預設值（只有 `sourcePage` 的值剛好就是頁面路徑） |
+| `valueType` | 只有型別特殊時才有（例：`formVariant` 是 `string \| string[] \| null` 加說明文字） |
+| `shape` | 只有物件才有（例：`utm` 物件裡每個 key 的說明） |
+| `store.path` | 名單裡的位置 |
+
+本表單有兩個：
+
+| `key` | 名單位置 | 從哪裡來 |
+|---|---|---|
+| `sourcePage` | 頂層 `sourcePage` | `value` 是 `/cooperation`；前端送什麼存什麼，沒送時伺服器補 `/cooperation` |
+| `utm` | `payload.utm` | cookie `lkk_utm`，沒有是 `null`；`value` 是說明文字（`cookie lkk_utm（保存 30 天），送出當下讀取`），物件的欄位見 `shape` 與第 5 節 |
+
+以下不在 config 裡：
+
+- 這兩個值都由前端送出、伺服器原樣存，**沒有驗證**（見第 6 節第 3 點）。名單裡實際的樣子見第 5 節。
+
 ---
 
 ## 4. 不在 config 裡、要另外讀的動態選項
 
 **題目的動態選項：這張表單沒有。** 洽詢項目的三個選項寫死在官網程式裡，config 的 `options` 就是全部。
 不用讀 `stores`（名單的 `storeId` 固定是 `null`），也不用讀 `settings/referralOptions`（沒有「從哪裡得知」這題）。
+預約、團課表單的得知管道有一層業主可在後台改的第二層選單，那份選項不在 config 裡，只在預約、團課的讀取說明有描述；這張表單沒有那題，不用處理。
 
 ### 選配：把代碼轉成中文
 
@@ -458,13 +519,14 @@ function toLabel(field, value) {
   後台可以改活動代號、也可以刪除活動，所以舊名單可能對不到，對不到就顯示原始代號。官網後台的名單頁自己也只顯示代號。
   後台存的代號一律是小寫；名單裡的值是網址上的原字（只去掉前後空白、不轉小寫），比對前可以先轉小寫。
 - **名單狀態 `status` 的中文**：`new` 新名單、`contacted` 已聯繫、`scheduled` 已預約、`completed` 已完成、`cancelled` 已取消。
-  以官網 `composables/useLeadStatus.ts` 為準；config 裡只有英文代碼。
+  以官網 `composables/useLeadStatus.ts` 為準；config 裡沒有名單狀態（狀態是後台處理名單用的，不是表單的題目）。
 
 ---
 
 ## 5. 對照名單（`leads` 集合）
 
-合作洽詢的名單在 `leads`，`type == 'cooperation'`。欄位位置以 config 的 `record` 為準：
+合作洽詢的名單在 `leads`，`type == 'cooperation'`。下表是現行版本寫入的欄位。
+config 不含名單的欄位清單（完整描述檔的 `record` 沒有同步），以這張表為準；各題與隱藏欄位的位置也可以從 config 的 `store.path` 得到，但 `type`、`status`、固定是 `null` 的欄位只寫在這裡。
 
 | 位置 | 內容 |
 |---|---|
@@ -482,8 +544,8 @@ function toLabel(field, value) {
 
 現在寫入的名單 `payload` 一定有上面六個 key（值可能是 `null`），前端送來的其他欄位伺服器不收。但舊名單不保證長這樣：
 
-- config 的 `record.payload` 是**現行版本會寫的 key**。較舊的名單可能**缺 key**（缺少與 `null` 同等處理），
-  也可能**多出 config 沒列的 key**（忽略，不要報錯）。例如 lkkdev 若有舊版網站時期的名單（見下方「舊值」），`payload` 沒有 `utm` 這個 key。
+- 上表的 `payload` 是**現行版本會寫的 key**。較舊的名單可能**缺 key**（缺少與 `null` 同等處理），
+  也可能**多出上表沒列的 key**（忽略，不要報錯）。例如 lkkdev 若有舊版網站時期的名單（見下方「舊值」），`payload` 沒有 `utm` 這個 key。
 - **lkkdev 的名單多為測試資料，不具代表性**。在 lkkdev 驗收「名單都對得上 config」不代表 lkkprod 也對得上，
   上 prod 前要以 lkkprod 的實際資料驗收（由官網維護者提供只取選擇題欄位、不含姓名電話的統計，例如 `payload.cooperationType` 各值的筆數）。
 
@@ -504,10 +566,10 @@ UTM 存在瀏覽器 cookie 30 天，跟預約表單共用同一顆；訪客在�
 ### 存值的細節
 
 - **電話存原值，沒有正規化**：可以是手機或市話，可能含橫線、空白、前後空白，例如同一支號碼可能存成 `02-2500-0131`、`0225000131`、` 02 2500 0131 `。
-  要比對或去重複，請先去掉**所有空白字元**（含全形空白、tab、換行；伺服器驗證時就是用 JS 的 `\s` 去掉的，存的仍是原值）以及橫線再比，例如 `phone.replace(/[\s-]/g, '')`。只去半形空白的話，含全形空白的號碼會對不起來。驗證規則的市話分支也會讓 9 碼、11 碼的 `09` 開頭數字通過（`knownQuirks` 有列）。
+  要比對或去重複，請先去掉**所有空白字元**（含全形空白、tab、換行；伺服器驗證時就是用 JS 的 `\s` 去掉的，存的仍是原值）以及橫線再比，例如 `phone.replace(/[\s-]/g, '')`。只去半形空白的話，含全形空白的號碼會對不起來。驗證規則的市話分支也會讓 9 碼、11 碼的 `09` 開頭數字通過（例如 `091234567`、`09123456789`），手機寫成 `0912-345-678` 反而會被擋，所以名單上的電話不一定是有效號碼。
 - **切換洽詢項目不會清空已填的欄位**：使用者先在「講座及課程邀約」填了規模人數、預算區間，再切到「採訪邀約」送出，名單仍會有這兩個值。
   所以 `companySize`、`budgetRange` 有值**不代表**洽詢項目是講座；要以 `payload.cooperationType` 為準。
-- **規模人數、預算區間是自由文字**，不是數字也不是選項（提示字是「例如：50 人、100-200 人」「例如：5 萬以下、5-10 萬、10 萬以上」），要統計的話得自己解析。
+- **規模人數、預算區間是自由文字**，不是數字也不是選項（畫面提示字是「例如：50 人、100-200 人」「例如：5 萬以下、5-10 萬、10 萬以上」，提示字不在 config 裡），要統計的話得自己解析。
 - **文字欄位都存原值、不去前後空白**（Email 例外：瀏覽器會先去掉前後半形空白）。
   只打空白的值，必填欄位會被前端擋下；但 `lineId`，以及洽詢項目不是講座時的 `companySize`、`budgetRange`，前端不檢查，正常經表單送出也會存成空白字串（例如 `"  "`，不是 `null`）。直接呼叫 API 則任何欄位都可能是空白字串。
   判斷「沒填」請用 `v == null || String(v).trim() === ''`，不要只用 `=== null`。
@@ -555,7 +617,7 @@ lkkprod 不受影響（上表 08-24 21:13 時是 0 筆）。
 
 ### 跟預約表單不一樣的地方
 
-同時串三張表單時最容易搞混的地方（完整清單在 config 的 `crossFormDifferences.vsBooking`）：
+同時串三張表單時最容易搞混的地方（config 不含跨表單的差異清單，以這張表為準）：
 
 | 項目 | 預約體驗（`booking`） | 合作洽詢（`cooperation`） |
 |---|---|---|
@@ -567,34 +629,39 @@ lkkprod 不受影響（上表 08-24 21:13 時是 0 筆）。
 | `message` | 備註，選填，可能是 `null` | 合作內容詳情，**必填** |
 | 公司 | `payload.company`：網址變體帶入的合作公司（隱藏欄位） | `payload.organization`：填表者自己打的單位名稱。**不同 key、不同概念** |
 | `storeId` | 一定有值 | 固定 `null` |
-| `sourceChannel` | 得知管道以「, 」串成的字串；被變體隱藏時是空字串 `''`（config `vsBooking` 寫「為 null」是錯的，以 booking 的 config 為準） | 固定 `null` |
+| `sourceChannel` | 得知管道以「, 」串成的字串；被變體隱藏時是空字串 `''`（詳見預約表單的讀取說明） | 固定 `null` |
 | 得知管道、變體 | 有 `payload.sources`、`formVariant`、`leadSource` | **都沒有** |
 | 布林欄位 | `filledBySelf`、`hasMedicalCondition` | 沒有 |
 | 同意事項 | 七條＋勾選框（沒存） | 一句默示同意（沒存） |
 | `store.valueType` 的寫法 | 代號（`boolean`、`string[]`） | 說明文字（`string（…）`） |
-| `labelSuffix`、`labelSuffixWhenOptional` 的括號 | 全形`（選填）` | 半形`(選填)` |
+| `labelSuffix` 的括號 | 全形`（選填）` | 半形`(選填)` |
 
 ---
 
 ## 6. 注意事項
 
+送出流程、伺服器驗證、已知的怪行為這些**不在 config 裡**（只留在官網 repo 的描述檔），跟解讀名單有關的整理在這一節。
+
 1. **伺服器只驗證少數欄位**：公司／單位、聯絡人、電話、Email、合作內容詳情、洽詢項目必填；洽詢項目剛好是字串 `講座及課程邀約` 時，規模人數與預算區間也必填；
    電話（去掉所有空白後）要符合 `^(09\d{8}|0\d{1,2}-?\d{3,4}-?\d{4})$`；Email 要符合 `^[^\s@]+@[^\s@]+\.[^\s@]+$`。
    必填只看「是不是真值」，不去空白、**不檢查型別**。
 2. **其他都不檢查**：`cooperationType` 是不是三個選項之一（任意字都會存）、`lineId`、各欄長度、`sourcePage`、`utm` 內容。
-   直接呼叫官網 API 可以寫入任意值，甚至非字串（數字、陣列、物件），所以 Hub／CRM 處理名單時，**不要假設值一定在選項清單裡，也不要假設一定是字串**（細節在 config 的 `submit.serverValidation`）。
-3. **隱藏欄位沒有驗證**：`sourcePage`、`payload.utm` 由前端送出、伺服器原樣存。不要當成已驗證的資料（詳見 config 的 `hiddenFieldsTrust`）。
+   直接呼叫官網 API 可以寫入任意值，甚至非字串（數字、陣列、物件），所以 Hub／CRM 處理名單時，**不要假設值一定在選項清單裡，也不要假設一定是字串**。
+   例如：除了電話（非字串會讓伺服器出錯、寫不進去），任何真值都會通過必填並原樣存入；Email 是轉成字串後比對，所以陣列 `["a@b.co"]` 也會過、以陣列存入；
+   `cooperationType` 不是字串時（例如 `["講座及課程邀約"]`）不會觸發規模人數與預算區間的必填。
+3. **隱藏欄位沒有驗證**：`sourcePage`、`payload.utm` 由前端送出、伺服器原樣存，不檢查內容、型別與長度。不要當成已驗證的資料。
 4. **沒有驗證碼、沒有頻率限制、沒有重複送出保護**（只有前端按鈕送出中停用）。可能出現重複名單或垃圾名單。
 5. **舊名單可能有現在已不在清單裡的值**：2026-11-14 以後停用的在 `retiredOptions` 查得到，更早的（見第 5 節「舊值」）查不到。
 6. **名單沒有記錄當時的 config 版本**。要判斷名單是哪一版表單填的，只能看 `createdAt`。
 7. **不要寫入 `formSchemas`**：官網只在 `contentHash` 不一致時才重寫。改了其他欄位（例如 `schemaJson`）卻沒改 `contentHash`，錯的內容會一直留著，Hub／CRM 自己也會讀到錯的。
-8. **config 哪些有程式保證、哪些是人工維護**：洽詢項目的選項（value、label、順序、`messagePlaceholder`）由建置檢查保證跟官網程式一致；
-   記錄過的值不會從 config 消失或改字（停用的在 `retiredOptions`），結構改動一定會升 `schemaVersion`（見第 3 節「選項的 value 與 label」）。
-   題目文字、提示字、錯誤訊息、必填條件、伺服器規則的描述是人工維護，少數情況可能比線上畫面慢一步。檢查細節見文末附錄「官網這邊怎麼確保 config 正確」。
-9. **config 的 `submit.sideEffects`／`knownQuirks` 描述的是官網現況，不是規格**，Hub 不要照做。
-   例如裡面寫官網伺服器 log 會印出名單 id、聯絡人姓名、公司／單位、洽詢項目，寄確認信時另外印出填表者 Email，那是官網目前的行為；**Hub 的 log 不記個資**（要追查時記名單的文件 id 即可）。
+8. **config 哪些有程式保證、哪些是人工維護**：洽詢項目的選項（value、label、順序）由建置檢查保證跟官網程式一致；
+   記錄過的值不會從 config 消失或改字（停用的在 `retiredOptions`），結構改動一定會升 `schemaVersion`（見第 3 節「選項的 value 與 label」）；
+   給 Hub 的白名單版本跟完整描述檔的位置、型別、值、段落、題目與選項文字一樣，也由建置檢查保證。
+   題目文字是人工維護，少數情況可能比線上畫面慢一步。這份說明裡寫的必填條件、伺服器規則、存值細節也是人工整理的官網現況。檢查細節見文末附錄「官網這邊怎麼確保 config 正確」。
+9. **這份說明寫到的官網行為是現況，不是規格**，Hub 不要照做。
+   例如官網伺服器 log 目前會印出名單 id、聯絡人姓名、公司／單位、洽詢項目，寄確認信時另外印出填表者 Email；**Hub 的 log 不記個資**（要追查時記名單的文件 id 即可）。
 10. **名單是個資，只同步營運真正需要的欄位**：這張表單沒有健康欄位（不像預約與團課表單），但有聯絡人姓名、電話、Email、LINE ID 與自由文字的合作內容詳情。
-    名單用途要跟填表時告知的目的一致：送出鈕下方寫的是「送出即代表你同意本網頁資訊將僅作為商務對接與回覆洽詢使用。」，
+    名單用途要跟填表時告知的目的一致：送出鈕下方寫的是「送出即代表你同意本網頁資訊將僅作為商務對接與回覆洽詢使用。」（這句不在 config 裡，也沒有存進名單），
     隱私權政策（`/privacy`）也寫明只在該特定目的範圍內利用、非經書面同意不用於其他用途。
     Hub 若要拿名單做超出「商務對接與回覆洽詢」的事（例如行銷、跟其他名單合併），請先跟官網方確認。
 
@@ -604,13 +671,16 @@ lkkprod 不受影響（上表 08-24 21:13 時是 0 筆）。
 
 | 變動 | `contentHash` | `schemaVersion` | Hub／CRM 要做什麼 |
 |---|---|---|---|
-| 改題目文字、提示字、新增或停用選項 | 會變（題目文字、提示字、必填條件需官網維護者同步更新 JSON 才會變；選項有建置檢查，見文末附錄「官網這邊怎麼確保 config 正確」） | 不變 | 不必改程式；照新 config 顯示即可。停用的選項會出現在 `retiredOptions`，解讀舊名單時要一起查 |
-| 欄位改名、值的存法改變（例如字串改布林） | 會變 | **升版** | 官網會先通知，Hub／CRM 調整後再上線 |
-| 表單下架 | 變一次（config 加 `retiredOn`） | 不變 | 文件頂層與 config 多出 `retiredOn`；文件不刪，照樣用來解讀舊名單，之後不會再有這張表單的新名單（見第 1 節） |
-| 加上 `leadType`、`retiredOptions` 的閱讀規則（2026-11-14，dev） | 下次 dev 發版後三張表單都變一次 | 不變 | 可改用 `leadType` 找 config（查不到時退回對照表，見第 1 節）、解讀值時加查 `retiredOptions`（見第 3 節）；題目與選項沒有變 |
+| 改題目文字（`label`、`labelSuffix`）或段落標題、新增選項、改選項的畫面文字、改 `store.valueType` 的說明文字 | 會變（題目文字、段落標題與說明文字需官網維護者同步更新 JSON 才會變；選項有建置檢查，見文末附錄「官網這邊怎麼確保 config 正確」） | 不變 | 不必改程式；照新 config 顯示即可 |
+| 只改不在 config 裡的東西：提示字、錯誤訊息、必填或顯示條件、按鈕與頁面文字、送出後的畫面與信件、同意事項、官網內部的說明（預約、團課表單另有得知管道第二層的細項與預設清單） | **不變**（文件不會重寫） | 不變 | 不必做什麼，Hub 看不到這些改動。其中影響解讀名單的（例如必填條件改了、某題常常沒填），官網會更新這份說明 |
+| 官網調整放進 config 的範圍（例如 2026-11-14 加了 `leadType`、改成只放解讀名單需要的部分，見第 1 節「什麼時候會更新」） | 會變（三張表單各變一次） | 不變（每一題的位置、型別、存的值與代號由建置檢查保證不變） | 不必改程式；只讀第 3 節列出的 key，看到沒列的 key 略過 |
+| 停用選項、下架網址變體或合作方 | 會變（從 `options` 移到 `retiredOptions`、從 `context.variants` 移到 `context.retiredVariants`…） | 不變 | 不必改程式；可選清單只讀 `options`，解讀舊名單時連 `retiredOptions`、`context.retired*` 一起查（第 3 節） |
+| 下架整張表單 | 變一次（文件保留，內容只多了頂層 `retiredOn`；之後不再變） | 不變 | 照常用它解讀舊名單；之後不會再有這個 `type` 的新名單（第 1 節「下架的表單」） |
+| 重新上架 | 變一次（`retiredOn` 拿掉） | 不變 | 不必改程式 |
+| 欄位（含隱藏欄位）改名或刪除、`store.path`／`valueType` 開頭的型別改變、`store.alsoWrites` 少寫一個位置、`leadType` 改變、值的存法改變（例如字串改布林） | 會變 | **升版** | 官網會先通知，Hub／CRM 調整後再上線。升版也不會拿掉記錄過的值（同一個 key 之後也不會拿來存別的東西） |
 
 > 2026-11-14 起，題目或隱藏欄位刪除或改 `key`、`store.path` 或存的型別改變、`store.alsoWrites` 少寫一個位置、`leadType` 改變卻沒升 `schemaVersion`，或記錄過的值與代號消失或改字（升了版也一樣），官網建置都會失敗；所以升版不代表舊名單的值會從 config 裡消失（Hub 可以依賴的保證見第 3 節「選項的 value 與 label」）。
-> 檢查看不到的改動（例如值的格式改了，像日期改寫法；或必填條件改變）要不要升版，仍是官網維護者**人工判斷**；上表是目前的約定，不是保證（檢查的範圍與限制見文末附錄「官網這邊怎麼確保 config 正確」）。
+> 檢查看不到的改動（例如值的格式改了，像日期改寫法；或必填條件改變，這不在 config 裡、`contentHash` 也不會變）要不要升版，仍是官網維護者**人工判斷**；上表是目前的約定，不是保證（檢查的範圍與限制見文末附錄「官網這邊怎麼確保 config 正確」）。
 
 建議 Hub／CRM 讀取時檢查 `schemaVersion`，遇到沒處理過的版本就告警，不要直接套用。
 但 `schemaVersion` 沒變不保證所有值都對得上，對不到選項的值一律照原值顯示。
@@ -628,22 +698,38 @@ config 內容有疑問、或需要新增欄位與選項，請聯繫官網維護�
 > 這一節是官網維護者那邊的檢查，**Hub 串接用不到**：Hub 可以依賴的結論已經寫在正文（第 1 節「名單 type 對 config 文件 id」、第 3 節「選項的 value 與 label」、第 7 節）。
 > 想確認某個保證的範圍、或某個改動為什麼會（或不會）升版時再查。
 > 以下檢查都在官網建置時跑（`scripts/check-form-schemas.mjs`，2026-11-14 起），不符合就建置失敗，有問題的版本不會部署出去。
+> 檢查的對象是官網 repo 裡的描述檔（`docs/form-schema/cooperation.json`）；下面提到的 `submit`、`detail`、`showIf`、`required`、`store.whenHidden`、
+> `messagePlaceholder`、備用分店的地址電話只在描述檔裡，**不在 Hub 讀到的 config**（第 3 節「不在 config 裡的東西」）。
 
 ### 名單 `type` 與寫入名單的程式
 
 - 名單 `type` 的型別宣告（`server/utils/leads.ts` 的 `CreateLeadInput.type`）每一個值都要有 `leadType` 相同的 config（只有 `franchise` 例外）。
 - `server/` 底下每個呼叫 `createLead(` 的地方，都要直接傳物件字面值，最外層有一個寫成字面值的 `type`（例如 `createLead({ type: 'cooperation', … })`；不能用簡寫、變數或展開），而且這個值要在 `CreateLeadInput.type` 裡、有 config，那張表單也不能已下架。`createLead` 也不能換名字（匯入時改名，或指派給別的變數）。
-- 每張沒下架的表單，config 的 `submit.endpoint` 對應的檔案（本表單是 `POST /api/leads/cooperation` → `server/api/leads/cooperation.post.ts`）要存在、要呼叫 `createLead`，而且只寫這張表單的 `leadType`。
+- 每張沒下架的表單，描述檔的 `submit.endpoint`（不在給 Hub 的 config 裡）對應的檔案（本表單是 `POST /api/leads/cooperation` → `server/api/leads/cooperation.post.ts`）要存在、要呼叫 `createLead`，而且只寫這張表單的 `leadType`。
 - `server/` 底下的程式檔（`.ts`、`.js` 這類），程式碼碰到 `leads` 集合（`collection('leads')`、`doc('leads/…')`，先把 `'leads'` 存成常數再用也算；讀或寫都算）就建置失敗。
   例外只有：`server/utils/leads.ts` 裡的 `createLead` 本身、後台 API（`server/api/admin/`），以及列在檢查允許清單裡的檔案（只給只讀不寫的檔案、要寫明原因；目前是空的）。`server/` 以外的檔案不在這道檢查範圍內。
 - 每份 config 都要有 `leadType`，所有 config（含已下架的）的 `leadType` 不能重複。
-- `docs/form-schema/` 裡的 JSON 要跟官網的同步清單一致（每份 JSON 都會同步到 Firestore，含已下架的），沒下架的 JSON 也都要有對應的選項比對。
+- `docs/form-schema/` 裡的 JSON 要跟官網的同步清單一致（每份 JSON 都會挑出給 Hub 的部分同步到 Firestore，含已下架的），沒下架的 JSON 也都要有對應的選項比對。
 
 ### 跟官網程式比（現況）
 
-- 洽詢項目（`cooperationType`）的 value、順序、label、`messagePlaceholder` 要跟官網程式一致。這張表單沒有得知管道、網址變體與分店，其他兩張表單另外比的那些項目不適用。
+- 洽詢項目（`cooperationType`）的 value、順序、label、`messagePlaceholder`（只在描述檔裡）要跟官網程式一致。這張表單沒有得知管道、網址變體與分店，其他兩張表單另外比的那些項目不適用。
 - 頁面上綁定的每個輸入欄位都要是 config 的一題（不存進名單的輸入框要在檢查裡另外列出、寫明原因），所以頁面新增題目卻沒寫進 config 會建置失敗。
 - 這道檢查只比現況、不跟上一版比：程式與 JSON 一起改就過得了。「記錄過的值不能消失」靠下一段的記錄比對。
+
+### 給 Hub 的 config 沒有漏東西
+
+Firestore 上的 config 是從描述檔（`docs/form-schema/cooperation.json`）用白名單挑出來的（`server/utils/form-schemas.ts` 的 `toHubView`）。
+檢查拿同步時真正會寫進 Firestore 的內容跟描述檔比：
+
+- 每一題與每個隱藏欄位的 `key`、`store.path`、型別、`store.alsoWrites`，存進名單的值（選項值、`retiredOptions`、`store.possibleValues`、`store.map` 對照後的值），
+  `leadType`、網址變體與合作方代號，都要跟描述檔一樣（跟下一段記錄檔記的是同一組東西）。
+- 段落的 `id` 與 `title`，每一題的 `label` 與 `labelSuffix`，選項、停用選項與備用分店的 `value` 與 `label`，也都要跟描述檔一樣。
+- 同步的表單清單要跟 `docs/form-schema/` 裡的 JSON 一樣。
+
+白名單改壞了（例如漏了選項的 `label`）建置就失敗，Hub 不會讀到缺了這些東西的 config。
+題型 `type`、課程價目 `price`、`store.compose`、`other`、`store.valueType` 型別字後面的說明文字、變體與合作方的設定值、隱藏欄位的說明文字不在這道比對裡，但白名單有列，照描述檔原樣放進 config。
+白名單以外的 key（第 3 節「不在 config 裡的東西」）不檢查，因為本來就不給 Hub。
 
 ### 跟上一版的記錄比（`values-ledger.json`）
 
@@ -674,10 +760,12 @@ config 內容有疑問、或需要新增欄位與選項，請聯繫官網維護�
 **跟記錄檔比時不管**：題目文字、選項的 `label` 與附帶設定（課程價目 `price`、`messagePlaceholder`）、提示字（placeholder）、錯誤訊息、顯示與必填條件（`showIf`、`required`）、
 隱藏時存什麼（`store.whenHidden`）、得知管道的第二層（`detail`）、變體與合作方裡面的設定值、內建備用分店（`storeId.optionsSource.fallback`）、`store.valueType` 型別字後面的說明文字（有些項目只有某幾張表單有）。
 其中選項的 `label` 與附帶設定、得知管道第二層的提示字與預設選項、變體與合作方的設定值、內建備用分店，另有上面「跟官網程式比」的檢查，但那道檢查只比現況、不看歷史。
+上面這串裡，`messagePlaceholder`、提示字、錯誤訊息、顯示與必填條件、隱藏時存什麼、得知管道的第二層、備用分店的地址電話只在官網 repo 的描述檔裡，不在給 Hub 的 config；題目文字、選項的 `label`、課程價目、變體與合作方的設定值、內建備用分店的代號與名稱則在 config 裡。
 
 ### 檢查的限制
 
 - 送出端點（`server/api/leads/*.post.ts`）實際把值存在名單的哪個 key、有沒有轉換，檢查比對不到：`store.path` 是官網維護者人工跟程式同步的。
 - 檢查看不到的不相容改動（例如型別字沒變、但值的格式改了，像日期改寫法）要不要升版，仍是官網維護者**人工判斷**；升版本身是否恰當、升了版之後改得對不對，檢查也不管。
-- 題目文字、提示字、錯誤訊息、顯示與必填條件不跟程式比，是人工維護的，少數情況可能比線上畫面慢一步。
+- 題目文字與段落標題不跟程式比，是人工維護的，少數情況可能比線上畫面慢一步。
+- 這份說明裡標明「不在 config 裡」的內容（必填與顯示條件、名單的欄位清單、伺服器驗證、隱藏欄位與網址參數的行為、第二層細項…）是人工整理的官網現況，檢查不會比對。
 - 記錄檔是 repo 裡的檔案，有人手動改它還是繞得過去；這道檢查防的是疏忽，不防故意。所以第 7 節的表是目前的約定，不是保證。

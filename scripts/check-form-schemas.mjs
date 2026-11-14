@@ -16,6 +16,7 @@
 //     升 schemaVersion 也一樣；升版刪掉的題目在記錄檔留墓碑）；欄位刪除或改 key、位置、型別、leadType
 //     要改就得升 schemaVersion；新增的東西要先記錄（--record）才會過
 //   - 寫名單的程式：server/ 底下每個 createLead 的 type、每張表單 submit.endpoint 那支只寫自己的 leadType
+//   - 給 Hub 的版本（toHubView 白名單）：位置、型別、存的值、代號、段落、題目與選項文字都跟正本一樣
 //   - 新表單：名單 type（server/utils/leads.ts 的 CreateLeadInput.type，與實際呼叫 createLead 的地方）
 //     都要有 leadType 相同的 JSON；JSON 檔、server/utils/form-schemas.ts 的 SOURCES、下面的 FIELDS 要對齊
 //   - 下架：JSON 留著、加 retiredOn，只從 FIELDS 拿掉
@@ -809,6 +810,38 @@ for (const formId of Object.keys(forms)) {
 }
 for (const formId of Object.keys(ledger.forms ?? {})) {
   if (!(formId in forms)) fail(LEDGER, `記錄裡有「${formId}」，但 docs/form-schema/${formId}.json 不見了。下架表單請保留 JSON、加 retiredOn（Hub 還要靠它解讀舊名單）`)
+}
+
+// ---------- 給 Hub 的版本（server/utils/form-schemas.ts 的 toHubView 白名單）不能漏東西 ----------
+// 拿同步時真正會寫進 Firestore 的內容，跟正本 JSON 比：每一題的位置、型別、存的值、代號（snapshot 一樣），
+// 加上段落、題目文字、選項的畫面文字。白名單改壞了（例如刪掉 options 的 label）就建置失敗。
+try {
+  const { getPublishedFormSchemas } = await jiti.import(join(root, 'server/utils/form-schemas.ts'))
+  const published = getPublishedFormSchemas()
+  for (const pub of published) {
+    const where = `${pub.formId}（給 Hub 的版本）`
+    const src = forms[pub.formId]
+    if (!src) continue
+    const view = JSON.parse(pub.schemaJson)
+    if (pub.leadType !== src.leadType) fail(where, `leadType「${pub.leadType}」≠ 正本「${src.leadType}」`)
+    const a = canon(snapshot(view))
+    const b = canon(snapshot(src))
+    if (a !== b) fail(where, `跟正本的位置、型別、存的值或代號不一樣（toHubView 的白名單漏了東西）\n    給 Hub：${a.slice(0, 300)}\n    正本：${b.slice(0, 300)}`)
+    const shown = (f) => ({
+      key: f.key,
+      label: f.label ?? null,
+      labelSuffix: f.labelSuffix ?? null,
+      options: (f.options ?? []).map((o) => [o.value, o.label ?? null]),
+      retired: (f.retiredOptions ?? []).map((o) => [o.value, o.label ?? null]),
+      fallback: (f.optionsSource?.fallback ?? []).map((o) => [o.value, o.label ?? null]),
+    })
+    const secs = (s) => (s.sections ?? []).map((sec) => ({ id: sec.id ?? null, title: sec.title ?? null, fields: (sec.fields ?? []).map(shown) }))
+    if (canon(secs(view)) !== canon(secs(src))) fail(where, '段落、題目文字或選項的畫面文字跟正本不一樣（toHubView 的白名單漏了東西）')
+  }
+  const ids = published.map((p) => p.formId).sort()
+  if (JSON.stringify(ids) !== JSON.stringify([...jsonIds].sort())) fail('server/utils/form-schemas.ts', `同步的表單 ${JSON.stringify(ids)} 跟 JSON ${JSON.stringify(jsonIds)} 不一樣`)
+} catch (e) {
+  failFatal('server/utils/form-schemas.ts', `載入失敗：${e.message}`)
 }
 
 if (RECORD && !errors.length) {

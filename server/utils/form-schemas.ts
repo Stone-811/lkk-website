@@ -11,8 +11,8 @@
 //   formId         'booking' | 'group-booking' | 'cooperation'
 //   leadType       這張表單寫進 leads 的 type（'booking' | 'group_class' | 'cooperation'），Hub 用它從名單找 config
 //   schemaVersion  JSON 裡的 schemaVersion（欄位改名、存法改變這類不相容的改動才升）
-//   contentHash    下面 schemaJson 的 sha256（同步用；任何內容變動都會變）
-//   schemaJson     整份 schema 的 JSON 字串（CRM 讀了自己 JSON.parse）
+//   contentHash    下面 schemaJson 的 sha256（同步用；只有白名單裡的內容變了才會變）
+//   schemaJson     給 Hub 的版本（toHubView 白名單挑過）的 JSON 字串（Hub 讀了自己 JSON.parse）
 //   syncedAt       寫入時間
 //   revision       寫入的 Cloud Run revision（K_REVISION），查是哪一版寫的用
 //   retiredOn      只有下架的表單才有：JSON 頂層的 retiredOn（'YYYY-MM-DD'）。下架的表單 JSON 留著、
@@ -28,21 +28,62 @@ export const FORM_SCHEMA_COLLECTION = 'formSchemas'
 
 const SOURCES: Record<string, unknown>[] = [booking, groupBooking, cooperation]
 
-// 只對內部有用、CRM 用不到又容易過時的段落：程式檔案路徑、跟後台畫面／CLAUDE.md 的差異。
-// 其他說明（含 knownQuirks、hiddenFieldsTrust）都跟「名單資料怎麼解讀」有關，保留給 CRM。
-function toPublished(src: Record<string, unknown>) {
-  const doc = JSON.parse(JSON.stringify(src)) as Record<string, any>
-  delete doc.sourceOfTruth
-  if (doc.crossFormDifferences && typeof doc.crossFormDifferences === 'object') {
-    delete doc.crossFormDifferences.vsAdmin
-    delete doc.crossFormDifferences.vsClaudeMd
+// 給 Hub 的版本：用白名單只留「解讀名單」需要的部分（2026-11-14 Stone 決定，方案 B）。
+// 提示字、錯誤訊息、顯示／必填條件、送出流程、同意事項、頁面文案、官網內部的注意事項都不放：
+// Hub 用不到，而且只改這些時 contentHash 不會變，Hub 存版本時不會多出沒意義的版本。
+// 要多給 Hub 什麼，就在下面的白名單加 key；建置前的 scripts/check-form-schemas.mjs 會檢查
+// 這個版本仍然包含每一題的位置、型別、選項值與畫面文字、代號（少了就建置失敗）。
+type Obj = Record<string, any>
+const isObj = (v: unknown): v is Obj => !!v && typeof v === 'object' && !Array.isArray(v)
+/** 只留 keys 裡有的 key（值是 undefined 的不放）。 */
+function pick(src: unknown, keys: string[]): Obj | undefined {
+  if (!isObj(src)) return undefined
+  const out: Obj = {}
+  for (const k of keys) if (src[k] !== undefined) out[k] = src[k]
+  return out
+}
+const pickList = (list: unknown, keys: string[]) => (Array.isArray(list) ? list.map((x) => pick(x, keys) ?? x) : undefined)
+const pickMap = (map: unknown, keys: string[]) =>
+  isObj(map) ? Object.fromEntries(Object.entries(map).map(([k, v]) => [k, pick(v, keys) ?? {}])) : undefined
+const OPTION = ['value', 'label', 'price']
+const VARIANT = ['company', 'leadSource', 'allAgesFree', 'extraSources']
+const PARTNER = ['company', 'endDate']
+
+function toHubView(src: Obj): Obj {
+  const store = (st: unknown) => {
+    const o = pick(st, ['path', 'valueType', 'map', 'possibleValues', 'compose'])
+    if (o && isObj(st) && st.alsoWrites) o.alsoWrites = [].concat(st.alsoWrites).map((a) => pick(a, ['path', 'value']))
+    return o
   }
-  return doc
+  const field = (f: Obj) => {
+    const o = pick(f, ['key', 'label', 'labelSuffix', 'type'])!
+    o.store = store(f.store)
+    if (f.options) o.options = pickList(f.options, OPTION)
+    if (f.retiredOptions) o.retiredOptions = pickList(f.retiredOptions, [...OPTION, 'retiredOn', 'note'])
+    if (f.other) o.other = pick(f.other, ['triggerValue', 'compose'])
+    if (f.optionsSource) {
+      o.optionsSource = pick(f.optionsSource, ['endpoint', 'value', 'label'])
+      if (f.optionsSource.fallback) o.optionsSource.fallback = pickList(f.optionsSource.fallback, ['value', 'label'])
+    }
+    return o
+  }
+  const ctx = isObj(src.context) ? src.context : {}
+  const context: Obj = {}
+  for (const [k, keys] of [['variants', VARIANT], ['retiredVariants', [...VARIANT, 'retiredOn', 'note']], ['freeTrialPartners', PARTNER], ['retiredFreeTrialPartners', [...PARTNER, 'retiredOn', 'note']]] as const) {
+    const m = pickMap(ctx[k], keys as unknown as string[])
+    if (m) context[k] = m
+  }
+  return {
+    ...pick(src, ['formId', 'leadType', 'schemaVersion', 'retiredOn']),
+    sections: (src.sections ?? []).map((sec: Obj) => ({ ...pick(sec, ['id', 'title']), fields: (sec.fields ?? []).map(field) })),
+    hiddenFields: pickList(src.hiddenFields, ['key', 'value', 'valueType', 'shape'])?.map((h, i) => ({ ...h, store: pick(src.hiddenFields[i]?.store, ['path']) })),
+    ...(Object.keys(context).length ? { context } : {}),
+  }
 }
 
 export function getPublishedFormSchemas() {
   return SOURCES.map((src) => {
-    const schema = toPublished(src)
+    const schema = toHubView(src)
     const schemaJson = JSON.stringify(schema)
     return {
       formId: String(schema.formId),

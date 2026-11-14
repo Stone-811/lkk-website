@@ -4,8 +4,12 @@
 > 環境：**lkkdev（測試）**；正式站 lkkprod 上線後路徑相同、只換專案（lkkprod 目前還沒有這份文件，正式站發版後才會出現）
 > 更新：2026-11-14
 
-練健康官網 `/group-booking`「團體課程報名」表單的完整定義（欄位、選項、條件、存進名單的位置），
-已經放在 Firestore，CRM 直接讀即可。**這份 config 是唯讀的**：由官網自動維護，CRM 不要寫入。
+練健康官網 `/group-booking`「團體課程報名」表單裡**解讀名單需要的定義**（段落、題目、選項、存進名單的位置與存法、隱藏欄位、網址變體），
+已經放在 Firestore，Hub／CRM 直接讀即可。**這份 config 是唯讀的**：由官網自動維護，Hub／CRM 不要寫入。
+
+> 2026-11-14 起，Firestore 上的 config 是官網用白名單從描述檔（官網 repo 裡的完整表單定義）挑出來的版本，只留解讀名單用得到的 key（第 3 節）。
+> 提示字、錯誤訊息、必填與顯示條件、送出流程、同意事項、頁面文案、官網內部的注意事項都**不在 config 裡**；
+> 其中解讀名單時還用得到的（例如某一題為什麼常是空的、伺服器檢查了什麼、哪些值沒有經過驗證），直接寫在這份說明裡，並標明「不在 config 裡」。
 
 **先看第 0 節「怎麼用」**：照四個步驟就能把一筆名單轉成「題目：答案」顯示出來。
 第 1 節以後是參考資料（文件在哪、欄位意思、config 結構、名單的存值細節與舊名單、權限、版本規則），遇到時再查。
@@ -127,9 +131,11 @@ function toRows(schema, lead, storeName) {
 | 值對不到任何選項 | 照原值顯示。多半是舊名單用的舊選項（第 5 節「舊名單的不同形狀」） |
 | `schemaVersion` 是沒處理過的版本 | 告警，先不要自動套用（第 7 節） |
 | config 裡沒有、名單裡卻有的欄位 | 名單可能比 config 舊或新，照原值顯示、不要丟掉 |
-| 想顯示隱藏欄位（來源頁、UTM 等） | 見第 3 節 `hiddenFields`（這張表單有 `sourcePage`、`formVariant`、`company`、`leadSource`、`utm`），位置一樣在 `store.path`；名單裡的樣子見第 5 節（`formVariant` 可能是陣列） |
+| 想顯示隱藏欄位（來源頁、UTM 等） | 見第 3 節「隱藏欄位（`hiddenFields[]`）」（這張表單有 `sourcePage`、`formVariant`、`company`、`leadSource`、`utm`），位置一樣在 `store.path`；名單裡的樣子見第 5 節（`formVariant` 可能是陣列）。這些值由前端送出、伺服器沒驗證（第 6 節） |
+| 某題在很多名單裡是空的、想知道什麼時候必填 | 必填與顯示條件不在 config 裡，見第 3 節「必填與顯示條件（不在 config 裡）」；沒填時存什麼見第 5 節「存值的細節」 |
+| config 裡有第 3 節沒列的 key | 略過，不要拿來用。lkkdev 在下一次 dev 發版前還是舊的完整版本，會多出 `conventions`、`submit` 等 key（第 1 節「什麼時候會更新」）；上面的程式兩種版本都能讀 |
 
-> 上面步驟一到三的程式碼已經拿官網的三份 config 與假資料實際跑過，例子裡的輸出就是實際跑出來的結果。
+> 上面步驟一到三的程式碼已經拿官網三份給 Hub 的 config（2026-11-14 白名單版本）與假資料實際跑過，例子裡的輸出就是實際跑出來的結果。
 
 ---
 
@@ -171,17 +177,17 @@ function toRows(schema, lead, storeName) {
 | `formId` | string | `group-booking` |
 | `leadType` | string | `group_class`：這張表單寫進名單（`leads`）的 `type`。從 config 頂層的 `leadType` 抄過來（`schemaJson` 裡也有） |
 | `schemaVersion` | string | 目前 `1.0`。**只有不相容的改動才升版**（欄位改名或刪除、存放位置或值的存法改變）。記錄過的選項值與代號升版也不會從 config 消失（停用的在 `retiredOptions` 這類停用清單）。Hub 要怎麼處理見第 7 節，Hub 可以依賴什麼見第 3 節「選項的 value 與 label」 |
-| `contentHash` | string | 整份 config 的 sha256。內容任何變動（含新增選項、改文字）都會變 |
-| `schemaJson` | string | **整份 config 的 JSON 字串**，讀了要自己 `JSON.parse` |
+| `contentHash` | string | `schemaJson` 的 sha256。**只有 config 裡的內容變了才會變**（題目文字、選項、存放位置與型別、隱藏欄位、網址變體這類第 3 節列出的 key）；只改提示字、錯誤訊息、必填或顯示條件、按鈕與頁面文字時不會變（這些不在 config 裡）。哪些改動會讓它變見第 7 節 |
+| `schemaJson` | string | **給 Hub 的 config 的 JSON 字串**，讀了要自己 `JSON.parse`。內容是官網從描述檔用白名單挑出解讀名單需要的部分，形狀見第 3 節 |
 | `syncedAt` | timestamp | **最後一次內容變更**時寫入的時間（內容沒變就不會更新，不是心跳） |
 | `revision` | string | 最後一次內容變更時，寫入的官網版本（Cloud Run revision 名稱，例：`lkk-website-dev-build-2026-11-12-001`） |
 | `retiredOn` | string | **只有下架的表單才有**：下架日期（`YYYY-MM-DD`），從 config 頂層的 `retiredOn` 抄過來（`schemaJson` 裡也有）。目前三張表單都沒有這個欄位（見下方「下架的表單」） |
 
-> 為什麼存成字串：config 有多層巢狀與陣列，Firestore 的 map 不支援某些結構，字串最單純。
+> 為什麼存成字串：config 有多層巢狀與陣列，存成字串最單純，`contentHash` 也直接是這個字串的 sha256。
 
 ### 下架的表單
 
-表單下架時，官網只拿掉頁面與送出端點；config 的 JSON 留在官網 repo、頂層加上 `retiredOn`，官網也繼續同步這份文件，所以 **Firestore 上的文件不會刪除**：
+表單下架時，官網只拿掉頁面與送出端點；描述檔 JSON 留在官網 repo、頂層加上 `retiredOn`，官網也繼續同步這份文件，所以 **Firestore 上的文件不會刪除**：
 文件多一個 `retiredOn`，其餘內容跟下架前相同（`leadType` 也還在，用 `where('leadType', …)` 照樣查得到），之後不會再有這張表單的新名單。
 Hub 照樣用它解讀這張表單的舊名單，只是不該再把它當成現行表單（例如不再列在「可填的表單」）：判斷方式是文件有沒有 `retiredOn`。
 - `retiredOn` 也在 `schemaJson` 裡，所以下架那一次 `contentHash`（還有 `syncedAt`／`revision`）會變一次，之後跟其他沒改的表單一樣不再寫入，不會一直出現、消失。
@@ -190,6 +196,8 @@ Hub 照樣用它解讀這張表單的舊名單，只是不該再把它當成現�
 ### 什麼時候會更新
 
 官網伺服器會比對 config 與 Firestore 上的 `contentHash`，內容有變才寫入（整份覆蓋）：dev 站改了 → lkkdev 更新；正式站改了 → lkkprod 更新。
+config 只放解讀名單需要的部分，所以官網只改提示字、錯誤訊息、條件、按鈕文字這類畫面上的東西時，`contentHash` 不變、文件也不會重寫；
+`contentHash` 一變，就代表 Hub 讀得到的內容真的變了。
 
 - **發版後要等第一個請求打到官網伺服器，才會比對並寫入**。官網跑在 Cloud Run，閒置時 CPU 會被限縮，
   執行個體啟動時發出的比對會停住，等有請求進來才跑完。沒有流量時（例如 dev 站沒人逛的時段）寫入會延後，
@@ -201,13 +209,20 @@ Hub 照樣用它解讀這張表單的舊名單，只是不該再把它當成現�
   表單很久沒改時它們會停在很久以前；同步因故停擺時看起來也一模一樣，Hub 從這兩個欄位分不出來。
   要確認 Hub 讀到的是哪一版，請比對 `contentHash`（需要時跟官網維護者對前 8 碼）。
 - 表單下架或重新上架（`retiredOn` 出現或消失）也是一次內容變更，照上面的流程寫入（見上方「下架的表單」）。
-- 2026-11-14 加了 `leadType` 與閱讀規則（`conventions.options`，多了「停用的選項移到 `retiredOptions`」）的文字，
-  三張表單的 `contentHash` 因此各變了一次（lkkdev 2026-11-14 已寫入；正式站發版時也會變一次）；題目與選項內容沒有變。
+- 2026-11-14 有兩次改動，題目與選項內容都沒有變：
+  1. 加了 `leadType` 與閱讀規則的文字，三張表單的 `contentHash` 各變了一次（lkkdev 2026-11-14 已寫入）。
+  2. config 改成只放解讀名單需要的部分（第 3 節）。**下一次 dev 發版時**三張表單的 `contentHash` 會因為形狀改變再各變一次
+     （新的前 8 碼：`booking` 是 `237bb143`、`group-booking` 是 `f55e9856`、`cooperation` 是 `4a183ba2`）。
+     在那之前 lkkdev 上仍是舊的完整版本，多了 `describes`、`conventions`、`submit`、`record` 這類頂層 key，每一題也多了提示字、條件等 key
+     （第 3 節「不在 config 裡的東西」）；預約表單得知管道 `source` 與團課備註 `note` 的 `store.alsoWrites` 在舊版是單一物件，新版一律是陣列。
+     第 0 節的程式兩種版本都能讀；新版沒有的 key 不要拿來用。
+     lkkprod 目前還沒有這些文件，正式站第一次發版時直接寫入新的形狀。官網如果退回這次改動以前的版本，文件會再變回完整版本，直到下一次發新版。
 
-> config 是官網維護者手寫的描述檔（`docs/form-schema/group-booking.json`），不是從頁面自動產生的。
-> 選項（value、label、順序、課程價目）、得知管道第二層的提示字與預設選項、網址變體的設定值由建置檢查保證跟官網程式一致；
-> 2026-11-14 起建置檢查也會跟上一版的記錄比對，記錄過的值與代號不能消失或改字（見第 3 節「選項的 value 與 label」，檢查細節見文末附錄「官網這邊怎麼確保 config 正確」）。
-> 題目文字、提示字、必填與顯示條件是人工維護，少數情況可能比線上畫面慢一步。
+> config 是從官網維護者手寫的描述檔（`docs/form-schema/group-booking.json`，官網 repo 裡）挑出來的：同步時只留第 3 節列出的 key，其他留在官網 repo。描述檔不是從頁面自動產生的。
+> 選項（value、label、順序、課程價目）、網址變體的設定值由建置檢查保證跟官網程式一致；
+> 2026-11-14 起建置檢查也會跟上一版的記錄比對，記錄過的值與代號不能消失或改字（見第 3 節「選項的 value 與 label」），
+> 並確認挑出來的 config 跟描述檔的每一題位置、型別、存的值、代號、段落標題、題目與選項文字完全相同（檢查細節見文末附錄「官網這邊怎麼確保 config 正確」）。
+> 題目文字與段落標題是人工維護，少數情況可能比線上畫面慢一步。
 > `store.path` 跟送出端點（`server/api/leads/*.post.ts`）實際的存法是否一致，也是人工維護，檢查比對不到。
 
 > 官網剛發版的幾分鐘內，新舊版本會短暫同時在跑，文件（連同 `revision`）可能「新 → 舊 → 新」來回一兩次，
@@ -297,40 +312,44 @@ Hub／CRM 的服務帳號需要 lkkdev（測試）與 lkkprod（正式）**各�
 
 ## 3. config 長什麼樣子
 
-`JSON.parse(schemaJson)` 之後的頂層：
+`JSON.parse(schemaJson)` 之後的頂層只有下面這些 key（給 Hub 的版本：官網從描述檔用白名單挑出解讀名單需要的部分）：
 
 | key | 內容 |
 |---|---|
-| `formId`、`leadType`、`schemaVersion` | 同上 |
-| `retiredOn` | 只有下架的表單才有，同上（目前沒有） |
-| `describes` | 一句話說明（裡面的撰寫日期與「dev 與正式站相同」等字樣是寫描述檔當時的狀況，不會自動更新，不要拿來判斷版本或環境） |
-| `conventions` | **閱讀規則**：條件怎麼寫、`required`／`showIf` 的意思、選項 value 與 label 的差別，以及這張表單才有的 `normalize`、`alsoWrites` 等寫法。先讀這段 |
-| `submit` | 送出 API、伺服器驗證規則（`serverValidation`）、寄信（`sideEffects`）、成功／失敗畫面 |
-| `context` | 網址參數 `?v=`（團課變體）、`?src=`（名單來源）會怎麼改變表單與存值。**沒有 `?co=`**。現行變體在 `context.variants`；停用的變體代號移到 `context.retiredVariants`（目前沒有這個 key） |
-| `derived` | 頁面算出來、但**沒存**的值（鎖定的分店／課程、是不是舉重團班、聯絡電話是否選填） |
-| `pageCopy` | 頁面標題、價格說明等展示文字，不影響欄位 |
-| `sections` | 表單分四段，每段有 `fields`（欄位定義，見下表） |
-| `consent` | 這張表單**沒有**同意事項勾選框，只有送出鈕下方一句隱含同意文字；沒有任何同意紀錄存進名單 |
-| `hiddenFields` | 使用者看不到、但會存進名單的值（來源頁、變體、合作公司、名單來源、UTM） |
-| `requestBody` | 前端實際送給 API 的 key 清單 |
-| `record` | **名單（`leads` 集合）的欄位清單**：哪些在頂層、哪些在 `payload`、哪些沒存 |
-| `hiddenFieldsTrust` | 哪些值沒有經過伺服器驗證（重要，見第 6 節） |
-| `knownQuirks` | 已知的怪行為清單（例如年齡區間邊界重疊） |
-| `differencesFromBooking` | 跟預約表單逐項比較（文末附錄是整理版） |
+| `formId`、`leadType`、`schemaVersion` | 同第 1 節「文件欄位」 |
+| `retiredOn` | 只有下架的表單才有（第 1 節「下架的表單」）。本表單沒有 |
+| `sections` | 段落陣列，順序就是畫面上的順序；每段是 `{ id, title, fields }`，`title` 是段落標題（可能是 `null`），`fields` 是這一段的題目（見下方「欄位一覽」與「讀題目與選項：用哪些 key」）。本表單分四段，第二段（代填的三題）的 `title` 是 `null`。 |
+| `hiddenFields` | 使用者看不到、但會存進名單的值，見下方「隱藏欄位」。本表單有 `sourcePage`、`formVariant`、`company`、`leadSource`、`utm` |
+| `context` | 網址參數帶來的代號與設定值：現行的在 `variants`（`?v=` 網址變體）、`freeTrialPartners`（`?co=` 免費合作方），下架的代號移到 `retiredVariants`、`retiredFreeTrialPartners`；沒有的就不出現。本表單只有 `variants`，目前只有 `default`（內容是空物件）；沒有 `?co=`，所以沒有 `freeTrialPartners`。`?src=`（名單來源）沒有代號表，原字存進 `payload.leadSource` |
 
-### 條件寫法（`conventions.condition`）
+### 不在 config 裡的東西
 
-```json
-{ "field": "isFillerSelf", "op": "eq", "value": "否" }
-```
+config 裡只有本節各表列出的 key。描述檔（`docs/form-schema/group-booking.json`）是官網自己用的完整表單定義，其他 key 同步到 Firestore 時刻意不放，例如：
 
-- `op`：`eq`、`neq`、`in`、`notIn`、`includes`（多選含某值）、`truthy`、`falsy`、`gte`
-- `field` 開頭是 `$variant.` → 讀網址變體設定；`$derived.` → 衍生值；`$state.` → 畫面狀態
-- 組合：`{ "all": [...] }`、`{ "any": [...] }`
+- 頂層：`describes`、`sourceOfTruth`、`conventions`（閱讀規則與條件寫法）、`submit`（送出流程與伺服器驗證）、`consent`（同意事項）、`derived`、`record`（名單的欄位清單）、`requestBody`、`pageCopy`、`hiddenFieldsTrust`、`knownQuirks`、`crossFormDifferences`、`differencesFromBooking`（不是每張表單都有）；`context` 裡的 `description`、`params`、`variantProperties` 這類說明。
+- 每一題：`placeholder`、`required`、`errors`、`validation`、`showIf` 與其他條件（`lockedBy`、`optionRules`、`valueRules`…）、`hint`、`picker`、`min`／`max`、`default`、`labelSuffixWhenOptional`、`knownIssue` 這類；段落的 `titleNote`。
+- 選項：`showIf`、`note`、`detail`（第二層選單）、`messagePlaceholder` 這類；`store`：`note`、`empty`、`whenHidden`、`fallback`、`order`、`normalized`、`serverShape` 這類；`optionsSource`：`afterSelectShow`、`filter`、`order`、`note`，以及備用分店的地址電話；隱藏欄位：`capture`、`note`，以及 `store` 裡 `path` 以外的 key。
+
+不放的原因：Hub 解讀名單用不到，而且只改這些時 `contentHash` 不會變，Hub 不會因為改了一句提示字就多存一個版本。
+其中解讀名單時還用得到的，寫在這份說明裡並標明「不在 config 裡」，位置見下表。
+lkkdev 在下一次 dev 發版前還是完整版本（第 1 節「什麼時候會更新」），這些 key 暫時還讀得到；**不要寫程式讀它們**，發版後就會消失。官網之後如果多放 key 進來，第 0 節的程式也不受影響；看到本節沒列的 key 略過即可。
+
+| 資訊（描述檔裡的 key） | 現在寫在哪 |
+|---|---|
+| 必填與顯示條件、隱藏時存什麼（`required`、`showIf`、`store.whenHidden`、`store.empty`） | 下方「必填與顯示條件（不在 config 裡）」 |
+| 電話正規化（`store.normalized`） | 下方「讀題目與選項：用哪些 key」、第 5 節開頭 |
+| 得知管道的第二層（`detail`）、課程與分店的連動（`optionRules`、`lockedBy`） | 下方「讀題目與選項：用哪些 key」、第 4 節 |
+| 名單的欄位清單（`record`） | 第 5 節開頭 |
+| 送出流程、伺服器驗證、已知的怪行為（`submit`、`knownQuirks`） | 第 6 節第 1、2、7 點 |
+| 隱藏欄位沒有驗證（`hiddenFieldsTrust`）、utm 怎麼捕捉（`capture`） | 第 6 節第 3 點、下方「隱藏欄位」 |
+| 同意文字（`consent`） | 第 6 節第 8 點 |
+| 跟預約表單的差異（`differencesFromBooking`） | 文末附錄「跟預約表單不一樣的地方」 |
 
 ### 欄位一覽（`sections[].fields[]`）
 
-| key | 題目 | 類型 | 必填 | 存在名單的位置 | 存的型別 |
+「必填」欄是官網畫面的規則，**不在 config 裡**（細節見下方「必填與顯示條件」），列在這裡是為了說明名單裡為什麼會是空的。
+
+| key | 題目 | 類型 | 必填（官網規則，不在 config 裡） | 存在名單的位置 | 存的型別 |
 |---|---|---|---|---|---|
 | `name` | 學員姓名 | text | 必填 | `name` | string |
 | `gender` | 學員性別 | radio | 必填 | `payload.gender` | string |
@@ -349,9 +368,20 @@ Hub／CRM 的服務帳號需要 lkkdev（測試）與 lkkprod（正式）**各�
 | `source` | 你是從哪裡得知練健康團體課程資訊的呢？ | radio | 必填（變體可隱藏） | `payload.source`（**單數**） | string[]（現行表單送出時長度 1；變體隱藏時是 `[]`；**舊名單可能 0～多個**，見第 5 節） |
 | `note` | 備註與其他想補充說明的細節 | textarea | 選填 | `message`＋`payload.note`（同值兩份） | string／null |
 
-`relationship`、`fillerName`、`contactPhone` 三題在第二段（`id: "filler"`），只在 `isFillerSelf` 是 `否` 時出現。
+`relationship`、`fillerName`、`contactPhone` 三題在第二段（`id: "filler"`）。
 
-每個欄位的完整定義（選項、錯誤訊息、顯示條件、隱藏時存什麼）在 config 裡的 `field.options`、`field.showIf`、`field.store`。
+### 必填與顯示條件（不在 config 裡）
+
+下面是官網畫面現在的規則，只用來理解名單裡的空值與自動帶入的值。規則可能隨時改、不升版，`contentHash` 也不會變；名單也沒有記錄填表當下的規則，Hub 不要拿它驗證名單（伺服器實際擋了什麼見第 6 節）。
+
+| 題目 | 什麼時候出現 | 沒出現時名單存什麼 |
+|---|---|---|
+| `relationship`、`fillerName` | `isFillerSelf` 選「否，我是幫他人代填」時（必填） | `null`（就算先填過再切回本人） |
+| `contactPhone` | 同上；必填，但關係是「練健康同仁」時選填，畫面上題目後面會加 `（選填）`（config 的 `label` 只有 `方便聯繫的電話`） | `null`（代填但留空也是 `null`） |
+| `source` | 一般都出現（必填）。網址變體可以設定整題隱藏，這個設定不在 config 裡，目前沒有變體這樣設定 | `[]` |
+| `course` 的選項 `練健康舉重團班` | 網址變體把分店鎖在南京店以外時不出現；目前沒有任何變體鎖定分店，三個課程都會出現 | （填表人只能選其他課程） |
+
+`preferredTime`、`experience`、`note` 選填，沒填時存 `null`（`note` 連同頂層 `message`）；其他題目都必填。
 
 ### 讀題目與選項：用哪些 key
 
@@ -359,48 +389,54 @@ Hub／CRM 的服務帳號需要 lkkdev（測試）與 lkkprod（正式）**各�
 > 指欄位本身時寫「key 為 `store` 的欄位」（分店那一題）。兩者容易混淆：分店選項在 key 為 `store` 的欄位的 `options`，
 > 不是 `field.store.options`（不存在）。
 
-config 裡還有提示字、錯誤訊息、`errorRules`、`lockedBy`、`differsFromBooking` 等給官網畫面或內部說明用的 key，串接題目用不到，略過即可。
-要讀的只有下面這些。
-
-**位置**：`schema.sections[]`（段落，`title` 是段落標題）→ `section.fields[]`（每一題）。
+**位置**：`schema.sections[]`（段落，`id`、`title` 是段落代號與標題）→ `section.fields[]`（每一題）。
 
 > 第二段（代填的三題）**`title` 是 `null`**：畫面上它是第一部分裡的一個虛線框，沒有標題。顯示段落標題前要先判斷。
 
-**每一題**
+**每一題**可能有的 key（三張表單共用同一套；這一題沒有的 key 就不會出現）：
 
 | 要讀什麼 | key | 說明 |
 |---|---|---|
-| 欄位代號 | `key` | 不一定等於名單裡的欄位名（例：`note` 存在頂層 `message`），名單位置看下一列 |
-| 名單裡的位置 | `store.path` | 頂層欄位直接是名稱（`name`），其他是 `payload.<名稱>` |
-| 另外寫到的位置 | `store.alsoWrites` | 只有 `store`、`note` 兩題。**形狀不一樣**：`store` 是陣列（`payload.storeName`、頂層 `storeId`），`note` 是單一物件（`payload.note`）。讀的時候先判斷是不是陣列 |
-| 題目 | `label` | 例：`學員年齡區間`、`想報名的課程` |
-| 題目補充 | `labelSuffix` | 選填，例：`（選填）`、`（單選）`；要顯示完整題目就接在 `label` 後面 |
-| 選填時的補充 | `labelSuffixWhenOptional` | 只有 `contactPhone`：關係是「練健康同仁」時題目後面加 `（選填）` |
-| 存的型別 | `store.valueType` | 沒寫就是字串；`isFillerSelf`、`preferredTime`、`medicalHistory` 明寫 `string`，`source` 是 `string[]` |
-| 會不會被正規化 | `store.normalized` | 只有 `phone`、`contactPhone`：存的是刪掉空白與半形橫線後的值 |
-| 什麼時候才出現 | `showIf` | 條件不成立時這題不出現，名單裡存 `store.whenHidden` 的值（代填三題是 `null`，`source` 是 `[]`） |
+| 欄位代號 | `key` | 不一定等於名單裡的欄位名，名單位置一律看 `store.path` |
+| 題目 | `label` | 畫面上的題目文字 |
+| 題目補充 | `labelSuffix` | 例：`（選填）`、`（可複選）`；要顯示完整題目就接在 `label` 後面 |
+| 題型 | `type` | 例：`text`、`tel`、`email`、`date`、`textarea`、`select`、`radio`、`checkbox-group`、`tabs` |
+| 名單裡的位置 | `store.path` | 頂層欄位直接是名稱（例：`name`），其他是 `payload.<名稱>` |
+| 存的型別 | `store.valueType` | 沒寫就是字串。開頭是型別字（`boolean`、`string[]`、`string`），後面可能接說明文字，判斷型別請用 `startsWith`，不要用 `===` |
+| 布林對照 | `store.map` | 畫面選項 → 存的值，例：`{ "本人填寫": true, "他人代填": false }` |
+| 可能出現的所有值 | `store.possibleValues` | 名單裡可能出現的**所有**值，可能有不在 `options` 裡的值 |
+| 組合值的寫法 | `store.compose` | 「主選項: 細項」怎麼組成的說明文字（給人看的，不是程式規則） |
+| 順帶寫入的位置 | `store.alsoWrites` | **一律是陣列**，每個元素是 `{ path, value }`：`path` 是另外寫到的位置，`value` 是說明文字或固定值 |
+| 選項 | `options`、`retiredOptions`、`optionsSource`、`other` | 見下表 |
 
-**這張表單沒有布林欄位**，所以沒有 `store.map`（預約表單的 `filledBySelf`、`hasMedicalCondition` 才有）。
+**選項**的 key（四種都沒有的題目是自由輸入）：
 
-**選項**：只有兩種來源，沒有這兩種 key 的題目是自由輸入（姓名、電話、Email、時段、健康狀況、備註）。
+| 來源 | key | 怎麼讀 |
+|---|---|---|
+| 固定選項 | `options[]` | 每個選項是 `{ value, label?, price? }`：`value` 是名單裡存的字；`label` 是畫面上的字，**沒寫就等於 `value`**；`price` 是課程價目（只顯示、不存進名單） |
+| 已停用的選項 | `retiredOptions[]` | 2026-11-14 起停用的選項從 `options` 移到這裡，格式同 `options`，另可有 `retiredOn`（停用日）、`note`。**畫面上已經不出現**，只用來解讀舊名單；列可選清單時不要列出。沒有停用的選項時沒有這個 key，當成空陣列 |
+| 動態選項 | `optionsSource` | `{ endpoint, value, label, fallback }`：選項在 Firestore 的集合裡（第 4 節），`value`、`label` 是拿哪個欄位當存的值與畫面文字，`fallback[]` 是內建備用選項的 `{ value, label }` |
+| 「其他」再填說明 | `other` | `{ triggerValue, compose }`：選了 `triggerValue` 可以再填說明，名單存成「`triggerValue`: 說明」；`compose` 是這個寫法的說明文字 |
 
-| 來源 | key | 用在哪些題 | 怎麼讀 |
-|---|---|---|---|
-| 固定選項 | `options[]` | 性別、年齡區間、本人填寫、關係、課程、分店、重訓經驗、得知管道 | `value` 是名單裡存的字；`label` 是畫面上的字，**沒寫就等於 `value`**；`showIf` 是這個選項的出現條件 |
-| 已停用的選項 | `retiredOptions[]` | 有選項的題目都可能有（目前沒有任何一題有這個 key） | 2026-11-14 起停用的選項從 `options` 移到這裡，形狀同 `options`（`value`、選填的 `label`），另可有 `retiredOn`（停用日）、`note`。畫面上不再出現，**只用來解讀舊名單的值**，不要列進可選清單 |
-| 第二層 | `options[].detail` | 只有得知管道 `source` | `detail.type` 是 `select` 時，選項來自 `detail.optionsSource`（第 4 節），讀不到用 `detail.defaultOptions`；是 `text` 時是自由輸入 |
+**這張表單**：
 
-這張表單**沒有欄位層級的 `optionsSource`**：分店是寫死在頁面上的四個選項，不讀 `stores` 集合（預約表單的分店才讀 `stores`）。
+- `key` 跟名單欄位名不同的：`note` 存在頂層 `message`（另外抄一份到 `payload.note`）。
+- `type`：`text`、`tel`、`email`、`textarea`（自由輸入）、`radio`、`select`（有 `options`）。
+- `store.valueType`：`isFillerSelf`、`preferredTime`、`medicalHistory` 明寫 `string`，`source` 是 `string[]`，其他沒寫（字串）。
+- `store.possibleValues`：只有 `isFillerSelf`：`是`、`否`（跟 `options` 相同）。
+- `store.compose`：只有 `source`：有細項時存「主選項: 細項」。
+- `store.alsoWrites`：只有 key 為 `store`、`note` 的兩題。`store` 兩個元素：`payload.storeName`、頂層 `storeId`（`value` 是 `null`，永遠存 `null`）；`note` 一個元素：`payload.note`。
+- `options`：性別、年齡區間、本人填寫、關係、課程、分店、重訓經驗、得知管道。`price` 只有課程有（例：`$2,400`），**只顯示、不存進名單**。`retiredOptions` 目前每一題都沒有。
+- 沒有 `store.map`（沒有布林欄位，預約表單的 `filledBySelf`、`hasMedicalCondition` 才有）、`optionsSource`（分店是寫死在頁面上的四個選項，不讀 `stores` 集合）、`other`（得知管道的「其他」走第二層細項）。
 
-另外幾個跟選項有關的 key：
+以下幾件事跟解讀名單有關，但**不在 config 裡**（只寫在這裡）：
 
-- `options[].price`（只有 key 為 `course` 的欄位）：課程價目，例：`$2,400`。**只顯示、不存進名單**。
-- `options[].showIf`（只有課程的「練健康舉重團班」）：網址變體把分店鎖在南京店以外時，這個選項不出現。目前沒有任何變體設定鎖定分店，所以三個課程都會出現。
-- `optionRules`（字串陣列，文字說明、不是條件物件）：出現在兩題，內容不同。
-  - key 為 `store` 的欄位（**不是** `course`）：課程與分店的連動——選了舉重團班時分店下拉只剩南京店，並自動改成南京店；之後換回其他課程，分店仍是南京店不會還原。這條規則**沒有寫在分店選項的 `showIf` 裡**，只靠讀 `options[].showIf` 看不出來。
-  - key 為 `source` 的欄位：得知管道細項的規則（細項下拉沒有選項時整個主選項隱藏、換主選項時清空細項、選項的快取時間）。
-- `store.possibleValues`：名單裡可能出現的所有值（兩張表單都是這個意思，包含 `options` 裡的值）。這張表單只有 `isFillerSelf` 有，值是 `是`、`否`，跟 `options` 相同；預約表單的 `paymentMethod` 除了 options 的兩個值，還多了 `活動免費` 與 `null`。
-- 沒有 `other`：這張表單沒有「選其他再填說明」的複選題；得知管道的「其他」走 `detail`（見下）。
+- **電話會被正規化**：`phone`、`contactPhone` 存的是刪掉所有空白與半形橫線後的值；其他文字欄位存原值，沒有去前後空白（`payload.storeName` 與得知管道的細項除外，那兩個有去前後空白）。
+- **得知管道的第二層細項**：`社群`、`實體活動` 選了之後要再選一項（下拉，選項由業主在後台調整，見第 4 節），
+  `練健康夥伴推薦`、`醫師/醫療轉介`、`其他` 選了之後要再填一段文字。細項只出現在存的值裡（`社群: IG`、`其他: 朋友介紹`），
+  照第 0 節 `labelOf` 的第 3 步（或下方「把名單的值轉回畫面上的字」第 2 點）切開即可，不需要知道細項清單。
+- **課程與分店的連動**：選了「練健康舉重團班」時分店下拉只剩南京店，並自動改成南京店；之後換回其他課程，分店仍是南京店不會還原。
+  所以分店是南京店的名單，不一定是填表人主動選的。
 
 **讀取範例（Node.js）**：列出每一題的題目、名單位置與選項
 
@@ -410,14 +446,14 @@ const fields = schema.sections.flatMap((s) => s.fields)
 for (const f of fields) {
   const question = f.label + (f.labelSuffix ?? '')       // 題目
   const path = f.store?.path                             // 名單位置，例：'payload.ageRange'
-  const also = [].concat(f.store?.alsoWrites ?? [])      // 物件或陣列都攤成陣列
+  const also = [].concat(f.store?.alsoWrites ?? [])      // 一律是陣列；concat 是為了也能讀 lkkdev 發版前的舊形狀（note 是單一物件）
     .map((a) => a.path)                                  // 例：['payload.storeName', 'storeId']
   const options = (f.options ?? []).map((o) => ({
     value: o.value,                                      // 名單裡存的字
     label: o.label ?? o.value,                           // 畫面上的字
     price: o.price,                                      // 只有課程有，不存
   }))
-  // o.detail → 得知管道的第二層
+  // 得知管道的細項不在 config 裡：存的值是「主選項: 細項」，見下方
   const retired = (f.retiredOptions ?? []).map((o) => ({ // 已停用：只拿來解讀舊名單，不列進可選清單
     value: o.value,
     label: o.label ?? o.value,
@@ -445,7 +481,8 @@ for (const f of fields) {
     停用的選項會移到同一題的 `retiredOptions`，下架的變體移到 `context.retiredVariants`；改字＝停用舊的＋新增新的。同一個值不會同時出現在現行與停用清單。
   - 題目或隱藏欄位刪除或改 `key`、`store.path` 或存的型別改變、`store.alsoWrites` 少寫一個位置、`leadType` 改變，**一定會升 `schemaVersion`**（第 7 節）。
   - 例外：題目整題被升版刪除後，config 裡就沒有這一題了，舊名單的這個值照原值顯示。
-  - 題目文字、選項的 `label`、提示字、顯示與必填條件、得知管道第二層的細項、課程價目**不在這道保護內**，可能隨時改、不升版，所以 Hub 轉存時要存原始值（見第 2 節「快取與轉存」）。
+  - 題目文字、段落標題、選項的 `label`、課程價目、`store.compose` 與隱藏欄位這類說明文字**不在這道保護內**，可能隨時改、不升版，所以 Hub 轉存時要存原始值（見第 2 節「快取與轉存」）。
+    提示字、顯示與必填條件、得知管道第二層的細項本來就不在 config 裡，官網隨時改，Hub 看不到。
 
   檢查怎麼做、記錄了哪些東西、擋不到什麼，見文末附錄「官網這邊怎麼確保 config 正確」。
 - 2026-11-14 以前沒有這個檢查，改過：分店、與學員的關係、性別在 2026-08-24，得知管道在 2026-09-20，值與存法都變過，見第 5 節「舊名單的不同形狀」。
@@ -453,20 +490,50 @@ for (const f of fields) {
 - **停用的選項**：2026-11-14 起會從 `options` 移到同一題的 `retiredOptions`，不再從 config 消失；在那之前停用的已經直接消失了，
   所以舊名單的值仍可能在 config 裡對不到，照原值顯示。
 
+### 隱藏欄位（`hiddenFields[]`）
+
+使用者看不到、但會存進名單的值。每一項可能有的 key：
+
+| key | 說明 |
+|---|---|
+| `key` | 隱藏欄位的代號 |
+| `value` | 值從哪裡來的**說明文字**，不是名單裡的值，不要拿它當預設值（只有 `sourcePage` 的值剛好就是頁面路徑） |
+| `valueType` | 只有型別特殊時才有（例：`formVariant` 是 `string \| string[] \| null` 加說明文字） |
+| `shape` | 只有物件才有（例：`utm` 物件裡每個 key 的說明） |
+| `store.path` | 名單裡的位置 |
+
+本表單有五個：
+
+| `key` | 名單位置 | 從哪裡來 |
+|---|---|---|
+| `sourcePage` | 頂層 `sourcePage` | 通常是 `/group-booking` |
+| `formVariant` | `payload.formVariant` | 網址 `?v=` 的原字，沒帶是 `null`（網址重複帶 `v` 時是陣列，見第 5 節「存值的細節」） |
+| `company` | `payload.company` | 變體的 `company`；目前只有 `default` 變體，所以是 `null` |
+| `leadSource` | `payload.leadSource` | 網址 `?src=`（單一非空字串），沒有就用變體的 `leadSource` |
+| `utm` | `payload.utm` | cookie `lkk_utm`（欄位見 `shape`） |
+
+以下不在 config 裡：
+
+- 這些值都由前端送出、伺服器原樣存，**沒有驗證**（見第 6 節第 3 點）。`sourcePage` 只有前端沒送時才由伺服器補 `/group-booking`。
+- `utm` 來自 cookie `lkk_utm`（保存 30 天）：在**任何一頁**進站或站內換頁時，網址帶 `utm_*` 就記下來，不一定是在報名頁；
+  帶了不同的一組就整組覆蓋（沒帶的舊 key 直接消失）。所以 `landingPage` 不一定是 `/group-booking`，`capturedAt` 是記下這組 utm 的時間、不是送出時間。
+
 ---
 
 ## 4. 不在 config 裡、要另外讀的動態選項
 
-只有一組：「從哪裡得知」的第二層（社群平台、實體活動），由業主在後台隨時調整，config 只寫「去哪裡讀」，不複製內容。
+只有一組：「從哪裡得知」的第二層下拉（社群平台、實體活動），由業主在後台隨時調整。**config 裡沒有這一層**：連「去哪裡讀」與預設值都不在 config 裡，下面的規則只寫在這份說明。
 這份設定跟預約表單**共用**，兩張表單看到的選項相同。
 
-讀 `settings/referralOptions` 文件的 `social`、`event` 欄位，形狀是 `[{ label: string, active?: boolean }]`：
+**解讀名單用不到這一層**：填表人選的細項已經在存的值裡（`社群: IG`），照第 0 節切開即可。業主改名或停用某個細項後，舊名單的值也不會變，照原字顯示。
+只有 Hub 要列出「目前可選的細項」（例如做篩選選單）時才需要讀。
+
+讀 `settings/referralOptions` 文件的 `social`（社群）、`event`（實體活動）欄位，形狀是 `[{ label: string, active?: boolean }]`：
 
 - 取 `label` 去掉前後空白後非空、且 `active !== false` 的項目
-- **欄位不存在**（或不是陣列、文件不存在）→ 用 config 裡的 `defaultOptions`
+- **欄位不存在**（或不是陣列、文件不存在）→ 官網用程式內建的預設值。寫這份說明時是：社群 `IG`、`FB`、`Threads`、`Line`、`YT`、`Podcast`；實體活動 `聖誕老人賽事`、`高齡博覽會`。
+  預設值不在 config 裡，官網改了不會通知 Hub，也不會改 `contentHash`
 - **欄位存在但全部停用** → 空陣列，官網會把「社群」或「實體活動」整個主選項隱藏
-
-規則寫在 config 裡 key 為 `source` 的欄位的 `options[].detail.optionsSource`，預設值在同一層的 `options[].detail.defaultOptions`。
 
 分店**不用**另外讀：選項就是 key 為 `store` 的欄位的 `options`，
 即 `schema.sections.flatMap(s => s.fields).find(f => f.key === 'store').options`——四個**物件**，值在 `value`（不是四個字串，比對時要取 `.value`）。
@@ -479,13 +546,13 @@ for (const f of fields) {
   後台可以改活動代號、也可以刪除活動，所以舊名單可能對不到，對不到就顯示原始代號。官網後台的名單頁自己也只顯示代號。
   後台存的代號一律是小寫；名單裡的值是網址上的原字（只去掉前後空白、不轉小寫），比對前可以先轉小寫。
 - **名單狀態 `status` 的中文**：`new` 新名單、`contacted` 已聯繫、`scheduled` 已預約、`completed` 已完成、`cancelled` 已取消。
-  以官網 `composables/useLeadStatus.ts` 為準；config 裡只有英文代碼。
+  以官網 `composables/useLeadStatus.ts` 為準；config 裡沒有名單狀態（狀態是後台處理名單用的，不是表單的題目）。
 
 ---
 
 ## 5. 對照名單（`leads` 集合）
 
-團體課程報名的名單在 `leads`，`type == 'group_class'`。欄位位置以 config 的 `record` 為準，常用的：
+團體課程報名的名單在 `leads`，`type == 'group_class'`。config 裡**沒有**名單的欄位清單（每一題的位置在 `store.path`），名單的完整欄位以下表為準：
 
 | 位置 | 內容 |
 |---|---|
@@ -498,7 +565,7 @@ for (const f of fields) {
 | 頂層 `sourceChannel` | **永遠 `null`**（得知管道只在 `payload.source`） |
 | 頂層 `sourcePage` | 通常是 `/group-booking` |
 | 頂層 `createdAt`、`updatedAt` | Firestore Timestamp |
-| `payload.*` | 其餘欄位，見欄位一覽與 `record.payload` |
+| `payload.*` | 現行版本會寫的 key：`gender`、`ageRange`、`isFillerSelf`、`fillerName`、`relationship`、`contactPhone`、`course`、`store`、`storeName`、`preferredTime`、`experience`、`medicalHistory`、`source`、`note`、`utm`、`formVariant`、`company`、`leadSource`（意思見第 3 節欄位一覽） |
 | `payload.formVariant`、`payload.company`、`payload.leadSource`、`payload.utm` | 隱藏欄位（團課變體、合作公司、名單來源、UTM） |
 
 後台只能改 `status`、`internalNote`，每次修改會同時把 `updatedAt` 更新成修改時間（可用來做增量同步）；其他欄位寫入後不會變。
@@ -512,27 +579,29 @@ for (const f of fields) {
 - **本人／代填**存的是字串 `是`、`否`。只有 `否` 代表代填；直接呼叫 API 可以存其他字串。
 - **代填三題**（`relationship`、`fillerName`、`contactPhone`）：`isFillerSelf` 不是 `否` 時一律存 `null`，就算使用者先填過再切回本人。
 - **聯絡電話 `payload.contactPhone`**：本人填寫時是 `null`；代填但沒填（關係是「練健康同仁」時允許）也是 `null`。有值就是填表者在這一題另外填的號碼（不會自動補學員手機，但填表者可能填了跟學員手機一樣的號碼）。直接呼叫 API 時，非同仁代填也可能是 `null`（見第 6 節）。
-- **分店**：`payload.store` 是「店名｜地址」整串，`payload.storeName` 是「｜」前面的店名（例：`南京店`）。
+- **分店**：`payload.store` 是「店名｜地址」整串，`payload.storeName` 是「｜」前面的店名去掉前後空白（例：`南京店`）。
+  選舉重團班時分店會自動改成南京店（第 3 節「讀題目與選項：用哪些 key」的「課程與分店的連動」），所以南京店的名單不一定是主動選的。
   要跟預約表單的分店（`stores` 文件 id）對應，只能用店名比對。
   團課存的是 config 裡**寫死的字串**，業主在後台把 `stores` 的分店改名（或停用、刪除）時，團課名單與 config 都不會跟著變；
   但預約名單只存 `storeId`，查出來的店名會變成新名字。所以跨表單比對分店時，要自己維護一份店名對照，不能假設兩邊的店名永遠相同。
 - **偏好時段 `payload.preferredTime`** 是自由文字或 `null`，不是陣列。
 - **重訓經驗**存 value：畫面「規律訓練中」存成 `有規律訓練習慣`。選填，沒選是 `null`。
 - **健康狀況 `payload.medicalHistory`** 是一題必填的自由文字，沒有「有／無」的布林可以篩。
-- **課程價目沒有存**，只出現在確認信；要價目讀 config 的 `course.options[].price`（那是現在的價格，不是報名當時的）。
+- **課程價目沒有存**，只出現在確認信；要價目讀 config 裡 key 為 `course` 的欄位的 `options[].price`（那是現在的價格，不是報名當時的）。
 - **年齡只有區間**（`50歲以下`／`50–65歲`／`65歲以上`），沒有生日；50 歲與 65 歲各落在兩個區間，由填表者自己選。
 - **`payload.formVariant`** 是網址 `?v=` 的原字；網址重複帶 `v` 時會是陣列。查不到的代號也照存。
   解讀代號時先查 `context.variants`，再查 `context.retiredVariants`（2026-11-14 起停用的變體會移到這裡；目前沒有）；
   兩邊都查不到就照原字顯示（2026-09-11 刪除的 `abbott`、`nanshan` 不在 `retiredVariants` 裡，見第 6 節第 4 點）。
 - **`payload.company` 目前永遠是 `null`**：現在只有 `default` 變體，沒有任何變體設定合作公司。
 - **同意事項**：這張表單沒有勾選框，也沒有存任何同意紀錄。
+- **沒存的東西**（不在 config 裡）：得知管道的細項沒有另外存（併進 `source` 的字串）、課程價目、送出當下的變體設定（只存 `?v=` 原字）、IP 與裝置資訊、兩封信有沒有寄出、填表人有沒有傳 LINE 訊息。
 
 ### 舊名單的不同形狀
 
 表單改過幾次，舊名單的值不會跟著改。先記住兩個通則：
 
-- config 的 `record.payload` 是**現行版本會寫的 key**。較舊的名單可能**缺 key**（缺少與 `null` 同等處理），
-  也可能**多出 config 沒列的 key**（忽略，不要報錯）。
+- 上表 `payload.*` 列的是**現行版本會寫的 key**。較舊的名單可能**缺 key**（缺少與 `null` 同等處理），
+  也可能**多出上表沒列的 key**（忽略，不要報錯）。
 - **lkkdev 的名單多為測試資料，不具代表性**。在 lkkdev 驗收「名單都對得上 config」不代表 lkkprod 也對得上，
   上 prod 前要以 lkkprod 的實際資料驗收（由官網維護者提供只取選擇題欄位、不含姓名電話的統計）。
 
@@ -557,45 +626,51 @@ for (const f of fields) {
 
 ## 6. 注意事項
 
+送出流程、伺服器驗證、已知的怪行為這些**不在 config 裡**（只留在官網 repo 的描述檔），跟解讀名單有關的整理在這一節。
+
 1. **伺服器只驗證少數規則**：`name`、`gender`、`ageRange`、`phone`、`email`、`isFillerSelf`、`course`、`store`、`medicalHistory` 有值（用原值判斷，只打空白會通過）；
    手機刪掉空白與橫線後符合 `^09\d{8}$`；Email 格式；以及 `isFillerSelf` 是 `否` 時，關係、報名者姓名要有值，電話要有值（關係是「練健康同仁」除外）。
    其他都不檢查：選項是否在清單內、舉重團班只限南京店、得知管道必填、聯絡電話格式、型別、長度。
    直接呼叫官網 API 可以寫入任意值，所以 CRM 處理名單時，**不要假設值一定在選項清單裡、也不要假設型別一定對**。
+   也沒有驗證碼、頻率限制或重複送出檢查（前端只擋送出中重按），**同一個人可能有多筆名單**，合併或去重由 Hub 決定。
 2. **聯絡電話的必填檢查用原值**：只打空白或橫線會通過伺服器，但存成 `null`。所以經 API 直接送入的名單，就算不是同仁代填，`payload.contactPhone` 也可能是 `null`。
 3. **隱藏欄位沒有驗證**：`sourcePage`、`payload.company`、`payload.leadSource`、`payload.formVariant`、`payload.utm` 由前端送出、
-   伺服器原樣存。不要當成已驗證的資料（詳見 config 的 `hiddenFieldsTrust`）。
+   伺服器原樣存，不要當成已驗證的資料。`sourcePage` 只有前端沒送時才由伺服器補 `/group-booking`。
 4. **舊名單可能有現在已不在清單裡的值**：選項停用後，舊名單的值不會變（2026-11-14 起停用的會留在 `retiredOptions`／`context.retiredVariants`，在那之前的沒有）。例如亞培（`?v=abbott`）、南山（`?v=nanshan`）兩個團課變體 2026-09-11 已刪除。在那之前從這兩個變體送出的名單（若有）會帶 `payload.company`（`亞培`／`南山`），`payload.leadSource` 通常是 `LINE`／`網站`，但網址帶 `?src=` 時是那個值（`?src=` 優先）；而且得知管道被隱藏，`payload.source` 是 `[]`。
    2026-09-11 之後用舊連結（`?v=abbott`／`?v=nanshan`）送出的名單，`payload.formVariant` 仍是 `abbott`／`nanshan`，但 `payload.company` 是 `null`、得知管道正常填寫。
    **判斷合作公司要看 `payload.company`，不要看 `formVariant`**；也不要拿 `leadSource` 反推是哪個變體。其他舊形狀見第 5 節「舊名單的不同形狀」。
 5. **名單沒有記錄當時的 config 版本**。要判斷名單是哪一版表單填的，只能看 `createdAt`。
 6. **不要寫入 `formSchemas`**：官網只在 `contentHash` 不一致時才重寫（重寫時整份覆蓋）。改了其他欄位（例如 `schemaJson`）卻沒改 `contentHash`，錯的內容會一直留著，CRM 自己也會讀到錯的。
-7. **config 的 `submit.sideEffects`／`knownQuirks` 描述的是官網現況，不是規格**，Hub 不要照做。
-   例如裡面寫官網伺服器 log 會印出名單 id、姓名、手機、課程、分店，那是官網目前的行為；**Hub 的 log 不記個資**（要追查時記名單的文件 id 即可）。
-8. **名單含健康資料**：`payload.medicalHistory`（疾病、舊傷或開刀史，自由文字）；另外備註（頂層 `message` 與 `payload.note`，同值兩份）的提示字請填表者寫「特殊身體狀況」，
+7. **官網的現況不是規格**，Hub 不要照做。例如官網伺服器 log 目前會印出名單 id、姓名、手機、課程、分店，
+   那是官網的行為；**Hub 的 log 不記個資**（要追查時記名單的文件 id 即可）。
+8. **名單含健康資料**：`payload.medicalHistory`（疾病、舊傷或開刀史，自由文字）；另外備註（頂層 `message` 與 `payload.note`，同值兩份）的提示字（不在 config 裡）舉的例子包含「特殊身體狀況備忘」，
    也要當成可能含健康資料處理（同步、顯示、寫 log 時比照 `medicalHistory`）。
    只同步營運真正需要的欄位。名單用途要跟填表時告知的目的一致：送出鈕下方寫的是
    「送出即表示同意我們以電話或 LINE 與你聯繫確認開課梯次，個人資料僅用於此報名目的。」
-   （config 的 `consent.implicitConsentText`），官網隱私權政策也寫明只在特定目的範圍內利用。
+   （這句不在 config 裡），官網隱私權政策也寫明只在特定目的範圍內利用。
    超出這個用途（例如行銷、會員經營、名單合併）前，先跟官網方確認。
 
 ---
 
 ## 7. 版本與變更
 
-| 變動 | `contentHash` | `schemaVersion` | CRM 要做什麼 |
+| 變動 | `contentHash` | `schemaVersion` | Hub／CRM 要做什麼 |
 |---|---|---|---|
-| 改題目文字、提示字、新增選項、改課程價目 | 會變（題目文字、提示字、必填與顯示條件需官網維護者同步更新 JSON 才會變；選項與價目有建置檢查，見文末附錄「官網這邊怎麼確保 config 正確」） | 不變 | 不必改程式；照新 config 顯示即可 |
-| 停用選項或網址變體 | 會變（從 `options` 移到 `retiredOptions`、從 `context.variants` 移到 `context.retiredVariants`） | 不變 | 不必改程式；可選清單只讀 `options`，解讀舊名單時連 `retiredOptions`／`context.retiredVariants` 一起查 |
-| 下架整張表單 | 變一次（文件保留，內容只多了頂層 `retiredOn`；之後不再變） | 不變 | 照常用它解讀舊名單；之後不會再有這個 `type` 的新名單 |
+| 改題目文字（`label`、`labelSuffix`）或段落標題、新增選項、改選項的畫面文字、改課程價目、改 `store.compose`／`store.alsoWrites`／隱藏欄位的說明文字 | 會變（題目文字、段落標題與說明文字需官網維護者同步更新 JSON 才會變；選項與價目有建置檢查，見文末附錄「官網這邊怎麼確保 config 正確」） | 不變 | 不必改程式；照新 config 顯示即可 |
+| 只改不在 config 裡的東西：提示字、錯誤訊息、必填或顯示條件、按鈕與頁面文字、送出後的畫面與信件、同意事項、官網內部的說明（預約、團課表單另有得知管道第二層的細項與預設清單） | **不變**（文件不會重寫） | 不變 | 不必做什麼，Hub 看不到這些改動。其中影響解讀名單的（例如必填條件改了、某題常常沒填），官網會更新這份說明 |
+| 官網調整放進 config 的範圍（例如 2026-11-14 加了 `leadType`、改成只放解讀名單需要的部分，見第 1 節「什麼時候會更新」） | 會變（三張表單各變一次） | 不變（每一題的位置、型別、存的值與代號由建置檢查保證不變） | 不必改程式；只讀第 3 節列出的 key，看到沒列的 key 略過 |
+| 停用選項、下架網址變體或合作方 | 會變（從 `options` 移到 `retiredOptions`、從 `context.variants` 移到 `context.retiredVariants`…） | 不變 | 不必改程式；可選清單只讀 `options`，解讀舊名單時連 `retiredOptions`、`context.retired*` 一起查（第 3 節） |
+| 下架整張表單 | 變一次（文件保留，內容只多了頂層 `retiredOn`；之後不再變） | 不變 | 照常用它解讀舊名單；之後不會再有這個 `type` 的新名單（第 1 節「下架的表單」） |
 | 重新上架 | 變一次（`retiredOn` 拿掉） | 不變 | 不必改程式 |
-| 欄位（含隱藏欄位）改名或刪除、`store.path`／`valueType` 開頭的型別改變、`store.alsoWrites` 少寫一個位置、`leadType` 改變、值的存法改變（例如字串改布林） | 會變 | **升版** | 官網會先通知，CRM 調整後再上線。升版也不會拿掉記錄過的值（同一個 key 之後也不會拿來存別的東西） |
+| 欄位（含隱藏欄位）改名或刪除、`store.path`／`valueType` 開頭的型別改變、`store.alsoWrites` 少寫一個位置、`leadType` 改變、值的存法改變（例如字串改布林） | 會變 | **升版** | 官網會先通知，Hub／CRM 調整後再上線。升版也不會拿掉記錄過的值（同一個 key 之後也不會拿來存別的東西） |
 
 > 2026-11-14 起，題目或隱藏欄位刪除或改 `key`、`store.path` 或存的型別改變、`store.alsoWrites` 少寫一個位置、`leadType` 改變卻沒升 `schemaVersion`，或記錄過的值與代號消失或改字（升了版也一樣），官網建置都會失敗；所以升版不代表舊名單的值會從 config 裡消失（Hub 可以依賴的保證見第 3 節「選項的 value 與 label」）。
-> 檢查看不到的改動（例如值的格式改了，像日期改寫法；或必填條件改變）要不要升版，仍是官網維護者**人工判斷**；上表是目前的約定，不是保證（檢查的範圍與限制見文末附錄「官網這邊怎麼確保 config 正確」）。
+> 檢查看不到的改動（例如值的格式改了，像日期改寫法；或必填條件改變，這不在 config 裡、`contentHash` 也不會變）要不要升版，仍是官網維護者**人工判斷**；上表是目前的約定，不是保證（檢查的範圍與限制見文末附錄「官網這邊怎麼確保 config 正確」）。
 > 2026-11-14 以前沒有這個檢查（分店、與學員的關係、性別在 2026-08-24，得知管道在 2026-09-20 改過；團課變體 `abbott`、`nanshan` 在 2026-09-11 刪除，見第 5、6 節），
 > 那時停用的選項與變體直接從 config 消失、不在 `retiredOptions`／`context.retiredVariants` 裡，舊名單的值對不到時照原值顯示。
 
-建議 CRM 讀取時檢查 `schemaVersion`，遇到沒處理過的版本就告警，不要直接套用。
+建議 Hub／CRM 讀取時檢查 `schemaVersion`，遇到沒處理過的版本就告警，不要直接套用。
+但 `schemaVersion` 沒變不保證所有值都對得上，對不到選項的值一律照原值顯示。
 
 ---
 
@@ -626,7 +701,7 @@ Hub 同時串三張表單時最容易出錯的地方。左邊是預約表單（`
 | 只有這張才有 | — | `payload.course`、`payload.experience`、`payload.storeName` |
 | 只有預約才有 | `payload.line`、`payload.paymentMethod`、`payload.exerciseGoals`、`payload.birthDate` 等 | — |
 | 網址參數 | `?v=`、`?co=`、`?src=` | `?v=`、`?src=`（沒有 `?co=`） |
-| config 裡的 key | 有 `store.map`、`other`、欄位層級的 `optionsSource`（分店）；`store.alsoWrites` 只有一個物件（`source`） | 沒有前三種；多了 `options[].price`、`store.normalized`；`store.alsoWrites` 有物件也有陣列 |
+| config 裡的 key | 有 `store.map`、`other`、欄位層級的 `optionsSource`（分店）、`context.freeTrialPartners`；`store.alsoWrites` 只有 `source` 一題（一個元素） | 沒有前四種；多了 `options[].price`；`store.alsoWrites` 有 `store`（兩個元素）、`note`（一個元素）兩題。兩張的 `store.alsoWrites` 都一律是陣列 |
 
 **相同的地方**：`name`、`gender`（同 key、同值 `男`／`女`，只是畫面一個是下拉、一個是單選）、`relationship`（同 key、同選項、同樣的「練健康同仁」規則；2026-08-24 以前的團課舊名單是自由文字，見第 5 節）、得知管道的選項清單與「主選項: 細項」組字方式、隱藏欄位的四個 key（`formVariant`、`company`、`leadSource`、`utm`）。
 
@@ -639,24 +714,40 @@ Hub 同時串三張表單時最容易出錯的地方。左邊是預約表單（`
 > 這一節是官網維護者那邊的檢查，**Hub 串接用不到**：Hub 可以依賴的結論已經寫在正文（第 1 節「名單 type 對 config 文件 id」、第 3 節「選項的 value 與 label」、第 7 節）。
 > 想確認某個保證的範圍、或某個改動為什麼會（或不會）升版時再查。
 > 以下檢查都在官網建置時跑（`scripts/check-form-schemas.mjs`，2026-11-14 起），不符合就建置失敗，有問題的版本不會部署出去。
+> 檢查的對象是官網 repo 裡的描述檔（`docs/form-schema/group-booking.json`）；下面提到的 `submit`、`detail`、`showIf`、`required`、`store.whenHidden`、
+> `messagePlaceholder`、備用分店的地址電話只在描述檔裡，**不在 Hub 讀到的 config**（第 3 節「不在 config 裡的東西」）。
 
 ### 名單 `type` 與寫入名單的程式
 
 - 名單 `type` 的型別宣告（`server/utils/leads.ts` 的 `CreateLeadInput.type`）每一個值都要有 `leadType` 相同的 config（只有 `franchise` 例外）。
 - `server/` 底下每個呼叫 `createLead(` 的地方，都要直接傳物件字面值，最外層有一個寫成字面值的 `type`（例如 `createLead({ type: 'group_class', … })`；不能用簡寫、變數或展開），而且這個值要在 `CreateLeadInput.type` 裡、有 config，那張表單也不能已下架。`createLead` 也不能換名字（匯入時改名，或指派給別的變數）。
-- 每張沒下架的表單，config 的 `submit.endpoint` 對應的檔案（本表單是 `POST /api/leads/group-class` → `server/api/leads/group-class.post.ts`）要存在、要呼叫 `createLead`，而且只寫這張表單的 `leadType`。
+- 每張沒下架的表單，描述檔的 `submit.endpoint`（不在給 Hub 的 config 裡）對應的檔案（本表單是 `POST /api/leads/group-class` → `server/api/leads/group-class.post.ts`）要存在、要呼叫 `createLead`，而且只寫這張表單的 `leadType`。
 - `server/` 底下的程式檔（`.ts`、`.js` 這類），程式碼碰到 `leads` 集合（`collection('leads')`、`doc('leads/…')`，先把 `'leads'` 存成常數再用也算；讀或寫都算）就建置失敗。
   例外只有：`server/utils/leads.ts` 裡的 `createLead` 本身、後台 API（`server/api/admin/`），以及列在檢查允許清單裡的檔案（只給只讀不寫的檔案、要寫明原因；目前是空的）。`server/` 以外的檔案不在這道檢查範圍內。
 - 每份 config 都要有 `leadType`，所有 config（含已下架的）的 `leadType` 不能重複。
-- `docs/form-schema/` 裡的 JSON 要跟官網的同步清單一致（每份 JSON 都會同步到 Firestore，含已下架的），沒下架的 JSON 也都要有對應的選項比對。
+- `docs/form-schema/` 裡的 JSON 要跟官網的同步清單一致（每份 JSON 都會挑出給 Hub 的部分同步到 Firestore，含已下架的），沒下架的 JSON 也都要有對應的選項比對。
 
 ### 跟官網程式比（現況）
 
 - 選擇題的 value、順序、label 要跟官網程式一致；課程（`course`）連價目（`price`）也比。
-- 得知管道（`source`）第二層的展開方式、提示字與預設選項（`detail.defaultOptions`）要跟官網程式一致。
+- 得知管道（`source`）第二層的展開方式、提示字與預設選項要跟官網程式一致（這部分只在官網 repo 的描述檔裡，不在給 Hub 的 config）。
 - 網址變體（`context.variants`）的代號與設定值（`company`、`leadSource`、`extraSources` 等）要跟官網程式一致。
 - 頁面上綁定的每個輸入欄位都要是 config 的一題（不存進名單的輸入框要在檢查裡另外列出、寫明原因），所以頁面新增題目卻沒寫進 config 會建置失敗。
 - 這道檢查只比現況、不跟上一版比：程式與 JSON 一起改就過得了。「記錄過的值不能消失」靠下一段的記錄比對。
+
+### 給 Hub 的 config 沒有漏東西
+
+Firestore 上的 config 是從描述檔（`docs/form-schema/group-booking.json`）用白名單挑出來的（`server/utils/form-schemas.ts` 的 `toHubView`）。
+檢查拿同步時真正會寫進 Firestore 的內容跟描述檔比：
+
+- 每一題與每個隱藏欄位的 `key`、`store.path`、型別、`store.alsoWrites`，存進名單的值（選項值、`retiredOptions`、`store.possibleValues`、`store.map` 對照後的值），
+  `leadType`、網址變體與合作方代號，都要跟描述檔一樣（跟下一段記錄檔記的是同一組東西）。
+- 段落的 `id` 與 `title`，每一題的 `label` 與 `labelSuffix`，選項、停用選項與備用分店的 `value` 與 `label`，也都要跟描述檔一樣。
+- 同步的表單清單要跟 `docs/form-schema/` 裡的 JSON 一樣。
+
+白名單改壞了（例如漏了選項的 `label`）建置就失敗，Hub 不會讀到缺了這些東西的 config。
+題型 `type`、課程價目 `price`、`store.compose`、`other`、`store.valueType` 型別字後面的說明文字、變體與合作方的設定值、隱藏欄位的說明文字不在這道比對裡，但白名單有列，照描述檔原樣放進 config。
+白名單以外的 key（第 3 節「不在 config 裡的東西」）不檢查，因為本來就不給 Hub。
 
 ### 跟上一版的記錄比（`values-ledger.json`）
 
@@ -687,10 +778,12 @@ Hub 同時串三張表單時最容易出錯的地方。左邊是預約表單（`
 **跟記錄檔比時不管**：題目文字、選項的 `label` 與附帶設定（課程價目 `price`、`messagePlaceholder`）、提示字（placeholder）、錯誤訊息、顯示與必填條件（`showIf`、`required`）、
 隱藏時存什麼（`store.whenHidden`）、得知管道的第二層（`detail`）、變體與合作方裡面的設定值、內建備用分店（`storeId.optionsSource.fallback`）、`store.valueType` 型別字後面的說明文字（有些項目只有某幾張表單有）。
 其中選項的 `label` 與附帶設定、得知管道第二層的提示字與預設選項、變體與合作方的設定值、內建備用分店，另有上面「跟官網程式比」的檢查，但那道檢查只比現況、不看歷史。
+上面這串裡，`messagePlaceholder`、提示字、錯誤訊息、顯示與必填條件、隱藏時存什麼、得知管道的第二層、備用分店的地址電話只在官網 repo 的描述檔裡，不在給 Hub 的 config；題目文字、選項的 `label`、課程價目、變體與合作方的設定值、內建備用分店的代號與名稱則在 config 裡。
 
 ### 檢查的限制
 
 - 送出端點（`server/api/leads/*.post.ts`）實際把值存在名單的哪個 key、有沒有轉換，檢查比對不到：`store.path` 是官網維護者人工跟程式同步的。
 - 檢查看不到的不相容改動（例如型別字沒變、但值的格式改了，像日期改寫法）要不要升版，仍是官網維護者**人工判斷**；升版本身是否恰當、升了版之後改得對不對，檢查也不管。
-- 題目文字、提示字、錯誤訊息、顯示與必填條件不跟程式比，是人工維護的，少數情況可能比線上畫面慢一步。
+- 題目文字與段落標題不跟程式比，是人工維護的，少數情況可能比線上畫面慢一步。
+- 這份說明裡標明「不在 config 裡」的內容（必填與顯示條件、名單的欄位清單、伺服器驗證、隱藏欄位與網址參數的行為、第二層細項…）是人工整理的官網現況，檢查不會比對。
 - 記錄檔是 repo 裡的檔案，有人手動改它還是繞得過去；這道檢查防的是疏忽，不防故意。所以第 7 節的表是目前的約定，不是保證。

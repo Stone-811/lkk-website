@@ -152,7 +152,7 @@
           ],
           "store": {
             "path": "payload.cooperationType",
-            "valueType": "string（只有經表單送出時保證；直接呼叫 API 可存任意真值，見 submit.serverValidation）",
+            "valueType": "string（只有經表單送出時保證；直接呼叫 API 可存任意真值）",
             "note": "存 value（不含 emoji）。程式註解還寫著舊選項「講座邀約／企業健康促進邀請／媒體採訪與異業合作」，CLAUDE.md 也是舊的三項；較早的名單可能是舊值（未查 Firestore，未證實）。加盟表單與 /api/leads/franchise 已於 bfa10d3 刪除；只有舊的 type=franchise 名單有同名的 payload.cooperationType（加盟合作類型，可能是 null），意思不同。"
           }
         }
