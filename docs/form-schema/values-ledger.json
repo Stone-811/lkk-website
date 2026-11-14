@@ -1,0 +1,379 @@
+{
+  "_說明": "表單 config 上一次記錄時的狀態，給 scripts/check-form-schemas.mjs 比對用：記錄過的選項值、名單位置、布林對照、代號不能消失或改字。由 --record 產生，不要手改；要跟著 commit。",
+  "forms": {
+    "booking": {
+      "leadType": "booking",
+      "schemaVersion": "1.0",
+      "fields": {
+        "name": {
+          "path": "name",
+          "valueType": "string"
+        },
+        "phone": {
+          "path": "phone",
+          "valueType": "string"
+        },
+        "gender": {
+          "path": "payload.gender",
+          "valueType": "string",
+          "values": [
+            "男",
+            "女"
+          ]
+        },
+        "birthDate": {
+          "path": "payload.birthDate",
+          "valueType": "string"
+        },
+        "email": {
+          "path": "email",
+          "valueType": "string"
+        },
+        "line": {
+          "path": "payload.line",
+          "valueType": "string"
+        },
+        "filledBySelf": {
+          "path": "payload.filledBySelf",
+          "valueType": "boolean",
+          "values": [
+            true,
+            false
+          ]
+        },
+        "relationship": {
+          "path": "payload.relationship",
+          "valueType": "string",
+          "values": [
+            "配偶",
+            "子女",
+            "父母",
+            "兄弟姊妹",
+            "朋友",
+            "練健康同仁",
+            "其他"
+          ]
+        },
+        "bookerName": {
+          "path": "payload.bookerName",
+          "valueType": "string"
+        },
+        "contactPhone": {
+          "path": "payload.contactPhone",
+          "valueType": "string"
+        },
+        "hasMedicalCondition": {
+          "path": "payload.hasMedicalCondition",
+          "valueType": "boolean",
+          "values": [
+            true,
+            false
+          ]
+        },
+        "medicalConditionNote": {
+          "path": "payload.medicalConditionNote",
+          "valueType": "string"
+        },
+        "storeId": {
+          "path": "storeId",
+          "valueType": "string"
+        },
+        "preferredTimes": {
+          "path": "payload.preferredTime",
+          "valueType": "string[]",
+          "values": [
+            "不限",
+            "平日10:00-17:00",
+            "平日18:00-21:00",
+            "假日10:00-17:00",
+            "假日18:00-21:00",
+            "其他"
+          ]
+        },
+        "source": {
+          "path": "payload.sources",
+          "valueType": "string[]",
+          "alsoWrites": [
+            "sourceChannel"
+          ],
+          "values": [
+            "官網",
+            "社群",
+            "參觀",
+            "電話詢問",
+            "傳單/DM",
+            "親友推薦",
+            "練健康夥伴推薦",
+            "醫師/醫療轉介",
+            "實體活動",
+            "其他"
+          ]
+        },
+        "exerciseGoals": {
+          "path": "payload.exerciseGoals",
+          "valueType": "string[]",
+          "values": [
+            "增加肌力與活動力",
+            "慢性病控制",
+            "降低跌倒風險",
+            "體態管理",
+            "傷後復健",
+            "增加運動表現",
+            "減少疼痛",
+            "其他"
+          ]
+        },
+        "paymentMethod": {
+          "path": "payload.paymentMethod",
+          "valueType": "string",
+          "values": [
+            "50歲以上免費",
+            "臨櫃付款",
+            "活動免費",
+            null
+          ]
+        },
+        "message": {
+          "path": "message",
+          "valueType": "string"
+        },
+        "hidden:sourcePage": {
+          "path": "sourcePage",
+          "valueType": "string"
+        },
+        "hidden:formVariant": {
+          "path": "payload.formVariant",
+          "valueType": "string"
+        },
+        "hidden:company": {
+          "path": "payload.company",
+          "valueType": "string"
+        },
+        "hidden:leadSource": {
+          "path": "payload.leadSource",
+          "valueType": "string"
+        },
+        "hidden:utm": {
+          "path": "payload.utm",
+          "valueType": "string"
+        }
+      },
+      "variants": [
+        "default",
+        "abbott",
+        "gigabyte",
+        "nanshan",
+        "freetrial"
+      ],
+      "freeTrialPartners": [
+        "taiwanlife"
+      ]
+    },
+    "cooperation": {
+      "leadType": "cooperation",
+      "schemaVersion": "1.0",
+      "fields": {
+        "cooperationType": {
+          "path": "payload.cooperationType",
+          "valueType": "string",
+          "values": [
+            "講座及課程邀約",
+            "採訪邀約",
+            "異業合作"
+          ]
+        },
+        "organization": {
+          "path": "payload.organization",
+          "valueType": "string"
+        },
+        "name": {
+          "path": "name",
+          "valueType": "string"
+        },
+        "phone": {
+          "path": "phone",
+          "valueType": "string"
+        },
+        "email": {
+          "path": "email",
+          "valueType": "string"
+        },
+        "lineId": {
+          "path": "payload.lineId",
+          "valueType": "string"
+        },
+        "companySize": {
+          "path": "payload.companySize",
+          "valueType": "string"
+        },
+        "budgetRange": {
+          "path": "payload.budgetRange",
+          "valueType": "string"
+        },
+        "message": {
+          "path": "message",
+          "valueType": "string"
+        },
+        "hidden:sourcePage": {
+          "path": "sourcePage",
+          "valueType": "string"
+        },
+        "hidden:utm": {
+          "path": "payload.utm",
+          "valueType": "string"
+        }
+      },
+      "variants": []
+    },
+    "group-booking": {
+      "leadType": "group_class",
+      "schemaVersion": "1.0",
+      "fields": {
+        "name": {
+          "path": "name",
+          "valueType": "string"
+        },
+        "gender": {
+          "path": "payload.gender",
+          "valueType": "string",
+          "values": [
+            "男",
+            "女"
+          ]
+        },
+        "ageRange": {
+          "path": "payload.ageRange",
+          "valueType": "string",
+          "values": [
+            "50歲以下",
+            "50–65歲",
+            "65歲以上"
+          ]
+        },
+        "phone": {
+          "path": "phone",
+          "valueType": "string"
+        },
+        "email": {
+          "path": "email",
+          "valueType": "string"
+        },
+        "isFillerSelf": {
+          "path": "payload.isFillerSelf",
+          "valueType": "string",
+          "values": [
+            "是",
+            "否"
+          ]
+        },
+        "relationship": {
+          "path": "payload.relationship",
+          "valueType": "string",
+          "values": [
+            "配偶",
+            "子女",
+            "父母",
+            "兄弟姊妹",
+            "朋友",
+            "練健康同仁",
+            "其他"
+          ]
+        },
+        "fillerName": {
+          "path": "payload.fillerName",
+          "valueType": "string"
+        },
+        "contactPhone": {
+          "path": "payload.contactPhone",
+          "valueType": "string"
+        },
+        "course": {
+          "path": "payload.course",
+          "valueType": "string",
+          "values": [
+            "基礎重訓團班",
+            "樂齡肌力體適能團班",
+            "練健康舉重團班"
+          ]
+        },
+        "store": {
+          "path": "payload.store",
+          "valueType": "string",
+          "alsoWrites": [
+            "payload.storeName",
+            "storeId"
+          ],
+          "values": [
+            "南京店｜台北市中山區南京東路三段29號B1",
+            "松江店｜台北市中山區松江路122號B1",
+            "西門店｜台北市中正區寶慶路39號",
+            "七張店｜新北市新店區北新路二段252號B1-2"
+          ]
+        },
+        "preferredTime": {
+          "path": "payload.preferredTime",
+          "valueType": "string"
+        },
+        "experience": {
+          "path": "payload.experience",
+          "valueType": "string",
+          "values": [
+            "完全新手",
+            "有一些基礎",
+            "有規律訓練習慣"
+          ]
+        },
+        "medicalHistory": {
+          "path": "payload.medicalHistory",
+          "valueType": "string"
+        },
+        "source": {
+          "path": "payload.source",
+          "valueType": "string[]",
+          "values": [
+            "官網",
+            "社群",
+            "參觀",
+            "電話詢問",
+            "傳單/DM",
+            "親友推薦",
+            "練健康夥伴推薦",
+            "醫師/醫療轉介",
+            "實體活動",
+            "其他"
+          ]
+        },
+        "note": {
+          "path": "message",
+          "valueType": "string",
+          "alsoWrites": [
+            "payload.note"
+          ]
+        },
+        "hidden:sourcePage": {
+          "path": "sourcePage",
+          "valueType": "string"
+        },
+        "hidden:formVariant": {
+          "path": "payload.formVariant",
+          "valueType": "string"
+        },
+        "hidden:company": {
+          "path": "payload.company",
+          "valueType": "string"
+        },
+        "hidden:leadSource": {
+          "path": "payload.leadSource",
+          "valueType": "string"
+        },
+        "hidden:utm": {
+          "path": "payload.utm",
+          "valueType": "string"
+        }
+      },
+      "variants": [
+        "default"
+      ]
+    }
+  }
+}

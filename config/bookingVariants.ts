@@ -4,6 +4,9 @@ import { getFreeTrialPartner } from './freeTrialPartners'
 // 原理：booking.vue 讀網址的 ?v=<key> → 找這裡對應的設定 → 表單依設定微調。
 // 加新廠商＝在 bookingVariants 加一段（複製 abbott 改值），push 後幾分鐘自動部署，
 // 不需要再改 booking.vue。未知的 v 值會自動 fallback 成 default（不會壞）。
+// 🔴 同一次改動還要：docs/form-schema/booking.json 的 context.variants 加同一段（hero、adminLabel 不用），
+//    再跑 node scripts/check-form-schemas.mjs --record，記錄檔一起 commit。漏了 npm run build 會失敗，
+//    App Hosting 上就是建置失敗、網站停在舊版（推的人看不出來）。下架代號要移到 context.retiredVariants，不能直接刪。
 
 export interface BookingVariant {
   /**
@@ -63,7 +66,9 @@ export const bookingVariants: Record<string, BookingVariant> = {
   // 連結：/booking?v=gigabyte&utm_source=website&utm_medium=referral&utm_campaign=gigabyte-50plus-free-trial
   // ⚠️ utm_source 依業主決定沿用共用值 website，所以 GA4 裡辨識技嘉要看
   //    utm_campaign（gigabyte-50plus-free-trial），那是唯一的識別依據。
-  // 活動結束時：把這一段刪掉即可，舊連結會自動 fallback 成一般表單，不會壞頁。
+  // 活動結束時：把這一段刪掉，並把 docs/form-schema/booking.json 的 context.variants.gigabyte 移到
+  // context.retiredVariants、跑 node scripts/check-form-schemas.mjs --record（不然建置會失敗）。
+  // 舊連結會自動 fallback 成一般表單，不會壞頁。
   gigabyte: {
     hero: {
       title: '技嘉 GIGABYTE × 練健康',
