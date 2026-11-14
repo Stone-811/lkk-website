@@ -18,6 +18,12 @@ description: 改預約體驗表單（pages/booking.vue）之前必讀。這頁�
 業主說「幫某公司開一張專屬表單」時，**不要從複製整頁開始**。
 `config/bookingVariants.ts` ＋ 網址 `?v=<代號>` 已經做過多次，加一段設定就好。
 
+🔴 但從 2026-11 起還要同步表單 config：`docs/form-schema/booking.json` 的 `context.variants`
+（`?co=` 合作方是 `context.freeTrialPartners`）加同一段，再跑 `node scripts/check-form-schemas.mjs --record`，
+`docs/form-schema/values-ledger.json` 一起 commit。漏了 `npm run build` 會失敗、網站停在舊版。
+改任何選項也一樣；選項只新增或停用（停用的移到 `retiredOptions`），代號下架移到 `context.retiredVariants`。
+這些 JSON 會同步到 Firestore `formSchemas/*` 給 Hub 讀，見 `docs/form-schema/CRM-*-讀取說明.md`。
+
 線上實測可開（2026-10-15）：
 
 ```

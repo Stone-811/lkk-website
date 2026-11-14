@@ -9,11 +9,14 @@
 //
 // Firestore 文件：formSchemas/<formId>
 //   formId         'booking' | 'group-booking' | 'cooperation'
+//   leadType       這張表單寫進 leads 的 type（'booking' | 'group_class' | 'cooperation'），Hub 用它從名單找 config
 //   schemaVersion  JSON 裡的 schemaVersion（欄位改名、存法改變這類不相容的改動才升）
 //   contentHash    下面 schemaJson 的 sha256（同步用；任何內容變動都會變）
 //   schemaJson     整份 schema 的 JSON 字串（CRM 讀了自己 JSON.parse）
 //   syncedAt       寫入時間
 //   revision       寫入的 Cloud Run revision（K_REVISION），查是哪一版寫的用
+//   retiredOn      只有下架的表單才有：JSON 頂層的 retiredOn（'YYYY-MM-DD'）。下架的表單 JSON 留著、
+//                  SOURCES 照樣列著，文件不刪（Hub 還要靠它解讀舊名單）。它也在 schemaJson 裡，所以加上它會改 contentHash
 // 用字串存而不是 Firestore map：schema 裡有陣列中的陣列、條件物件等巢狀結構，
 // Firestore 的 map 不收陣列裡直接放陣列，也會為每個欄位建索引；字串最單純，CRM 端也好解。
 import { createHash } from 'node:crypto'
@@ -43,6 +46,8 @@ export function getPublishedFormSchemas() {
     const schemaJson = JSON.stringify(schema)
     return {
       formId: String(schema.formId),
+      leadType: String(schema.leadType),
+      ...(schema.retiredOn ? { retiredOn: String(schema.retiredOn) } : {}),
       schemaVersion: String(schema.schemaVersion),
       contentHash: createHash('sha256').update(schemaJson).digest('hex'),
       schemaJson,
@@ -63,6 +68,7 @@ export async function syncFormSchemas() {
       results.push(`${s.formId}=same`)
       continue
     }
+    // set 整份覆蓋：取消下架時 retiredOn 也會跟著消失
     await ref.set({ ...s, syncedAt: FieldValue.serverTimestamp(), revision: process.env.K_REVISION || null })
     results.push(`${s.formId}=written(v${s.schemaVersion},${s.contentHash.slice(0, 8)})`)
   }

@@ -1,7 +1,10 @@
 // 團體課報名表單「變體設定」——給廠商 UTM 活動用（架構比照 config/bookingVariants.ts）。
 // 原理：group-booking.vue 讀網址的 ?v=<key> → 找這裡對應的設定 → 表單依設定微調。
-// 加新廠商＝在 groupClassVariants 加一段（複製 abbott 改值），push 後幾分鐘自動部署，
+// 加新廠商＝在 groupClassVariants 加一段（格式照下方註解掉的 abbott），push 後幾分鐘自動部署，
 // 不需要再改 group-booking.vue。未知的 v 值會自動 fallback 成 default（不會壞）。
+// 🔴 同一次改動還要：docs/form-schema/group-booking.json 的 context.variants 加同一段（hero 不用），
+//    再跑 node scripts/check-form-schemas.mjs --record，記錄檔一起 commit。漏了 npm run build 會失敗，
+//    App Hosting 上就是建置失敗、網站停在舊版（推的人看不出來）。下架代號要移到 context.retiredVariants，不能直接刪。
 
 export interface GroupClassVariant {
   // Hero 區文案（未填則用表單預設）

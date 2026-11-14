@@ -340,6 +340,13 @@ lkk-website/                    # repo 根目錄，同時就是 Nuxt 應用根�
    grep 命中錯誤字串時反而回傳 0，會讓壞掉的版本被 commit 出去（2026-08-29 真的踩過）
 3. **圖片一律放 `public/`**，不要走 Firebase Storage（現況站上圖片全部在 `public/images/`）
 4. **改動一律先驗 dev 站**，不要開 localhost——本機 `.env` 指向的是另一個舊專案
+5. **改表單選項、網址變體（`?v=`）、免費合作方（`?co=`）要同步表單 config**：
+   `docs/form-schema/*.json` 跟著改，再跑 `node scripts/check-form-schemas.mjs --record`
+   （`docs/form-schema/values-ledger.json` 一起 commit）。漏了 `npm run build` 會失敗，
+   App Hosting 上就是網站停在舊版。這些 JSON 會同步到 Firestore `formSchemas/*` 給 Hub 讀。
+   選項只新增或停用（停用的移到 `retiredOptions`／`retiredVariants`），不改既有的字；
+   新表單要寫 JSON（含 `leadType`）並加進 `server/utils/form-schemas.ts` 的 `SOURCES`；
+   下架表單 JSON 留著、加 `"retiredOn": "YYYY-MM-DD"`、留在 `SOURCES`，只從檢查的 `FIELDS` 拿掉
 
 ### Vue/Nuxt 技術說明
 

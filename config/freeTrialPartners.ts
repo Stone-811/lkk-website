@@ -6,6 +6,9 @@
 //
 // 為什麼要拆成兩層：這些合作方之間真正不同的只有公司名與期間，行為完全一樣。
 // 所以不需要每一家各開一個變體（那會讓 bookingVariants 無限長），只要加一行名冊。
+// 🔴 加一行名冊時，docs/form-schema/booking.json 的 context.freeTrialPartners 也要加同一行（note 不用），
+//    再跑 node scripts/check-form-schemas.mjs --record，記錄檔一起 commit；漏了 npm run build 會失敗、網站停在舊版。
+//    合作結束要移到 context.retiredFreeTrialPartners，不能直接刪（舊名單還帶著這個代號）。
 //
 // 🔴 co 帶的是「代號」不是公司名。查不到就當沒帶，不會把原字串寫進資料。
 //    若直接讓網址上的字進 payload.company，任何人都能偽造合作方名稱 ——

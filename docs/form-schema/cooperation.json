@@ -1,5 +1,6 @@
 {
   "formId": "cooperation",
+  "leadType": "cooperation",
   "schemaVersion": "1.0",
   "describes": "練健康官網 /cooperation「合作洽詢」表單的現況（2026-11-09，依 dev 分支程式碼）。這份是描述檔（網站畫面不讀它）；網站每次啟動會把它同步到 Firestore formSchemas/cooperation，選項與程式是否一致由建置前的 scripts/check-form-schemas.mjs 檢查。頁面沒有網址變體（沒有 ?v= ?co= ?src=），也沒有讀任何 config/*.ts。",
   "sourceOfTruth": [
@@ -16,7 +17,7 @@
     "condition": "條件寫法：{\"field\":<欄位 key>,\"op\":<運算>,\"value\":<值>}；運算有 eq、neq、in、notIn、includes（多選含某值）、truthy、falsy、gte。field 以 \"$variant.\" 開頭時讀網址變體設定、以 \"$derived.\" 開頭時讀衍生值、以 \"$state.\" 開頭時讀畫面狀態（例如 isSubmitting）。多個條件用 {\"all\":[…]} 或 {\"any\":[…]} 組合。本表單沒有 $variant 與 $derived。",
     "required": "required 為 true／false，或一個條件物件（條件成立才必填）。",
     "showIf": "showIf 不成立時欄位不顯示、不驗證，送出值見各欄位 store.whenHidden。本表單所有欄位都一直顯示。",
-    "options": "選項的 value 就是存進資料庫的字，label 是畫面上的字；兩者相同時只寫 value。value 收到名單後不要改字（舊名單無法回填，CSV 會裂成兩種寫法）；選項只新增或停用。",
+    "options": "選項的 value 就是存進資料庫的字，label 是畫面上的字；兩者相同時只寫 value。value 收到名單後不要改字（舊名單無法回填，CSV 會裂成兩種寫法）；選項只新增或停用；停用的選項從 options 移到同一題的 retiredOptions（格式同 options，另可加 retiredOn、note），舊名單才查得到它的意思。",
     "store.path": "存進 Firestore 集合 leads 的位置：頂層欄位直接寫名稱，其他寫 payload.<名稱>。",
     "trim": "必填判斷用去掉前後空白後的值；存進資料庫的是原值（沒有 trim），除非另外註明（本表單的 email 例外，見該欄位）。",
     "arrays": "多選欄位存成陣列時，順序是使用者點選的先後，不是選項順序。本表單沒有多選欄位。",

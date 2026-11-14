@@ -25,6 +25,12 @@ export interface ReferralSource {
 }
 
 /**
+ * 🔴 改 REFERRAL_SOURCES（主選項、展開方式、提示字）要同步 docs/form-schema/booking.json 與 group-booking.json
+ *    的 source 欄位，再跑 node scripts/check-form-schemas.mjs --record；停用的主選項移到 retiredOptions。
+ *    下面兩份後台維護的清單（社群、實體活動）不在這個檢查裡。
+ */
+
+/**
  * 兩份「可由後台維護」的下拉清單。
  *
  * 這裡的值是預設，同時也是**退路** —— 後台設定讀不到時（Firestore 故障、

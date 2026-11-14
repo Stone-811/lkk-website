@@ -30,42 +30,72 @@
 | `cooperation` | `formSchemas/cooperation` |
 | `franchise`（舊加盟表單，2026-10-16 已下架） | **沒有 config**。Hub 略過，或照原值顯示 |
 
-> 團課的 `type` 是底線（`group_class`），文件 id 是連字號（`group-booking`），**不能拿 `lead.type` 直接組路徑**，
-> 一定要經過上面這張對照表。config 文件頂層也沒有記錄名單的 `type`。
-> 表單下架時，`formSchemas` 裡的舊文件不會被自動刪除。
+> 團課的 `type` 是底線（`group_class`），文件 id 是連字號（`group-booking`），**不能拿 `lead.type` 直接組路徑**。
+> 2026-11-14 起，config 文件頂層有 **`leadType`**（這張表單寫進名單的 `type`，本表單是 `cooperation`），可以用
+> `db.collection('formSchemas').where('leadType', '==', lead.type)` 找到名單的 config。
+> 建置檢查保證所有 config（**含已下架的**）的 `leadType` 都不重複，所以最多只會查到一份；下架的表單也查得到（見下方「下架的表單」）。
+> **上面這張表還是要留在 Hub 程式裡當退路**：用 `leadType` 查不到（0 筆）時，改用這張表找文件 id 再讀一次，不要直接當成沒有 config。會查不到的情況：
+> - 這次改動發到 dev 站、同步寫入以前，lkkdev 的文件還沒有 `leadType`。
+> - lkkprod 目前還沒有任何 `formSchemas` 文件（正式站還沒發版），正式站發版時 `leadType` 會一起出現。
+> - 官網如果退回 `leadType` 出現以前的版本（dev 的 `a6cf8c0` 或更早，也就是目前 dev 站上跑的版本），舊版會把文件整份重寫成沒有 `leadType` 的樣子，直到下一次發新版才補回來。
+>
+> 表上也沒有（`franchise`）才是真的沒有 config，照原值顯示。`franchise` 是刻意沒有 config 的名單 `type`（列在建置檢查的「沒有 config」清單）。
+>
+> 官網建置時會檢查以下幾點（2026-11-14 起），不符合就建置失敗，所以之後新增的表單不會沒有 config 就上線：
+> - 名單 `type` 的型別宣告（`server/utils/leads.ts` 的 `CreateLeadInput.type`）每一個值都要有 `leadType` 相同的 config（只有 `franchise` 例外）。
+> - `server/` 底下每個呼叫 `createLead(` 的地方，都要直接傳物件字面值，最外層有一個寫成字面值的 `type`（例如 `createLead({ type: 'cooperation', … })`；不能用簡寫、變數或展開，`createLead` 也不能換名字匯入），而且這個值要在 `CreateLeadInput.type` 裡、有 config，那張表單也不能已下架。
+> - 每張沒下架的表單，config 的 `submit.endpoint` 對應的檔案（本表單是 `POST /api/leads/cooperation` → `server/api/leads/cooperation.post.ts`）要存在、要呼叫 `createLead`，而且只寫這張表單的 `leadType`。
+> - `server/` 底下的 `.ts` 檔（`server/utils/leads.ts` 與後台 API `server/api/admin/` 除外），程式碼碰到 `leads` 集合（讀或寫）就建置失敗，除非列在檢查的允許清單裡（只給只讀不寫的檔案、要寫明原因；目前是空的）。`server/` 以外的檔案不在這道檢查範圍內。
+> - `docs/form-schema/` 裡的 JSON 要跟官網的同步清單一致，沒下架的 JSON 也都要有對應的選項比對。
 
 ### 文件欄位
 
 | 欄位 | 型別 | 說明 |
 |---|---|---|
 | `formId` | string | `cooperation` |
-| `schemaVersion` | string | 目前 `1.0`。**只有不相容的改動才升版**（欄位改名、值的存法改變）；是否升版由官網維護者人工判斷，沒有程式檢查（見第 7 節） |
+| `leadType` | string | `cooperation`：這張表單寫進名單（`leads`）的 `type`。從 config 頂層的 `leadType` 抄過來（`schemaJson` 裡也有） |
+| `schemaVersion` | string | 目前 `1.0`。**只有不相容的改動才升版**（欄位改名或刪除、存放位置或值的存法改變）。2026-11-14 起建置檢查會擋下「題目或隱藏欄位刪除或改 key、`store.path` 改變、`valueType` 開頭的型別改變（沒寫算 `string`）、`store.alsoWrites` 少了某個位置、`leadType` 改變」卻沒升版的改動；記錄過的值（選項值含 `retiredOptions`、`store.possibleValues`；有 `store.map` 的題目記的是對照後存的值，不是選項文字）與代號則**升版也不能拿掉**，停用要移到 `retiredOptions` 這類停用清單；升版刪掉的題目，記錄檔會連同它的值留著，同一個 key 之後再加回來也要包含這些值（見第 3 節「選項的 value 與 label」）。檢查範圍以外的改動是否升版，仍由官網維護者人工判斷（見第 7 節） |
 | `contentHash` | string | 整份 config 的 sha256。內容任何變動（含新增選項、改文字）都會變 |
 | `schemaJson` | string | **整份 config 的 JSON 字串**，讀了要自己 `JSON.parse` |
 | `syncedAt` | timestamp | **最後一次內容變更**時寫入的時間（內容沒變就不會更新，不是心跳） |
 | `revision` | string | 最後一次內容變更時，寫入的官網版本（Cloud Run revision 名稱，例：`lkk-website-dev-build-2026-11-12-001`） |
+| `retiredOn` | string | **只有下架的表單才有**：下架日期（`YYYY-MM-DD`），從 config 頂層的 `retiredOn` 抄過來（`schemaJson` 裡也有）。目前三張表單都沒有這個欄位（見下方「下架的表單」） |
 
 > 為什麼存成字串：config 有多層巢狀與陣列，Firestore 的 map 不支援某些結構，字串最單純。
 
+### 下架的表單
+
+表單下架時，官網只拿掉頁面與送出端點；config 的 JSON 留在官網 repo、頂層加上 `retiredOn`，官網也繼續同步這份文件，所以 **Firestore 上的文件不會刪除**：
+文件多一個 `retiredOn`，其餘內容跟下架前相同（`leadType` 也還在，用 `where('leadType', …)` 照樣查得到），之後不會再有這張表單的新名單。
+Hub 照樣用它解讀這張表單的舊名單，只是不該再把它當成現行表單（例如不再列在「可填的表單」）：判斷方式是文件有沒有 `retiredOn`。
+- `retiredOn` 也在 `schemaJson` 裡，所以下架那一次 `contentHash`（還有 `syncedAt`／`revision`）會變一次，之後跟其他沒改的表單一樣不再寫入，不會一直出現、消失。
+- 重新上架＝config 拿掉 `retiredOn`：官網寫入時整份覆蓋文件，`retiredOn` 跟著消失，`contentHash` 再變一次。
+
 ### 什麼時候會更新
 
-官網伺服器會比對 config 與 Firestore 上的 `contentHash`，內容有變才寫入：dev 站改了 → lkkdev 更新；正式站改了 → lkkprod 更新。
+官網伺服器會比對 config 與 Firestore 上的 `contentHash`，內容有變才寫入（整份覆蓋）：dev 站改了 → lkkdev 更新；正式站改了 → lkkprod 更新。
 
 - **發版後要等第一個請求打到官網伺服器，才會比對並寫入**。官網跑在 Cloud Run，閒置時 CPU 會被限縮，
   執行個體啟動時發出的比對會停住，等有請求進來才跑完。沒有流量時（例如 dev 站沒人逛的時段）寫入會延後，
   所以「官網發版完成」不等於「這份文件已經更新」。
 - 之後只要有請求、距上次比對超過 10 分鐘就再比對一次（失敗的話 1 分鐘後有請求時再試）。
+  **這個再比對也要有請求才會跑**：流量少的時段，補寫（例如下面說的發版時被舊版蓋回去的文件）會比 10 分鐘更晚。
 - **lkkprod 在正式站第一次發版前不存在**這份文件，讀取前一定要檢查文件存在（見第 2 節）。
 - `syncedAt`／`revision` 是「最後一次內容變更」的時間與版本，**不是心跳，不代表同步仍在運作**。
   表單很久沒改時它們會停在很久以前；同步因故停擺時看起來也一模一樣，Hub 從這兩個欄位分不出來。
   要確認 Hub 讀到的是哪一版，請比對 `contentHash`（需要時跟官網維護者對前 8 碼）。
+- 表單下架或重新上架（`retiredOn` 出現或消失）也是一次內容變更，照上面的流程寫入（見上方「下架的表單」）。
+- 2026-11-14 加了 `leadType` 與閱讀規則（`conventions.options`，多了「停用的選項移到 `retiredOptions`」）的文字，
+  三張表單的 `contentHash` 會在下一次 dev 發版時各變一次；題目與選項內容沒有變。
 
 > config 是官網維護者手寫的描述檔（`docs/form-schema/cooperation.json`），不是從頁面自動產生的。
-> 選項（value、label、順序、`messagePlaceholder`）由建置檢查保證跟官網程式一致；題目文字、提示字、錯誤訊息、必填條件、伺服器規則的描述是人工維護，
-> 少數情況可能比線上畫面慢一步（見第 6 節第 8 點）。
+> 選項（value、label、順序、`messagePlaceholder`）由建置檢查保證跟官網程式一致；
+> 2026-11-14 起建置檢查也會跟記錄檔（`docs/form-schema/values-ledger.json`）比對，記錄過的值與代號不能消失或改字（見第 3 節「選項的 value 與 label」）。
+> 題目文字、提示字、錯誤訊息、必填條件、伺服器規則的描述是人工維護，少數情況可能比線上畫面慢一步（見第 6 節第 8 點）。
 
-> 官網剛發版的幾分鐘內，新舊版本會短暫同時在跑，文件可能「新 → 舊 → 新」來回一兩次，
-> 最後停在新版。用 `onSnapshot` 監聽的話，不要假設 `contentHash` 一變就是最終版本，也不要假設它只會往前。
+> 官網剛發版的幾分鐘內，新舊版本會短暫同時在跑，文件（連同 `revision`）可能「新 → 舊 → 新」來回一兩次，
+> 最後停在新版：舊版不再接到請求後，新版下一次再比對時會寫回新版，流量少時這一步會更晚。
+> 用 `onSnapshot` 監聽的話，不要假設 `contentHash` 一變就是最終版本，也不要假設它只會往前。
 
 ---
 
@@ -152,13 +182,13 @@ Hub／CRM 的服務帳號需要 lkkdev（測試）與 lkkprod（正式）**各�
 
 | key | 內容 |
 |---|---|
-| `formId`、`schemaVersion` | 同上 |
+| `formId`、`leadType`、`schemaVersion` | 同上 |
 | `describes` | 一句話說明 |
 | `conventions` | **閱讀規則**：條件怎麼寫、`required` 的意思、選項 value 與 label 的差別，以及這張表單才有的寫法（`tabs`、`$option.…`）。`labelSuffixWhenOptional` 也寫在這裡，但三張表單都有（預約、團課在 `contactPhone`，預約另有同意事項），這張用在 `companySize`、`budgetRange`。先讀這段 |
 | `sections` | 表單分兩段，每段有 `fields`（欄位定義，見下表） |
 | `consent` | 沒有同意勾選框，只有按鈕下方一句默示同意文字（`implicitConsentText`）。**沒有存進名單** |
 | `hiddenFields` | 使用者看不到、但會存進名單的值：只有來源頁 `sourcePage` 與 UTM |
-| `context` | 頁面文案（`pageMeta`）。**這張表單不讀網址參數**：`params` 是空物件，沒有變體、合作方、名單來源 |
+| `context` | 頁面文案（`pageMeta`）。**這張表單不讀網址參數**：`params` 是空物件，沒有變體、合作方、名單來源（所以也不會有預約、團課表單放停用變體的 `retiredVariants`，或預約表單放停用合作方的 `retiredFreeTrialPartners`；那兩張目前也還沒有這兩個 key） |
 | `derived` | 空物件（沒有衍生值） |
 | `submit` | 送出 API、前端檢查順序、伺服器驗證規則、成功／失敗畫面 |
 | `record` | **名單（`leads` 集合）的欄位清單**：哪些在頂層、哪些在 `payload`、哪些固定是 `null`（`constantFields`）、哪些沒存 |
@@ -222,6 +252,7 @@ config 裡還有提示字（`placeholder`）、錯誤訊息（`errors`）、驗�
 | 來源 | key | 用在哪些題 | 怎麼讀 |
 |---|---|---|---|
 | 固定選項 | `options[]` | 只有洽詢項目 `cooperationType` | `value` 是名單裡存的字；`label` 是畫面上的字（三個選項都有寫 `label`）；`messagePlaceholder` 是選這項時「合作內容詳情」的提示字 |
+| 已停用的選項 | `retiredOptions[]` | 同一題（`cooperationType`） | 2026-11-14 起，停用的選項從 `options` 移到這裡，格式同 `options`（`value`、可省略的 `label`），另可有 `retiredOn`（停用日）、`note`（說明）。畫面上不再出現，**只用來解讀舊名單**；列新表單的選項時不要列出。目前沒有任何停用的選項，這個 key 不存在，讀的時候當成空陣列 |
 | 動態選項 | 無 | — | 沒有 `optionsSource`，不用讀 `stores` 或 `settings/referralOptions` |
 | 第二層 | 無 | — | 沒有 `options[].detail`，也沒有 `other`（「其他」加說明） |
 
@@ -253,25 +284,40 @@ for (const f of fields) {
     value: o.value,                                                      // 名單裡存的字
     label: o.label ?? o.value,                                           // 畫面上的字（含表情符號）
   }))
+  const retired = (f.retiredOptions ?? []).map((o) => ({                 // 已停用：只拿來解讀舊名單
+    value: o.value,
+    label: o.label ?? o.value,
+    retiredOn: o.retiredOn ?? null,
+  }))
   const requiredWhen = typeof f.required === 'object' ? f.required : null // 條件必填
+}
+
+// 名單值 → 畫面上的字：先查 options、再查 retiredOptions，都沒有就回原值
+function toLabel(field, value) {
+  const hit = [...(field.options ?? []), ...(field.retiredOptions ?? [])].find((o) => o.value === value)
+  return hit ? (hit.label ?? hit.value) : value
 }
 ```
 
 **把名單的值轉回畫面上的字**
 
 1. 只有 `payload.cooperationType` 需要轉：拿整個值去比 `options[].value`，比到就用 `label ?? value`（或直接顯示 `value`，見上）。
-2. 這張表單**沒有**「主選項: 細項」的組合值，也沒有布林，不需要用「: 」切開或反查 `store.map`。
-3. 比不到（舊選項、直接呼叫 API 寫入的值，見第 5、6 節）：直接顯示原值，不要丟掉。
-4. 其他欄位都是使用者自己打的字，原樣顯示。
+2. 比不到再比同一題的 `retiredOptions[].value`（已停用的選項），比到一樣用 `label ?? value`，需要時可標示「已停用」。
+3. 這張表單**沒有**「主選項: 細項」的組合值，也沒有布林，不需要用「: 」切開或反查 `store.map`。
+4. 兩邊都比不到（2026-11-14 以前就消失的舊選項、直接呼叫 API 寫入的值，見第 5、6 節）：直接顯示原值，不要丟掉。
+5. 其他欄位都是使用者自己打的字，原樣顯示。
 
 ### 選項的 value 與 label
 
 - `value` 是**存進名單的字**，`label` 是畫面上的字。
-- 「選項只新增或停用、不改既有 value 的字」是**目前的約定，沒有機制強制**（建置檢查只比對 config 與官網程式是否一致，不跟上一版比）。
-  2026-09 以前改過：洽詢項目在 2026-08-24，值與意思都變過，見第 5 節「舊值」。
-- **停用的選項會直接從 config 消失**（選項沒有 `active` 之類的停用標記，停用＝直接從 `options` 移除，不保留歷史值；第 5 節的三個舊值就不在 config 裡），
-  所以舊名單的值可能在 config 裡對不到，照原值顯示，不需要對照表。
-  config 分不出「已停用的正式選項」和「直接呼叫 API 寫進來的值」；只有在需要區分這兩種時（例如做資料品質報表），才需要 Hub／CRM 自己保存「曾經出現過的值」清單，至少包含第 5 節的三個舊值，而且不要自動對應到新值。
+- 「選項只新增或停用、不改既有 value 的字」**2026-11-14 起由建置檢查強制**：官網建置時會拿 config 跟上一版的記錄（官網 repo 裡的 `docs/form-schema/values-ledger.json`，不會同步到 Firestore）比，
+  記錄過的選項值（`options` 加 `retiredOptions`）少了一個就建置失敗，**升了 `schemaVersion` 也一樣**（升版只允許改存法，不允許丟掉舊名單的值）；新增的選項也要先記錄才建置得過。
+  升版刪掉整題時，記錄檔會留著那題的值，同一個 key 之後再加回來，這些值也要在。
+  所以改字只能是「停用舊值＋新增新值」，舊值會留在 `retiredOptions`。題目（含隱藏欄位）被拿掉或改了 key、`store.path`、`store.valueType` 開頭的型別、`store.alsoWrites` 少了一個位置，或 `leadType` 改變，則是要升 `schemaVersion` 才放行（見第 7 節）。
+  在這之前改過：洽詢項目在 2026-08-24，值與意思都變過，見第 5 節「舊值」。
+- **2026-11-14 起停用的選項不會再從 config 消失**，而是移到同一題的 `retiredOptions`（見上面「選項」表），舊名單的值查得到意思。
+  **更早消失的值不在 `retiredOptions` 裡**（第 5 節的三個舊值就不在 config 裡），所以舊名單的值仍可能兩邊都對不到，照原值顯示，不需要對照表。
+  對不到的值分不出「2026-11-14 以前停用的正式選項」和「直接呼叫 API 寫進來的值」；只有在需要區分這兩種時（例如做資料品質報表），才需要 Hub／CRM 自己保存這份清單，至少包含第 5 節的三個舊值，而且不要自動對應到新值。
 
 ---
 
@@ -415,12 +461,24 @@ lkkprod 不受影響（上表 08-24 21:13 時是 0 筆）。
    直接呼叫官網 API 可以寫入任意值，甚至非字串（數字、陣列、物件），所以 Hub／CRM 處理名單時，**不要假設值一定在選項清單裡，也不要假設一定是字串**（細節在 config 的 `submit.serverValidation`）。
 3. **隱藏欄位沒有驗證**：`sourcePage`、`payload.utm` 由前端送出、伺服器原樣存。不要當成已驗證的資料（詳見 config 的 `hiddenFieldsTrust`）。
 4. **沒有驗證碼、沒有頻率限制、沒有重複送出保護**（只有前端按鈕送出中停用）。可能出現重複名單或垃圾名單。
-5. **舊名單可能有現在已不在清單裡的值**（見第 5 節「舊值」）。
+5. **舊名單可能有現在已不在清單裡的值**：2026-11-14 以後停用的在 `retiredOptions` 查得到，更早的（見第 5 節「舊值」）查不到。
 6. **名單沒有記錄當時的 config 版本**。要判斷名單是哪一版表單填的，只能看 `createdAt`。
 7. **不要寫入 `formSchemas`**：官網只在 `contentHash` 不一致時才重寫。改了其他欄位（例如 `schemaJson`）卻沒改 `contentHash`，錯的內容會一直留著，Hub／CRM 自己也會讀到錯的。
-8. **官網建置前只檢查選項**：config 的洽詢項目選項（value、順序、label、`messagePlaceholder`）跟官網程式不一致時，官網會建置失敗，所以選項一定跟官網現況一致。
-   但它只比對「現在」，不會擋下改既有 value 的字，也不會檢查該不該升 `schemaVersion`（見第 3 節「選項的 value 與 label」）。
-   題目文字、提示字、錯誤訊息、伺服器規則的描述不在自動檢查範圍，是人工維護的。
+8. **官網建置前檢查的範圍**：
+   - **跟官網程式比**：config 的洽詢項目選項（value、順序、label、`messagePlaceholder`）跟官網程式不一致時，官網會建置失敗，所以選項一定跟官網現況一致。
+     這項只比現況、不比歷史：程式與 JSON 一起改，就過得了。
+   - **跟上一版記錄比**（2026-11-14 起，記錄檔是官網 repo 裡的 `docs/form-schema/values-ledger.json`）：記錄了表單的 `leadType`、`schemaVersion`，
+     以及**九題與兩個隱藏欄位**（`sourcePage`、`utm`；記錄檔裡的 key 加 `hidden:` 前綴）各自的名單位置（`store.path`）、`store.valueType` 開頭的型別（沒寫就算 `string`，所以補寫 `string` 不算改動）與 `store.alsoWrites` 的位置（這張表單沒有）；
+     有選項的題目另記錄選項值（含 `retiredOptions`）；任何題目的 `store.possibleValues` 也會記，有 `store.map` 的題目記的是對照後存的值、不是選項文字，網址變體與合作方的代號也會記（這三種這張表單都沒有）。
+     記錄過的值不能消失或改字，升 `schemaVersion` 也不行（停用要移到 `retiredOptions`）；升版刪掉的題目，記錄檔會連同它的值留著，同一個 key 之後再加回來也要包含這些值。
+     題目（含隱藏欄位）被拿掉或改 key、改 `store.path`、改型別、`store.alsoWrites` 少了一個位置、`leadType` 改變，要升 `schemaVersion` 才放行；
+     新增的題目或選項要先記錄才建置得過（見第 3 節「選項的 value 與 label」、第 7 節）。
+   - **表單清單、`leadType` 與寫名單的程式**（見第 1 節）。
+   - **不在記錄比對範圍**：選項的 `label`、`messagePlaceholder`、題目文字、提示字、錯誤訊息、必填條件（`required`）、`store.valueType` 開頭型別後面的說明文字
+     （預約、團課表單另有顯示條件、隱藏時存什麼、得知管道第二層、變體與合作方的設定值、課程價格、備用分店也不在範圍，這張表單沒有這些）。
+     其中選項的 `label`、`messagePlaceholder` 仍跟官網程式比（只比現況），所以程式與 JSON 一起改就可以改字；
+     題目文字、提示字、錯誤訊息、必填條件、伺服器規則的描述也不跟程式比，是人工維護的。
+   - 記錄檔放在官網 repo，維護者手改它還是繞得過去：這項檢查防的是「不小心」，不是「故意」。
 9. **config 的 `submit.sideEffects`／`knownQuirks` 描述的是官網現況，不是規格**，Hub 不要照做。
    例如裡面寫官網伺服器 log 會印出名單 id、聯絡人姓名、公司／單位、洽詢項目，寄確認信時另外印出填表者 Email，那是官網目前的行為；**Hub 的 log 不記個資**（要追查時記名單的文件 id 即可）。
 10. **名單是個資，只同步營運真正需要的欄位**：這張表單沒有健康欄位（不像預約與團課表單），但有聯絡人姓名、電話、Email、LINE ID 與自由文字的合作內容詳情。
@@ -434,10 +492,17 @@ lkkprod 不受影響（上表 08-24 21:13 時是 0 筆）。
 
 | 變動 | `contentHash` | `schemaVersion` | Hub／CRM 要做什麼 |
 |---|---|---|---|
-| 改題目文字、提示字、新增或停用選項 | 會變（題目文字、提示字、必填條件需官網維護者同步更新 JSON 才會變；選項有建置檢查，見第 1 節） | 不變 | 不必改程式；照新 config 顯示即可 |
+| 改題目文字、提示字、新增或停用選項 | 會變（題目文字、提示字、必填條件需官網維護者同步更新 JSON 才會變；選項有建置檢查，見第 1 節） | 不變 | 不必改程式；照新 config 顯示即可。停用的選項會出現在 `retiredOptions`，解讀舊名單時要一起查 |
 | 欄位改名、值的存法改變（例如字串改布林） | 會變 | **升版** | 官網會先通知，Hub／CRM 調整後再上線 |
+| 表單下架 | 變一次（config 加 `retiredOn`） | 不變 | 文件頂層與 config 多出 `retiredOn`；文件不刪，照樣用來解讀舊名單，之後不會再有這張表單的新名單（見第 1 節） |
+| 加上 `leadType`、`retiredOptions` 的閱讀規則（2026-11-14，dev） | 下次 dev 發版後三張表單都變一次 | 不變 | 可改用 `leadType` 找 config（查不到時退回對照表，見第 1 節）、解讀值時加查 `retiredOptions`（見第 3 節）；題目與選項沒有變 |
 
-`schemaVersion` 是官網維護者**人工判斷**要不要升版，沒有機制強制；上表是目前的約定（選項改不改 value 的情形見第 3 節「選項的 value 與 label」）。
+2026-11-14 起，官網建置時會比對官網 repo 裡的上一版記錄 `docs/form-schema/values-ledger.json`（細節見第 6 節第 8 點）：
+- **升版也擋**：記錄過的選項值（含 `retiredOptions`）消失或改字。升版刪掉的題目，記錄檔會連同它的值留著，同一個 key 之後再加回來，這些值也要在。
+- **沒升 `schemaVersion` 就擋**：任何一題（不只有選項的題目，也包括隱藏欄位 `sourcePage`、`utm`）被拿掉或改了 key、改了 `store.path`、`store.valueType` 開頭的型別（沒寫算 `string`），或 `store.alsoWrites` 少了一個位置；`leadType` 改變。
+- **沒記錄就擋**：新增的題目或選項。
+
+其他情況要不要升版仍是官網維護者**人工判斷**：例如必填條件改變，以及升版本身是否恰當，都沒有程式檢查；上表是目前的約定（選項改不改 value 的情形見第 3 節「選項的 value 與 label」）。
 
 建議 Hub／CRM 讀取時檢查 `schemaVersion`，遇到沒處理過的版本就告警，不要直接套用。
 但 `schemaVersion` 沒變不保證所有值都對得上，對不到選項的值一律照原值顯示。
