@@ -38,7 +38,8 @@ export const groupClassVariants: Record<string, GroupClassVariant> = {
   //    但從那些連結進來的新名單將**不再帶 company 與 leadSource**，
   //    後台的「公司」「來源」篩選會是空的。已收到的舊名單不受影響
   //    （這兩個值是送出當下就寫進 leads 的，不是即時查表）。
-  //    要恢復就把下面這段註解還原（git 歷史：本 commit 的前一版）。
+  //    要恢復就把下面這段註解還原（git 歷史：本 commit 的前一版），並同步 docs/form-schema/group-booking.json
+  //    的 context.variants、跑 node scripts/check-form-schemas.mjs --record（不然建置會失敗）。
   //
   //  abbott: {
   //    hero: { title: '亞培 × 練健康', titleHighlight: '專屬團體課程', ctaText: '立即填寫專屬報名 →' },

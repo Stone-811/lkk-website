@@ -8,7 +8,8 @@
 //   - 每個有選項的欄位：值、順序、顯示文字，以及 price／messagePlaceholder／得知管道的展開設定
 //   - 網址變體（?v=）與免費合作方（?co=）的代號，以及會進名單的設定值（company、leadSource…）
 //   - booking 頁面內建的備用分店（代號、名稱、地址、電話）
-//   - 頁面上用 v-model 綁的選擇題，都有被比對（防止頁面新增選擇題卻沒寫進 JSON）
+//   - 頁面上 v-model 綁的每個欄位都要是 JSON 的一題（或列在 NOT_OPTIONS），選擇題還要在 FIELDS 比對選項
+//     （防止頁面新增題目卻沒寫進 JSON；模板與 script 的註解不算）
 //   - 跟上一版比（docs/form-schema/values-ledger.json）：每個欄位（含隱藏欄位）的名單位置、型別、alsoWrites，
 //     存進名單的值（選項值含 retiredOptions、possibleValues、store.map 對照後的值）、leadType、
 //     網址變體與合作方代號。值與代號不能消失或改字（停用要移到 retiredOptions／retiredVariants，
@@ -20,6 +21,12 @@
 //   - 下架：JSON 留著、加 retiredOn，只從 FIELDS 拿掉
 // 沒檢查：欄位標題、placeholder、錯誤訊息、驗證規則（含「選某項才必填」這類條件）、同意事項文字、
 // 頁面什麼時候寫入隱藏值（例如「活動免費」；值本身在 possibleValues 裡，記錄後不能消失）——改這些時要自己同步 JSON。
+// 也沒檢查（做不到可靠的靜態比對）：
+//   - 送出端點（server/api/leads/*.post.ts）實際把值存在 payload 的哪個 key、有沒有轉換：改存法時要自己同步 JSON 的 store.path
+//   - 標成 { inTemplate: false } 的陣列（透過 computed 給模板）：computed 裡另外加的選項
+//   - 自己處理點選、沒用 v-model 的選擇題（booking 的時段／目的／得知管道已在 FIELDS 裡，新加的要自己補）
+//   - 刻意繞過：把集合名稱藏在別的變數或函式裡、從後台（server/api/admin/）寫新類型的名單
+// 原始碼一律用 Vue（vue/compiler-sfc）與 TypeScript 自己的解析器讀，註解、字串、巢狀模板字串不會被誤認。
 //
 // 用法：
 //   node scripts/check-form-schemas.mjs            檢查（npm run build 會先跑這個）
@@ -32,15 +39,24 @@ import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { createJiti } from 'jiti'
+import ts from 'typescript'
+import { parse as parseSfc } from 'vue/compiler-sfc'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const jiti = createJiti(import.meta.url)
+// config/*.ts 也被頁面用 ~/ 匯入；這裡在 Nuxt 外面載入，所以要自己給別名（Nuxt 的自動匯入與 #imports 還是不能用）
+const jiti = createJiti(import.meta.url, { alias: { '~~': root, '~': root, '@@': root, '@': root } })
 const read = (p) => readFileSync(join(root, p), 'utf8')
 const schema = (id) => JSON.parse(read(`docs/form-schema/${id}.json`))
 const cfg = (p) => jiti.import(join(root, p))
 
 const errors = []
 const fail = (where, msg) => errors.push(`${where}：${msg}`)
+// 讀不到檔、JSON 壞掉這類「根本原因」：有的話只印這些，後面連帶的錯誤先不印，免得被帶錯方向
+const fatal = []
+const failFatal = (where, msg) => {
+  fatal.push(`${where}：${msg}`)
+  fail(where, msg)
+}
 // 新增的值還沒寫進記錄檔：建置一樣失敗，但 --record 可以把它們記下來
 const pending = []
 const RECORD = process.argv.includes('--record')
@@ -48,76 +64,240 @@ const LEDGER = 'docs/form-schema/values-ledger.json'
 
 // ---------- 從程式碼取選項 ----------
 
-/** 從 start（指向 '['）找到對應的 ']'，略過字串與行註解、區塊註解。 */
-function matchBracket(src, start) {
-  let depth = 0
-  for (let i = start; i < src.length; i++) {
-    const c = src[i]
-    if (c === '/' && src[i + 1] === '/') {
-      i = src.indexOf('\n', i)
-      if (i === -1) break
-      continue
-    }
-    if (c === '/' && src[i + 1] === '*') {
-      i = src.indexOf('*/', i + 2) + 1
-      if (i === 0) break
-      continue
-    }
-    if (c === "'" || c === '"' || c === '`') {
-      for (i++; i < src.length && src[i] !== c; i++) if (src[i] === '\\') i++
-      continue
-    }
-    if (c === '[') depth++
-    else if (c === ']' && --depth === 0) return i
+// ---------- 讀原始碼：用 Vue 與 TypeScript 自己的解析器，不用正規式猜 ----------
+// （註解、字串、巢狀模板字串、regex 字面值都由解析器處理，跟實際建置看到的一樣）
+
+const parseErr = (msg) => Object.assign(new Error(msg), { parse: true })
+
+/** 把 TS 原始碼片段轉成 JS 再求值（只用在字面值陣列）。 */
+const evalLiteral = (text) =>
+  new Function(`return ${ts.transpile(`(${text})`, { target: ts.ScriptTarget.ES2020 }).trim().replace(/;$/, '')}`)()
+
+const tsFile = (name, text) => ts.createSourceFile(name, text, ts.ScriptTarget.Latest, true, name.endsWith('.js') || name.endsWith('.mjs') ? ts.ScriptKind.JS : ts.ScriptKind.TS)
+function tsWalk(node, fn) {
+  fn(node)
+  ts.forEachChild(node, (c) => tsWalk(c, fn))
+}
+const unwrap = (n) => {
+  while (n && (ts.isAsExpression(n) || ts.isSatisfiesExpression?.(n) || ts.isParenthesizedExpression(n) || ts.isTypeAssertionExpression?.(n))) n = n.expression
+  return n
+}
+const stringValue = (n) => {
+  n = unwrap(n)
+  return n && (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) ? n.text : null
+}
+const propName = (p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null)
+
+/** .vue 檔：template AST 與 <script setup> 的 TS AST。 */
+const vueCache = {}
+function vueParts(file) {
+  if (vueCache[file]) return vueCache[file]
+  const { descriptor, errors } = parseSfc(read(file), { filename: file })
+  if (errors.length) throw parseErr(`${file} 解析失敗：${errors[0].message ?? errors[0]}`)
+  if (!descriptor.template?.ast) throw parseErr(`${file} 找不到 <template>`)
+  if (!descriptor.scriptSetup) throw parseErr(`${file} 找不到 <script setup>`)
+  const elements = [] // { node, parent }
+  const walk = (n, parent) => {
+    if (n.type === 1) elements.push({ node: n, parent })
+    for (const c of n.children ?? []) walk(c, n.type === 1 ? { node: n, parent } : parent)
+    // v-if／v-for 的分支
+    for (const b of n.branches ?? []) walk(b, parent)
   }
-  throw new Error('找不到對應的 ]')
+  walk(descriptor.template.ast, null)
+  const script = tsFile(`${file}.ts`, descriptor.scriptSetup.content)
+  return (vueCache[file] = { elements, script })
 }
 
-const evalLiteral = (text) => new Function(`return (${text})`)()
-
-/** <script setup> 裡 `const name = [ ... ]`（或 `= ref([ ... ])`、有型別標註）的陣列，內容只能是字面值。 */
-function constArray(file, name) {
-  const src = read(file)
-  const m = new RegExp(`const ${name}(?:\\s*:[^=]+)?\\s*=\\s*(?:ref(?:<[^>]*>)?\\(\\s*)?\\[`).exec(src)
-  if (!m) throw new Error(`${file} 找不到 const ${name} = [`)
-  const start = m.index + m[0].length - 1
-  return evalLiteral(src.slice(start, matchBracket(src, start) + 1))
+const attr = (el, name) => el.props.find((p) => p.type === 6 && p.name === name)
+const dir = (el, name, arg) =>
+  el.props.find((p) => p.type === 7 && p.name === name && (arg === undefined || p.arg?.content === arg))
+/** v-model（任何修飾、v-model:xxx）綁的 formData 欄位；formData.a.b 取 a。 */
+function vModelKey(el) {
+  const d = el.props.find((p) => p.type === 7 && p.name === 'model')
+  const m = d && /^\s*formData\s*(?:\.\s*(\w+)|\[\s*(['"`])(\w+)\2\s*\])/.exec(d.exp?.content ?? '')
+  return m ? m[1] ?? m[3] : null
 }
 
-/** 模板裡 v-model="formData.X" 的 <select> 底下寫死的 <option value="V">文字</option>（略過空值的提示選項）。 */
+/** 綁 formData.X 的所有元素。 */
+function modelElements(file, model) {
+  const els = vueParts(file).elements.filter((e) => vModelKey(e.node) === model)
+  if (!els.length) throw parseErr(`${file} 找不到 v-model="formData.${model}"`)
+  return els
+}
+
+/** v-for 的來源運算式（"g in genders" → "genders"）。 */
+const vForSource = (el) => {
+  const d = dir(el, 'for')
+  const m = d && /^[\s\S]*?\s(?:in|of)\s+([\s\S]+)$/.exec(d.exp?.content ?? '')
+  return m ? m[1].trim() : null
+}
+
+/**
+ * <script setup> 裡 `const name = [ ... ]`（或 `= ref([ ... ])`、加 as const）的陣列，內容只能是字面值。
+ * 預設還要求模板有一個 v-for 直接跑這個陣列（v-for="x in name"）：改名時舊的常數若還留著、
+ * 或模板改成 [...name, '新選項'] 這類寫法，才不會一直比到舊的那份。
+ * 透過 computed 篩選後才給模板用的，傳 { inTemplate: false }。
+ */
+function constArray(file, name, { inTemplate = true } = {}) {
+  const { script, elements } = vueParts(file)
+  let init = null
+  tsWalk(script, (n) => {
+    if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.name.text === name) init = n.initializer
+  })
+  if (!init) throw parseErr(`${file} 找不到 const ${name}`)
+  let arr = unwrap(init)
+  if (arr && ts.isCallExpression(arr) && ts.isIdentifier(arr.expression) && arr.expression.text === 'ref') arr = unwrap(arr.arguments[0])
+  if (!arr || !ts.isArrayLiteralExpression(arr) || arr.elements.some((e) => ts.isSpreadElement(e))) {
+    throw parseErr(`${file} 的 const ${name} 要直接寫成陣列字面值（不能 concat、展開或呼叫函式），檢查才讀得到`)
+  }
+  if (inTemplate && !elements.some((e) => vForSource(e.node) === name)) {
+    throw parseErr(`${file} 的模板沒有 v-for 直接跑 ${name}（改名了？或包了一層 computed？包 computed 的話把這欄的取法改成 { inTemplate: false }）`)
+  }
+  try {
+    return evalLiteral(arr.getText())
+  } catch (e) {
+    throw parseErr(`${file} 的 const ${name} 讀不出來（內容只能是字面值）：${e.message}`)
+  }
+}
+
+/** 元素底下的純文字（瀏覽器會把連續空白顯示成一格）；有 {{ }} 就回 null。 */
+function textOf(el) {
+  let out = ''
+  for (const c of el.children ?? []) {
+    if (c.type === 2) out += c.content
+    else if (c.type === 3) continue // 註解
+    else return null
+  }
+  return out.replace(/\s+/g, ' ').trim()
+}
+
+/** 模板裡 v-model="formData.X" 的 <select> 底下寫死的 <option value="V">文字</option>（略過空值的提示選項）。
+ *  同一欄有 v-if／v-else 兩個 <select> 時，兩邊選項要一樣。 */
 function selectOptions(file, model) {
-  const src = read(file)
-  const at = src.indexOf(`v-model="formData.${model}"`)
-  if (at === -1) throw new Error(`${file} 找不到 v-model="formData.${model}"`)
-  const open = src.lastIndexOf('<select', at)
-  const close = src.indexOf('</select>', at)
-  if (open === -1 || close === -1) throw new Error(`${file} 的 formData.${model} 不在 <select> 裡`)
-  // 註解掉的 <option> 不算；屬性值裡可能有 '>'（例如 v-if="age > 50"），所以照引號切
-  const block = src.slice(open, close).replace(/<!--[\s\S]*?-->/g, '')
-  const out = []
-  for (const m of block.matchAll(/<option\b((?:[^>"']|"[^"]*"|'[^']*')*)>([\s\S]*?)<\/option>/g)) {
-    const attrs = m[1]
-    if (/(^|\s)(:value|v-bind:value|v-for)\b/.test(attrs)) {
-      throw new Error(`${file} 的 formData.${model} 有動態選項，請改用別的取法`)
+  let result = null
+  for (const { node } of modelElements(file, model)) {
+    if (node.tag !== 'select') throw parseErr(`${file} 的 formData.${model} 不在 <select> 上（是 <${node.tag}>，可能搬進元件或改寫法了）`)
+    const out = []
+    for (const o of node.children ?? []) {
+      if (o.type === 3 || (o.type === 2 && !o.content.trim())) continue
+      if (o.type !== 1 || o.tag !== 'option') throw parseErr(`${file} 的 formData.${model} 的 <select> 裡有 <option> 以外的東西（v-for、<template>…），請改用別的取法`)
+      const bound = dir(o, 'bind', 'value')
+      if (bound) {
+        // 提示用的 <option :value="null" disabled>請選擇</option> 不算選項
+        if (/^\s*(null|''|""|undefined)\s*$/.test(bound.exp?.content ?? '')) continue
+        throw parseErr(`${file} 的 formData.${model} 有動態選項（:value），請改用別的取法`)
+      }
+      if (dir(o, 'for')) throw parseErr(`${file} 的 formData.${model} 有 v-for 產生的選項，請改用別的取法`)
+      const v = attr(o, 'value')
+      // 沒寫 value 時瀏覽器拿文字當值，這支取不到 → 擋下來，不要靜默略過
+      if (!v) throw parseErr(`${file} 的 formData.${model} 有沒寫 value 的 <option>`)
+      if ((v.value?.content ?? '') === '') continue
+      const label = textOf(o)
+      if (label === null) throw parseErr(`${file} 的 formData.${model} 的選項「${v.value.content}」文字有 {{ }}，請改用別的取法`)
+      out.push({ value: v.value.content, label })
     }
-    const v = /(?:^|\s)value="([^"]*)"/.exec(attrs)
-    // 沒寫 value 時瀏覽器拿文字當值，這支取不到 → 擋下來，不要靜默略過
-    if (!v) throw new Error(`${file} 的 formData.${model} 有沒寫 value 的 <option>：${m[0].slice(0, 60)}`)
-    if (v[1] === '') continue
-    out.push({ value: v[1], label: m[2].trim() })
+    if (result && JSON.stringify(result) !== JSON.stringify(out)) throw parseErr(`${file} 的 formData.${model} 有兩個 <select>，選項不一樣`)
+    result = out
   }
-  return out
+  return result
 }
 
-/** 模板裡緊接在 v-model="formData.X" 之前的 v-for="… in [ ... ]" 寫死陣列。 */
+/** 綁 formData.X 的元素自己或外層的 v-for="… in [ ... ]" 寫死陣列。 */
 function inlineVFor(file, model) {
-  const src = read(file)
-  const at = src.indexOf(`v-model="formData.${model}"`)
-  if (at === -1) throw new Error(`${file} 找不到 v-model="formData.${model}"`)
-  const vf = src.lastIndexOf('v-for="', at)
-  const start = src.indexOf('[', vf)
-  if (vf === -1 || start === -1 || start > at) throw new Error(`${file} 的 formData.${model} 前面沒有 v-for 寫死陣列`)
-  return evalLiteral(src.slice(start, matchBracket(src, start) + 1))
+  const els = modelElements(file, model)
+  if (els.length > 1) throw parseErr(`${file} 有 ${els.length} 個 v-model="formData.${model}"，請改用別的取法`)
+  for (let e = els[0]; e; e = e.parent) {
+    const src = vForSource(e.node)
+    if (src && src.startsWith('[')) return evalLiteral(src)
+    if (src) break
+  }
+  throw parseErr(`${file} 的 formData.${model} 沒有在 v-for 寫死陣列裡`)
+}
+
+/** 選項來自程式陣列（不是 selectOptions）的欄位：綁這個 v-model 的元素只能有一個，<select> 裡也不能另外寫死選項。 */
+function singleSourceCheck(file, model) {
+  const els = modelElements(file, model)
+  if (els.length > 1) throw parseErr(`${file} 有 ${els.length} 個 v-model="formData.${model}"（選項來自程式陣列時只能有一個，另外寫死的選項檢查比不到）`)
+  const { node } = els[0]
+  if (node.tag === 'select') {
+    for (const o of node.children ?? []) {
+      if (o.type !== 1 || o.tag !== 'option' || dir(o, 'for')) continue
+      const v = attr(o, 'value')
+      if (v && (v.value?.content ?? '') !== '') throw parseErr(`${file} 的 formData.${model} 除了程式陣列，<select> 裡又寫死了選項「${v.value.content}」`)
+    }
+  }
+}
+
+/**
+ * 頁面上所有 v-model="formData.X" 的欄位：all 是全部，choice 是原生選擇題（<select>、type 是 radio／checkbox，含 :type）。
+ * 抓的是「頁面多了一題，JSON 卻沒寫」。元件（<BaseSelect> 等）不知道是不是選擇題，只要求它是 JSON 的一題。
+ * （沒用 v-model、自己處理點選的欄位抓不到，目前 booking 的時段／目的／得知管道就是這種，已在 FIELDS 裡。）
+ */
+function pageModels(file) {
+  const all = new Set()
+  const choice = new Set()
+  for (const { node } of vueParts(file).elements) {
+    const key = vModelKey(node)
+    if (!key) continue
+    all.add(key)
+    // 靜態 type 與 :type 都看（兩個都寫時 Vue 以 :type 為準）
+    const t = `${attr(node, 'type')?.value?.content ?? ''} ${dir(node, 'bind', 'type')?.exp?.content ?? ''}`
+    if (node.tag === 'select' || /\b(radio|checkbox)\b/.test(t)) choice.add(key)
+  }
+  return { all, choice }
+}
+
+// ---------- server 端原始碼 ----------
+
+/** 檔案裡寫成字面值的 'leads'（含 const X = 'leads' 這種常數）有沒有被拿來 collection(...)／doc('leads/…')。回傳 [{ pos, insideFn }] */
+function leadsCollectionUses(sf) {
+  const leadsConsts = new Set()
+  tsWalk(sf, (n) => {
+    if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && stringValue(n.initializer ?? null) === 'leads') leadsConsts.add(n.name.text)
+  })
+  const uses = []
+  tsWalk(sf, (n) => {
+    if (!ts.isCallExpression(n)) return
+    const callee = ts.isPropertyAccessExpression(n.expression) ? n.expression.name.text : ts.isIdentifier(n.expression) ? n.expression.text : null
+    const a0 = n.arguments[0]
+    const s = a0 ? stringValue(a0) : null
+    const isLeads =
+      (callee === 'collection' && (s === 'leads' || (a0 && ts.isIdentifier(a0) && leadsConsts.has(a0.text)))) ||
+      (callee === 'doc' && typeof s === 'string' && s.startsWith('leads/'))
+    if (!isLeads) return
+    let fn = n.parent
+    while (fn && !(ts.isFunctionDeclaration(fn) && fn.name)) fn = fn.parent
+    uses.push({ line: sf.getLineAndCharacterOfPosition(n.getStart()).line + 1, insideFn: fn?.name?.text ?? null })
+  })
+  return uses
+}
+
+/** createLead 的呼叫：[{ type } | { error }]；也回報換名字的用法。 */
+function createLeadCalls(sf) {
+  const out = []
+  tsWalk(sf, (n) => {
+    const line = () => sf.getLineAndCharacterOfPosition(n.getStart()).line + 1
+    // 換名字：import { createLead as x }、const x = createLead、const { createLead: x } = …
+    if (ts.isImportSpecifier(n) && n.propertyName?.text === 'createLead' && n.name.text !== 'createLead') out.push({ error: `第 ${line()} 行：createLead 不要換名字匯入，檢查是用名字找呼叫的` })
+    if (ts.isVariableDeclaration(n) && n.initializer && ts.isIdentifier(unwrap(n.initializer)) && unwrap(n.initializer).text === 'createLead') out.push({ error: `第 ${line()} 行：不要把 createLead 指派給別的名字` })
+    if (ts.isBindingElement(n) && n.propertyName && propName(n) !== 'createLead' && n.propertyName.text === 'createLead') out.push({ error: `第 ${line()} 行：createLead 不要換名字` })
+    if (!ts.isCallExpression(n) || !ts.isIdentifier(n.expression) || n.expression.text !== 'createLead') return
+    const arg = unwrap(n.arguments[0])
+    if (!arg || !ts.isObjectLiteralExpression(arg)) {
+      out.push({ error: `第 ${line()} 行：createLead 請直接傳物件字面值（例如 createLead({ type: 'booking', … })），檢查才對得到 type` })
+      return
+    }
+    const props = arg.properties
+    const t = props.filter((p) => (ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p)) && propName(p) === 'type')
+    if (t.length !== 1 || !ts.isPropertyAssignment(t[0]) || props.some((p) => ts.isSpreadAssignment(p))) {
+      out.push({ error: `第 ${line()} 行：createLead 的 type 要直接寫成字面值（type: 'booking'），不要用簡寫、變數或展開` })
+      return
+    }
+    const v = stringValue(t[0].initializer)
+    if (v === null) out.push({ error: `第 ${line()} 行：createLead 的 type 是「${t[0].initializer.getText()}」，請寫成字面值，檢查才對得到 config` })
+    else out.push({ type: v })
+  })
+  return out
 }
 
 /** 統一成 { value, label, ...其他 }；字串選項的 label 就是 value。 */
@@ -189,29 +369,13 @@ function compareVariants(where, schemaObj, codeObj, omit) {
   }
 }
 
-/**
- * 頁面上用 v-model 綁的下拉、單選、複選，都要嘛在 FIELDS 裡比對、要嘛列在 NOT_OPTIONS 說明為什麼不比。
- * 抓的是「頁面多了一個選擇題，JSON 卻沒寫」。（沒用 v-model、自己處理點選的欄位抓不到，
- * 目前 booking 的時段／目的／得知管道就是這種，已在 FIELDS 裡。）
- */
-function choiceModels(file) {
-  const src = read(file)
-  const keys = new Set()
-  for (const m of src.matchAll(/v-model="formData\.(\w+)"/g)) {
-    const st = src.lastIndexOf('<', m.index)
-    const tag = /^<((?:[^>"']|"[^"]*"|'[^']*')*)>/.exec(src.slice(st))?.[1] || ''
-    if (/^select\b/.test(tag) || /\btype="(radio|checkbox)"/.test(tag)) keys.add(m[1])
-  }
-  return keys
-}
-
 // ---------- 逐欄指定 ----------
 
 const cfgOr = async (p) => {
   try {
     return await cfg(p)
   } catch (e) {
-    fail(p, `讀不到：${e.message}（設定檔刪了或改名的話，這支下面用到它的地方也要改）`)
+    failFatal(p, `讀不到：${e.message}（設定檔刪了或改名的話，這支下面用到它的地方也要改；config 不能用 Nuxt 的自動匯入或 #imports，因為這支在 Nuxt 外面跑）`)
     return {}
   }
 }
@@ -226,12 +390,14 @@ const G = 'pages/group-booking.vue'
 const C = 'pages/cooperation.vue'
 const vfor = (o) => ({ value: o.v, label: o.l })
 const PAGES = { booking: B, 'group-booking': G, cooperation: C }
-// 頁面上的選擇題但不在 FIELDS 比對選項的：原因寫在旁邊
+// 頁面上 v-model 綁的欄位，但不是 JSON 的一題、或不在 FIELDS 比對選項的：原因寫在旁邊
 const NOT_OPTIONS = {
   booking: {
     storeId: '選項來自分店 API；頁面內建的備用四間另外比對（optionsSource.fallback）',
     sourceDetail: '得知管道的第二層，跟著 source 一起比對',
     agreeToTerms: '同意事項勾選框，不是選項',
+    preferredTimeOther: '時段選「其他」時的說明，存在 preferredTimes 裡（其他: <說明>）',
+    exerciseGoalOther: '訓練目的選「其他」時的說明，存在 exerciseGoals 裡（其他: <說明>）',
   },
   'group-booking': { sourceDetail: '得知管道的第二層，跟著 source 一起比對' },
   cooperation: {},
@@ -253,8 +419,8 @@ const FIELDS = {
     ageRange: () => norm(constArray(G, 'ageRanges')),
     isFillerSelf: () => inlineVFor(G, 'isFillerSelf').map(vfor),
     relationship: () => norm(relationshipOptions),
-    course: () => norm(constArray(G, 'courses'), (o) => ({ value: o.value, label: o.value, price: o.price })),
-    store: () => norm(constArray(G, 'storeOptions')),
+    course: () => norm(constArray(G, 'courses', { inTemplate: false }), (o) => ({ value: o.value, label: o.value, price: o.price })),
+    store: () => norm(constArray(G, 'storeOptions', { inTemplate: false })),
     experience: () => norm(constArray(G, 'experiences'), (o) => ({ value: o.value, label: o.label })),
     source: 'referral',
   },
@@ -270,7 +436,7 @@ for (const [formId, fields] of Object.entries(FIELDS)) {
   try {
     form = schema(formId)
   } catch (e) {
-    fail(`${formId}.json`, `讀不到或不是合法 JSON：${e.message}`)
+    failFatal(`${formId}.json`, `讀不到或不是合法 JSON：${e.message}`)
     continue
   }
   if (form.formId !== formId) fail(`${formId}.json`, `formId 是「${form.formId}」，應為「${formId}」`)
@@ -289,9 +455,24 @@ for (const [formId, fields] of Object.entries(FIELDS)) {
     fail(formId, 'check-form-schemas.mjs 的 PAGES 或 NOT_OPTIONS 沒有這張表單（新增表單要一起加）')
     continue
   }
-  for (const key of choiceModels(PAGES[formId])) {
+  let models = { all: new Set(), choice: new Set() }
+  try {
+    models = pageModels(PAGES[formId])
+  } catch (e) {
+    fail(formId, e.message)
+  }
+  const jsonKeys = new Set([
+    ...form.sections.flatMap((sec) => sec.fields.map((f) => f.key)),
+    ...(Array.isArray(form.hiddenFields) ? form.hiddenFields.map((h) => h.key) : []),
+  ])
+  for (const key of models.all) {
+    if (!jsonKeys.has(key) && !(key in NOT_OPTIONS[formId])) {
+      fail(`${formId}.${key}`, `${PAGES[formId]} 有 formData.${key} 這個欄位，但 ${formId}.json 沒有這一題（新增題目要寫進 JSON；不存進名單的輸入框列進 check-form-schemas.mjs 的 NOT_OPTIONS 並寫明原因）`)
+    }
+  }
+  for (const key of models.choice) {
     if (!(key in fields) && !(key in NOT_OPTIONS[formId])) {
-      fail(`${formId}.${key}`, `${PAGES[formId]} 有這個選擇題，但 check-form-schemas.mjs 沒有比對它（JSON 可能也漏寫）`)
+      fail(`${formId}.${key}`, `${PAGES[formId]} 有這個選擇題，但 check-form-schemas.mjs 沒有比對它（在 FIELDS 補上取法，JSON 也要寫選項）`)
     }
   }
 
@@ -304,9 +485,13 @@ for (const [formId, fields] of Object.entries(FIELDS)) {
         continue
       }
       if (get === 'referral') compareReferral(where, f.options, REFERRAL_SOURCES)
-      else compareOptions(where, f.options, get(), EXTRA_KEYS[key])
+      else {
+        compareOptions(where, f.options, get(), EXTRA_KEYS[key])
+        // 選項來自程式陣列的欄位：頁面不能在旁邊另外寫死選項或多綁一個輸入框（那些值檢查比不到）
+        if (models.all.has(key) && !String(get).includes('selectOptions(')) singleSourceCheck(PAGES[formId], key)
+      }
     } catch (e) {
-      fail(where, e.message)
+      fail(where, e.parse ? `${e.message}。頁面改寫法（改名、搬進元件、改成動態）時，要改 scripts/check-form-schemas.mjs 的 FIELDS 取法` : e.message)
     }
   }
 }
@@ -329,6 +514,7 @@ try {
 if ('booking' in FIELDS) try {
   const fb = fieldOf(schema('booking'), 'storeId').optionsSource?.fallback
   const code = constArray(B, 'stores').map((s) => ({ value: s.id, label: s.name, address: s.address, phone: s.phone }))
+  singleSourceCheck(B, 'storeId')
   if (!Array.isArray(fb)) fail('booking.storeId', 'JSON 沒有 optionsSource.fallback')
   else compareOptions('booking.storeId 備用分店', fb, code, ['address', 'phone'])
 } catch (e) {
@@ -344,98 +530,21 @@ if ('booking' in FIELDS) try {
 // 下架一張表單：JSON 留著、頂層加 "retiredOn": "YYYY-MM-DD"，SOURCES 照樣列著（Hub 還要靠它解讀舊名單），
 // 從 FIELDS／PAGES／NOT_OPTIONS 拿掉、刪頁面與送出端點。同步時 Firestore 文件會帶 retiredOn。
 
-/** 遞迴列出資料夾裡的 .ts 檔（不用 readdirSync 的 recursive，舊版 Node 18 沒有）。 */
+/** 遞迴列出資料夾裡的 .ts／.js 檔（不用 readdirSync 的 recursive，舊版 Node 18 沒有）。 */
 function listTs(dir) {
   const out = []
   for (const e of readdirSync(join(root, dir), { withFileTypes: true })) {
     const p = `${dir}/${e.name}`
     if (e.isDirectory()) out.push(...listTs(p))
-    else if (/\.[cm]?ts$/.test(e.name)) out.push(p)
-  }
-  return out
-}
-
-/**
- * 物件字面值（src[start] 是 '{'）最外層的屬性：[{ key, value }]，value 是原始碼文字；
- * 簡寫（{ type }）的 value 是 null，展開（...x）的 key 是 '...'。略過字串內容與註解。
- */
-function topLevelProps(src, start) {
-  const segs = []
-  let depth = 0
-  let cur = ''
-  for (let i = start; i < src.length; i++) {
-    const c = src[i]
-    if (c === '/' && src[i + 1] === '/') {
-      i = src.indexOf('\n', i) - 1
-      if (i < 0) break
-      continue
-    }
-    if (c === '/' && src[i + 1] === '*') {
-      i = src.indexOf('*/', i + 2) + 1
-      if (i === 0) break
-      continue
-    }
-    if (c === "'" || c === '"' || c === '`') {
-      let j = i + 1
-      for (; j < src.length && src[j] !== c; j++) if (src[j] === '\\') j++
-      if (depth === 1) cur += src.slice(i, j + 1)
-      i = j
-      continue
-    }
-    if ('{[('.includes(c)) {
-      depth++
-      if (depth === 1) continue
-    } else if ('}])'.includes(c)) {
-      depth--
-      if (depth === 0) {
-        segs.push(cur)
-        break
-      }
-    } else if (c === ',' && depth === 1) {
-      segs.push(cur)
-      cur = ''
-      continue
-    }
-    if (depth >= 1) cur += depth === 1 ? c : ''
-    if (depth > 1 && cur.slice(-1) !== '…') cur += '…' // 巢狀內容只留記號，不讓裡面的 type: 被誤認
-  }
-  return segs
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .map((s) => {
-      if (s.startsWith('...')) return { key: '...', value: s }
-      const m = /^(['"]?)([\w$]+)\1\s*(?::\s*([\s\S]*))?$/.exec(s)
-      return m ? { key: m[2], value: m[3] === undefined ? null : m[3].trim() } : { key: '?', value: s }
-    })
-}
-
-/** 一個檔案裡所有 createLead(...) 寫入的 type；拿不到字面值的記成錯誤訊息。 */
-function createLeadTypes(file) {
-  const src = read(file)
-  const out = []
-  for (const m of src.matchAll(/\bcreateLead\s*\(/g)) {
-    const at = m.index + m[0].length
-    const brace = /^\s*\{/.exec(src.slice(at))
-    if (!brace) {
-      out.push({ error: 'createLead 請直接傳物件字面值（例如 createLead({ type: \'booking\', … })），檢查才對得到 type' })
-      continue
-    }
-    const props = topLevelProps(src, at + brace[0].length - 1)
-    const t = props.filter((p) => p.key === 'type')
-    if (t.length !== 1 || t[0].value === null || props.some((p) => p.key === '...')) {
-      out.push({ error: 'createLead 的 type 要直接寫成字面值（type: \'booking\'），不要用簡寫、變數或展開' })
-      continue
-    }
-    const lit = /^(['"`])([\w-]+)\1(?:\s+as\s+const)?$/.exec(t[0].value)
-    if (!lit) out.push({ error: `createLead 的 type 是「${t[0].value}」，請寫成字面值，檢查才對得到 config` })
-    else out.push({ type: lit[2] })
+    else if (/\.[cm]?[jt]s$/.test(e.name)) out.push(p)
   }
   return out
 }
 
 // 名單 type 沒有 config 的（舊資料才有、已經沒有程式在寫）：寫明原因
 const NO_CONFIG_LEAD_TYPES = { franchise: '加盟表單 2026-10-16 下架（bfa10d3），當時還沒有 config；Hub 照原值顯示' }
-// 讀 leads 集合但不寫入的檔案（後台以外）：要加就寫明原因。寫入一律經過 server/utils/leads.ts 的 createLead
+// 讀 leads 集合但不寫入的檔案（後台以外）：要加就寫明原因。寫入一律經過 server/utils/leads.ts 的 createLead。
+// （用 TypeScript 解析器找 collection('leads')／doc('leads/…') 的呼叫，含 const X = 'leads' 的常數；註解與字串裡提到不算）
 const LEADS_READERS = {}
 
 const jsonIds = readdirSync(join(root, 'docs/form-schema'))
@@ -446,18 +555,27 @@ for (const id of jsonIds) {
   try {
     forms[id] = schema(id)
   } catch (e) {
-    if (!(id in FIELDS)) fail(`${id}.json`, `讀不到或不是合法 JSON：${e.message}`) // FIELDS 裡的上面已經報過
+    if (!(id in FIELDS)) failFatal(`${id}.json`, `讀不到或不是合法 JSON：${e.message}`) // FIELDS 裡的上面已經報過
   }
 }
 const isRetired = (id) => Boolean(forms[id]?.retiredOn)
 const leadTypeOf = {}
 try {
-  const fsSrc = read('server/utils/form-schemas.ts')
+  const fsSf = tsFile('server/utils/form-schemas.ts', read('server/utils/form-schemas.ts'))
   const importName = {}
-  for (const m of fsSrc.matchAll(/import (\w+) from '~\/docs\/form-schema\/([\w-]+)\.json'/g)) importName[m[1]] = m[2]
-  const srcList = /const SOURCES[^=]*=\s*\[([^\]]*)\]/.exec(fsSrc)
-  if (!srcList) fail('server/utils/form-schemas.ts', '找不到 const SOURCES = [...]')
-  const sourceIds = srcList ? srcList[1].split(',').map((x) => x.trim()).filter(Boolean).map((n) => importName[n] ?? `?${n}`) : []
+  let sourceNames = null
+  tsWalk(fsSf, (n) => {
+    if (ts.isImportDeclaration(n) && n.importClause?.name) {
+      const m = /(?:^|\/)docs\/form-schema\/([\w-]+)\.json$/.exec(n.moduleSpecifier.text)
+      if (m) importName[n.importClause.name.text] = m[1]
+    }
+    if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.name.text === 'SOURCES') {
+      const a = unwrap(n.initializer)
+      if (a && ts.isArrayLiteralExpression(a)) sourceNames = a.elements.map((e) => (ts.isIdentifier(e) ? e.text : `?${e.getText()}`))
+    }
+  })
+  if (!sourceNames) fail('server/utils/form-schemas.ts', '找不到 const SOURCES = [...]')
+  const sourceIds = (sourceNames ?? []).map((n) => importName[n] ?? `?${n}`)
   const live = jsonIds.filter((id) => !isRetired(id))
   const show = (a) => JSON.stringify([...a].sort())
   if (show(sourceIds) !== show(jsonIds) || show(Object.keys(FIELDS)) !== show(live)) {
@@ -484,10 +602,21 @@ try {
   }
 
   // 1) 名單 type 的型別宣告（CreateLeadInput.type）：每個成員都要有 config，或列在 NO_CONFIG_LEAD_TYPES
-  const leadsSrc = read('server/utils/leads.ts')
-  const union = /\btype:\s*((?:['"][\w-]+['"]\s*\|?\s*)+)/.exec(/interface CreateLeadInput\s*\{([\s\S]*?)\n\}/.exec(leadsSrc)?.[1] || '')
-  if (!union) fail('server/utils/leads.ts', '找不到 CreateLeadInput 的 type 字面值聯集（檢查要靠它）')
-  const declared = union ? [...union[1].matchAll(/['"]([\w-]+)['"]/g)].map((m) => m[1]) : []
+  // CreateLeadInput（interface 或 type 別名）最外層的 type 欄位，要是字串字面值的聯集
+  const leadsSf = tsFile('server/utils/leads.ts', read('server/utils/leads.ts'))
+  let declared = null
+  tsWalk(leadsSf, (n) => {
+    let members = null
+    if (ts.isInterfaceDeclaration(n) && n.name.text === 'CreateLeadInput') members = n.members
+    if (ts.isTypeAliasDeclaration(n) && n.name.text === 'CreateLeadInput' && ts.isTypeLiteralNode(n.type)) members = n.type.members
+    const t = members?.find((m) => ts.isPropertySignature(m) && propName(m) === 'type')?.type
+    if (!t) return
+    const parts = ts.isUnionTypeNode(t) ? t.types : [t]
+    const lits = parts.map((x) => (ts.isLiteralTypeNode(x) && ts.isStringLiteral(x.literal) ? x.literal.text : null))
+    if (lits.every((x) => x !== null)) declared = lits
+  })
+  if (!declared) fail('server/utils/leads.ts', '找不到 CreateLeadInput 的 type 字面值聯集（檢查要靠它）')
+  declared ??= []
   for (const t of declared) {
     if (!leadTypeOf[t] && !(t in NO_CONFIG_LEAD_TYPES)) {
       fail('server/utils/leads.ts', `名單 type「${t}」沒有 leadType 是它的 config。新表單要寫 docs/form-schema/<formId>.json（含 leadType），加進 server/utils/form-schemas.ts 的 SOURCES 與這支的 FIELDS`)
@@ -497,14 +626,14 @@ try {
   //    leads 集合在 server/utils/leads.ts 與後台以外不能直接碰
   const writers = {}
   for (const file of listTs('server')) {
-    if (file === 'server/utils/leads.ts') continue
-    const src = read(file)
-    if (!file.startsWith('server/api/admin/') && !(file in LEADS_READERS) &&
-        /collection\(\s*['"`]leads['"`]\s*\)|\.doc\(\s*['"`]leads\//.test(src)) {
-      fail(file, '直接讀寫 leads 集合。新名單一律經過 server/utils/leads.ts 的 createLead（這支檢查靠它對 type）；只讀不寫的話加進 check-form-schemas.mjs 的 LEADS_READERS 並寫明原因')
+    const sf = tsFile(file, read(file))
+    for (const u of leadsCollectionUses(sf)) {
+      // server/utils/leads.ts 裡只有 createLead 本身可以寫；後台（server/api/admin/）管理既有名單，不檢查
+      if (file === 'server/utils/leads.ts' ? u.insideFn === 'createLead' : file.startsWith('server/api/admin/') || file in LEADS_READERS) continue
+      fail(file, `第 ${u.line} 行直接讀寫 leads 集合。新名單一律經過 server/utils/leads.ts 的 createLead（這支檢查靠它對 type）；只讀不寫的話加進 check-form-schemas.mjs 的 LEADS_READERS 並寫明原因`)
     }
-    if (/\bcreateLead\s*(?:as\b|:)/.test(src)) fail(file, 'createLead 不要換名字匯入，檢查是用名字找呼叫的')
-    for (const r of createLeadTypes(file)) {
+    if (file === 'server/utils/leads.ts') continue
+    for (const r of createLeadCalls(sf)) {
       if (r.error) {
         fail(file, r.error)
         continue
@@ -535,8 +664,8 @@ try {
 
 // ---------- 跟上一版比：values-ledger.json ----------
 
-/** valueType 只取開頭的型別（有時後面接說明文字）；沒寫就是字串。 */
-const baseType = (t) => (t == null ? 'string' : /^[\w\[\]]+/.exec(String(t))?.[0] ?? String(t))
+/** valueType 只取第一個出現的型別字（有時前後接說明文字，例如「string（只有經表單送出時保證…）」）；沒寫就是字串。 */
+const baseType = (t) => (t == null ? 'string' : /\b(?:string|boolean|number|object)(?:\[\])?/.exec(String(t))?.[0] ?? String(t))
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 const has = (list, v) => (list ?? []).some((x) => same(x, v))
 const uniq = (list) => list.reduce((a, v) => (has(a, v) ? a : [...a, v]), [])
@@ -610,7 +739,7 @@ if (existsSync(join(root, LEDGER))) {
   try {
     ledger = JSON.parse(read(LEDGER))
   } catch (e) {
-    fail(LEDGER, `不是合法 JSON：${e.message}`)
+    failFatal(LEDGER, `不是合法 JSON：${e.message}`)
   }
 } else if (!RECORD) {
   fail(LEDGER, '找不到記錄檔（第一次請跑 node scripts/check-form-schemas.mjs --record；這個檔要 commit）')
@@ -696,6 +825,13 @@ if (!errors.length && pending.length) {
   fail(LEDGER, `有新增還沒記錄（${pending.length} 項）：\n${pending.map((p) => `    + ${p}`).join('\n')}\n    確認都是新增（不是改字；升 schemaVersion 的要先通知 Hub）後，跑 node scripts/check-form-schemas.mjs --record，記錄檔要一起 commit`)
 }
 
+if (fatal.length) {
+  console.error(`\n[check-form-schemas] ✗ 有檔案讀不到或格式壞了（${fatal.length} 項），先修這些，其他比對的結果先不印：\n`)
+  for (const e of fatal) console.error(`  - ${e}`)
+  if (RECORD) console.error('\n（記錄檔沒有更新）')
+  console.error('')
+  process.exit(1)
+}
 if (errors.length) {
   console.error(`\n[check-form-schemas] ✗ docs/form-schema 跟程式不一致（${errors.length} 項）：\n`)
   for (const e of errors) console.error(`  - ${e}`)

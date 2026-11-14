@@ -66,7 +66,9 @@ export const bookingVariants: Record<string, BookingVariant> = {
   // 連結：/booking?v=gigabyte&utm_source=website&utm_medium=referral&utm_campaign=gigabyte-50plus-free-trial
   // ⚠️ utm_source 依業主決定沿用共用值 website，所以 GA4 裡辨識技嘉要看
   //    utm_campaign（gigabyte-50plus-free-trial），那是唯一的識別依據。
-  // 活動結束時：把這一段刪掉即可，舊連結會自動 fallback 成一般表單，不會壞頁。
+  // 活動結束時：把這一段刪掉，並把 docs/form-schema/booking.json 的 context.variants.gigabyte 移到
+  // context.retiredVariants、跑 node scripts/check-form-schemas.mjs --record（不然建置會失敗）。
+  // 舊連結會自動 fallback 成一般表單，不會壞頁。
   gigabyte: {
     hero: {
       title: '技嘉 GIGABYTE × 練健康',
