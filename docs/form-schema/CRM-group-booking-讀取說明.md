@@ -212,7 +212,7 @@ config 只放解讀名單需要的部分，所以官網只改提示字、錯誤�
 - 2026-11-14 有兩次改動，題目與選項內容都沒有變：
   1. 加了 `leadType` 與閱讀規則的文字，三張表單的 `contentHash` 各變了一次（lkkdev 2026-11-14 已寫入）。
   2. config 改成只放解讀名單需要的部分（第 3 節）。**下一次 dev 發版時**三張表單的 `contentHash` 會因為形狀改變再各變一次
-     （新的前 8 碼：`booking` 是 `237bb143`、`group-booking` 是 `f55e9856`、`cooperation` 是 `4a183ba2`）。
+     （新的前 8 碼：`booking` 是 `237bb143`、`group-booking` 是 `f55e9856`、`cooperation` 是 `e52c1b8a`）。
      在那之前 lkkdev 上仍是舊的完整版本，多了 `describes`、`conventions`、`submit`、`record` 這類頂層 key，每一題也多了提示字、條件等 key
      （第 3 節「不在 config 裡的東西」）；預約表單得知管道 `source` 與團課備註 `note` 的 `store.alsoWrites` 在舊版是單一物件，新版一律是陣列。
      第 0 節的程式兩種版本都能讀；新版沒有的 key 不要拿來用。
